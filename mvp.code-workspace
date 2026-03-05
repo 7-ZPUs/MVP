@@ -1,0 +1,20 @@
+{
+  "folders": [
+    {
+      "name": "root",
+      "path": "/workspaces/MVP",
+    },
+    {
+      "name": "renderer",
+      "path": "/workspaces/MVP/renderer",
+    },
+    {
+      "name": "core",
+      "path": "/workspaces/MVP/core",
+    },
+    {
+      "name": "shared",
+      "path": "/workspaces/MVP/shared",
+    },
+  ],
+}
