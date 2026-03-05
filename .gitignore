@@ -39,6 +39,10 @@ build/Release
 
 # Dependency directories
 node_modules/
+
+# Angular build cache
+.angular/
+renderer/.angular/
 jspm_packages/
 
 # Snowpack dependency directory (https://snowpack.dev/)

@@ -23,7 +23,7 @@ import * as path from 'path';
 // adapters are implemented.
 //
 // Example (uncomment once adapters exist):
-// import { PackageIpcAdapter } from './src/adapters/ipc';
+// import { PackageIpcAdapter } from './src/adapters/driving/ipc';
 // PackageIpcAdapter.register(ipcMain);
 
 // ---------------------------------------------------------------------------
@@ -45,7 +45,8 @@ function createWindow(): BrowserWindow {
   if (process.env['NODE_ENV'] === 'development') {
     win.loadURL('http://localhost:4200');
   } else {
-    win.loadFile(path.join(__dirname, 'renderer', 'index.html'));
+    // Angular builds to dist/renderer/browser/ (outputPath set in renderer/angular.json)
+    win.loadFile(path.join(__dirname, '..', 'dist', 'renderer', 'browser', 'index.html'));
   }
 
   return win;

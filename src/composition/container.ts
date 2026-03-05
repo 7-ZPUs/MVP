@@ -1,11 +1,12 @@
 /**
  * Composition root — the **only** file permitted to import from both
- * domain (port tokens) and infrastructure (concrete implementations)
+ * domain (port tokens) and driven adapters (concrete implementations)
  * simultaneously.
  *
  * How to register a new binding:
  *  1. Define a Symbol token in `src/domain/ports/driven/` (or driving/).
- *  2. Implement the interface in `src/infrastructure/` (or `src/application/`).
+ *  2. Implement the driven adapter in `src/adapters/driven/` (or the driving
+ *     adapter in `src/adapters/driving/`).
  *  3. Add a `container.register(TOKEN, { useClass: ConcreteImpl })` call below.
  *  4. Inject the token via `@inject(TOKEN)` in consuming constructors.
  */
@@ -18,7 +19,7 @@ import { container } from 'tsyringe';
 // ---------------------------------------------------------------------------
 // Tokens are declared here as Symbols so that they can be imported by both
 // application services (for @inject) and this composition root (for registration)
-// without creating a dependency from application → infrastructure.
+// without creating a dependency from application → adapters.
 //
 // When domain port interfaces are added, export their tokens from
 // `src/domain/ports/driven/` and `src/domain/ports/driving/`, then import
@@ -27,7 +28,7 @@ import { container } from 'tsyringe';
 // Example (uncomment once the interfaces exist):
 //
 // import { PACKAGE_REPOSITORY_TOKEN } from '../domain/ports/driven';
-// import { SqlitePackageRepository } from '../infrastructure/sqlite';
+// import { SqlitePackageRepository } from '../adapters/driven/sqlite';
 // container.register(PACKAGE_REPOSITORY_TOKEN, { useClass: SqlitePackageRepository });
 
 // ---------------------------------------------------------------------------

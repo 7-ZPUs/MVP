@@ -8,21 +8,37 @@ into SQLite; semantic search is powered by `@xenova/transformers` with ONNX Runt
 
 ## Architecture
 
-The Main Process follows **Hexagonal (Ports & Adapters)** architecture. The
+The project is split into two sub-projects that mirror the Electron process model:
+
+| Sub-project | Location | Description |
+|---|---|---|
+| **Main process** | `./` (root) | Node.js/TypeScript — hexagonal backend |
+| **Renderer process** | `renderer/` | Angular SPA — user interface |
+
+### Main Process — Hexagonal (Ports & Adapters)
+
+The Main Process follows strict **Hexagonal (Ports & Adapters)** architecture. The
 dependency rule is strict: every arrow points inward.
 
 ```
-Adapters (IPC)  →  Application Services  →  Domain  ←  Infrastructure
+Adapters (driving)  →  Application Services  →  Domain  ←  Adapters (driven)
 ```
 
 | Layer | Location | Responsibility |
 |---|---|---|
 | **Domain** | `src/domain/` | Entities, value objects, and **port interfaces** (both driving and driven). Zero external imports. |
 | **Application** | `src/application/` | Application services that implement driving ports and consume driven ports via constructor injection. |
-| **Infrastructure** | `src/infrastructure/` | Concrete implementations of driven ports (SQLite, embeddings, ZIP, XML). |
-| **Adapters (IPC)** | `src/adapters/ipc/` | Electron IPC channel handlers. No business logic — delegates exclusively to driving port interfaces. |
-| **Composition** | `src/composition/container.ts` | The **only** file that imports from both domain and infrastructure. Wires port tokens → concrete implementations via tsyringe. |
+| **Adapters — driving** | `src/adapters/driving/ipc/` | Electron `ipcMain` handlers. No business logic — delegates exclusively to driving port interfaces. |
+| **Adapters — driven** | `src/adapters/driven/{sqlite,embeddings,zip,xml}/` | Concrete implementations of driven ports (SQLite, embeddings, ZIP, XML). |
+| **Composition** | `src/composition/container.ts` | The **only** file that imports from both domain and driven adapters. Wires port tokens → concrete implementations via tsyringe. |
 | **Shared** | `shared/ipc-channels.ts` | IPC channel name constants importable by both Main and Renderer processes. |
+
+### Renderer Process — Angular
+
+The Angular app lives in `renderer/` and is a standard Angular project bootstrapped
+with the Angular CLI. It communicates with the Main Process exclusively through the
+typed IPC channels declared in `shared/ipc-channels.ts` via Electron's `contextBridge`
+preload API.
 
 ---
 
@@ -49,27 +65,30 @@ alongside its interface definition.
    - Annotate with `@injectable()` and `@inject(TOKEN)` (from tsyringe).
    - Re-export from `src/application/services/index.ts`.
 
-3. **Implement the infrastructure adapter(s)** in `src/infrastructure/<subsystem>/`:
+3. **Implement the driven adapter(s)** in `src/adapters/driven/<subsystem>/`:
    - The class implements the driven port interface.
    - Annotate with `@injectable()`.
-   - Re-export from `src/infrastructure/<subsystem>/index.ts`.
+   - Re-export from `src/adapters/driven/<subsystem>/index.ts`.
 
 4. **Register the bindings** in `src/composition/container.ts`:
    ```ts
    import { MY_DRIVEN_PORT_TOKEN } from '../domain/ports/driven';
-   import { MyInfraAdapter } from '../infrastructure/<subsystem>';
+   import { MyDrivenAdapter } from '../adapters/driven/<subsystem>';
    import { MY_USE_CASE_TOKEN } from '../domain/ports/driving';
    import { MyApplicationService } from '../application/services';
 
-   container.register(MY_DRIVEN_PORT_TOKEN, { useClass: MyInfraAdapter });
+   container.register(MY_DRIVEN_PORT_TOKEN, { useClass: MyDrivenAdapter });
    container.register(MY_USE_CASE_TOKEN,    { useClass: MyApplicationService });
    ```
 
-5. **Add an IPC adapter** in `src/adapters/ipc/`:
+5. **Add a driving IPC adapter** in `src/adapters/driving/ipc/`:
    - Resolve the driving port from the container via `container.resolve(TOKEN)`.
    - Register the `ipcMain.handle` call for the relevant `IpcChannels.*` constant.
    - Add the new IPC channel constant to `shared/ipc-channels.ts`.
    - Call `MyIpcAdapter.register(ipcMain)` in `main.ts`.
+
+6. **Expose the channel to the Angular renderer** via Electron's `contextBridge` in `preload.ts`,
+   so the Angular service can call `window.api.myChannel(args)`.
 
 ---
 
@@ -77,10 +96,14 @@ alongside its interface definition.
 
 | Command | Description |
 |---|---|
-| `npm run build` | Compile TypeScript to `dist/` |
+| `npm run build` | Compile Main Process TypeScript to `dist/` |
+| `npm run build:renderer` | Build Angular renderer to `dist/renderer/` |
+| `npm run build:all` | Build renderer then main process |
 | `npm start` | Run the compiled Electron app |
-| `npm test` | Run Vitest in CI mode |
+| `npm run start:renderer` | Start Angular dev server on `localhost:4200` |
+| `npm test` | Run Vitest (main process) in CI mode |
 | `npm run test:watch` | Run Vitest in watch mode |
+| `npm run test:renderer` | Run Angular unit tests |
 
 ---
 
@@ -89,9 +112,11 @@ alongside its interface definition.
 | Concern | Library |
 |---|---|
 | Runtime | Node.js 20, TypeScript 5, Electron 30 |
+| Renderer | Angular 21 (standalone components, SCSS) |
 | Database | `better-sqlite3` + `sqlite-vss` |
 | Semantic embeddings | `@xenova/transformers` + ONNX Runtime (Node) |
 | Dependency injection | `tsyringe` |
-| Testing | `vitest` |
+| Testing (main) | `vitest` |
+| Testing (renderer) | Angular's built-in (`@angular/build:unit-test`) |
 | ZIP reading | `adm-zip` |
 | XML parsing | `fast-xml-parser` |

@@ -5,9 +5,13 @@
   "main": "dist/main.js",
   "scripts": {
     "build": "tsc --project tsconfig.json",
+    "build:renderer": "cd renderer && ng build",
+    "build:all": "npm run build:renderer && npm run build",
     "start": "electron .",
+    "start:renderer": "cd renderer && ng serve",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:renderer": "cd renderer && ng test"
   },
   "dependencies": {
     "adm-zip": "^0.5.10",

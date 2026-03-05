@@ -1,3 +1,4 @@
 // Adapters layer barrel.
-// Re-exports all IPC adapter registrations.
-export * from './ipc';
+// Re-exports all driving (primary) and driven (secondary) adapter modules.
+export * from './driving';
+export * from './driven';
