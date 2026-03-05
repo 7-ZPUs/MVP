@@ -1,4 +1,2 @@
 // IPC inbound adapter barrel.
-// Houses one adapter class per IPC channel group. Each adapter registers its
-// ipcMain handlers and delegates exclusively to an inbound port interface.
-export {};
+export { PersonaIpcAdapter } from './PersonaIpcAdapter';

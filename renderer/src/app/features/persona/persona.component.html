@@ -1,0 +1,100 @@
+<div class="persona-page">
+  <h1>Gestione Persone</h1>
+
+  <!-- ------------------------------------------------------------------ -->
+  <!-- Form  (CREATE / UPDATE)                                              -->
+  <!-- ------------------------------------------------------------------ -->
+  <section class="form-card">
+    <h2>{{ editingId() !== null ? 'Modifica persona #' + editingId() : 'Nuova persona' }}</h2>
+
+    <form (ngSubmit)="submit()" #f="ngForm" class="form">
+      <label>
+        Nome
+        <input
+          type="text"
+          name="nome"
+          [(ngModel)]="nome"
+          required
+          placeholder="es. Mario"
+          autocomplete="off"
+        />
+      </label>
+
+      <label>
+        Cognome
+        <input
+          type="text"
+          name="cognome"
+          [(ngModel)]="cognome"
+          required
+          placeholder="es. Rossi"
+          autocomplete="off"
+        />
+      </label>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary" [disabled]="!f.valid">
+          {{ editingId() !== null ? 'Salva modifiche' : 'Aggiungi' }}
+        </button>
+        @if (editingId() !== null) {
+          <button type="button" class="btn btn-secondary" (click)="cancelEdit()">
+            Annulla
+          </button>
+        }
+      </div>
+    </form>
+  </section>
+
+  <!-- ------------------------------------------------------------------ -->
+  <!-- Error banner                                                          -->
+  <!-- ------------------------------------------------------------------ -->
+  @if (errorMsg()) {
+    <div class="error-banner">⚠ {{ errorMsg() }}</div>
+  }
+
+  <!-- ------------------------------------------------------------------ -->
+  <!-- Table                                                                -->
+  <!-- ------------------------------------------------------------------ -->
+  <section class="table-card">
+    <div class="table-header">
+      <h2>Lista persone</h2>
+      <button class="btn btn-ghost" (click)="load()" [disabled]="loading()">
+        {{ loading() ? 'Caricamento…' : '↻ Aggiorna' }}
+      </button>
+    </div>
+
+    @if (loading()) {
+      <p class="state-msg">Caricamento…</p>
+    } @else if (persone().length === 0) {
+      <p class="state-msg">Nessuna persona trovata. Aggiungine una sopra.</p>
+    } @else {
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Nome</th>
+            <th>Cognome</th>
+            <th>Azioni</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (p of persone(); track p.id) {
+            <tr [class.editing]="editingId() === p.id">
+              <td>{{ p.id }}</td>
+              <td>{{ p.nome }}</td>
+              <td>{{ p.cognome }}</td>
+              <td class="actions">
+                <button class="btn btn-sm btn-secondary" (click)="startEdit(p)">
+                  Modifica
+                </button>
+                <button class="btn btn-sm btn-danger" (click)="remove(p.id)">
+                  Elimina
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </section>
+</div>

@@ -5,10 +5,9 @@
   "main": "dist/main.js",
   "scripts": {
     "build": "tsc --project tsconfig.json",
-    "build:renderer": "cd renderer && ng build",
-    "build:all": "npm run build:renderer && npm run build",
+    "build:all": "cd renderer && ng build && cd .. && tsc --project tsconfig.json",
     "start": "ELECTRON_DISABLE_SANDBOX=1 electron .",
-    "start:renderer": "cd renderer && ng serve --host 0.0.0.0",
+    "start:dev": "NODE_ENV=development ELECTRON_DISABLE_SANDBOX=1 electron .",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:renderer": "cd renderer && ng test"

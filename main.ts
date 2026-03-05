@@ -16,15 +16,14 @@ import "./core/src/composition/container";
 import { app, BrowserWindow, ipcMain } from "electron";
 import * as path from "path";
 
+// Disable GPU acceleration — required in headless/container environments
+// where no real GPU is available (dev containers, CI, Codespaces, etc.).
+app.disableHardwareAcceleration();
+
 // ---------------------------------------------------------------------------
 // IPC adapter registration
 // ---------------------------------------------------------------------------
-// Import and call each adapter's `register(ipcMain)` function here once
-// adapters are implemented.
-//
-// Example (uncomment once adapters exist):
-// import { PackageIpcAdapter } from './src/adapters/inbound/ipc';
-// PackageIpcAdapter.register(ipcMain);
+import { PersonaIpcAdapter } from "./core/src/adapters/inbound/ipc/PersonaIpcAdapter";
 
 // ---------------------------------------------------------------------------
 // Window management
@@ -35,7 +34,7 @@ function createWindow(): BrowserWindow {
     width: 1280,
     height: 800,
     webPreferences: {
-      preload: path.join(__dirname, "preload.js"),
+      preload: path.join(__dirname, "core", "src", "preload.js"),
       contextIsolation: true,
       nodeIntegration: false,
     },
@@ -59,6 +58,9 @@ function createWindow(): BrowserWindow {
 // ---------------------------------------------------------------------------
 
 app.whenReady().then(() => {
+  // Register all IPC adapters before creating the window
+  PersonaIpcAdapter.register(ipcMain);
+
   createWindow();
 
   app.on("activate", () => {

@@ -15,21 +15,17 @@ import 'reflect-metadata';
 import { container } from 'tsyringe';
 
 // ---------------------------------------------------------------------------
-// Port tokens
+// Persona bindings
+//   token (domain)  →  concrete implementation (adapter)
 // ---------------------------------------------------------------------------
-// Tokens are declared here as Symbols so that they can be imported by both
-// application services (for @inject) and this composition root (for registration)
-// without creating a dependency from application → adapters.
-//
-// When domain port interfaces are added, export their tokens from
-// `src/domain/ports/outbound/` and `src/domain/ports/inbound/`, then import
-// and register them below.
-//
-// Example (uncomment once the interfaces exist):
-//
-// import { PACKAGE_REPOSITORY_TOKEN } from '../domain/ports/outbound';
-// import { SqlitePackageRepository } from '../adapters/outbound/sqlite';
-// container.register(PACKAGE_REPOSITORY_TOKEN, { useClass: SqlitePackageRepository });
+import { PERSONA_REPOSITORY_TOKEN } from '../domain/ports/outbound/IPersonaRepository';
+import { PersonaSqliteRepository } from '../adapters/outbound/sqlite/PersonaSqliteRepository';
+
+import { PERSONA_USE_CASE_TOKEN } from '../domain/ports/inbound/IPersonaUseCase';
+import { PersonaService } from '../application/services/PersonaService';
+
+container.register(PERSONA_REPOSITORY_TOKEN, { useClass: PersonaSqliteRepository });
+container.register(PERSONA_USE_CASE_TOKEN, { useClass: PersonaService });
 
 // ---------------------------------------------------------------------------
 // Exports

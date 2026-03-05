@@ -18,6 +18,13 @@ export const IpcChannels = {
 
   // ----- Integrity -----
   INTEGRITY_VERIFY: 'integrity:verify',
+
+  // ----- Persona (CRUD example) -----
+  PERSONA_LIST: 'persona:list',
+  PERSONA_GET: 'persona:get',
+  PERSONA_CREATE: 'persona:create',
+  PERSONA_UPDATE: 'persona:update',
+  PERSONA_DELETE: 'persona:delete',
 } as const;
 
 export type IpcChannel = (typeof IpcChannels)[keyof typeof IpcChannels];
