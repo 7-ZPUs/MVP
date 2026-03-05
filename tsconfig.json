@@ -16,6 +16,6 @@
     "declarationMap": true,
     "sourceMap": true
   },
-  "include": ["main.ts", "src/**/*", "shared/**/*"],
+  "include": ["main.ts", "src/**/*", "shared/**/*", "src/preload.ts"],
   "exclude": ["node_modules", "dist", "**/*.spec.ts", "**/*.test.ts"]
 }

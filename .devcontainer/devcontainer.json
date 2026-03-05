@@ -26,6 +26,9 @@
   },
   "postCreateCommand": "npm install && cd renderer && npm install",
   "remoteUser": "node",
+  "containerEnv": {
+    "ANGULAR_BASE_HREF": "./"
+  },
   "forwardPorts": [4200],
   "portsAttributes": {
     "4200": {
