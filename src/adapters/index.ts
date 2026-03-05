@@ -1,4 +1,4 @@
 // Adapters layer barrel.
-// Re-exports all driving (primary) and driven (secondary) adapter modules.
-export * from './driving';
-export * from './driven';
+// Re-exports all inbound (primary) and outbound (secondary) adapter modules.
+export * from './inbound';
+export * from './outbound';

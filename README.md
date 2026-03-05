@@ -21,16 +21,16 @@ The Main Process follows strict **Hexagonal (Ports & Adapters)** architecture. T
 dependency rule is strict: every arrow points inward.
 
 ```
-Adapters (driving)  →  Application Services  →  Domain  ←  Adapters (driven)
+Adapters (inbound)  →  Application Services  →  Domain  ←  Adapters (outbound)
 ```
 
 | Layer | Location | Responsibility |
 |---|---|---|
-| **Domain** | `src/domain/` | Entities, value objects, and **port interfaces** (both driving and driven). Zero external imports. |
-| **Application** | `src/application/` | Application services that implement driving ports and consume driven ports via constructor injection. |
-| **Adapters — driving** | `src/adapters/driving/ipc/` | Electron `ipcMain` handlers. No business logic — delegates exclusively to driving port interfaces. |
-| **Adapters — driven** | `src/adapters/driven/{sqlite,embeddings,zip,xml}/` | Concrete implementations of driven ports (SQLite, embeddings, ZIP, XML). |
-| **Composition** | `src/composition/container.ts` | The **only** file that imports from both domain and driven adapters. Wires port tokens → concrete implementations via tsyringe. |
+| **Domain** | `src/domain/` | Entities, value objects, and **port interfaces** (both inbound and outbound). Zero external imports. |
+| **Application** | `src/application/` | Application services that implement inbound ports and consume outbound ports via constructor injection. |
+| **Adapters — inbound** | `src/adapters/inbound/ipc/` | Electron `ipcMain` handlers. No business logic — delegates exclusively to inbound port interfaces. |
+| **Adapters — outbound** | `src/adapters/outbound/{sqlite,embeddings,zip,xml}/` | Concrete implementations of outbound ports (SQLite, embeddings, ZIP, XML). |
+| **Composition** | `src/composition/container.ts` | The **only** file that imports from both domain and outbound adapters. Wires port tokens → concrete implementations via tsyringe. |
 | **Shared** | `shared/ipc-channels.ts` | IPC channel name constants importable by both Main and Renderer processes. |
 
 ### Renderer Process — Angular
@@ -54,41 +54,64 @@ alongside its interface definition.
 ## Adding a New Feature End-to-End
 
 1. **Define the port interfaces** in `src/domain/ports/`:
-   - Add a *driving* interface (use case) under `src/domain/ports/driving/`.
-   - Add any *driven* interfaces (repository, service) under `src/domain/ports/driven/`.
+   - Add an *inbound* interface (use case) under `src/domain/ports/inbound/`.
+   - Add any *outbound* interfaces (repository, service) under `src/domain/ports/outbound/`.
    - Export a Symbol token for each interface in the same file.
    - Re-export from the relevant `index.ts` barrel.
 
 2. **Implement the application service** in `src/application/services/`:
-   - The class implements the driving port interface.
-   - Declare driven port dependencies as constructor parameters typed as the **interface**, not the concrete class.
+   - The class implements the inbound port interface.
+   - Declare outbound port dependencies as constructor parameters typed as the **interface**, not the concrete class.
    - Annotate with `@injectable()` and `@inject(TOKEN)` (from tsyringe).
    - Re-export from `src/application/services/index.ts`.
 
-3. **Implement the driven adapter(s)** in `src/adapters/driven/<subsystem>/`:
-   - The class implements the driven port interface.
+3. **Implement the outbound adapter(s)** in `src/adapters/outbound/<subsystem>/`:
+   - The class implements the outbound port interface.
    - Annotate with `@injectable()`.
-   - Re-export from `src/adapters/driven/<subsystem>/index.ts`.
+   - Re-export from `src/adapters/outbound/<subsystem>/index.ts`.
 
 4. **Register the bindings** in `src/composition/container.ts`:
    ```ts
-   import { MY_DRIVEN_PORT_TOKEN } from '../domain/ports/driven';
-   import { MyDrivenAdapter } from '../adapters/driven/<subsystem>';
-   import { MY_USE_CASE_TOKEN } from '../domain/ports/driving';
+   import { MY_OUTBOUND_PORT_TOKEN } from '../domain/ports/outbound';
+   import { MyOutboundAdapter } from '../adapters/outbound/<subsystem>';
+   import { MY_USE_CASE_TOKEN } from '../domain/ports/inbound';
    import { MyApplicationService } from '../application/services';
 
-   container.register(MY_DRIVEN_PORT_TOKEN, { useClass: MyDrivenAdapter });
-   container.register(MY_USE_CASE_TOKEN,    { useClass: MyApplicationService });
+   container.register(MY_OUTBOUND_PORT_TOKEN, { useClass: MyOutboundAdapter });
+   container.register(MY_USE_CASE_TOKEN,      { useClass: MyApplicationService });
    ```
 
-5. **Add a driving IPC adapter** in `src/adapters/driving/ipc/`:
-   - Resolve the driving port from the container via `container.resolve(TOKEN)`.
+5. **Add an inbound IPC adapter** in `src/adapters/inbound/ipc/`:
+   - Resolve the inbound port from the container via `container.resolve(TOKEN)`.
    - Register the `ipcMain.handle` call for the relevant `IpcChannels.*` constant.
    - Add the new IPC channel constant to `shared/ipc-channels.ts`.
    - Call `MyIpcAdapter.register(ipcMain)` in `main.ts`.
 
 6. **Expose the channel to the Angular renderer** via Electron's `contextBridge` in `preload.ts`,
    so the Angular service can call `window.api.myChannel(args)`.
+
+---
+
+## Dev Container
+
+A ready-to-use dev container is provided in `.devcontainer/`. It is based on the
+official Microsoft Node.js 20 (Debian Bookworm) image and includes:
+
+- Node.js 20 + npm
+- Angular CLI (global)
+- All Electron system dependencies (`libnss3`, `libgbm1`, `xvfb`, etc.)
+- Recommended VS Code extensions (Angular Language Service, ESLint, Prettier, …)
+
+### Opening in VS Code
+
+1. Install the **Dev Containers** extension.
+2. Open the repository folder and choose **Reopen in Container** when prompted.
+3. Dependencies are installed automatically (`postCreateCommand`).
+
+### Opening in GitHub Codespaces
+
+Click **Code → Codespaces → Create codespace on `main`** — the container will be
+built and started automatically.
 
 ---
 

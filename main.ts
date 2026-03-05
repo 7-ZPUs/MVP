@@ -23,7 +23,7 @@ import * as path from 'path';
 // adapters are implemented.
 //
 // Example (uncomment once adapters exist):
-// import { PackageIpcAdapter } from './src/adapters/driving/ipc';
+// import { PackageIpcAdapter } from './src/adapters/inbound/ipc';
 // PackageIpcAdapter.register(ipcMain);
 
 // ---------------------------------------------------------------------------
