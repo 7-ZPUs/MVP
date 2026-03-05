@@ -15,8 +15,7 @@
         "esbenp.prettier-vscode",
         "firsttris.vscode-jest-runner",
         "ms-vscode.vscode-typescript-next",
-        "PKief.material-icon-theme",
-        "zxh404.vscode-proto3"
+        "PKief.material-icon-theme"
       ],
       "settings": {
         "editor.formatOnSave": true,
