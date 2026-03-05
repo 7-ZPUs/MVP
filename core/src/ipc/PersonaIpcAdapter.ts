@@ -10,14 +10,14 @@
  *   Renderer ipcRenderer.invoke(channel, args)
  *     → ipcMain.handle(channel)
  *       → PersonaIpcAdapter
- *         → IPersonaUseCase (PersonaService)
- *           → IPersonaRepository (PersonaSqliteRepository)
+ *         → IPersonaUseCase (PersonaCrudUseCase)
+ *           → IPersonaRepository (SqlitePersonaRepository)
  */
 import { IpcMain } from 'electron';
 import { container } from 'tsyringe';
-import { PERSONA_USE_CASE_TOKEN } from '../../../domain/ports/inbound/IPersonaUseCase';
-import type { IPersonaUseCase } from '../../../domain/ports/inbound/IPersonaUseCase';
-import { IpcChannels } from '../../../../../shared/ipc-channels';
+import { PERSONA_USE_CASE_TOKEN } from '../use-case/persona/ICreatePersonaUC';
+import type { IPersonaUseCase } from '../use-case/persona/ICreatePersonaUC';
+import { IpcChannels } from '../../../shared/ipc-channels';
 
 export class PersonaIpcAdapter {
     static register(ipcMain: IpcMain): void {

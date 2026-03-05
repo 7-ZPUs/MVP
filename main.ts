@@ -11,7 +11,7 @@
  */
 
 // Must be the very first import so that reflect-metadata is available for tsyringe.
-import "./core/src/composition/container";
+import "./core/src/container";
 
 import { app, BrowserWindow, ipcMain } from "electron";
 import * as path from "path";
@@ -23,7 +23,7 @@ app.disableHardwareAcceleration();
 // ---------------------------------------------------------------------------
 // IPC adapter registration
 // ---------------------------------------------------------------------------
-import { PersonaIpcAdapter } from "./core/src/adapters/inbound/ipc/PersonaIpcAdapter";
+import { PersonaIpcAdapter } from "./core/src/ipc/PersonaIpcAdapter";
 
 // ---------------------------------------------------------------------------
 // Window management

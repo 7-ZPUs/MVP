@@ -1,5 +1,5 @@
 /**
- * PersonaSqliteRepository — Outbound Adapter (SQLite)
+ * SqlitePersonaRepository — Infrastructure Repository (SQLite)
  *
  * Implementa IPersonaRepository usando better-sqlite3.
  * È responsabile esclusivamente della persistenza: zero business logic.
@@ -12,11 +12,11 @@ import Database from 'better-sqlite3';
 import * as path from 'path';
 import * as os from 'os';
 import * as fs from 'fs';
-import type { Persona } from '../../../domain/entities/Persona';
-import type { IPersonaRepository } from '../../../domain/ports/outbound/IPersonaRepository';
+import type { Persona } from '../../../entity/Persona';
+import type { IPersonaRepository } from '../../PersonaRepository';
 
 @injectable()
-export class PersonaSqliteRepository implements IPersonaRepository {
+export class SqlitePersonaRepository implements IPersonaRepository {
     private _db: Database.Database | null = null;
 
     // ---------------------------------------------------------------------------

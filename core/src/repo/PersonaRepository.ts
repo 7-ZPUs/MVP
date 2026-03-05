@@ -5,7 +5,7 @@
  * deve rispettare. L'Application Service conosce SOLO questa interfaccia —
  * mai la classe concreta.
  */
-import type { Persona } from '../../entities/Persona';
+import type { Persona } from '../entity/Persona';
 
 export const PERSONA_REPOSITORY_TOKEN = Symbol('IPersonaRepository');
 
