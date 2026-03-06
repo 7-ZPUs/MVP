@@ -14,17 +14,23 @@ import 'reflect-metadata';
 import { container } from 'tsyringe';
 
 // ---------------------------------------------------------------------------
-// Persona bindings
-//   token (contract)  →  concrete implementation
+// ClasseDocumentale bindings
 // ---------------------------------------------------------------------------
-import { PERSONA_REPOSITORY_TOKEN } from './repo/PersonaRepository';
-import { SqlitePersonaRepository } from './repo/impl/sqlite/SqlitePersonaRepository';
 
-import { PERSONA_USE_CASE_TOKEN } from './use-case/persona/ICreatePersonaUC';
-import { PersonaCrudUseCase } from './use-case/persona/impl/CreatePersonaUC';
+// Repository
+import { CLASSE_DOCUMENTALE_REPOSITORY_TOKEN } from './repo/IClasseDocumentaleRepository';
+import { ClasseDocumentaleRepository } from './repo/impl/ClasseDocumentaleRepository';
 
-container.register(PERSONA_REPOSITORY_TOKEN, { useClass: SqlitePersonaRepository });
-container.register(PERSONA_USE_CASE_TOKEN, { useClass: PersonaCrudUseCase });
+// Use Cases
+import { ClasseDocumentaleUC } from './use-case/classe-documentale/tokens';
+import { FindAllClasseDocumentaleUC } from './use-case/classe-documentale/impl/FindAllClasseDocumentaleUC';
+import { FindByIdClasseDocumentaleUC } from './use-case/classe-documentale/impl/FindByIdClasseDocumentaleUC';
+import { CreateClasseDocumentaleUC } from './use-case/classe-documentale/impl/CreateClasseDocumentaleUC';
+
+container.register(CLASSE_DOCUMENTALE_REPOSITORY_TOKEN, { useClass: ClasseDocumentaleRepository });
+container.register(ClasseDocumentaleUC.FIND_ALL, { useClass: FindAllClasseDocumentaleUC });
+container.register(ClasseDocumentaleUC.FIND_BY_ID, { useClass: FindByIdClasseDocumentaleUC });
+container.register(ClasseDocumentaleUC.CREATE, { useClass: CreateClasseDocumentaleUC });
 
 // ---------------------------------------------------------------------------
 // Exports

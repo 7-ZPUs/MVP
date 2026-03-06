@@ -12,20 +12,14 @@
 import { contextBridge, ipcRenderer } from 'electron';
 
 contextBridge.exposeInMainWorld('electronAPI', {
-  persona: {
+  classeDocumentale: {
     list: (): Promise<unknown> =>
-      ipcRenderer.invoke('persona:list'),
+      ipcRenderer.invoke('classe-documentale:list'),
 
     get: (id: number): Promise<unknown> =>
-      ipcRenderer.invoke('persona:get', id),
+      ipcRenderer.invoke('classe-documentale:get', id),
 
-    create: (nome: string, cognome: string): Promise<unknown> =>
-      ipcRenderer.invoke('persona:create', nome, cognome),
-
-    update: (id: number, nome: string, cognome: string): Promise<unknown> =>
-      ipcRenderer.invoke('persona:update', id, nome, cognome),
-
-    delete: (id: number): Promise<unknown> =>
-      ipcRenderer.invoke('persona:delete', id),
+    create: (nome: string): Promise<unknown> =>
+      ipcRenderer.invoke('classe-documentale:create', nome),
   },
 });

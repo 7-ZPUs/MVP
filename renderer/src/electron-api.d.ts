@@ -6,22 +6,19 @@
  * reitera solo i tipi necessari al renderer.
  */
 
-export interface Persona {
+export interface ClasseDocumentale {
     id: number;
     nome: string;
-    cognome: string;
 }
 
-interface ElectronPersonaApi {
-    list: () => Promise<Persona[]>;
-    get: (id: number) => Promise<Persona | null>;
-    create: (nome: string, cognome: string) => Promise<Persona>;
-    update: (id: number, nome: string, cognome: string) => Promise<Persona | null>;
-    delete: (id: number) => Promise<boolean>;
+interface ElectronClasseDocumentaleApi {
+    list: () => Promise<ClasseDocumentale[]>;
+    get: (id: number) => Promise<ClasseDocumentale | null>;
+    create: (nome: string) => Promise<ClasseDocumentale>;
 }
 
 interface ElectronApi {
-    persona: ElectronPersonaApi;
+    classeDocumentale: ElectronClasseDocumentaleApi;
 }
 
 declare global {

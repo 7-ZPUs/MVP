@@ -19,12 +19,10 @@ export const IpcChannels = {
   // ----- Integrity -----
   INTEGRITY_VERIFY: 'integrity:verify',
 
-  // ----- Persona (CRUD example) -----
-  PERSONA_LIST: 'persona:list',
-  PERSONA_GET: 'persona:get',
-  PERSONA_CREATE: 'persona:create',
-  PERSONA_UPDATE: 'persona:update',
-  PERSONA_DELETE: 'persona:delete',
+  // ----- ClasseDocumentale -----
+  CLASSE_DOCUMENTALE_LIST: 'classe-documentale:list',
+  CLASSE_DOCUMENTALE_GET: 'classe-documentale:get',
+  CLASSE_DOCUMENTALE_CREATE: 'classe-documentale:create',
 } as const;
 
 export type IpcChannel = (typeof IpcChannels)[keyof typeof IpcChannels];

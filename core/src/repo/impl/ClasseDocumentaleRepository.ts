@@ -1,7 +1,7 @@
 /**
- * SqlitePersonaRepository — Infrastructure Repository (SQLite)
+ * ClasseDocumentaleRepository — Infrastructure Repository (SQLite)
  *
- * Implementa IPersonaRepository usando better-sqlite3.
+ * Implementa IClasseDocumentaleRepository usando better-sqlite3.
  * È responsabile esclusivamente della persistenza: zero business logic.
  *
  * Il database viene creato/aperto in modo lazy al primo utilizzo per
@@ -12,11 +12,12 @@ import Database from 'better-sqlite3';
 import * as path from 'path';
 import * as os from 'os';
 import * as fs from 'fs';
-import type { Persona } from '../../../entity/Persona';
-import type { IPersonaRepository } from '../../PersonaRepository';
+
+import type { ClasseDocumentale } from '../../entity/ClasseDocumentale';
+import type { IClasseDocumentaleRepository } from '../IClasseDocumentaleRepository';
 
 @injectable()
-export class SqlitePersonaRepository implements IPersonaRepository {
+export class ClasseDocumentaleRepository implements IClasseDocumentaleRepository {
     private _db: Database.Database | null = null;
 
     // ---------------------------------------------------------------------------
@@ -40,49 +41,35 @@ export class SqlitePersonaRepository implements IPersonaRepository {
 
     private createSchema(): void {
         this.db.exec(`
-      CREATE TABLE IF NOT EXISTS persona (
-        id      INTEGER PRIMARY KEY AUTOINCREMENT,
-        nome    TEXT    NOT NULL,
-        cognome TEXT    NOT NULL
+      CREATE TABLE IF NOT EXISTS classe_documentale (
+        id    INTEGER PRIMARY KEY AUTOINCREMENT,
+        nome  TEXT    NOT NULL UNIQUE
       );
     `);
     }
 
     // ---------------------------------------------------------------------------
-    // IPersonaRepository implementation
+    // IClasseDocumentaleRepository implementation
     // ---------------------------------------------------------------------------
 
-    findAll(): Persona[] {
+    findAll(): ClasseDocumentale[] {
         return this.db
-            .prepare<[], Persona>('SELECT id, nome, cognome FROM persona ORDER BY cognome, nome')
+            .prepare<[], ClasseDocumentale>('SELECT id, nome FROM classe_documentale ORDER BY nome')
             .all();
     }
 
-    findById(id: number): Persona | undefined {
+    findById(id: number): ClasseDocumentale | undefined {
         return (
             this.db
-                .prepare<[number], Persona>('SELECT id, nome, cognome FROM persona WHERE id = ?')
+                .prepare<[number], ClasseDocumentale>('SELECT id, nome FROM classe_documentale WHERE id = ?')
                 .get(id) ?? undefined
         );
     }
 
-    create(nome: string, cognome: string): Persona {
+    create(nome: string): ClasseDocumentale {
         const info = this.db
-            .prepare('INSERT INTO persona (nome, cognome) VALUES (?, ?)')
-            .run(nome, cognome);
-        return { id: info.lastInsertRowid as number, nome, cognome };
-    }
-
-    update(id: number, nome: string, cognome: string): Persona | undefined {
-        const info = this.db
-            .prepare('UPDATE persona SET nome = ?, cognome = ? WHERE id = ?')
-            .run(nome, cognome, id);
-        if (info.changes === 0) return undefined;
-        return { id, nome, cognome };
-    }
-
-    delete(id: number): boolean {
-        const info = this.db.prepare('DELETE FROM persona WHERE id = ?').run(id);
-        return info.changes > 0;
+            .prepare('INSERT INTO classe_documentale (nome) VALUES (?)')
+            .run(nome);
+        return { id: info.lastInsertRowid as number, nome };
     }
 }
