@@ -10,24 +10,28 @@
     "start:dev": "NODE_ENV=development ELECTRON_DISABLE_SANDBOX=1 electron .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:renderer": "cd renderer && ng test"
+    "test:renderer": "cd renderer && ng test",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   },
   "dependencies": {
+    "@xenova/transformers": "^2.17.2",
     "adm-zip": "^0.5.10",
     "better-sqlite3": "^9.4.3",
     "electron": "^30.0.0",
     "fast-xml-parser": "^4.3.6",
+    "onnxruntime-node": "^1.17.3",
     "reflect-metadata": "^0.2.2",
     "sqlite-vss": "^0.1.2",
-    "tsyringe": "^4.8.0",
-    "@xenova/transformers": "^2.17.2",
-    "onnxruntime-node": "^1.17.3"
+    "tsyringe": "^4.8.0"
   },
   "devDependencies": {
     "@types/adm-zip": "^0.5.5",
     "@types/better-sqlite3": "^7.6.8",
     "@types/node": "^20.12.7",
+    "eslint": "^10.0.3",
     "typescript": "^5.4.5",
+    "typescript-eslint": "^8.56.1",
     "vitest": "^1.5.0"
   }
 }

@@ -23,12 +23,9 @@ export class CheckClasseDocumentaleIntegrityUC implements ICheckClasseDocumental
 
         const expectedHash = classeDocumentale.hash;
         if (!expectedHash) {
-            // Nessun hash atteso memorizzato: non è possibile verificare.
             return { ...classeDocumentale, stato: StatoVerificaEnum.NON_VERIFICATO };
         }
 
-        // Serializza i dati dell'entità in un ArrayBuffer per il calcolo dell'hash.
-        // Il Use Case sceglie COSA hashare; IHashingService si occupa di COME.
         const serialized = JSON.stringify({
             id: classeDocumentale.id,
             uuid: classeDocumentale.uuid,

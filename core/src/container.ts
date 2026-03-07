@@ -1,22 +1,9 @@
 import 'reflect-metadata';
 import { container } from 'tsyringe';
-
-// ---------------------------------------------------------------------------
-// Services
-// ---------------------------------------------------------------------------
-
 import { HASHING_SERVICE_TOKEN } from './services/IHashingService';
 import { CryptoHashingService } from './services/impl/CryptoHashingService';
-
-// ---------------------------------------------------------------------------
-// ClasseDocumentale bindings
-// ---------------------------------------------------------------------------
-
-// Repository
 import { CLASSE_DOCUMENTALE_REPOSITORY_TOKEN } from './repo/IClasseDocumentaleRepository';
 import { ClasseDocumentaleRepository } from './repo/impl/ClasseDocumentaleRepository';
-
-// Use Cases
 import { CheckClasseDocumentaleIntegrityUC } from './use-case/classe-documentale/impl/CheckClasseDocumentaleIntegrity';
 import { CreateClasseDocumentaleUC } from './use-case/classe-documentale/impl/CreateClasseDocumentaleUC';
 import { GetAllClasseDocumentaleUC } from './use-case/classe-documentale/impl/GetAllClasseDocumentaleUC';
@@ -35,7 +22,4 @@ container.register(ClasseDocumentaleUC.GET_BY_ID, { useClass: GetClasseDocumenta
 container.register(ClasseDocumentaleUC.CREATE, { useClass: CreateClasseDocumentaleUC });
 container.register(ClasseDocumentaleUC.CHECK_INTEGRITY, { useClass: CheckClasseDocumentaleIntegrityUC });
 
-// ---------------------------------------------------------------------------
-// Exports
-// ---------------------------------------------------------------------------
 export { container };

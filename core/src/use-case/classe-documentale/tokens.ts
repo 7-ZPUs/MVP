@@ -8,4 +8,4 @@ export const ClasseDocumentaleUC = {
     CREATE: Symbol('ICreateClasseDocumentaleUC'),
     GET_BY_STATUS: Symbol('IGetClasseDocumentaleByStatusUC'),
     CHECK_INTEGRITY: Symbol('ICheckClasseDocumentaleIntegrityUC'),
-} as const;
+};
