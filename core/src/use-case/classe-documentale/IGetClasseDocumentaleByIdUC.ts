@@ -1,5 +1,5 @@
 import type { ClasseDocumentale } from '../../entity/ClasseDocumentale';
 
-export interface IFindByIdClasseDocumentaleUC {
+export interface IGetClasseDocumentaleByIdUC {
     execute(id: number): ClasseDocumentale | undefined;
 }

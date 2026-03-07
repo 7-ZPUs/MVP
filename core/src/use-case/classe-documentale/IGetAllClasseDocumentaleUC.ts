@@ -1,5 +1,5 @@
 import type { ClasseDocumentale } from '../../entity/ClasseDocumentale';
 
-export interface IFindAllClasseDocumentaleUC {
+export interface IGetAllClasseDocumentaleUC {
     execute(): ClasseDocumentale[];
 }

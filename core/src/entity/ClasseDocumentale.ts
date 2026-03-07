@@ -1,3 +1,6 @@
+import { Metadato } from "../value-objects/Metadato";
+import { StatoVerificaEnum } from "../value-objects/StatoVerificaEnum";
+
 /**
  * ClasseDocumentale — Domain Entity.
  *
@@ -7,5 +10,11 @@
 export interface ClasseDocumentale {
     /** Chiave primaria auto-incrementale generata dal DB. */
     id: number;
+    uuid: string;
     nome: string;
+    metadati?: Metadato[];
+    stato?: StatoVerificaEnum;
+    hash?: string;
 }
+
+

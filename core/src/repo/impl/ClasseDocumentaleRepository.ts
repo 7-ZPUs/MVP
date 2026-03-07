@@ -15,6 +15,7 @@ import * as fs from 'fs';
 
 import type { ClasseDocumentale } from '../../entity/ClasseDocumentale';
 import type { IClasseDocumentaleRepository } from '../IClasseDocumentaleRepository';
+import { StatoVerificaEnum } from '../../value-objects/StatoVerificaEnum';
 
 @injectable()
 export class ClasseDocumentaleRepository implements IClasseDocumentaleRepository {
@@ -43,7 +44,8 @@ export class ClasseDocumentaleRepository implements IClasseDocumentaleRepository
         this.db.exec(`
       CREATE TABLE IF NOT EXISTS classe_documentale (
         id    INTEGER PRIMARY KEY AUTOINCREMENT,
-        nome  TEXT    NOT NULL UNIQUE
+        nome  TEXT    NOT NULL UNIQUE,
+        hash  TEXT    NOT NULL
       );
     `);
     }
@@ -52,13 +54,13 @@ export class ClasseDocumentaleRepository implements IClasseDocumentaleRepository
     // IClasseDocumentaleRepository implementation
     // ---------------------------------------------------------------------------
 
-    findAll(): ClasseDocumentale[] {
+    getAll(): ClasseDocumentale[] {
         return this.db
             .prepare<[], ClasseDocumentale>('SELECT id, nome FROM classe_documentale ORDER BY nome')
             .all();
     }
 
-    findById(id: number): ClasseDocumentale | undefined {
+    getById(id: number): ClasseDocumentale | undefined {
         return (
             this.db
                 .prepare<[number], ClasseDocumentale>('SELECT id, nome FROM classe_documentale WHERE id = ?')
@@ -66,10 +68,22 @@ export class ClasseDocumentaleRepository implements IClasseDocumentaleRepository
         );
     }
 
-    create(nome: string): ClasseDocumentale {
-        const info = this.db
-            .prepare('INSERT INTO classe_documentale (nome) VALUES (?)')
+    create(nome: string, uuid: string): ClasseDocumentale {
+        const result = this.db
+            .prepare<[string], Database.RunResult>('INSERT INTO classe_documentale (nome) VALUES (?)')
             .run(nome);
-        return { id: info.lastInsertRowid as number, nome };
+
+        return {
+            id: result.lastInsertRowid as number,
+            nome,
+            uuid,
+        };
     }
+
+    getByStatus(stato: StatoVerificaEnum): ClasseDocumentale[] {
+        return this.db
+            .prepare<[StatoVerificaEnum], ClasseDocumentale>('SELECT id, nome FROM classe_documentale WHERE stato = ?')
+            .all(stato);
+    }
+
 }

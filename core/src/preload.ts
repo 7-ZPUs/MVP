@@ -10,16 +10,20 @@
  * relativo fallisce silenziosamente nel contesto preload di Electron.
  */
 import { contextBridge, ipcRenderer } from 'electron';
+import { StatoVerificaEnum } from './value-objects/StatoVerificaEnum';
 
 contextBridge.exposeInMainWorld('electronAPI', {
   classeDocumentale: {
-    list: (): Promise<unknown> =>
+    getAll: (): Promise<unknown> =>
       ipcRenderer.invoke('classe-documentale:list'),
 
-    get: (id: number): Promise<unknown> =>
+    getById: (id: number): Promise<unknown> =>
       ipcRenderer.invoke('classe-documentale:get', id),
 
     create: (nome: string): Promise<unknown> =>
       ipcRenderer.invoke('classe-documentale:create', nome),
+
+    getByStatus: (stato: StatoVerificaEnum): Promise<unknown> =>
+      ipcRenderer.invoke('classe-documentale:get-by-status', stato),
   },
 });

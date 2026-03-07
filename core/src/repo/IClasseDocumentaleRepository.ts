@@ -6,17 +6,19 @@
  * mai la classe concreta.
  */
 import type { ClasseDocumentale } from '../entity/ClasseDocumentale';
+import { StatoVerificaEnum } from '../value-objects/StatoVerificaEnum';
 
 export const CLASSE_DOCUMENTALE_REPOSITORY_TOKEN = Symbol('IClasseDocumentaleRepository');
 
 export interface IClasseDocumentaleRepository {
     /** Restituisce tutte le classi documentali presenti nel db. */
-    findAll(): ClasseDocumentale[];
+    getAll(): ClasseDocumentale[]; //da sostituire a tempo debito con search appena capiremo come gestire i filtri
 
     /** Restituisce una classe documentale per id, o undefined se non esiste. */
-    findById(id: number): ClasseDocumentale | undefined;
+    getById(id: number): ClasseDocumentale | undefined;
 
     /** Crea una nuova classe documentale e restituisce l'entità salvata (id incluso). */
-    create(nome: string): ClasseDocumentale;
+    create(nome: string, uuid: string): ClasseDocumentale;
 
+    getByStatus(stato: StatoVerificaEnum): ClasseDocumentale[];
 }

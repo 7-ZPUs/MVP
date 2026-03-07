@@ -3,7 +3,9 @@
  * Import singolo per accedere a tutti i token dell'entità.
  */
 export const ClasseDocumentaleUC = {
-    FIND_ALL: Symbol('IFindAllClasseDocumentaleUC'),
-    FIND_BY_ID: Symbol('IFindByIdClasseDocumentaleUC'),
+    GET_ALL: Symbol('IGetAllClasseDocumentaleUC'),
+    GET_BY_ID: Symbol('IGetClasseDocumentaleByIdUC'),
     CREATE: Symbol('ICreateClasseDocumentaleUC'),
+    GET_BY_STATUS: Symbol('IGetClasseDocumentaleByStatusUC'),
+    CHECK_INTEGRITY: Symbol('ICheckClasseDocumentaleIntegrityUC'),
 } as const;

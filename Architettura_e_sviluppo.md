@@ -60,10 +60,6 @@ mvp/
 | **GetMetadata** | `fileId` o `documentId` | `Metadata[]` | Recupera metadati per file o documento |
 | **OpenFile** | `fileId` | void | Apre file con app di sistema o finestra Electron |
 | **DownloadFile** | `fileId`, `targetPath` | `SaveResult` | Salva file su disco utente |
-| **ListDatabases** | - | `string[]` | Elenca tutti i DIP indicizzati |
-| **SwitchDatabase** | `dipUUID` | void | Cambia DB attivo |
-| **DeleteDatabase** | `dipUUID` | `boolean` | Elimina DB di un DIP |
-| **ExportDatabase** | `targetPath?` | `ExportResult` | Esporta DB SQLite |
 | **GetFileTree** | - | `FileNode[]` | Costruisce albero gerarchico: Class → AIP → Document → File |
 
 ---

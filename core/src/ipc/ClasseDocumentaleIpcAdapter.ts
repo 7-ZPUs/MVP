@@ -13,28 +13,41 @@
  */
 import { IpcMain } from 'electron';
 import { container } from 'tsyringe';
-import { ClasseDocumentaleUC } from '../use-case/classe-documentale/tokens';
-import type { IFindAllClasseDocumentaleUC } from '../use-case/classe-documentale/IFindAllClasseDocumentaleUC';
-import type { IFindByIdClasseDocumentaleUC } from '../use-case/classe-documentale/IFindByIdClasseDocumentaleUC';
-import type { ICreateClasseDocumentaleUC } from '../use-case/classe-documentale/ICreateClasseDocumentaleUC';
 import { IpcChannels } from '../../../shared/ipc-channels';
+import type { ICheckClasseDocumentaleIntegrityUC } from '../use-case/classe-documentale/ICheckClasseDocumentaleIntegrityUC';
+import type { ICreateClasseDocumentaleUC } from '../use-case/classe-documentale/ICreateClasseDocumentaleUC';
+import { IGetAllClasseDocumentaleUC } from '../use-case/classe-documentale/IGetAllClasseDocumentaleUC';
+import { IGetClasseDocumentaleByIdUC } from '../use-case/classe-documentale/IGetClasseDocumentaleByIdUC';
+import { IGetClasseDocumentaleByStatusUC } from '../use-case/classe-documentale/IGetClasseDocumentaleByStatusUC';
+import { ClasseDocumentaleUC } from '../use-case/classe-documentale/tokens';
+import { StatoVerificaEnum } from '../value-objects/StatoVerificaEnum';
 
 export class ClasseDocumentaleIpcAdapter {
     static register(ipcMain: IpcMain): void {
-        const findAllUC = container.resolve<IFindAllClasseDocumentaleUC>(ClasseDocumentaleUC.FIND_ALL);
-        const findByIdUC = container.resolve<IFindByIdClasseDocumentaleUC>(ClasseDocumentaleUC.FIND_BY_ID);
+        const getAllUC = container.resolve<IGetAllClasseDocumentaleUC>(ClasseDocumentaleUC.GET_ALL);
+        const getByIdUC = container.resolve<IGetClasseDocumentaleByIdUC>(ClasseDocumentaleUC.GET_BY_ID);
         const createUC = container.resolve<ICreateClasseDocumentaleUC>(ClasseDocumentaleUC.CREATE);
+        const getByStatusUC = container.resolve<IGetClasseDocumentaleByStatusUC>(ClasseDocumentaleUC.GET_BY_STATUS);
+        const checkIntegrityUC = container.resolve<ICheckClasseDocumentaleIntegrityUC>(ClasseDocumentaleUC.CHECK_INTEGRITY);
 
-        ipcMain.handle(IpcChannels.CLASSE_DOCUMENTALE_LIST, () => {
-            return findAllUC.execute();
+        ipcMain.handle(IpcChannels.CLASSE_DOCUMENTALE_GET_ALL, () => {
+            return getAllUC.execute();
         });
 
-        ipcMain.handle(IpcChannels.CLASSE_DOCUMENTALE_GET, (_event, id: number) => {
-            return findByIdUC.execute(id) ?? null;
+        ipcMain.handle(IpcChannels.CLASSE_DOCUMENTALE_GET_BY_ID, (_event, id: number) => {
+            return getByIdUC.execute(id) ?? null;
         });
 
-        ipcMain.handle(IpcChannels.CLASSE_DOCUMENTALE_CREATE, (_event, nome: string) => {
-            return createUC.execute(nome);
+        ipcMain.handle(IpcChannels.CLASSE_DOCUMENTALE_CREATE, (_event, nome: string, uuid: string) => {
+            return createUC.execute(nome, uuid);
+        });
+
+        ipcMain.handle(IpcChannels.CLASSE_DOCUMENTALE_GET_BY_STATUS, (_event, stato: StatoVerificaEnum) => {
+            return getByStatusUC.execute(stato);
+        });
+
+        ipcMain.handle(IpcChannels.CLASSE_DOCUMENTALE_CHECK_INTEGRITY, (_event, id: number) => {
+            return checkIntegrityUC.execute(id);
         });
     }
 }

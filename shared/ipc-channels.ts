@@ -20,9 +20,11 @@ export const IpcChannels = {
   INTEGRITY_VERIFY: 'integrity:verify',
 
   // ----- ClasseDocumentale -----
-  CLASSE_DOCUMENTALE_LIST: 'classe-documentale:list',
-  CLASSE_DOCUMENTALE_GET: 'classe-documentale:get',
+  CLASSE_DOCUMENTALE_GET_ALL: 'classe-documentale:get-all',
+  CLASSE_DOCUMENTALE_GET_BY_ID: 'classe-documentale:get-by-id',
   CLASSE_DOCUMENTALE_CREATE: 'classe-documentale:create',
+  CLASSE_DOCUMENTALE_GET_BY_STATUS: 'classe-documentale:get-by-status',
+  CLASSE_DOCUMENTALE_CHECK_INTEGRITY: 'classe-documentale:check-integrity',
 } as const;
 
 export type IpcChannel = (typeof IpcChannels)[keyof typeof IpcChannels];
