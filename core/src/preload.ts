@@ -9,21 +9,8 @@
  * rendere il preload completamente autonomo — il require() di un modulo
  * relativo fallisce silenziosamente nel contesto preload di Electron.
  */
-import { contextBridge, ipcRenderer } from 'electron';
-import { StatoVerificaEnum } from './value-objects/StatoVerificaEnum';
+import { contextBridge } from 'electron';
 
 contextBridge.exposeInMainWorld('electronAPI', {
-  classeDocumentale: {
-    getAll: (): Promise<unknown> =>
-      ipcRenderer.invoke('classe-documentale:list'),
-
-    getById: (id: number): Promise<unknown> =>
-      ipcRenderer.invoke('classe-documentale:get', id),
-
-    create: (nome: string): Promise<unknown> =>
-      ipcRenderer.invoke('classe-documentale:create', nome),
-
-    getByStatus: (stato: StatoVerificaEnum): Promise<unknown> =>
-      ipcRenderer.invoke('classe-documentale:get-by-status', stato),
-  },
+  
 });

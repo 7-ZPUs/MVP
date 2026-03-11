@@ -23,7 +23,7 @@ app.disableHardwareAcceleration();
 // ---------------------------------------------------------------------------
 // IPC adapter registration
 // ---------------------------------------------------------------------------
-import { PersonaIpcAdapter } from "./core/src/ipc/PersonaIpcAdapter";
+import { BrowsingIpcAdapter } from "./core/src/ipc/BrowsingIpcAdapter";
 
 // ---------------------------------------------------------------------------
 // Window management
@@ -59,7 +59,7 @@ function createWindow(): BrowserWindow {
 
 app.whenReady().then(() => {
   // Register all IPC adapters before creating the window
-  PersonaIpcAdapter.register(ipcMain);
+  BrowsingIpcAdapter.register(ipcMain);
 
   createWindow();
 
