@@ -13,8 +13,8 @@
     "test:core": "vitest run",
     "test:core:watch": "vitest",
     "test:core:coverage": "vitest run --coverage",
-    "test:renderer": "cd renderer && ng test --watch=false",
-    "test:renderer:coverage": "cd renderer && ng test --watch=false --coverage",
+    "test:renderer": "cd renderer && npx ng test --watch=false",
+    "test:renderer:coverage": "cd renderer && npx ng test --watch=false --coverage",
     "test": "npm run test:core && npm run test:renderer",
     "test:coverage": "npm run test:core:coverage && npm run test:renderer:coverage",
     "lint": "eslint . --ext .ts,.tsx"
