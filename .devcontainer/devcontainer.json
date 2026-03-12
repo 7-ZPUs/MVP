@@ -11,7 +11,8 @@
   "runArgs": [
     "--net=host",
     "--ipc=host",
-    "-v", "/tmp/.X11-unix:/tmp/.X11-unix",
+    "-v",
+    "/tmp/.X11-unix:/tmp/.X11-unix",
     "--privileged"
   ],
   // -----------------------------
@@ -19,11 +20,13 @@
     "vscode": {
       "extensions": [
         "angular.ng-template",
+        "atlassian.atlascode",
         "dbaeumer.vscode-eslint",
         "esbenp.prettier-vscode",
         "firsttris.vscode-jest-runner",
         "ms-vscode.vscode-typescript-next",
         "PKief.material-icon-theme",
+        "sonarsource.sonarlint-vscode",
         "tonybaloney.vscode-pets"
       ],
       "settings": {
