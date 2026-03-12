@@ -1,9 +1,9 @@
-import { MetadataDTO } from "./MetadataDTO";
 import { IntegrityStatusEnum } from "../value-objects/IntegrityStatusEnum";
+import { MetadataDTO } from "./MetadataDTO";
 
-export interface DocumentoDTO {
-    /** null se l'entità non è ancora stata persistita. */
+export interface ProcessDTO {
     id: number | null;
+    documentClassId: number;
     uuid: string;
     integrityStatus: IntegrityStatusEnum;
     metadata: MetadataDTO[];

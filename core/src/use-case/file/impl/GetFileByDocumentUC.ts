@@ -2,17 +2,16 @@ import { inject, injectable } from 'tsyringe';
 import type { File } from '../../../entity/File';
 import type { IFileRepository } from '../../../repo/IFileRepository';
 import { FILE_REPOSITORY_TOKEN } from '../../../repo/IFileRepository';
-import type { IGetFilesByStatusUC } from '../IGetFilesByStatusUC';
-import { IntegrityStatusEnum } from '../../../value-objects/IntegrityStatusEnum';
+import type { IGetFileByDocumentUC } from '../IGetFileByDocumentUC';
 
 @injectable()
-export class GetFilesByStatusUC implements IGetFilesByStatusUC {
+export class GetFileByDocumentUC implements IGetFileByDocumentUC {
     constructor(
         @inject(FILE_REPOSITORY_TOKEN)
         private readonly repo: IFileRepository
     ) { }
 
-    execute(status: IntegrityStatusEnum): File[] {
-        return this.repo.getByStatus(status);
+    execute(documentId: number): File[] {
+        return this.repo.getByDocumentId(documentId);
     }
 }

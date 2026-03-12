@@ -26,8 +26,8 @@ export const IpcChannels = {
 
   // ----- Browse: File -----
   BROWSE_GET_FILE_BY_ID: 'browse:get-file-by-id',
-  BROWSE_GET_FILES_BY_DOCUMENT: 'browse:get-files-by-document',
-  BROWSE_GET_FILES_BY_STATUS: 'browse:get-files-by-status',
+  BROWSE_GET_FILE_BY_DOCUMENT: 'browse:get-file-by-document',
+  BROWSE_GET_FILE_BY_STATUS: 'browse:get-file-by-status',
 } as const;
 
 export type IpcChannel = (typeof IpcChannels)[keyof typeof IpcChannels];
