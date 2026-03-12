@@ -52,6 +52,6 @@ jobs:
             -Dsonar.sources=core,renderer/src,shared,main.ts
             -Dsonar.tests=core,renderer/src
             -Dsonar.test.inclusions=**/*.spec.ts,**/*.test.ts
-            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
-            -Dsonar.typescript.tsconfigPath=tsconfig.json
+            -Dsonar.javascript.lcov.reportPaths=coverage/core/lcov.info,coverage/renderer/lcov.info
+            -Dsonar.typescript.tsconfigPaths=tsconfig.json,renderer/tsconfig.json
             -Dsonar.sourceEncoding=UTF-8
