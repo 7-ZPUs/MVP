@@ -22,6 +22,10 @@ import type { IGetFileByIdUC } from '../use-case/file/IGetFileByIdUC';
 import type { IGetFileByDocumentUC } from '../use-case/file/IGetFileByDocumentUC';
 import type { IGetFileByStatusUC } from '../use-case/file/IGetFileByStatusUC';
 import { FileUC } from '../use-case/file/tokens';
+import { IGetProcessByDocumentClassUC } from '../use-case/process/IGetProcessByDocumentClassUC';
+import { IGetProcessByIdUC } from '../use-case/process/IGetProcessByIdUC';
+import { IGetProcessByStatusUC } from '../use-case/process/IGetProcessByStatusUC';
+import { ProcessUC } from '../use-case/process/token';
 
 export class BrowsingIpcAdapter {
     static register(ipcMain: IpcMain): void {
@@ -34,6 +38,11 @@ export class BrowsingIpcAdapter {
         const getFileByIdUC = container.resolve<IGetFileByIdUC>(FileUC.GET_BY_ID);
         const getFileByDocUC = container.resolve<IGetFileByDocumentUC>(FileUC.GET_BY_DOCUMENT);
         const getFileByStatusUC = container.resolve<IGetFileByStatusUC>(FileUC.GET_BY_STATUS);
+
+        // ---- Process use cases ----
+        const getProcessByIdUC = container.resolve<IGetProcessByIdUC>(ProcessUC.GET_BY_ID);
+        const getProcessByStatusUC = container.resolve<IGetProcessByStatusUC>(ProcessUC.GET_BY_STATUS);
+        const getProcessByDocumentClassUC = container.resolve<IGetProcessByDocumentClassUC>(ProcessUC.GET_BY_DOCUMENT_CLASS);
 
         // ------------------------------------------------------------------ //
         // Documento channels
@@ -65,6 +74,22 @@ export class BrowsingIpcAdapter {
 
         ipcMain.handle(IpcChannels.BROWSE_GET_FILE_BY_STATUS, (_event, status: IntegrityStatusEnum) => {
             return getFileByStatusUC.execute(status).map((f) => f.toDTO());
+        });
+
+        // ------------------------------------------------------------------ //
+        // Process channels
+        // ------------------------------------------------------------------ //
+
+        ipcMain.handle(IpcChannels.BROWSE_GET_PROCESS_BY_ID, (_event, id: number) => {
+            return getProcessByIdUC.execute(id)?.toDTO() ?? null;
+        });
+
+        ipcMain.handle(IpcChannels.BROWSE_GET_PROCESS_BY_STATUS, (_event, status: IntegrityStatusEnum) => {
+            return getProcessByStatusUC.execute(status).map((p) => p.toDTO());
+        });
+
+        ipcMain.handle(IpcChannels.BROWSE_GET_PROCESS_BY_DOCUMENT_CLASS, (_event, documentClassId: number) => {
+            return getProcessByDocumentClassUC.execute(documentClassId).map((p) => p.toDTO());
         });
     }
 }

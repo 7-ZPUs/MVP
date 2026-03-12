@@ -28,6 +28,11 @@ export const IpcChannels = {
   BROWSE_GET_FILE_BY_ID: 'browse:get-file-by-id',
   BROWSE_GET_FILE_BY_DOCUMENT: 'browse:get-file-by-document',
   BROWSE_GET_FILE_BY_STATUS: 'browse:get-file-by-status',
+
+  // ----- Browse: Process -----
+  BROWSE_GET_PROCESS_BY_ID: 'browse:get-process-by-id',
+  BROWSE_GET_PROCESS_BY_STATUS: 'browse:get-process-by-status',
+  BROWSE_GET_PROCESS_BY_DOCUMENT_CLASS: 'browse:get-process-by-document-class',
 } as const;
 
 export type IpcChannel = (typeof IpcChannels)[keyof typeof IpcChannels];
