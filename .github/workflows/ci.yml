@@ -41,7 +41,7 @@ jobs:
           npm run test:core
 
       - name: SonarQube Analysis
-        uses: sonarsource/sonarqube-scan-action@v5
+        uses: sonarsource/sonarqube-scan-action@v6
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
@@ -49,8 +49,8 @@ jobs:
           args: >
             -Dsonar.projectKey=dipreader
             -Dsonar.projectName=dipreader
-            -Dsonar.sources=core,renderer/src,shared,main.ts
-            -Dsonar.tests=core,renderer/src
+            -Dsonar.sources=core/src,renderer/src,shared,main.ts
+            -Dsonar.tests=core/test,renderer/src
             -Dsonar.test.inclusions=**/*.spec.ts,**/*.test.ts
             -Dsonar.javascript.lcov.reportPaths=coverage/core/lcov.info,coverage/renderer/lcov.info
             -Dsonar.typescript.tsconfigPaths=tsconfig.json,renderer/tsconfig.json
