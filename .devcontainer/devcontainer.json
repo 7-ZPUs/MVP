@@ -5,7 +5,10 @@
     "context": ".."
   },
   "features": {
-    "ghcr.io/devcontainers/features/git:1": {}
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "latest"
+    }
   },
   // --- AGGIUNTE PER ELECTRON ---
   "runArgs": [
@@ -36,7 +39,7 @@
       }
     }
   },
-  "postCreateCommand": "npm install && cd renderer && npm install",
+  "postCreateCommand": "npm install && cd renderer && npm install && npm install -g sonar-scanner",
   "remoteUser": "node",
   "containerEnv": {
     "ANGULAR_BASE_HREF": "./",

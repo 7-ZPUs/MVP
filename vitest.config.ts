@@ -1,11 +1,16 @@
-import { defineConfig } from 'vitest/config';
+import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   test: {
-    // Target only main-process code; exclude renderer code
-    include: ['src/**/*.{spec,test}.ts'],
-    exclude: ['node_modules', 'dist', 'renderer/**/*'],
-    environment: 'node',
+    // Solo i test del core – i test Angular di renderer si eseguono con `ng test`
+    include: ["core/test/**/*.{spec,test}.ts"],
+    exclude: ["node_modules", "dist", "renderer/**"],
+    environment: "node",
     globals: true,
+    coverage: {
+      provider: "v8",
+      reporter: ["text", "lcov"],
+      reportsDirectory: "./coverage/core",
+    },
   },
 });
