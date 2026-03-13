@@ -10,14 +10,13 @@ export interface ProcessRow {
 }
 
 export class Process {
-    private id: number | null;
-    private documentClassId: number;
-    private uuid: string;
+    private id: number | null = null;
+    private readonly documentClassId: number;
+    private readonly uuid: string;
     private integrityStatus: IntegrityStatusEnum;
-    private metadata: Metadata[];
+    private readonly metadata: Metadata[];
 
     constructor(documentClassId: number, uuid: string, metadata: Metadata[]) {
-        this.id = null;
         this.documentClassId = documentClassId;
         this.uuid = uuid;
         this.integrityStatus = IntegrityStatusEnum.UNKNOWN;

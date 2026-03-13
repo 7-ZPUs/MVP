@@ -15,18 +15,17 @@ export class Document {
      * `null`  → entità non ancora persistita (prima dell'INSERT).
      * `number` → entità caricata dal DB o appena salvata.
      */
-    private id: number | null;
-    private uuid: string;
-    private metadata: Metadata[];
+    private id: number | null = null;
+    private readonly uuid: string;
+    private readonly metadata: Metadata[];
     private integrityStatus: IntegrityStatusEnum;
-    private processId: number;
+    private readonly processId: number;
 
     /**
      * Costruttore usato per creare una nuova entità non ancora persistita.
      * L'id viene omesso: il DB lo assegnerà all'INSERT.
      */
     constructor(uuid: string, metadata: Metadata[], processId: number) {
-        this.id = null;
         this.uuid = uuid;
         this.metadata = metadata;
         this.integrityStatus = IntegrityStatusEnum.UNKNOWN;

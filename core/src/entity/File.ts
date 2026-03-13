@@ -16,20 +16,19 @@ export class File {
      * `null`  → entità non ancora persistita (prima dell'INSERT).
      * `number` → entità caricata dal DB o appena salvata.
      */
-    private id: number | null;
-    private filename: string;
-    private path: string;
+    private id: number | null = null;
+    private readonly filename: string;
+    private readonly path: string;
     private integrityStatus: IntegrityStatusEnum;
-    private isMain: boolean;
+    private readonly isMain: boolean;
     /** Chiave esterna verso Documento — sempre obbligatoria. */
-    private documentId: number;
+    private readonly documentId: number;
 
     /**
      * Costruttore usato per creare un nuovo file non ancora persistito.
      * L'id viene omesso: il DB lo assegnerà all'INSERT.
      */
     constructor(filename: string, path: string, isMain: boolean, documentId: number) {
-        this.id = null;
         this.filename = filename;
         this.path = path;
         this.isMain = isMain;
