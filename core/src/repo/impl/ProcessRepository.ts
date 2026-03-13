@@ -83,11 +83,15 @@ export class ProcessRepository implements IProcessRepository {
         const id = result.lastInsertRowid as number;
         saveMetadata(this.db, METADATA_TABLE, METADATA_FK, id, metadata);
 
-        const persisted = this.getById(id);
-        if (!persisted) {
-            throw new Error(`Cannot load persisted process with id ${id}`);
-        }
-        return persisted;
+        return Process.fromDB(
+            {
+                id,
+                documentClassId: dto.documentClassId,
+                uuid: dto.uuid,
+                integrityStatus: IntegrityStatusEnum.UNKNOWN,
+            },
+            metadata
+        );
     }
 
     updateIntegrityStatus(id: number, status: IntegrityStatusEnum): void {

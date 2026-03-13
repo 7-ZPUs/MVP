@@ -30,6 +30,9 @@ import { IGetDocumentClassByDipIdUC } from '../use-case/classe-documentale/IGetD
 import { IGetDocumentClassByIdUC } from '../use-case/classe-documentale/IGetDocumentClassByIdUC';
 import { IGetDocumentClassByStatusUC } from '../use-case/classe-documentale/IGetDocumentClassByStatusUC';
 import { DocumentClassUC } from '../use-case/classe-documentale/tokens';
+import { IGetDipByIdUC } from '../use-case/dip/IGetDipByIdUC';
+import { IGetDipByStatusUC } from '../use-case/dip/IGetDipByStatusUC';
+import { DipUC } from '../use-case/dip/token';
 
 export class BrowsingIpcAdapter {
     static register(ipcMain: IpcMain): void {
@@ -52,6 +55,9 @@ export class BrowsingIpcAdapter {
         const getDocClassByDipIdUC = container.resolve<IGetDocumentClassByDipIdUC>(DocumentClassUC.GET_BY_DIP_ID);
         const getDocClassByStatusUC = container.resolve<IGetDocumentClassByStatusUC>(DocumentClassUC.GET_BY_STATUS);
         const getDocClassByIdUC = container.resolve<IGetDocumentClassByIdUC>(DocumentClassUC.GET_BY_ID);
+
+        const getDipByIdUC = container.resolve<IGetDipByIdUC>(DipUC.GET_BY_ID);
+        const getDipByStatusUC = container.resolve<IGetDipByStatusUC>(DipUC.GET_BY_STATUS);
 
         // ------------------------------------------------------------------ //
         // Documento channels
@@ -117,5 +123,16 @@ export class BrowsingIpcAdapter {
             return getDocClassByIdUC.execute(id)?.toDTO() ?? null;
         });
 
+        // ------------------------------------------------------------------ //
+        // Dip channels
+        // ------------------------------------------------------------------ //
+
+        ipcMain.handle(IpcChannels.BROWSE_GET_DIP_BY_ID, (_event, id: number) => {
+            return getDipByIdUC.execute(id)?.toDTO() ?? null;
+        });
+
+        ipcMain.handle(IpcChannels.BROWSE_GET_DIP_BY_STATUS, (_event, status: IntegrityStatusEnum) => {
+            return getDipByStatusUC.execute(status).map((d) => d.toDTO());
+        });
     }
 }

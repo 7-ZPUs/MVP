@@ -20,10 +20,11 @@ export const IpcChannels = {
   INTEGRITY_VERIFY: 'integrity:verify',
 
 
-  CREATE_DOCUMENT: 'browse:create-document',
-  CREATE_PROCESS: 'browse:create-process',
-  CREATE_FILE: 'browse:create-file',
-  CREATE_DOCUMENT_CLASS: 'browse:create-document-class',
+  CREATE_DOCUMENT: 'create:create-document',
+  CREATE_PROCESS: 'create:create-process',
+  CREATE_FILE: 'create:create-file',
+  CREATE_DOCUMENT_CLASS: 'create:create-document-class',
+  CREATE_DIP: 'create:create-dip',
 
 
   // ----- Browse: Documento -----
@@ -45,6 +46,12 @@ export const IpcChannels = {
   BROWSE_GET_DOCUMENT_CLASS_BY_DIP_ID: 'browse:get-document-class-by-dip-id',
   BROWSE_GET_DOCUMENT_CLASS_BY_STATUS: 'browse:get-document-class-by-status',
   BROWSE_GET_DOCUMENT_CLASS_BY_ID: 'browse:get-document-class-by-id',
+
+  // ----- Browse: Dip -----
+  BROWSE_GET_DIP_BY_ID: 'browse:get-dip-by-id',
+  BROWSE_GET_DIP_BY_STATUS: 'browse:get-dip-by-status',
+  BROWSE_GET_DIP_BY_DOCUMENT_CLASS: 'browse:get-dip-by-document-class',
+
 } as const;
 
 export type IpcChannel = (typeof IpcChannels)[keyof typeof IpcChannels];

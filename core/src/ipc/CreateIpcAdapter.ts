@@ -21,6 +21,9 @@ import { ProcessUC } from '../use-case/process/token';
 import { ICreateDocumentClassUC } from '../use-case/classe-documentale/ICreateDocumentClassUC';
 import { DocumentClassUC } from '../use-case/classe-documentale/tokens';
 import { CreateDocumentClassDTO } from '../dto/DocumentClassDTO';
+import { ICreateDipUC } from '../use-case/dip/ICreateDipUC';
+import { DipUC } from '../use-case/dip/token';
+import { CreateDipDTO } from '../dto/DipDTO';
 
 export class CreateIpcAdapter {
     static register(ipcMain: IpcMain): void {
@@ -28,6 +31,7 @@ export class CreateIpcAdapter {
         const createFileUC = container.resolve<ICreateFileUC>(FileUC.CREATE);
         const createProcessUC = container.resolve<ICreateProcessUC>(ProcessUC.CREATE);
         const createDocumentClassUC = container.resolve<ICreateDocumentClassUC>(DocumentClassUC.CREATE);
+        const createDipUC = container.resolve<ICreateDipUC>(DipUC.CREATE);
         
         ipcMain.handle(IpcChannels.CREATE_DOCUMENT, (_event, dto: CreateDocumentDTO) => {
             return createDocumentUC.execute(dto).toDTO();
@@ -43,6 +47,10 @@ export class CreateIpcAdapter {
 
         ipcMain.handle(IpcChannels.CREATE_DOCUMENT_CLASS, (_event, dto: CreateDocumentClassDTO) => {
             return createDocumentClassUC.execute(dto).toDTO();
+        });
+
+        ipcMain.handle(IpcChannels.CREATE_DIP, (_event, dto: CreateDipDTO) => {
+            return createDipUC.execute(dto).toDTO();
         });
     }
 }

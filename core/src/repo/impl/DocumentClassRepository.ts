@@ -16,7 +16,7 @@ export class DocumentClassRepository implements IDocumentClassRepository {
     ) {
         this.db = dbProvider.db;
         this.createSchema();
-    }  
+    }
 
     private createSchema(): void {
         this.db.exec(`
@@ -66,11 +66,15 @@ export class DocumentClassRepository implements IDocumentClassRepository {
         const result = this.db
             .prepare('INSERT INTO document_class (dip_id, uuid, name, timestamp) VALUES (?, ?, ?, ?)')
             .run(dto.dipId, dto.uuid, dto.name, dto.timestamp);
-        const persisted = this.getById(result.lastInsertRowid as number);
-        if (!persisted) {
-            throw new Error("Failed to retrieve the newly created DocumentClass.");
-        }
-        return persisted;
+
+        return DocumentClass.fromDB({
+            id: result.lastInsertRowid as number,
+            dipId: dto.dipId,
+            uuid: dto.uuid,
+            integrityStatus: IntegrityStatusEnum.UNKNOWN,
+            name: dto.name,
+            timestamp: dto.timestamp,
+        });
     }
 
     updateIntegrityStatus(id: number, status: IntegrityStatusEnum): void {

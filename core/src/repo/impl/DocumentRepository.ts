@@ -107,11 +107,15 @@ export class DocumentRepository implements IDocumentRepository {
         const id = result.lastInsertRowid as number;
         saveMetadata(this.db, METADATA_TABLE, METADATA_FK, id, metadata);
 
-        const persisted = this.getById(id);
-        if (!persisted) {
-            throw new Error(`Cannot load persisted document with id ${id}`);
-        }
-        return persisted;
+        return Document.fromDB(
+            {
+                id,
+                uuid: dto.uuid,
+                integrityStatus: IntegrityStatusEnum.UNKNOWN,
+                processId: dto.processId,
+            },
+            metadata
+        );
     }
 
     updateIntegrityStatus(id: number, status: IntegrityStatusEnum): void {
