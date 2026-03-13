@@ -23,6 +23,7 @@ export const IpcChannels = {
   CREATE_DOCUMENT: 'browse:create-document',
   CREATE_PROCESS: 'browse:create-process',
   CREATE_FILE: 'browse:create-file',
+  CREATE_DOCUMENT_CLASS: 'browse:create-document-class',
 
 
   // ----- Browse: Documento -----
@@ -39,6 +40,11 @@ export const IpcChannels = {
   BROWSE_GET_PROCESS_BY_ID: 'browse:get-process-by-id',
   BROWSE_GET_PROCESS_BY_STATUS: 'browse:get-process-by-status',
   BROWSE_GET_PROCESS_BY_DOCUMENT_CLASS: 'browse:get-process-by-document-class',
+
+  // ----- Browse: DocumentClass -----
+  BROWSE_GET_DOCUMENT_CLASS_BY_DIP_ID: 'browse:get-document-class-by-dip-id',
+  BROWSE_GET_DOCUMENT_CLASS_BY_STATUS: 'browse:get-document-class-by-status',
+  BROWSE_GET_DOCUMENT_CLASS_BY_ID: 'browse:get-document-class-by-id',
 } as const;
 
 export type IpcChannel = (typeof IpcChannels)[keyof typeof IpcChannels];

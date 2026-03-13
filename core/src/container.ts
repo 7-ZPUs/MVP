@@ -65,6 +65,4 @@ container.register(ProcessUC.GET_BY_ID, { useClass: GetProcessByIdUC });
 container.register(ProcessUC.GET_BY_DOCUMENT_CLASS, { useClass: GetProcessByDocumentClassUC });
 container.register(ProcessUC.CREATE, { useClass: CreateProcessUC });
 
-
 export { container };
-

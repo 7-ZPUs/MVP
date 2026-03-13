@@ -6,9 +6,9 @@
  */
 import { injectable } from 'tsyringe';
 import Database from 'better-sqlite3';
-import * as path from 'path';
-import * as os from 'os';
-import * as fs from 'fs';
+import * as path from 'node:path';
+import * as os from 'node:os';
+import * as fs from 'node:fs';
 
 export const DATABASE_PROVIDER_TOKEN = Symbol('DatabaseProvider');
 
