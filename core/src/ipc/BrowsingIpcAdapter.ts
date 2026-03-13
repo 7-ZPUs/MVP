@@ -16,6 +16,7 @@ import { IntegrityStatusEnum } from '../value-objects/IntegrityStatusEnum';
 import type { IGetDocumentByIdUC } from '../use-case/document/IGetDocumentByIdUC';
 import type { IGetDocumentByProcessUC } from '../use-case/document/IGetDocumentByProcessUC';
 import type { IGetDocumentByStatusUC } from '../use-case/document/IGetDocumentByStatusUC';
+import type { ICreateDocumentUC } from '../use-case/document/ICreateDocumentUC';
 import { DocumentoUC } from '../use-case/document/tokens';
 
 import type { IGetFileByIdUC } from '../use-case/file/IGetFileByIdUC';
@@ -23,9 +24,14 @@ import type { IGetFileByDocumentUC } from '../use-case/file/IGetFileByDocumentUC
 import type { IGetFileByStatusUC } from '../use-case/file/IGetFileByStatusUC';
 import { FileUC } from '../use-case/file/tokens';
 import { IGetProcessByDocumentClassUC } from '../use-case/process/IGetProcessByDocumentClassUC';
+import type { ICreateProcessUC } from '../use-case/process/ICreateProcessUC';
 import { IGetProcessByIdUC } from '../use-case/process/IGetProcessByIdUC';
 import { IGetProcessByStatusUC } from '../use-case/process/IGetProcessByStatusUC';
 import { ProcessUC } from '../use-case/process/token';
+import { CreateDocumentDTO } from '../dto/DocumentDTO';
+import { CreateProcessDTO } from '../dto/ProcessDTO';
+import { CreateFileDTO } from '../dto/FileDTO';
+import { ICreateFileUC } from '../use-case/file/ICreateFileUC';
 
 export class BrowsingIpcAdapter {
     static register(ipcMain: IpcMain): void {
@@ -33,16 +39,19 @@ export class BrowsingIpcAdapter {
         const getDocByIdUC = container.resolve<IGetDocumentByIdUC>(DocumentoUC.GET_BY_ID);
         const getDocByProcessUC = container.resolve<IGetDocumentByProcessUC>(DocumentoUC.GET_BY_PROCESS);
         const getDocByStatusUC = container.resolve<IGetDocumentByStatusUC>(DocumentoUC.GET_BY_STATUS);
+        const createDocumentUC = container.resolve<ICreateDocumentUC>(DocumentoUC.CREATE);
 
         // ---- File use cases ----
         const getFileByIdUC = container.resolve<IGetFileByIdUC>(FileUC.GET_BY_ID);
         const getFileByDocUC = container.resolve<IGetFileByDocumentUC>(FileUC.GET_BY_DOCUMENT);
         const getFileByStatusUC = container.resolve<IGetFileByStatusUC>(FileUC.GET_BY_STATUS);
+        const createFileUC = container.resolve<ICreateFileUC>(FileUC.CREATE);
 
         // ---- Process use cases ----
         const getProcessByIdUC = container.resolve<IGetProcessByIdUC>(ProcessUC.GET_BY_ID);
         const getProcessByStatusUC = container.resolve<IGetProcessByStatusUC>(ProcessUC.GET_BY_STATUS);
         const getProcessByDocumentClassUC = container.resolve<IGetProcessByDocumentClassUC>(ProcessUC.GET_BY_DOCUMENT_CLASS);
+        const createProcessUC = container.resolve<ICreateProcessUC>(ProcessUC.CREATE);
 
         // ------------------------------------------------------------------ //
         // Documento channels
@@ -58,6 +67,10 @@ export class BrowsingIpcAdapter {
 
         ipcMain.handle(IpcChannels.BROWSE_GET_DOCUMENTS_BY_STATUS, (_event, status: IntegrityStatusEnum) => {
             return getDocByStatusUC.execute(status).map((d) => d.toDTO());
+        });
+
+        ipcMain.handle(IpcChannels.CREATE_DOCUMENT, (_event, dto: CreateDocumentDTO) => {
+            return createDocumentUC.execute(dto).toDTO();
         });
 
         // ------------------------------------------------------------------ //
@@ -76,6 +89,10 @@ export class BrowsingIpcAdapter {
             return getFileByStatusUC.execute(status).map((f) => f.toDTO());
         });
 
+        ipcMain.handle(IpcChannels.CREATE_FILE, (_event, dto: CreateFileDTO) => {
+            return createFileUC.execute(dto).toDTO();
+        });
+
         // ------------------------------------------------------------------ //
         // Process channels
         // ------------------------------------------------------------------ //
@@ -90,6 +107,10 @@ export class BrowsingIpcAdapter {
 
         ipcMain.handle(IpcChannels.BROWSE_GET_PROCESS_BY_DOCUMENT_CLASS, (_event, documentClassId: number) => {
             return getProcessByDocumentClassUC.execute(documentClassId).map((p) => p.toDTO());
+        });
+
+        ipcMain.handle(IpcChannels.CREATE_PROCESS, (_event, dto: CreateProcessDTO) => {
+            return createProcessUC.execute(dto).toDTO();
         });
     }
 }

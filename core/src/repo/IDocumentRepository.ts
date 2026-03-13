@@ -1,3 +1,4 @@
+import { CreateDocumentDTO } from '../dto/DocumentDTO';
 import type { Document } from '../entity/Document';
 import { IntegrityStatusEnum } from '../value-objects/IntegrityStatusEnum';
 
@@ -14,7 +15,7 @@ export interface IDocumentRepository {
     getByStatus(status: IntegrityStatusEnum): Document[];
 
     /** Persiste un nuovo document e restituisce l'entità con l'id assegnato. */
-    save(document: Document): Document;
+    save(dto: CreateDocumentDTO): Document;
 
     /** Aggiorna lo stato di integrità di un document. */
     updateIntegrityStatus(id: number, status: IntegrityStatusEnum): void;

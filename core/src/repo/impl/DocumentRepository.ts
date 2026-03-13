@@ -16,6 +16,8 @@ import { IntegrityStatusEnum } from '../../value-objects/IntegrityStatusEnum';
 import type { IDocumentRepository } from '../IDocumentRepository';
 import { DatabaseProvider, DATABASE_PROVIDER_TOKEN } from './DatabaseProvider';
 import { loadMetadata, saveMetadata } from './MetadataHelper';
+import { CreateDocumentDTO } from '../../dto/DocumentDTO';
+import { Metadata } from '../../value-objects/Metadata';
 
 const METADATA_TABLE = 'document_metadata';
 const METADATA_FK = 'document_id';
@@ -95,15 +97,21 @@ export class DocumentRepository implements IDocumentRepository {
         return rows.map((r) => this.rowToEntity(r));
     }
 
-    save(document: Document): Document {
+    save(dto: CreateDocumentDTO): Document {
+        const metadata = dto.metadata.map((m) => new Metadata(m.name, m.value, m.type));
+
         const result = this.db
             .prepare('INSERT INTO document (uuid, integrity_status, process_id) VALUES (?, ?, ?)')
-            .run(document.getUuid(), IntegrityStatusEnum.UNKNOWN, document.getProcessId());
+            .run(dto.uuid, IntegrityStatusEnum.UNKNOWN, dto.processId);
 
         const id = result.lastInsertRowid as number;
-        saveMetadata(this.db, METADATA_TABLE, METADATA_FK, id, document.getMetadata());
+        saveMetadata(this.db, METADATA_TABLE, METADATA_FK, id, metadata);
 
-        return Document.fromDB({ id, uuid: document.getUuid(), processId: document.getProcessId() }, document.getMetadata());
+        const persisted = this.getById(id);
+        if (!persisted) {
+            throw new Error(`Cannot load persisted document with id ${id}`);
+        }
+        return persisted;
     }
 
     updateIntegrityStatus(id: number, status: IntegrityStatusEnum): void {

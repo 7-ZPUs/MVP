@@ -19,6 +19,12 @@ export const IpcChannels = {
   // ----- Integrity -----
   INTEGRITY_VERIFY: 'integrity:verify',
 
+
+  CREATE_DOCUMENT: 'browse:create-document',
+  CREATE_PROCESS: 'browse:create-process',
+  CREATE_FILE: 'browse:create-file',
+
+
   // ----- Browse: Documento -----
   BROWSE_GET_DOCUMENT_BY_ID: 'browse:get-document-by-id',
   BROWSE_GET_DOCUMENTS_BY_PROCESS: 'browse:get-documents-by-process',

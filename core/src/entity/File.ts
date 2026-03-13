@@ -86,6 +86,9 @@ export class File {
      * Da chiamare SOLO nell'IPC adapter, mai nel dominio o nel repository.
      */
     public toDTO(): FileDTO {
+        if (this.id === null) {
+            throw new Error("Cannot convert to DTO: File entity is not yet persisted and has no ID.");
+        }
         return {
             id: this.id,
             documentId: this.documentId,

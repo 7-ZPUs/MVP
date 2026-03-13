@@ -13,12 +13,15 @@ import { DOCUMENTO_REPOSITORY_TOKEN } from './repo/IDocumentRepository';
 import { DocumentRepository } from './repo/impl/DocumentRepository';
 import { FILE_REPOSITORY_TOKEN } from './repo/IFileRepository';
 import { FileRepository } from './repo/impl/FileRepository';
+import { PROCESS_REPOSITORY_TOKEN } from './repo/IProcessRepository';
+import { ProcessRepository } from './repo/impl/ProcessRepository';
 
 // ---- Documento use cases ----
 import { DocumentoUC } from './use-case/document/tokens';
 import { GetDocumentByIdUC } from './use-case/document/impl/GetDocumentByIdUC';
 import { GetDocumentByProcessUC } from './use-case/document/impl/GetDocumentByProcessUC';
 import { GetDocumentByStatusUC } from './use-case/document/impl/GetDocumentByStatusUC';
+import { CreateDocumentUC } from './use-case/document/impl/CreateDocumentUC';
 
 // ---- File use cases ----
 import { FileUC } from './use-case/file/tokens';
@@ -31,6 +34,8 @@ import { ProcessUC } from './use-case/process/token';
 import { GetProcessByStatusUC } from './use-case/process/impl/GetProcessByStatus';
 import { GetProcessByIdUC } from './use-case/process/impl/GetProcessByIdUC';
 import { GetProcessByDocumentClassUC } from './use-case/process/impl/GetProcessByDocumentClassUC';
+import { CreateProcessUC } from './use-case/process/impl/CreateProcessUC';
+import { CreateFileUC } from './use-case/file/impl/CreateFileUC';
 
 
 // Services
@@ -40,21 +45,25 @@ container.register(HASHING_SERVICE_TOKEN, { useClass: CryptoHashingService });
 // Repositories
 container.register(DOCUMENTO_REPOSITORY_TOKEN, { useClass: DocumentRepository });
 container.register(FILE_REPOSITORY_TOKEN, { useClass: FileRepository });
+container.register(PROCESS_REPOSITORY_TOKEN, { useClass: ProcessRepository });
 
 // Documento use cases
 container.register(DocumentoUC.GET_BY_ID, { useClass: GetDocumentByIdUC });
 container.register(DocumentoUC.GET_BY_PROCESS, { useClass: GetDocumentByProcessUC });
 container.register(DocumentoUC.GET_BY_STATUS, { useClass: GetDocumentByStatusUC });
+container.register(DocumentoUC.CREATE, { useClass: CreateDocumentUC });
 
 // File use cases
 container.register(FileUC.GET_BY_ID, { useClass: GetFileByIdUC });
 container.register(FileUC.GET_BY_DOCUMENT, { useClass: GetFileByDocumentUC });
 container.register(FileUC.GET_BY_STATUS, { useClass: GetFileByStatusUC });
+container.register(FileUC.CREATE, { useClass: CreateFileUC });
 
 // Process use cases
 container.register(ProcessUC.GET_BY_STATUS, { useClass: GetProcessByStatusUC });
 container.register(ProcessUC.GET_BY_ID, { useClass: GetProcessByIdUC });
 container.register(ProcessUC.GET_BY_DOCUMENT_CLASS, { useClass: GetProcessByDocumentClassUC });
+container.register(ProcessUC.CREATE, { useClass: CreateProcessUC });
 
 
 export { container };

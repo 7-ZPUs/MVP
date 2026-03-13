@@ -2,7 +2,7 @@ import { ProcessDTO } from "../dto/ProcessDTO";
 import { IntegrityStatusEnum } from "../value-objects/IntegrityStatusEnum";
 import { Metadata } from "../value-objects/Metadata";
 
-export interface ProcessRow{
+export interface ProcessRow {
     id: number;
     documentClassId: number;
     uuid: string;
@@ -50,12 +50,15 @@ export class Process {
     public getMetadata(): Metadata[] {
         return this.metadata;
     }
-    
+
     public setIntegrityStatus(status: IntegrityStatusEnum): void {
-         this.integrityStatus = status;
+        this.integrityStatus = status;
     }
 
     public toDTO(): ProcessDTO {
+        if (this.id === null) {
+            throw new Error("Cannot convert to DTO: Process entity is not yet persisted and has no ID.");
+        }
         return {
             id: this.id,
             documentClassId: this.documentClassId,

@@ -5,6 +5,8 @@ import { DATABASE_PROVIDER_TOKEN, DatabaseProvider } from "./DatabaseProvider";
 import { Process, ProcessRow } from "../../entity/Process";
 import { IntegrityStatusEnum } from "../../value-objects/IntegrityStatusEnum";
 import { loadMetadata, saveMetadata } from './MetadataHelper';
+import { CreateProcessDTO } from "../../dto/ProcessDTO";
+import { Metadata } from "../../value-objects/Metadata";
 
 const METADATA_TABLE = 'process_metadata';
 const METADATA_FK = 'process_id';
@@ -71,15 +73,21 @@ export class ProcessRepository implements IProcessRepository {
         return rows.map((r) => this.rowToEntity(r));
     }
 
-    save(process: Process): Process {
+    save(dto: CreateProcessDTO): Process {
+        const metadata = dto.metadata.map((m) => new Metadata(m.name, m.value, m.type));
+
         const result = this.db
             .prepare('INSERT INTO process (document_class_id, uuid, integrity_status) VALUES (?, ?, ?)')
-            .run(process.getDocumentClassId(), process.getUuid(), IntegrityStatusEnum.UNKNOWN);
+            .run(dto.documentClassId, dto.uuid, IntegrityStatusEnum.UNKNOWN);
 
         const id = result.lastInsertRowid as number;
-        saveMetadata(this.db, METADATA_TABLE, METADATA_FK, id, process.getMetadata());
+        saveMetadata(this.db, METADATA_TABLE, METADATA_FK, id, metadata);
 
-        return Process.fromDB({ id, documentClassId: process.getDocumentClassId(), uuid: process.getUuid(), integrityStatus: IntegrityStatusEnum.UNKNOWN }, process.getMetadata());
+        const persisted = this.getById(id);
+        if (!persisted) {
+            throw new Error(`Cannot load persisted process with id ${id}`);
+        }
+        return persisted;
     }
 
     updateIntegrityStatus(id: number, status: IntegrityStatusEnum): void {

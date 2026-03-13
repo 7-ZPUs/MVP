@@ -14,6 +14,7 @@ import { File, FileRow } from '../../entity/File';
 import { IntegrityStatusEnum } from '../../value-objects/IntegrityStatusEnum';
 import type { IFileRepository } from '../IFileRepository';
 import { DatabaseProvider, DATABASE_PROVIDER_TOKEN } from './DatabaseProvider';
+import { CreateFileDTO } from '../../dto/FileDTO';
 
 @injectable()
 export class FileRepository implements IFileRepository {
@@ -77,28 +78,27 @@ export class FileRepository implements IFileRepository {
         return rows.map((r) => File.fromDB(r));
     }
 
-    save(file: File): File {
+    save(dto: CreateFileDTO): File {
         const result = this.db
             .prepare(
                 `INSERT INTO file (filename, path, integrity_status, is_main, document_id)
                  VALUES (?, ?, ?, ?, ?)`
             )
             .run(
-                file.getFilename(),
-                file.getPath(),
+                dto.filename,
+                dto.path,
                 IntegrityStatusEnum.UNKNOWN,
-                file.getIsMain() ? 1 : 0,
-                file.getDocumentId()
+                dto.isMain ? 1 : 0,
+                dto.documentId
             );
 
-        const id = result.lastInsertRowid as number;
         return File.fromDB({
-            id,
-            filename: file.getFilename(),
-            path: file.getPath(),
+            id: result.lastInsertRowid as number,
+            filename: dto.filename,
+            path: dto.path,
             integrityStatus: IntegrityStatusEnum.UNKNOWN,
-            isMain: file.getIsMain() ? 1 : 0,
-            documentId: file.getDocumentId(),
+            isMain: dto.isMain ? 1 : 0,
+            documentId: dto.documentId,
         });
     }
 

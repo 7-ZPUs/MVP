@@ -73,6 +73,9 @@ export class Document {
      * Da chiamare SOLO nell'IPC adapter, mai nel dominio o nel repository.
      */
     public toDTO(): DocumentDTO {
+        if (this.id === null) {
+            throw new Error("Cannot convert to DTO: Document entity is not yet persisted and has no ID.");
+        }
         return {
             id: this.id,
             uuid: this.uuid,
