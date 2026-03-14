@@ -17,6 +17,12 @@
     "declarationMap": true,
     "sourceMap": true
   },
-  "include": ["main.ts", "core/src/**/*", "shared/**/*", "core/src/preload.ts"],
-  "exclude": ["node_modules", "dist", "**/*.spec.ts", "**/*.test.ts"]
+  "include": [
+    "main.ts",
+    "core/src/**/*",
+    "shared/**/*",
+    "**/*.spec.ts",
+    "**/*.test.ts"
+  ],
+  "exclude": ["node_modules", "dist"]
 }

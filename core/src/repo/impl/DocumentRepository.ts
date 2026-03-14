@@ -8,34 +8,32 @@
  *   document            (id, uuid, integrity_status, process_id)
  *   document_metadata   (id, document_id, name, value, type)
  */
-import { inject, injectable } from 'tsyringe';
-import Database from 'better-sqlite3';
+import { inject, injectable } from "tsyringe";
+import Database from "better-sqlite3";
 
-import { Document, DocumentRow } from '../../entity/Document';
-import { IntegrityStatusEnum } from '../../value-objects/IntegrityStatusEnum';
-import type { IDocumentRepository } from '../IDocumentRepository';
-import { DatabaseProvider, DATABASE_PROVIDER_TOKEN } from './DatabaseProvider';
-import { loadMetadata, saveMetadata } from './MetadataHelper';
-import { CreateDocumentDTO } from '../../dto/DocumentDTO';
-import { Metadata } from '../../value-objects/Metadata';
+import { Document, DocumentRow } from "../../entity/Document";
+import { IntegrityStatusEnum } from "../../value-objects/IntegrityStatusEnum";
+import type { IDocumentRepository } from "../IDocumentRepository";
+import { DatabaseProvider, DATABASE_PROVIDER_TOKEN } from "./DatabaseProvider";
+import { loadMetadata, saveMetadata } from "./MetadataHelper";
 
-const METADATA_TABLE = 'document_metadata';
-const METADATA_FK = 'document_id';
+const METADATA_TABLE = "document_metadata";
+const METADATA_FK = "document_id";
 
 @injectable()
 export class DocumentRepository implements IDocumentRepository {
-    private readonly db: Database.Database;
+  private readonly db: Database.Database;
 
-    constructor(
-        @inject(DATABASE_PROVIDER_TOKEN)
-        private readonly dbProvider: DatabaseProvider
-    ) {
-        this.db = dbProvider.db;
-        this.createSchema();
-    }
+  constructor(
+    @inject(DATABASE_PROVIDER_TOKEN)
+    private readonly dbProvider: DatabaseProvider,
+  ) {
+    this.db = dbProvider.db;
+    this.createSchema();
+  }
 
-    private createSchema(): void {
-        this.db.exec(`
+  private createSchema(): void {
+    this.db.exec(`
             CREATE TABLE IF NOT EXISTS document (
                 id               INTEGER PRIMARY KEY AUTOINCREMENT,
                 uuid             TEXT    NOT NULL UNIQUE,
@@ -51,76 +49,82 @@ export class DocumentRepository implements IDocumentRepository {
                 type        TEXT    NOT NULL DEFAULT 'string'
             );
         `);
-    }
+  }
 
-    // -------------------------------------------------------------------------
-    // Private helpers
-    // -------------------------------------------------------------------------
+  // -------------------------------------------------------------------------
+  // Private helpers
+  // -------------------------------------------------------------------------
 
-    private rowToEntity(row: DocumentRow): Document {
-        const metadata = loadMetadata(this.db, METADATA_TABLE, METADATA_FK, row.id);
-        return Document.fromDB(row, metadata);
-    }
+  private rowToEntity(row: DocumentRow): Document {
+    const metadata = loadMetadata(this.db, METADATA_TABLE, METADATA_FK, row.id);
+    return Document.fromDB(row, metadata);
+  }
 
-    // -------------------------------------------------------------------------
-    // IDocumentRepository implementation
-    // -------------------------------------------------------------------------
+  // -------------------------------------------------------------------------
+  // IDocumentRepository implementation
+  // -------------------------------------------------------------------------
 
-    getById(id: number): Document | null {
-        const row = this.db
-            // possiamo anche usare SELECT * a questo punto 
-            .prepare<[number], DocumentRow>(
-                `SELECT id, uuid, integrity_status as integrityStatus, process_id as processId 
-                 FROM document WHERE id = ?`
-            )
-            .get(id);
-        return row ? this.rowToEntity(row) : null;
-    }
+  getById(id: number): Document | null {
+    const row = this.db
+      // possiamo anche usare SELECT * a questo punto
+      .prepare<[number], DocumentRow>(
+        `SELECT id, uuid, integrity_status as integrityStatus, process_id as processId 
+                 FROM document WHERE id = ?`,
+      )
+      .get(id);
+    return row ? this.rowToEntity(row) : null;
+  }
 
-    getByProcessId(processId: number): Document[] {
-        const rows = this.db
-            .prepare<[number], DocumentRow>(
-                `SELECT id, uuid, integrity_status as integrityStatus, process_id as processId
-                 FROM document WHERE process_id = ? ORDER BY id`
-            )
-            .all(processId);
-        return rows.map((r) => this.rowToEntity(r));
-    }
+  getByProcessId(processId: number): Document[] {
+    const rows = this.db
+      .prepare<[number], DocumentRow>(
+        `SELECT id, uuid, integrity_status as integrityStatus, process_id as processId
+                 FROM document WHERE process_id = ? ORDER BY id`,
+      )
+      .all(processId);
+    return rows.map((r) => this.rowToEntity(r));
+  }
 
-    getByStatus(status: IntegrityStatusEnum): Document[] {
-        const rows = this.db
-            .prepare<[string], DocumentRow>(
-                `SELECT id, uuid, integrity_status as integrityStatus, process_id as processId
-                 FROM document WHERE integrity_status = ? ORDER BY id`
-            )
-            .all(status);
-        return rows.map((r) => this.rowToEntity(r));
-    }
+  getByStatus(status: IntegrityStatusEnum): Document[] {
+    const rows = this.db
+      .prepare<[string], DocumentRow>(
+        `SELECT id, uuid, integrity_status as integrityStatus, process_id as processId
+                 FROM document WHERE integrity_status = ? ORDER BY id`,
+      )
+      .all(status);
+    return rows.map((r) => this.rowToEntity(r));
+  }
 
-    save(dto: CreateDocumentDTO): Document {
-        const metadata = dto.metadata.map((m) => new Metadata(m.name, m.value, m.type));
+  save(document: Document): Document {
+    const metadata = document.getMetadata();
 
-        const result = this.db
-            .prepare('INSERT INTO document (uuid, integrity_status, process_id) VALUES (?, ?, ?)')
-            .run(dto.uuid, IntegrityStatusEnum.UNKNOWN, dto.processId);
+    const result = this.db
+      .prepare(
+        "INSERT INTO document (uuid, integrity_status, process_id) VALUES (?, ?, ?)",
+      )
+      .run(
+        document.getUuid(),
+        IntegrityStatusEnum.UNKNOWN,
+        document.getProcessId(),
+      );
 
-        const id = result.lastInsertRowid as number;
-        saveMetadata(this.db, METADATA_TABLE, METADATA_FK, id, metadata);
+    const id = result.lastInsertRowid as number;
+    saveMetadata(this.db, METADATA_TABLE, METADATA_FK, id, metadata);
 
-        return Document.fromDB(
-            {
-                id,
-                uuid: dto.uuid,
-                integrityStatus: IntegrityStatusEnum.UNKNOWN,
-                processId: dto.processId,
-            },
-            metadata
-        );
-    }
+    return Document.fromDB(
+      {
+        id,
+        uuid: document.getUuid(),
+        integrityStatus: IntegrityStatusEnum.UNKNOWN,
+        processId: document.getProcessId(),
+      },
+      metadata,
+    );
+  }
 
-    updateIntegrityStatus(id: number, status: IntegrityStatusEnum): void {
-        this.db
-            .prepare('UPDATE document SET integrity_status = ? WHERE id = ?')
-            .run(status, id);
-    }
+  updateIntegrityStatus(id: number, status: IntegrityStatusEnum): void {
+    this.db
+      .prepare("UPDATE document SET integrity_status = ? WHERE id = ?")
+      .run(status, id);
+  }
 }

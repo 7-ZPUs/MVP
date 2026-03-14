@@ -7,29 +7,28 @@
  * Schema gestito:
  *   file  (id, filename, path, integrity_status, is_main, document_id)
  */
-import { inject, injectable } from 'tsyringe';
-import Database from 'better-sqlite3';
+import { inject, injectable } from "tsyringe";
+import Database from "better-sqlite3";
 
-import { File, FileRow } from '../../entity/File';
-import { IntegrityStatusEnum } from '../../value-objects/IntegrityStatusEnum';
-import type { IFileRepository } from '../IFileRepository';
-import { DatabaseProvider, DATABASE_PROVIDER_TOKEN } from './DatabaseProvider';
-import { CreateFileDTO } from '../../dto/FileDTO';
+import { File, FileRow } from "../../entity/File";
+import { IntegrityStatusEnum } from "../../value-objects/IntegrityStatusEnum";
+import type { IFileRepository } from "../IFileRepository";
+import { DatabaseProvider, DATABASE_PROVIDER_TOKEN } from "./DatabaseProvider";
 
 @injectable()
 export class FileRepository implements IFileRepository {
-    private readonly db: Database.Database;
+  private readonly db: Database.Database;
 
-    constructor(
-        @inject(DATABASE_PROVIDER_TOKEN)
-        private readonly dbProvider: DatabaseProvider
-    ) {
-        this.db = dbProvider.db;
-        this.createSchema();
-    }
+  constructor(
+    @inject(DATABASE_PROVIDER_TOKEN)
+    private readonly dbProvider: DatabaseProvider,
+  ) {
+    this.db = dbProvider.db;
+    this.createSchema();
+  }
 
-    private createSchema(): void {
-        this.db.exec(`
+  private createSchema(): void {
+    this.db.exec(`
             CREATE TABLE IF NOT EXISTS file (
                 id               INTEGER PRIMARY KEY AUTOINCREMENT,
                 filename         TEXT    NOT NULL,
@@ -39,72 +38,72 @@ export class FileRepository implements IFileRepository {
                 document_id      INTEGER NOT NULL REFERENCES documento(id) ON DELETE CASCADE
             );
         `);
-    }
+  }
 
-    // -------------------------------------------------------------------------
-    // IFileRepository implementation
-    // -------------------------------------------------------------------------
+  // -------------------------------------------------------------------------
+  // IFileRepository implementation
+  // -------------------------------------------------------------------------
 
-    getById(id: number): File | null {
-        const row = this.db
-            .prepare<[number], FileRow>(
-                `SELECT id, filename, path, integrity_status as integrityStatus,
+  getById(id: number): File | null {
+    const row = this.db
+      .prepare<[number], FileRow>(
+        `SELECT id, filename, path, integrity_status as integrityStatus,
                         is_main as isMain, document_id as documentId
-                 FROM file WHERE id = ?`
-            )
-            .get(id);
-        return row ? File.fromDB(row) : null;
-    }
+                 FROM file WHERE id = ?`,
+      )
+      .get(id);
+    return row ? File.fromDB(row) : null;
+  }
 
-    getByDocumentId(documentId: number): File[] {
-        const rows = this.db
-            .prepare<[number], FileRow>(
-                `SELECT id, filename, path, integrity_status as integrityStatus,
+  getByDocumentId(documentId: number): File[] {
+    const rows = this.db
+      .prepare<[number], FileRow>(
+        `SELECT id, filename, path, integrity_status as integrityStatus,
                         is_main as isMain, document_id as documentId
-                 FROM file WHERE document_id = ? ORDER BY is_main DESC, id`
-            )
-            .all(documentId);
-        return rows.map((r) => File.fromDB(r));
-    }
+                 FROM file WHERE document_id = ? ORDER BY is_main DESC, id`,
+      )
+      .all(documentId);
+    return rows.map((r) => File.fromDB(r));
+  }
 
-    getByStatus(status: IntegrityStatusEnum): File[] {
-        const rows = this.db
-            .prepare<[string], FileRow>(
-                `SELECT id, filename, path, integrity_status as integrityStatus,
+  getByStatus(status: IntegrityStatusEnum): File[] {
+    const rows = this.db
+      .prepare<[string], FileRow>(
+        `SELECT id, filename, path, integrity_status as integrityStatus,
                         is_main as isMain, document_id as documentId
-                 FROM file WHERE integrity_status = ? ORDER BY id`
-            )
-            .all(status);
-        return rows.map((r) => File.fromDB(r));
-    }
+                 FROM file WHERE integrity_status = ? ORDER BY id`,
+      )
+      .all(status);
+    return rows.map((r) => File.fromDB(r));
+  }
 
-    save(dto: CreateFileDTO): File {
-        const result = this.db
-            .prepare(
-                `INSERT INTO file (filename, path, integrity_status, is_main, document_id)
-                 VALUES (?, ?, ?, ?, ?)`
-            )
-            .run(
-                dto.filename,
-                dto.path,
-                IntegrityStatusEnum.UNKNOWN,
-                dto.isMain ? 1 : 0,
-                dto.documentId
-            );
+  save(file: File): File {
+    const result = this.db
+      .prepare(
+        `INSERT INTO file (filename, path, integrity_status, is_main, document_id)
+                 VALUES (?, ?, ?, ?, ?)`,
+      )
+      .run(
+        file.getFilename(),
+        file.getPath(),
+        IntegrityStatusEnum.UNKNOWN,
+        file.getIsMain() ? 1 : 0,
+        file.getDocumentId(),
+      );
 
-        return File.fromDB({
-            id: result.lastInsertRowid as number,
-            filename: dto.filename,
-            path: dto.path,
-            integrityStatus: IntegrityStatusEnum.UNKNOWN,
-            isMain: dto.isMain ? 1 : 0,
-            documentId: dto.documentId,
-        });
-    }
+    return File.fromDB({
+      id: result.lastInsertRowid as number,
+      filename: file.getFilename(),
+      path: file.getPath(),
+      integrityStatus: IntegrityStatusEnum.UNKNOWN,
+      isMain: file.getIsMain() ? 1 : 0,
+      documentId: file.getDocumentId(),
+    });
+  }
 
-    updateIntegrityStatus(id: number, status: IntegrityStatusEnum): void {
-        this.db
-            .prepare('UPDATE file SET integrity_status = ? WHERE id = ?')
-            .run(status, id);
-    }
+  updateIntegrityStatus(id: number, status: IntegrityStatusEnum): void {
+    this.db
+      .prepare("UPDATE file SET integrity_status = ? WHERE id = ?")
+      .run(status, id);
+  }
 }

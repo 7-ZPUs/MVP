@@ -1,14 +1,14 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { Readable } from "node:stream";
-import { IPackageReaderPort } from "../../IPackageReaderPort";
-import { IDiPIndexParser } from "./IDiPIndexParser";
-import { Dip } from "../../../entity/Dip";
-import { DocumentClass } from "../../../entity/DocumentClass";
-import { Process } from "../../../entity/Process";
-import { Document } from "../../../entity/Document";
-import { File } from "../../../entity/File";
-import { DiPIndexMapper } from "./DiPIndexMapper";
+import { IPackageReaderPort } from "../IPackageReaderPort";
+import { IDiPIndexParser } from "./utils/IDiPIndexParser";
+import { Dip } from "../../entity/Dip";
+import { DocumentClass } from "../../entity/DocumentClass";
+import { Process } from "../../entity/Process";
+import { Document } from "../../entity/Document";
+import { File } from "../../entity/File";
+import { DiPIndexMapper } from "./utils/DiPIndexMapper";
 import { PlatformPath } from "node:path";
 
 const DIP_INDEX_FILENAME = "DiPIndex.xml";

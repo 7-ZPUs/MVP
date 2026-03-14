@@ -7,6 +7,7 @@ export default defineConfig({
     exclude: ["node_modules", "dist", "renderer/**"],
     environment: "node",
     globals: true,
+    setupFiles: ["./core/test/setupTests.ts"], // Add setup file for global hooks
     coverage: {
       provider: "v8",
       reporter: ["text", "lcov"],

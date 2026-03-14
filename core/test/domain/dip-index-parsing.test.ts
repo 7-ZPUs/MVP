@@ -1,0 +1,347 @@
+import { describe, it, expect, vi } from "vitest";
+import { FastXmlParserAdapter } from "../../src/repo/impl/utils/FastXmlParserAdapter";
+import { DiPIndexMapper } from "../../src/repo/impl/utils/DiPIndexMapper";
+import { LocalPackageReaderAdapter } from "../../src/repo/impl/LocalPackageReaderAdapter";
+import * as fs from "node:fs";
+import * as path from "node:path";
+import * as os from "node:os";
+
+const MINIMAL_DIP_INDEX = `<?xml version="1.0" encoding="UTF-8"?>
+<DiPIndex>
+    <ComplianceStatement lang="it">
+        <Title>Dichiarazione di conformità</Title>
+        <Body>La società dichiara la conformità dei documenti.</Body>
+    </ComplianceStatement>
+    <PackageInfo>
+        <CreatingApplication>
+            <Name>Archimemo</Name>
+            <Version>1.0.0</Version>
+            <Producer>Archiverse Srl</Producer>
+        </CreatingApplication>
+        <ProcessUUID>550e8400-e29b-41d4-a716-446655440000</ProcessUUID>
+        <CreationDate>2024-06-15</CreationDate>
+        <DocumentsCount>2</DocumentsCount>
+        <AiPCount>1</AiPCount>
+    </PackageInfo>
+    <PackageContent>
+        <DiPDocuments>
+            <Statement lang="it">I documenti del presente pacchetto di distribuzione appartengono alle seguenti classi documentali</Statement>
+            <DocumentClass uuid="dc-uuid-001" name="Fatture" version="1.0" validFrom="2024-01-01T00:00:00+01:00">
+                <AiP uuid="aip-uuid-001">
+                    <AiPRoot>AiP/aip-uuid-001</AiPRoot>
+                    <Document uuid="doc-uuid-001">
+                        <DocumentPath>AiP/aip-uuid-001/doc-uuid-001</DocumentPath>
+                        <Files FilesCount="3">
+                            <Metadata uuid="file-meta-001">metadata.xml</Metadata>
+                            <Primary uuid="file-primary-001">fattura.pdf</Primary>
+                            <Attachments uuid="file-att-001">allegato1.pdf</Attachments>
+                        </Files>
+                    </Document>
+                    <Document uuid="doc-uuid-002">
+                        <DocumentPath>AiP/aip-uuid-001/doc-uuid-002</DocumentPath>
+                        <Files FilesCount="2">
+                            <Metadata uuid="file-meta-002">metadata.xml</Metadata>
+                            <Primary uuid="file-primary-002">ordine.pdf</Primary>
+                        </Files>
+                    </Document>
+                </AiP>
+            </DocumentClass>
+        </DiPDocuments>
+    </PackageContent>
+</DiPIndex>`;
+
+const MULTI_CLASS_DIP_INDEX = `<?xml version="1.0" encoding="UTF-8"?>
+<DiPIndex>
+    <ComplianceStatement lang="it">
+        <Title>Dichiarazione di conformità</Title>
+        <Body>Conformità certificata.</Body>
+    </ComplianceStatement>
+    <ComplianceStatement lang="en">
+        <Title>Compliance Statement</Title>
+        <Body>Compliance certified.</Body>
+    </ComplianceStatement>
+    <PackageInfo>
+        <CreatingApplication>
+            <Name>Archimemo</Name>
+            <Version>2.0.0</Version>
+            <Producer>Archiverse Srl</Producer>
+        </CreatingApplication>
+        <ProcessUUID>660e8400-e29b-41d4-a716-446655440000</ProcessUUID>
+        <CreationDate>2024-07-20</CreationDate>
+        <DocumentsCount>3</DocumentsCount>
+        <AiPCount>2</AiPCount>
+    </PackageInfo>
+    <PackageContent>
+        <DiPDocuments>
+            <Statement lang="it">Classe documentale</Statement>
+            <DocumentClass uuid="dc-uuid-A" name="Contratti" version="1.0" validFrom="2024-01-01T00:00:00+01:00" validTo="2025-12-31T23:59:59+01:00">
+                <AiP uuid="aip-uuid-A1">
+                    <AiPRoot>AiP/aip-uuid-A1</AiPRoot>
+                    <Document uuid="doc-uuid-A1">
+                        <DocumentPath>AiP/aip-uuid-A1/doc-uuid-A1</DocumentPath>
+                        <Files FilesCount="2">
+                            <Metadata uuid="f-meta-A1">metadata.xml</Metadata>
+                            <Primary uuid="f-primary-A1">contratto.pdf</Primary>
+                        </Files>
+                    </Document>
+                </AiP>
+            </DocumentClass>
+            <DocumentClass uuid="dc-uuid-B" name="PEC" version="2.0" validFrom="2024-06-01T00:00:00+02:00">
+                <AiP uuid="aip-uuid-B1">
+                    <AiPRoot>AiP/aip-uuid-B1</AiPRoot>
+                    <Document uuid="doc-uuid-B1">
+                        <DocumentPath>AiP/aip-uuid-B1/doc-uuid-B1</DocumentPath>
+                        <Files FilesCount="3">
+                            <Metadata uuid="f-meta-B1">metadata.xml</Metadata>
+                            <Primary uuid="f-primary-B1">pec.eml</Primary>
+                            <Attachments uuid="f-att-B1">ricevuta.pdf</Attachments>
+                        </Files>
+                    </Document>
+                    <Document uuid="doc-uuid-B2">
+                        <DocumentPath>AiP/aip-uuid-B1/doc-uuid-B2</DocumentPath>
+                        <Files FilesCount="2">
+                            <Metadata uuid="f-meta-B2">metadata.xml</Metadata>
+                            <Primary uuid="f-primary-B2">pec2.eml</Primary>
+                        </Files>
+                    </Document>
+                </AiP>
+            </DocumentClass>
+        </DiPDocuments>
+    </PackageContent>
+</DiPIndex>`;
+
+describe("FastXmlParserAdapter", () => {
+  const parser = new FastXmlParserAdapter();
+
+  it("should parse a minimal DiPIndex XML", () => {
+    const result = parser.parse(MINIMAL_DIP_INDEX);
+
+    expect(result.PackageInfo.ProcessUUID).toBe(
+      "550e8400-e29b-41d4-a716-446655440000",
+    );
+    expect(result.PackageInfo.CreatingApplication.Name).toBe("Archimemo");
+    expect(result.PackageInfo.DocumentsCount).toBe(2);
+    expect(result.PackageInfo.AiPCount).toBe(1);
+  });
+
+  it("should parse ComplianceStatement as array", () => {
+    const result = parser.parse(MINIMAL_DIP_INDEX);
+    const statements = Array.isArray(result.ComplianceStatement)
+      ? result.ComplianceStatement
+      : [result.ComplianceStatement];
+    expect(statements).toHaveLength(1);
+    expect(statements[0].Title).toBe("Dichiarazione di conformità");
+  });
+
+  it("should parse multiple ComplianceStatements", () => {
+    const result = parser.parse(MULTI_CLASS_DIP_INDEX);
+    const statements = Array.isArray(result.ComplianceStatement)
+      ? result.ComplianceStatement
+      : [result.ComplianceStatement];
+    expect(statements).toHaveLength(2);
+  });
+
+  it("should parse DocumentClass with attributes", () => {
+    const result = parser.parse(MINIMAL_DIP_INDEX);
+    const classes = Array.isArray(
+      result.PackageContent.DiPDocuments.DocumentClass,
+    )
+      ? result.PackageContent.DiPDocuments.DocumentClass
+      : [result.PackageContent.DiPDocuments.DocumentClass];
+    expect(classes).toHaveLength(1);
+    expect(classes[0]["@_uuid"]).toBe("dc-uuid-001");
+    expect(classes[0]["@_name"]).toBe("Fatture");
+  });
+
+  it("should throw on invalid XML without DiPIndex root", () => {
+    expect(() => parser.parse("<NotAnIndex/>")).toThrow(
+      "Invalid DiPIndex XML: missing root element 'DiPIndex'",
+    );
+  });
+});
+
+describe("DiPIndexMapper", () => {
+  const parser = new FastXmlParserAdapter();
+
+  describe("with minimal index", () => {
+    const mapper = new DiPIndexMapper(parser.parse(MINIMAL_DIP_INDEX));
+
+    it("should extract DIP UUID", () => {
+      expect(mapper.extractDipUuid()).toBe(
+        "550e8400-e29b-41d4-a716-446655440000",
+      );
+    });
+
+    it("should extract document classes", () => {
+      const classes = mapper.extractDocumentClasses();
+      expect(classes).toHaveLength(1);
+      expect(classes[0]["@_uuid"]).toBe("dc-uuid-001");
+      expect(classes[0]["@_name"]).toBe("Fatture");
+    });
+
+    it("should extract processes (AiPs)", () => {
+      const processes = mapper.extractProcesses();
+      expect(processes).toHaveLength(1);
+      expect(processes[0].uuid).toBe("aip-uuid-001");
+      expect(processes[0].documentClassUuid).toBe("dc-uuid-001");
+      expect(processes[0].aipRoot).toBe("AiP/aip-uuid-001");
+    });
+
+    it("should extract documents", () => {
+      const docs = mapper.extractDocuments();
+      expect(docs).toHaveLength(2);
+      expect(docs[0].uuid).toBe("doc-uuid-001");
+      expect(docs[0].processUuid).toBe("aip-uuid-001");
+      expect(docs[0].documentPath).toBe("AiP/aip-uuid-001/doc-uuid-001");
+      expect(docs[1].uuid).toBe("doc-uuid-002");
+    });
+
+    it("should extract files with correct main flag", () => {
+      const files = mapper.extractFiles();
+      // doc-uuid-001: primary + metadata + 1 attachment = 3
+      // doc-uuid-002: primary + metadata = 2
+      expect(files).toHaveLength(5);
+
+      const primaryFiles = files.filter((f) => f.isMain);
+      expect(primaryFiles).toHaveLength(2);
+      expect(primaryFiles[0].filename).toBe("fattura.pdf");
+      expect(primaryFiles[1].filename).toBe("ordine.pdf");
+
+      const metadataFiles = files.filter((f) => f.filename === "metadata.xml");
+      expect(metadataFiles).toHaveLength(2);
+      expect(metadataFiles.every((f) => !f.isMain)).toBe(true);
+
+      const attachments = files.filter(
+        (f) => !f.isMain && f.filename !== "metadata.xml",
+      );
+      expect(attachments).toHaveLength(1);
+      expect(attachments[0].filename).toBe("allegato1.pdf");
+    });
+
+    it("should build correct file paths", () => {
+      const files = mapper.extractFiles();
+      const primary = files.find((f) => f.filename === "fattura.pdf");
+      expect(primary?.path).toBe("AiP/aip-uuid-001/doc-uuid-001/fattura.pdf");
+    });
+  });
+
+  describe("with multi-class index", () => {
+    const mapper = new DiPIndexMapper(parser.parse(MULTI_CLASS_DIP_INDEX));
+
+    it("should extract multiple document classes", () => {
+      const classes = mapper.extractDocumentClasses();
+      expect(classes).toHaveLength(2);
+      expect(classes[0]["@_name"]).toBe("Contratti");
+      expect(classes[1]["@_name"]).toBe("PEC");
+    });
+
+    it("should extract processes across classes", () => {
+      const processes = mapper.extractProcesses();
+      expect(processes).toHaveLength(2);
+      expect(processes[0].documentClassUuid).toBe("dc-uuid-A");
+      expect(processes[1].documentClassUuid).toBe("dc-uuid-B");
+    });
+
+    it("should extract all documents across classes", () => {
+      const docs = mapper.extractDocuments();
+      expect(docs).toHaveLength(3);
+    });
+
+    it("should extract all files across classes", () => {
+      const files = mapper.extractFiles();
+      // Class A: 1 doc * (primary + metadata) = 2
+      // Class B: doc B1 (primary + metadata + attachment) = 3, doc B2 (primary + metadata) = 2
+      expect(files).toHaveLength(7);
+    });
+  });
+});
+
+describe("LocalPackageReaderAdapter", () => {
+  const parser = new FastXmlParserAdapter();
+  const adapter = new LocalPackageReaderAdapter(parser);
+
+  let tmpDir: string;
+
+  function writeDiPIndex(xml: string): string {
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "dip-test-"));
+    fs.writeFileSync(path.join(tmpDir, "DiPIndex.xml"), xml, "utf-8");
+    return tmpDir;
+  }
+
+  async function collectAll<T>(gen: AsyncGenerator<T>): Promise<T[]> {
+    const items: T[] = [];
+    for await (const item of gen) {
+      items.push(item);
+    }
+    return items;
+  }
+
+  it("should yield a Dip entity with correct UUID", async () => {
+    const dipPath = writeDiPIndex(MINIMAL_DIP_INDEX);
+    const dips = await collectAll(adapter.readDip(dipPath as any));
+
+    expect(dips).toHaveLength(1);
+    expect(dips[0].getUuid()).toBe("550e8400-e29b-41d4-a716-446655440000");
+  });
+
+  it("should yield DocumentClass entities", async () => {
+    const dipPath = writeDiPIndex(MULTI_CLASS_DIP_INDEX);
+    const classes = await collectAll(
+      adapter.readDocumentClasses(dipPath as any),
+    );
+
+    expect(classes).toHaveLength(2);
+    expect(classes[0].getUuid()).toBe("dc-uuid-A");
+    expect(classes[0].getName()).toBe("Contratti");
+    expect(classes[1].getUuid()).toBe("dc-uuid-B");
+    expect(classes[1].getName()).toBe("PEC");
+  });
+
+  it("should yield Process entities from AiPs", async () => {
+    const dipPath = writeDiPIndex(MINIMAL_DIP_INDEX);
+    const processes = await collectAll(adapter.readProcesses(dipPath as any));
+
+    expect(processes).toHaveLength(1);
+    expect(processes[0].getUuid()).toBe("aip-uuid-001");
+  });
+
+  it("should yield Document entities", async () => {
+    const dipPath = writeDiPIndex(MINIMAL_DIP_INDEX);
+    const docs = await collectAll(adapter.readDocuments(dipPath as any));
+
+    expect(docs).toHaveLength(2);
+    expect(docs[0].getUuid()).toBe("doc-uuid-001");
+    expect(docs[1].getUuid()).toBe("doc-uuid-002");
+  });
+
+  it("should yield File entities with correct isMain flag", async () => {
+    const dipPath = writeDiPIndex(MINIMAL_DIP_INDEX);
+    const files = await collectAll(adapter.readFiles(dipPath as any));
+
+    expect(files).toHaveLength(5);
+    const mainFiles = files.filter((f) => f.getIsMain());
+    expect(mainFiles).toHaveLength(2);
+    expect(mainFiles[0].getFilename()).toBe("fattura.pdf");
+  });
+
+  it("should parse DiPIndex only once per dipPath across multiple readXxx calls", async () => {
+    const dipPath = writeDiPIndex(MINIMAL_DIP_INDEX);
+    const freshParser = new FastXmlParserAdapter();
+    const freshAdapter = new LocalPackageReaderAdapter(freshParser);
+    const spy = vi.spyOn(freshParser, "parse");
+
+    await collectAll(freshAdapter.readDip(dipPath as any));
+    await collectAll(freshAdapter.readDocumentClasses(dipPath as any));
+    await collectAll(freshAdapter.readProcesses(dipPath as any));
+    await collectAll(freshAdapter.readDocuments(dipPath as any));
+    await collectAll(freshAdapter.readFiles(dipPath as any));
+
+    expect(spy).toHaveBeenCalledTimes(1);
+  });
+
+  afterEach(() => {
+    if (tmpDir && fs.existsSync(tmpDir)) {
+      fs.rmSync(tmpDir, { recursive: true });
+    }
+  });
+});

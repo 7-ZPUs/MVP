@@ -1,3 +1,3 @@
-interface IndexResult {
-    success: boolean;
+export interface IndexResult {
+  success: boolean;
 }
