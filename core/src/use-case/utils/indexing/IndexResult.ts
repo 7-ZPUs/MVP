@@ -1,0 +1,3 @@
+interface IndexResult {
+    success: boolean;
+}
