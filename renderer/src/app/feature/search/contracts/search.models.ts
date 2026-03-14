@@ -12,3 +12,14 @@ export interface SearchResult {
   type: string;
   score: number | null;
 }
+
+export interface ValidationError {
+  field: string;
+  message: string;
+  code: string;
+}
+
+export interface ValidationResult {
+  isValid: boolean;
+  errors: Map<string, ValidationError[]>;
+}
