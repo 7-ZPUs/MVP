@@ -1,0 +1,21 @@
+export enum ErrorCode {
+  VALIDATION_ERROR = 'VALIDATION_ERROR',
+  SEARCH_ENGINE_ERROR = 'SEARCH_ENGINE_ERROR',
+  DOC_FORMAT_UNSUPPORTED = 'DOC_FORMAT_UNSUPPORTED',
+  DIP_CURROPT_ARCHIVE = 'DIP_CURROPT_ARCHIVE',
+}
+
+export enum ErrorCategory {
+  IPC = 'IPC',
+  VALIDATION = 'VALIDATION',
+  DOMAIN = 'DOMAIN',
+  IO = 'IO',
+  PRINT = 'PRINT',
+}
+
+export enum ErrorSeverity {
+  FATAL = 'FATAL',
+  ERROR = 'ERROR',
+  WARNING = 'WARNING',
+  INFO = 'INFO',
+}
