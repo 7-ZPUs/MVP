@@ -18,22 +18,6 @@ export enum DocumentType {
   AGGREGAZIONE_DOCUMENTALE = 'AGGREGAZIONE DOCUMENTALE',
 }
 
-export enum SubjectRole {
-  PRODUTTORE = 'PRODUTTORE',
-  DESTINATARIO = 'DESTINATARIO',
-  RESPONSABILE = 'RESPONSABILE',
-}
-
-export enum SubjectType {
-  PAI = 'PAI',
-  PAE = 'PAE',
-  PG = 'PG',
-  PF = 'PF',
-  AS = 'AS',
-  RUP = 'RUP',
-  SW = 'SW',
-}
-
 export enum IndexingStatus {
   IDLE = 'IDLE',
   INDEXING = 'INDEXING',
@@ -181,7 +165,7 @@ export enum AssegnazioneType {
   CONOSCIENZA = 'PER CONOSCIENZA',
 }
 
-export enum SubjectRoleType {
+export enum SubjectType {
   PAI = 'PAI',
   PAE = 'PAE',
   AS = 'AS',
@@ -192,7 +176,7 @@ export enum SubjectRoleType {
   ALTRO = '',
 }
 
-export enum SubjectType {
+export enum SubjectRoleType {
   ASSEGNATARIO = 'ASSEGNATARIO',
   REGISTRAZIONE = 'SOGGETTO CHE EFFETTUA LA REGISTRAZIONE',
   MITTENTE = 'MITTENTE',
