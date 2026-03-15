@@ -1,4 +1,5 @@
 import { IsoDateString } from '../../../shared/domain/shared-types';
+import { SoggettoFilter } from './search-subject-filters-models';
 import {
   AggregationType,
   FascicoloType,
@@ -24,9 +25,9 @@ export interface FaseProcedimentoFilter {
 // UC-12.2.2.9.1.1 - UC-12.2.2.9.1.3 , UC-13
 export interface AssegnazioneFilter {
   tipoAssegnazione: AssegnazioneType | null;
+  soggettoAssegn: SoggettoFilter | null;
   dataInizioAssegn: IsoDateString | null;
   dataFineAssegn: IsoDateString | null;
-  soggettoAssegn: SoggettoFilter | null;
 }
 
 // UC-12.2.2.1 - UC-12.2.2.10
