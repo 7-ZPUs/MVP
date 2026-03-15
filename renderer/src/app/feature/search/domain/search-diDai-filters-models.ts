@@ -1,5 +1,11 @@
 import { IsoDateString, IsoTimestampString } from '../../../shared/domain/shared-types';
-import { AGIDFormats, DIDAIFormation, FlowType, RegisterType, ModificaType } from './search.enum';
+import {
+  AGIDFormats,
+  DIDAIFormation,
+  FlowType,
+  RegisterType,
+  ModificationType,
+} from './search.enum';
 
 // UC 12.2.1.2.1 - UC 12.2.1.2.5
 export interface RegistrazioneFilter {
@@ -10,6 +16,7 @@ export interface RegistrazioneFilter {
   numeroRegistrazione: number | null;
   codiceRegistro: string | null;
 }
+
 // UC 12.2.1.6.1 - UC-12.2.1.6.4
 export interface IdentificativoFormatoFilter {
   formato: AGIDFormats | null;
@@ -17,6 +24,7 @@ export interface IdentificativoFormatoFilter {
   versioneProdottoCreazione: string | null;
   produttoreProdottoCreazione: string | null;
 }
+
 // UC 12.2.1.7.1 - UC 12.2.1.7.4
 export interface DatiVerificaFilter {
   formatoDigitalmente: boolean | null;
@@ -24,9 +32,10 @@ export interface DatiVerificaFilter {
   marcaturaTemporale: boolean | null;
   conformitaCopie: boolean | null;
 }
+
 // UC-12.2.1.11.1 - UC-12.2.1.11.3
 export interface ModificaFilter {
-  tipoModifica: ModificaType | null;
+  tipoModifica: ModificationType | null;
   dataModifica: IsoDateString | null;
   oraModifica: IsoTimestampString | null;
   idVersionePrec: string | null;
