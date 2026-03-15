@@ -1,3 +1,4 @@
+import { IsoDateString } from '../../../shared/domain/shared-types';
 import { DocumentType } from './search.enum';
 
 // UC 12.1.2.1, UC 12.1.2.2
@@ -14,24 +15,24 @@ export interface ClassificazioneFilter {
 
 export interface ConservazioneFilter {
   valore: number | null;
-  perenne: boolean | null;
+  perenne: boolean | null; // Salvato come 9999 per indicare "perenne"
 }
 
 /* UC 12.1.1 - 12.1.6 */
 export interface CommonFilterValues {
   chiaveDescrittiva: ChiaveDescrittivaFilter | null;
   classificazione: ClassificazioneFilter | null;
-  conservazione: string | null;
+  conservazione: ConservazioneFilter | null;
   note: string | null;
-  tipo: DocumentType | null;
+  tipoDocumento: DocumentType | null;
 }
 
 export interface AggregareFilterValues {
   tipo: string | null;
   idAggregazione: string | null;
   fascicolo: string | null;
-  dataDa: string | null;
-  dataA: string | null;
+  dataDa: IsoDateString | null;
+  dataA: IsoDateString | null;
   procedimento: string | null;
   assegnazione: string | null;
 }
