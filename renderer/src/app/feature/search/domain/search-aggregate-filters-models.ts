@@ -31,7 +31,7 @@ export interface AssegnazioneFilter {
 }
 
 // UC-12.2.2.1 - UC-12.2.2.10
-export interface AggregareFilterValues {
+export interface AggregateFilterValues {
   tipoAggregazione: AggregationType | null;
   idAggregazione: string | null;
   tipoFascicolo: FascicoloType | null;

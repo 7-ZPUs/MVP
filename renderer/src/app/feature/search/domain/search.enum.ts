@@ -1,7 +1,7 @@
 export enum SearchQueryType {
   FREE = 'FREE',
-  CLASS = 'CLASS',
-  PROCESS = 'PROCESS',
+  CLASS_NAME = 'CLASS NAME',
+  PROCESS_ID = 'PROCESS ID',
 }
 
 export enum FilterFieldType {

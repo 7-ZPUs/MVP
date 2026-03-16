@@ -1,5 +1,9 @@
 import { ErrorCode, ErrorCategory, ErrorSeverity } from './error.enum';
 
+export interface AppErrorContext {
+  [key: string]: string | number | boolean | null | undefined | AppErrorContext;
+}
+
 export interface AppError {
   code: ErrorCode;
   category: ErrorCategory;
@@ -7,6 +11,6 @@ export interface AppError {
   recoverable: boolean;
   message: string;
   source: string;
-  context: Record<string, any>;
+  context: AppErrorContext;
   detail: string | null;
 }
