@@ -2,7 +2,7 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { Readable } from "node:stream";
 import { IPackageReaderPort } from "../IPackageReaderPort";
-import { IDiPIndexParser } from "./utils/IDiPIndexParser";
+import { IDiPIndexParser } from "./utils/IDipIndexParser";
 import { Dip } from "../../entity/Dip";
 import { DocumentClass } from "../../entity/DocumentClass";
 import { Process } from "../../entity/Process";

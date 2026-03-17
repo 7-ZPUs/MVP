@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { FastXmlParserAdapter } from "../../src/repo/impl/utils/FastXmlParserAdapter";
+import { XmlDipIndexParser } from "../../src/repo/impl/utils/XmlDipIndexParser";
 import { DiPIndexMapper } from "../../src/repo/impl/utils/DiPIndexMapper";
 import { LocalPackageReaderAdapter } from "../../src/repo/impl/LocalPackageReaderAdapter";
 import * as fs from "node:fs";
@@ -111,7 +111,7 @@ const MULTI_CLASS_DIP_INDEX = `<?xml version="1.0" encoding="UTF-8"?>
 </DiPIndex>`;
 
 describe("FastXmlParserAdapter", () => {
-  const parser = new FastXmlParserAdapter();
+  const parser = new XmlDipIndexParser();
 
   it("should parse a minimal DiPIndex XML", () => {
     const result = parser.parse(MINIMAL_DIP_INDEX);
@@ -161,7 +161,7 @@ describe("FastXmlParserAdapter", () => {
 });
 
 describe("DiPIndexMapper", () => {
-  const parser = new FastXmlParserAdapter();
+  const parser = new XmlDipIndexParser();
 
   describe("with minimal index", () => {
     const mapper = new DiPIndexMapper(parser.parse(MINIMAL_DIP_INDEX));
@@ -257,7 +257,7 @@ describe("DiPIndexMapper", () => {
 });
 
 describe("LocalPackageReaderAdapter", () => {
-  const parser = new FastXmlParserAdapter();
+  const parser = new XmlDipIndexParser();
   const adapter = new LocalPackageReaderAdapter(parser);
 
   let tmpDir: string;
@@ -326,7 +326,7 @@ describe("LocalPackageReaderAdapter", () => {
 
   it("should parse DiPIndex only once per dipPath across multiple readXxx calls", async () => {
     const dipPath = writeDiPIndex(MINIMAL_DIP_INDEX);
-    const freshParser = new FastXmlParserAdapter();
+    const freshParser = new XmlDipIndexParser();
     const freshAdapter = new LocalPackageReaderAdapter(freshParser);
     const spy = vi.spyOn(freshParser, "parse");
 

@@ -1,8 +1,8 @@
 import { XMLParser } from "fast-xml-parser";
-import { IDiPIndexParser } from "./IDiPIndexParser";
+import { IDiPIndexParser } from "./IDipIndexParser";
 import { DiPIndexXml } from "../../xml-types/DiPIndexXml";
 
-export class FastXmlParserAdapter implements IDiPIndexParser {
+export class XmlDipIndexParser implements IDiPIndexParser {
   private readonly parser: XMLParser;
 
   constructor() {

@@ -25,8 +25,8 @@ import { DOCUMENT_CLASS_REPOSITORY_TOKEN } from "./repo/IDocumentClassRepository
 import { DocumentClassRepository } from "./repo/impl/DocumentClassRepository";
 import { PACKAGE_READER_PORT_TOKEN } from "./repo/IPackageReaderPort";
 import { LocalPackageReaderAdapter } from "./repo/impl/utils/LocalPackageReaderAdapter";
-import { DIP_INDEX_PARSER_TOKEN } from "./repo/impl/utils/IDiPIndexParser";
-import { FastXmlParserAdapter } from "./repo/impl/utils/FastXmlParserAdapter";
+import { DIP_INDEX_PARSER_TOKEN } from "./repo/impl/utils/IDipIndexParser";
+import { XmlDipIndexParser } from "./repo/impl/utils/XmlDipIndexParser";
 
 // ---- Document use cases ----
 import { DocumentoUC } from "./use-case/document/tokens";
@@ -67,7 +67,7 @@ container.register(DOCUMENT_CLASS_REPOSITORY_TOKEN, {
 });
 
 // Package reader
-container.register(DIP_INDEX_PARSER_TOKEN, { useClass: FastXmlParserAdapter });
+container.register(DIP_INDEX_PARSER_TOKEN, { useClass: XmlDipIndexParser });
 container.register(PACKAGE_READER_PORT_TOKEN, {
   useFactory: (dependencyContainer) =>
     new LocalPackageReaderAdapter(
