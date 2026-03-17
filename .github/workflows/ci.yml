@@ -1,0 +1,58 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+jobs:
+  pipeline:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+
+      - name: Install dependencies
+        run: |
+          npm install
+          cd core && npm install && cd ..
+          cd renderer && npm install && cd ..
+
+      - name: Build project
+        run: |
+          npm run build:all
+
+      - name: Run Tests and Coverage
+        run: |
+          # Test Renderer (Angular)
+          npm run test:renderer
+
+          # Test Core (Electron)
+          npm run test:core
+
+      - name: SonarQube Analysis
+        uses: sonarsource/sonarqube-scan-action@v6
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        with:
+          args: >
+            -Dsonar.projectKey=dipreader
+            -Dsonar.projectName=dipreader
+            -Dsonar.sources=core/src,renderer/src,shared,main.ts
+            -Dsonar.tests=core/test,renderer/src
+            -Dsonar.test.inclusions=**/*.spec.ts,**/*.test.ts
+            -Dsonar.javascript.lcov.reportPaths=coverage/core/lcov.info,coverage/renderer/lcov.info
+            -Dsonar.typescript.tsconfigPaths=tsconfig.json,renderer/tsconfig.json
+            -Dsonar.sourceEncoding=UTF-8
