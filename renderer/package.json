@@ -6,7 +6,9 @@
     "start": "ng serve --host 0.0.0.0",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   },
   "private": true,
   "packageManager": "npm@11.9.0",
@@ -24,6 +26,8 @@
     "@angular/build": "^21.2.0",
     "@angular/cli": "^21.2.0",
     "@angular/compiler-cli": "^21.2.0",
+    "angular-eslint": "^21.3.0",
+    "eslint": "^10.0.3",
     "jsdom": "^28.0.0",
     "prettier": "^3.8.1",
     "typescript": "~5.9.2",
