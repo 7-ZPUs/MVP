@@ -8,7 +8,6 @@
     "build:renderer": "cd renderer && npx ng build",
     "build:all": "npm run build:renderer && npm run build",
     "start": "ELECTRON_DISABLE_SANDBOX=1 electron .",
-    "start:dev": "NODE_ENV=development npm run build:all && npm run start",
     "start:renderer": "cd renderer && ng serve --host 0.0.0.0",
     "test:core": "vitest run --passWithNoTests",
     "test:core:watch": "vitest",

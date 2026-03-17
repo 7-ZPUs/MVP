@@ -1,6 +1,5 @@
-import "reflect-metadata";
-
-import { container } from "tsyringe";
+import 'reflect-metadata';
+import { container } from 'tsyringe';
 
 // ---- Services ----
 import { HASHING_SERVICE_TOKEN } from "./services/IHashingService";
