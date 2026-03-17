@@ -40,7 +40,7 @@ export class DocumentRepository implements IDocumentRepository {
                 id               INTEGER PRIMARY KEY AUTOINCREMENT,
                 uuid             TEXT    NOT NULL UNIQUE,
                 integrity_status TEXT    NOT NULL DEFAULT 'UNKNOWN',
-                process_id       INTEGER
+                process_id       INTEGER NOT NULL REFERENCES process(id) ON DELETE CASCADE
             );
 
             CREATE TABLE IF NOT EXISTS document_metadata (
@@ -50,6 +50,15 @@ export class DocumentRepository implements IDocumentRepository {
                 value       TEXT    NOT NULL,
                 type        TEXT    NOT NULL DEFAULT 'string'
             );
+
+            CREATE INDEX IF NOT EXISTS idx_document_process_id
+                ON document (process_id);
+
+            CREATE INDEX IF NOT EXISTS idx_document_integrity_status
+                ON document (integrity_status);
+
+            CREATE INDEX IF NOT EXISTS idx_document_metadata_document_id
+                ON document_metadata (document_id);
         `);
     }
 

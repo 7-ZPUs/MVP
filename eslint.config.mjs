@@ -28,6 +28,15 @@ export default tseslint.config(
     },
   },
   {
+    files: ["**/*.spec.ts", "**/*.test.ts"],
+    languageOptions: {
+      parserOptions: {
+        project: ["./tsconfig.test.json"],
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+  },
+  {
     ignores: ["dist/**", "node_modules/**", "renderer/**"],
   },
 );

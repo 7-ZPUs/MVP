@@ -23,9 +23,12 @@ export class DipRepository implements IDipRepository {
         this.db.exec(`
             CREATE TABLE IF NOT EXISTS dip (
                 id               INTEGER PRIMARY KEY AUTOINCREMENT,
-                uuid             TEXT    NOT NULL,
+                uuid             TEXT    NOT NULL UNIQUE,
                 integrity_status TEXT    NOT NULL DEFAULT 'UNKNOWN'
             );
+
+            CREATE INDEX IF NOT EXISTS idx_dip_integrity_status
+                ON dip (integrity_status);
         `);
     }
 

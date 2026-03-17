@@ -27,7 +27,7 @@ export class ProcessRepository implements IProcessRepository {
         this.db.exec(`
             CREATE TABLE IF NOT EXISTS process (
                 id               INTEGER PRIMARY KEY AUTOINCREMENT,
-                document_class_id INTEGER NOT NULL,
+                document_class_id INTEGER NOT NULL REFERENCES document_class(id) ON DELETE CASCADE,
                 uuid             TEXT    NOT NULL UNIQUE,
                 integrity_status TEXT    NOT NULL DEFAULT 'UNKNOWN'
             );
@@ -38,6 +38,15 @@ export class ProcessRepository implements IProcessRepository {
                 value       TEXT    NOT NULL,
                 type        TEXT    NOT NULL DEFAULT 'string'
             );
+
+            CREATE INDEX IF NOT EXISTS idx_process_document_class_id
+                ON process (document_class_id);
+
+            CREATE INDEX IF NOT EXISTS idx_process_integrity_status
+                ON process (integrity_status);
+
+            CREATE INDEX IF NOT EXISTS idx_process_metadata_process_id
+                ON process_metadata (process_id);
         `);
     }
 
