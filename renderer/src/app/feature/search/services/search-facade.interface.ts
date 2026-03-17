@@ -1,5 +1,5 @@
 import { Signal } from '@angular/core';
-import { SearchFilters, SearchQuery, SearchState } from './search.models';
+import { SearchFilters, SearchQuery, SearchState } from '../contracts/search.models';
 
 export interface ISearchFacade {
   getState(): Signal<SearchState>;

@@ -1,5 +1,5 @@
 import { Observable } from 'rxjs';
-import { SearchFilters, SearchQuery, SearchResult } from './search.models';
+import { SearchFilters, SearchQuery, SearchResult } from '../contracts/search.models';
 
 export interface ISearchChannel {
   search(query: SearchQuery, signal: AbortSignal): Observable<SearchResult[]>;
