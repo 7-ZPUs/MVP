@@ -145,3 +145,6 @@ vite.config.ts.timestamp-*
 # Vitest reports
 dist/
 coverage/
+
+# vscode
+.vscode/
