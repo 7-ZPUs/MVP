@@ -2,6 +2,6 @@
 export class SearchFilter {
     constructor(
         public readonly field: string,
-        public readonly value: string | number
+        public readonly value: string | number | Boolean | Date
     ) {}
 }
