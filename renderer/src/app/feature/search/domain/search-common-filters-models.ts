@@ -14,8 +14,7 @@ export interface ClassificazioneFilter {
 
 // UC-12.1.4.1, UC-12.1.4.2
 export interface ConservazioneFilter {
-  valore: number | null;
-  perenne: boolean | null; // Salvato come 9999 per indicare "perenne"
+  valore: number | null; // Salvato come 9999 per indicare "perenne"
 }
 
 /* UC-12.1.1 - 12.1.6 */
