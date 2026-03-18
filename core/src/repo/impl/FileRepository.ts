@@ -35,8 +35,17 @@ export class FileRepository implements IFileRepository {
                 path             TEXT    NOT NULL,
                 integrity_status TEXT    NOT NULL DEFAULT 'UNKNOWN',
                 is_main          INTEGER NOT NULL DEFAULT 0,
-                document_id      INTEGER NOT NULL REFERENCES documento(id) ON DELETE CASCADE
+                document_id      INTEGER NOT NULL REFERENCES document(id) ON DELETE CASCADE
             );
+
+            CREATE INDEX IF NOT EXISTS idx_file_document_id
+                ON file (document_id);
+
+            CREATE INDEX IF NOT EXISTS idx_file_integrity_status
+                ON file (integrity_status);
+
+            CREATE INDEX IF NOT EXISTS idx_file_document_id_is_main_id
+                ON file (document_id, is_main DESC, id);
         `);
   }
 

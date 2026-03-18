@@ -21,12 +21,18 @@ export class DocumentClassRepository implements IDocumentClassRepository {
     this.db.exec(`
             CREATE TABLE IF NOT EXISTS document_class (
                 id               INTEGER PRIMARY KEY AUTOINCREMENT,
-                dip_id       INTEGER NOT NULL,
+                dip_id           INTEGER NOT NULL REFERENCES dip(id) ON DELETE CASCADE,
                 uuid             TEXT    NOT NULL UNIQUE,
                 integrity_status TEXT    NOT NULL DEFAULT 'UNKNOWN',
                 name             TEXT    NOT NULL,
                 timestamp        TEXT    NOT NULL
             );
+
+            CREATE INDEX IF NOT EXISTS idx_document_class_dip_id
+                ON document_class (dip_id);
+
+            CREATE INDEX IF NOT EXISTS idx_document_class_integrity_status
+                ON document_class (integrity_status);
         `);
   }
 
@@ -85,6 +91,18 @@ export class DocumentClassRepository implements IDocumentClassRepository {
       timestamp: documentClass.getTimestamp(),
     });
   }
+
+    search(query: string): DocumentClass[] | null {
+        const result = this.db
+            .prepare<[string], DocumentClassRow>(
+                `SELECT id, dip_id as dipId, uuid, integrity_status as integrityStatus, name, timestamp 
+                 FROM document_class 
+                 WHERE name LIKE ?`
+            )
+            .all(`%${query}%`);
+
+        return result.length > 0 ? result.map(row => this.rowToEntity(row)) : null;
+    }
 
   updateIntegrityStatus(id: number, status: IntegrityStatusEnum): void {
     this.db
