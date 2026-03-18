@@ -82,4 +82,18 @@ export class DocumentClassRepository implements IDocumentClassRepository {
             .prepare('UPDATE document_class SET integrity_status = ? WHERE id = ?')
             .run(status, id);
     }
+
+    searchDocumentalClasses(name: string): DocumentClass[] {
+        const rows = this.db
+            .prepare<[string], DocumentClassRow>(
+                `SELECT id, dip_id as dipId, uuid,
+                        integrity_status as integrityStatus,
+                        name, timestamp
+                 FROM document_class
+                 WHERE name LIKE ?`
+            )
+            .all(`%${name}%`);
+
+        return rows.map((row) => DocumentClass.fromDB(row));
+    }
 }

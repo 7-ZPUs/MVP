@@ -15,6 +15,9 @@ export const IpcChannels = {
   // ----- Search -----
   SEARCH_FULLTEXT: 'search:fulltext',
   SEARCH_SEMANTIC: 'search:semantic',
+  SEARCH_CLASSES:    'search:classes',
+  SEARCH_PROCESSES:  'search:processes',
+  SEARCH_DOCUMENTS:  'search:documents',
 
   // ----- Integrity -----
   INTEGRITY_VERIFY: 'integrity:verify',

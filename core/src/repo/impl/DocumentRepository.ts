@@ -18,6 +18,7 @@ import { DatabaseProvider, DATABASE_PROVIDER_TOKEN } from './DatabaseProvider';
 import { loadMetadata, saveMetadata } from './MetadataHelper';
 import { CreateDocumentDTO } from '../../dto/DocumentDTO';
 import { Metadata } from '../../value-objects/Metadata';
+import { SearchFilter } from '../../value-objects/SearchFilter';
 
 const METADATA_TABLE = 'document_metadata';
 const METADATA_FK = 'document_id';
@@ -122,5 +123,24 @@ export class DocumentRepository implements IDocumentRepository {
         this.db
             .prepare('UPDATE document SET integrity_status = ? WHERE id = ?')
             .run(status, id);
+    }
+
+    searchDocument(filters: SearchFilter[]): Document[] {
+        if (filters.length === 0) return [];
+
+        const conditions = filters.map((f) => `${f.field} = ?`).join(' AND ');
+        const values = filters.map((f) => f.value);
+        const rows = this.db
+            .prepare<unknown[], DocumentRow>(
+                `SELECT id, uuid,
+                        integrity_status as integrityStatus,
+                        process_id as processId
+                FROM document
+                WHERE ${conditions}`
+            )
+            .all(...values);
+
+        // rowToEntity carica i metadata tramite MetadataHelper
+        return rows.map((row) => this.rowToEntity(row));
     }
 }

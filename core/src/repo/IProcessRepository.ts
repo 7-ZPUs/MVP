@@ -19,4 +19,7 @@ export interface IProcessRepository {
 
     /** Aggiorna lo stato di integrità di un processo. */
     updateIntegrityStatus(id: number, status: IntegrityStatusEnum): void;
+
+    /** Ricerca processi per uuid. */
+    searchProcesses(uuid: string): Process[];
 }

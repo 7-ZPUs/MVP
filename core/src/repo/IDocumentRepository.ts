@@ -1,6 +1,7 @@
 import { CreateDocumentDTO } from '../dto/DocumentDTO';
 import type { Document } from '../entity/Document';
 import { IntegrityStatusEnum } from '../value-objects/IntegrityStatusEnum';
+import { SearchFilter } from '../value-objects/SearchFilter';
 
 export const DOCUMENTO_REPOSITORY_TOKEN = Symbol('IDocumentRepository');
 
@@ -19,4 +20,7 @@ export interface IDocumentRepository {
 
     /** Aggiorna lo stato di integrità di un document. */
     updateIntegrityStatus(id: number, status: IntegrityStatusEnum): void;
+
+    /** Ricerca documenti mediante metadati */
+    searchDocument(filters: SearchFilter[]): Document[];
 }

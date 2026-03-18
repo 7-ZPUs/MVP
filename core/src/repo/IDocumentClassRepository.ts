@@ -10,4 +10,5 @@ export interface IDocumentClassRepository {
     getByStatus(status: IntegrityStatusEnum): DocumentClass[];
     save(dto: CreateDocumentClassDTO): DocumentClass;
     updateIntegrityStatus(id: number, status: IntegrityStatusEnum): void;
+    searchDocumentalClasses(name: string): DocumentClass[];
 }
