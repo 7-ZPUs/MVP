@@ -2,30 +2,30 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { Readable } from "node:stream";
 import { IPackageReaderPort } from "../IPackageReaderPort";
-import { IDiPIndexParser } from "./utils/IDipIndexParser";
+import { IDipParser } from "./utils/IDipParser";
 import { Dip } from "../../entity/Dip";
 import { DocumentClass } from "../../entity/DocumentClass";
 import { Process } from "../../entity/Process";
 import { Document } from "../../entity/Document";
 import { File } from "../../entity/File";
-import { DiPIndexMapper } from "./utils/DiPIndexMapper";
+import { DipIndexMapper } from "./utils/DipIndexMapper";
 import { PlatformPath } from "node:path";
 
 const DIP_INDEX_FILENAME = "DiPIndex.xml";
 
 export class LocalPackageReaderAdapter implements IPackageReaderPort {
-  private readonly mapperCache = new Map<string, DiPIndexMapper>();
+  private readonly mapperCache = new Map<string, DipIndexMapper>();
 
-  constructor(private readonly indexParser: IDiPIndexParser) {}
+  constructor(private readonly parser: IDipParser) {}
 
-  private getMapper(dipPath: PlatformPath): DiPIndexMapper {
+  private getMapper(dipPath: PlatformPath): DipIndexMapper {
     const key = dipPath as unknown as string;
     const cached = this.mapperCache.get(key);
     if (cached) return cached;
 
     const indexPath = path.join(key, DIP_INDEX_FILENAME);
     const rawContent = fs.readFileSync(indexPath, "utf-8");
-    const mapper = new DiPIndexMapper(this.indexParser.parse(rawContent));
+    const mapper = new DipIndexMapper(this.parser.parseDipIndex(rawContent));
     this.mapperCache.set(key, mapper);
     return mapper;
   }
@@ -56,7 +56,15 @@ export class LocalPackageReaderAdapter implements IPackageReaderPort {
   public async *readDocuments(dipPath: PlatformPath): AsyncGenerator<Document> {
     const mapper = this.getMapper(dipPath);
     for (const doc of mapper.extractDocuments()) {
-      yield new Document(doc.uuid, doc.metadata, 0);
+      const metadataPath = path.join(
+        dipPath as unknown as string,
+        doc.documentPath,
+        doc.metadataFilename,
+      );
+      const metadata = this.parser.parseDocumentMetadata(
+        fs.readFileSync(metadataPath, "utf-8"),
+      );
+      yield new Document(doc.uuid, metadata, 0);
     }
   }
 

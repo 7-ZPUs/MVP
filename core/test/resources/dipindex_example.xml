@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DiPIndex xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="DiPIndex.xsd">
+    <ComplianceStatement lang="it">
+        <Title>Dichiarazione di conformità del Pacchetto di Distribuzione.</Title>
+        <Body>La società Archiverse Srl dichiara e certifica che i documenti contenuti nel presente
+            Pacchetto di Distribuzione sono conformi alle copie conservate nel sistema Archimemo.</Body>
+    </ComplianceStatement>
+    <PackageInfo>
+        <CreatingApplication>
+            <Name>Archimemo</Name>
+            <Version>1.1.0</Version>
+            <Producer>Archiverse Srl</Producer>
+        </CreatingApplication>
+        <ProcessUUID>ec276d29-f80c-4693-b3c9-1cb650e23114</ProcessUUID>
+        <CreationDate>2025-11-11</CreationDate>
+        <DocumentsCount>7</DocumentsCount>
+        <AiPCount>7</AiPCount>
+    </PackageInfo>
+    <PackageContent>
+        <DiPDocuments>
+            <Statement lang="it">I documenti del presente pacchetto di distribuzione appartengono
+                alle seguenti classi documentali</Statement>
+            <DocumentClass name="Registri IVA" uuid="ddaa9d92-3eac-4b56-8019-1d562ff863f2"
+                validFrom="2025-09-02T22:00:00Z" version="1">
+                <RappresentationInformationUUID>a9fa42bd-1ff4-407f-ab7f-3bbabdb28a72</RappresentationInformationUUID>
+                <AiP uuid="1db6d624-a49d-4506-8378-6aee8ef4385e">
+                    <AiPRoot>
+                        ./ddaa9d92-3eac-4b56-8019-1d562ff863f2/2025/11/202511101444.1db6d624-a49d-4506-8378-6aee8ef4385e</AiPRoot>
+                    <Report name="Submission Report" uuid="05e217d8-4579-4f94-8349-cb273482654c">
+                        ./reports/SReport.1db6d624-a49d-4506-8378-6aee8ef4385e.xml</Report>
+                    <Report name="Preservation Report" uuid="d443e72f-90d9-41ea-b281-3a8d90b91411">
+                        ./reports/PReport.1db6d624-a49d-4506-8378-6aee8ef4385e.xml</Report>
+                    <SiP uuid="81c6cb2f-2dbb-45c0-b5ef-f076d65ad01d">
+                        ./SiP/SiP.1db6d624-a49d-4506-8378-6aee8ef4385e_19A6E39D174.xml</SiP>
+                    <Document uuid="117be70d-4dff-4fd0-898d-eeb8b8e6463f">
+                        <DocumentPath>./documents/117be70d-4dff-4fd0-898d-eeb8b8e6463f</DocumentPath>
+                        <Files FilesCount="2">
+                            <Metadata uuid="6ea21d5f-89f2-4dd1-b6e8-151a4a639f1b">
+                                ./117be70d-4dff-4fd0-898d-eeb8b8e6463f.metadata.xml</Metadata>
+                            <Primary uuid="117be70d-4dff-4fd0-898d-eeb8b8e6463f">
+                                ./FilePrincipaleFORM_2.pdf</Primary>
+                        </Files>
+                    </Document>
+                </AiP>
+                <AiP uuid="d825e470-02d3-46ed-9bf1-d01ae72ae025">
+                    <AiPRoot>
+                        ./ddaa9d92-3eac-4b56-8019-1d562ff863f2/2025/11/202511101447.d825e470-02d3-46ed-9bf1-d01ae72ae025</AiPRoot>
+                    <Report name="Submission Report" uuid="10d29135-1f6d-4e8f-934f-9ca113f4e151">
+                        ./reports/SReport.d825e470-02d3-46ed-9bf1-d01ae72ae025.xml</Report>
+                    <Report name="Preservation Report" uuid="60a6a04a-a897-4cad-ab86-d10d469898be">
+                        ./reports/PReport.d825e470-02d3-46ed-9bf1-d01ae72ae025.xml</Report>
+                    <SiP uuid="82e11815-fb4b-464b-863c-7912101a8252">
+                        ./SiP/SiP.d825e470-02d3-46ed-9bf1-d01ae72ae025_19A6E3C220D.xml</SiP>
+                    <Document uuid="221b3571-ba09-4f93-b712-87ee2cbfd711">
+                        <DocumentPath>./documents/221b3571-ba09-4f93-b712-87ee2cbfd711</DocumentPath>
+                        <Files FilesCount="8">
+                            <Metadata uuid="8fcd7c07-406c-452f-a32a-e4f6f6a896b0">
+                                ./221b3571-ba09-4f93-b712-87ee2cbfd711.metadata.xml</Metadata>
+                            <Primary uuid="221b3571-ba09-4f93-b712-87ee2cbfd711">
+                                ./FilePrincipaleFORM_3.pdf</Primary>
+                            <Attachments uuid="795262f7-934d-43c4-b82d-f6118712c508">
+                                ./795262f7-934d-43c4-b82d-f6118712c508/Allegato_1.pdf</Attachments>
+                            <Attachments uuid="90d48ed8-e282-45f7-ad3a-daf0d3744892">
+                                ./90d48ed8-e282-45f7-ad3a-daf0d3744892/Allegato_2.pdf</Attachments>
+                            <Attachments uuid="58be4bd6-8b62-4977-a7e9-6c4dbdcdf320">
+                                ./58be4bd6-8b62-4977-a7e9-6c4dbdcdf320/Allegato_3.pdf</Attachments>
+                            <Attachments uuid="0e4d1a00-bdee-4218-a416-30deb044d96d">
+                                ./0e4d1a00-bdee-4218-a416-30deb044d96d/Allegato_4.pdf</Attachments>
+                            <Attachments uuid="f93f5b5d-373e-4399-928d-3070cdbca056">
+                                ./f93f5b5d-373e-4399-928d-3070cdbca056/Allegato_5.pdf</Attachments>
+                            <Attachments uuid="3155d1b8-8a7c-4821-9b13-e9431a5b0d64">
+                                ./3155d1b8-8a7c-4821-9b13-e9431a5b0d64/Allegato_6.pdf</Attachments>
+                        </Files>
+                    </Document>
+                </AiP>
+                <AiP uuid="4300691c-08eb-4b11-b6c7-b95ad425872a">
+                    <AiPRoot>
+                        ./ddaa9d92-3eac-4b56-8019-1d562ff863f2/2025/11/202511101442.4300691c-08eb-4b11-b6c7-b95ad425872a</AiPRoot>
+                    <Report name="Submission Report" uuid="779a5ddb-4fc1-45e3-885e-a07f5b3b49e4">
+                        ./reports/SReport.4300691c-08eb-4b11-b6c7-b95ad425872a.xml</Report>
+                    <Report name="Preservation Report" uuid="9499e5c7-5fcb-4b64-91e4-37cf2048976d">
+                        ./reports/PReport.4300691c-08eb-4b11-b6c7-b95ad425872a.xml</Report>
+                    <SiP uuid="da50081f-4fb7-4afd-8df3-72c319ed7ebe">
+                        ./SiP/SiP.4300691c-08eb-4b11-b6c7-b95ad425872a_19A6E383BFF.xml</SiP>
+                    <Document uuid="e7c6c19a-6607-4c87-b5a0-d16323172245">
+                        <DocumentPath>./documents/e7c6c19a-6607-4c87-b5a0-d16323172245</DocumentPath>
+                        <Files FilesCount="3">
+                            <Metadata uuid="6525d232-315c-421e-bd0e-969e1b06da26">
+                                ./e7c6c19a-6607-4c87-b5a0-d16323172245.metadata.xml</Metadata>
+                            <Primary uuid="e7c6c19a-6607-4c87-b5a0-d16323172245">
+                                ./FilePrincipaleFORM_1.pdf</Primary>
+                            <Attachments uuid="a0aa0ac2-27c6-4795-833b-436af1fc281d">
+                                ./a0aa0ac2-27c6-4795-833b-436af1fc281d/Allegato_1.pdf</Attachments>
+                        </Files>
+                    </Document>
+                </AiP>
+            </DocumentClass>
+            <DocumentClass name="Fatture" uuid="aceea3ff-8103-40ec-8901-1c9ee651da40"
+                validFrom="2025-09-02T22:00:00Z" version="1">
+                <RappresentationInformationUUID>a9fa42bd-1ff4-407f-ab7f-3bbabdb28a72</RappresentationInformationUUID>
+                <AiP uuid="3274e2d7-3bcd-4a4d-9b1f-2ea0a23d0a1e">
+                    <AiPRoot>
+                        ./aceea3ff-8103-40ec-8901-1c9ee651da40/2025/11/202511110830.3274e2d7-3bcd-4a4d-9b1f-2ea0a23d0a1e</AiPRoot>
+                    <Report name="Submission Report" uuid="23937f98-b059-4ee3-b516-1ba5a57692ec">
+                        ./reports/SReport.3274e2d7-3bcd-4a4d-9b1f-2ea0a23d0a1e.xml</Report>
+                    <Report name="Preservation Report" uuid="8794bdf1-7a1b-419f-b5f1-b6f9c99e24b5">
+                        ./reports/PReport.3274e2d7-3bcd-4a4d-9b1f-2ea0a23d0a1e.xml</Report>
+                    <SiP uuid="8114281b-ea7d-4f0e-9b6c-e965c6b4df4d">
+                        ./SiP/SiP.3274e2d7-3bcd-4a4d-9b1f-2ea0a23d0a1e_19A7209C57A.xml</SiP>
+                    <Document uuid="400f4544-198a-4af4-86a6-60e27b706f7b">
+                        <DocumentPath>./documents/400f4544-198a-4af4-86a6-60e27b706f7b</DocumentPath>
+                        <Files FilesCount="8">
+                            <Metadata uuid="0c8b5567-d141-44c0-8fc4-96ffc467b0cd">
+                                ./400f4544-198a-4af4-86a6-60e27b706f7b.metadata.xml</Metadata>
+                            <Primary uuid="400f4544-198a-4af4-86a6-60e27b706f7b">
+                                ./FilePrincipaleFORM_2.pdf</Primary>
+                            <Attachments uuid="48a9c3a3-6f0c-4dd8-98f9-2ca65c323709">
+                                ./48a9c3a3-6f0c-4dd8-98f9-2ca65c323709/Allegato_1.pdf</Attachments>
+                            <Attachments uuid="ad74c3d2-f3bb-4373-8db4-751f99d26d32">
+                                ./ad74c3d2-f3bb-4373-8db4-751f99d26d32/Allegato_2.pdf</Attachments>
+                            <Attachments uuid="bee37227-b7d0-4045-ba95-361a48dc25a2">
+                                ./bee37227-b7d0-4045-ba95-361a48dc25a2/Allegato_3.pdf</Attachments>
+                            <Attachments uuid="81f56816-d88d-4d4a-8e2d-d45dc77354ff">
+                                ./81f56816-d88d-4d4a-8e2d-d45dc77354ff/Allegato_4.pdf</Attachments>
+                            <Attachments uuid="fedb1870-719f-4680-8c1c-fa59e2603496">
+                                ./fedb1870-719f-4680-8c1c-fa59e2603496/Allegato_5.pdf</Attachments>
+                            <Attachments uuid="424143eb-2094-4a37-a5b4-9dbfcaf5cac6">
+                                ./424143eb-2094-4a37-a5b4-9dbfcaf5cac6/Allegato_6.pdf</Attachments>
+                        </Files>
+                    </Document>
+                </AiP>
+                <AiP uuid="fe357a1d-55ae-4eff-b2cf-3b852e504833">
+                    <AiPRoot>
+                        ./aceea3ff-8103-40ec-8901-1c9ee651da40/2025/11/202511110828.fe357a1d-55ae-4eff-b2cf-3b852e504833</AiPRoot>
+                    <Report name="Submission Report" uuid="9838da04-b2d9-45d7-9afd-541e2e81aca6">
+                        ./reports/SReport.fe357a1d-55ae-4eff-b2cf-3b852e504833.xml</Report>
+                    <Report name="Preservation Report" uuid="44b2794a-c8ba-4291-a7de-79ef401268a4">
+                        ./reports/PReport.fe357a1d-55ae-4eff-b2cf-3b852e504833.xml</Report>
+                    <SiP uuid="4130ed84-e0a1-4a96-9625-b8d0de8a73c2">
+                        ./SiP/SiP.fe357a1d-55ae-4eff-b2cf-3b852e504833_19A72079D1A.xml</SiP>
+                    <Document uuid="f276e610-5b6a-4826-bbc3-aaec29ae1dc2">
+                        <DocumentPath>./documents/f276e610-5b6a-4826-bbc3-aaec29ae1dc2</DocumentPath>
+                        <Files FilesCount="5">
+                            <Metadata uuid="abf5a151-8c48-4712-a160-534ffa6192a7">
+                                ./f276e610-5b6a-4826-bbc3-aaec29ae1dc2.metadata.xml</Metadata>
+                            <Primary uuid="f276e610-5b6a-4826-bbc3-aaec29ae1dc2">
+                                ./FilePrincipaleFORM_1.pdf</Primary>
+                            <Attachments uuid="4ce12be7-b975-40ac-841e-298f9cdf717b">
+                                ./4ce12be7-b975-40ac-841e-298f9cdf717b/Allegato_1.pdf</Attachments>
+                            <Attachments uuid="922f4d41-588e-42bf-8dc5-cc519dc3ca12">
+                                ./922f4d41-588e-42bf-8dc5-cc519dc3ca12/Allegato_2.pdf</Attachments>
+                            <Attachments uuid="48030676-ece2-4966-a5d2-20a85afbede8">
+                                ./48030676-ece2-4966-a5d2-20a85afbede8/Allegato_3.pdf</Attachments>
+                        </Files>
+                    </Document>
+                </AiP>
+                <AiP uuid="13d6c1b8-4bd7-4dff-9b78-1d8d4f28b73d">
+                    <AiPRoot>
+                        ./aceea3ff-8103-40ec-8901-1c9ee651da40/2025/10/202510230738.13d6c1b8-4bd7-4dff-9b78-1d8d4f28b73d</AiPRoot>
+                    <Report name="Submission Report" uuid="bba452ae-0210-41df-94e1-d064a0a76ea6">
+                        ./reports/SReport.13d6c1b8-4bd7-4dff-9b78-1d8d4f28b73d.xml</Report>
+                    <Report name="Preservation Report" uuid="69e1b073-44c0-48ed-9169-cb99bcdea521">
+                        ./reports/PReport.13d6c1b8-4bd7-4dff-9b78-1d8d4f28b73d.xml</Report>
+                    <SiP uuid="98418ad2-b292-4cb8-bc85-c7efc9f1abc0">
+                        ./SiP/SiP.13d6c1b8-4bd7-4dff-9b78-1d8d4f28b73d_19A100103A8.xml</SiP>
+                    <Document uuid="a3c622f4-2374-43fd-9212-16311bee23cf">
+                        <DocumentPath>./documents/a3c622f4-2374-43fd-9212-16311bee23cf</DocumentPath>
+                        <Files FilesCount="5">
+                            <Metadata uuid="ab2bbc36-cbf6-4177-a917-f3390cecf886">
+                                ./a3c622f4-2374-43fd-9212-16311bee23cf.metadata.xml</Metadata>
+                            <Primary uuid="a3c622f4-2374-43fd-9212-16311bee23cf">
+                                ./FilePrincipaleFORM_3.pdf</Primary>
+                            <Attachments uuid="f9128bd2-0e4a-4aa5-ae40-0bf5ac6479c2">
+                                ./f9128bd2-0e4a-4aa5-ae40-0bf5ac6479c2/Allegato_1.pdf</Attachments>
+                            <Attachments uuid="c8cf1aa6-884e-44a1-bcd0-f91f154b40ba">
+                                ./c8cf1aa6-884e-44a1-bcd0-f91f154b40ba/Allegato_2.pdf</Attachments>
+                            <Attachments uuid="e5c64ede-8c64-42aa-96e0-e10c66935734">
+                                ./e5c64ede-8c64-42aa-96e0-e10c66935734/Allegato_3.pdf</Attachments>
+                        </Files>
+                    </Document>
+                </AiP>
+                <AiP uuid="4596e5e4-1ffb-4b7b-aef8-85a519a1d48b">
+                    <AiPRoot>
+                        ./aceea3ff-8103-40ec-8901-1c9ee651da40/2025/10/202510230740.4596e5e4-1ffb-4b7b-aef8-85a519a1d48b</AiPRoot>
+                    <Report name="Submission Report" uuid="ca6a783c-50e3-4108-a0a8-ba19bd49665b">
+                        ./reports/SReport.4596e5e4-1ffb-4b7b-aef8-85a519a1d48b.xml</Report>
+                    <Report name="Preservation Report" uuid="136ffa49-d1bc-4962-9a53-f201dbfe1d80">
+                        ./reports/PReport.4596e5e4-1ffb-4b7b-aef8-85a519a1d48b.xml</Report>
+                    <SiP uuid="e1397fb5-8583-4c40-9159-6b3b768016be">
+                        ./SiP/SiP.4596e5e4-1ffb-4b7b-aef8-85a519a1d48b_19A1003417A.xml</SiP>
+                    <Document uuid="abca03e2-8a9a-4de6-bebb-a9e82ec9e304">
+                        <DocumentPath>./documents/abca03e2-8a9a-4de6-bebb-a9e82ec9e304</DocumentPath>
+                        <Files FilesCount="2">
+                            <Metadata uuid="8a0a0309-e424-4277-89e9-5087202713c2">
+                                ./abca03e2-8a9a-4de6-bebb-a9e82ec9e304.metadata.xml</Metadata>
+                            <Primary uuid="abca03e2-8a9a-4de6-bebb-a9e82ec9e304">
+                                ./FilePrincipaleFORM_4.pdf</Primary>
+                        </Files>
+                    </Document>
+                </AiP>
+            </DocumentClass>
+        </DiPDocuments>
+        <RepresentationInformation uuid="a9fa42bd-1ff4-407f-ab7f-3bbabdb28a72">
+            <Name>Visualizzatore PDF</Name>
+            <Description>Portable Document Format</Description>
+            <MimeType>application/pdf</MimeType>
+            <Content uuid="a9fa42bd-1ff4-407f-ab7f-3bbabdb28a72">
+                ./RepresentationInformation/a9fa42bd-1ff4-407f-ab7f-3bbabdb28a72/IRtest.pdf</Content>
+        </RepresentationInformation>
+    </PackageContent>
+    <ds:Signature xmlns:ds="http://www.w3.org/2000/09/xmldsig#" Id="AUTO_ADADADADD-19a734e8bc10">
+        <ds:SignedInfo>
+            <ds:CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315" />
+            <ds:SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256" />
+            <ds:Reference Type="http://uri.etsi.org/01903#SignedProperties"
+                URI="#SignedProperties-AUTO_ADADADADD-19a734e8bc10-19a734e8bc20">
+                <ds:Transforms>
+                    <ds:Transform Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315" />
+                </ds:Transforms>
+                <ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256" />
+                <ds:DigestValue>Rrx1anI4UUk1LW+70T6BteUROYBKZo2rGptCbVzYBOU=</ds:DigestValue>
+            </ds:Reference>
+            <ds:Reference Id="Reference-AUTO_ADADADADD-19a734e8bc10-1" URI="">
+                <ds:Transforms>
+                    <ds:Transform Algorithm="http://www.w3.org/2002/06/xmldsig-filter2">
+                        <dsig-xpath:XPath
+                            xmlns:dsig-xpath="http://www.w3.org/2002/06/xmldsig-filter2"
+                            Filter="subtract">/descendant::ds:Signature</dsig-xpath:XPath>
+                    </ds:Transform>
+                    <ds:Transform Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315" />
+                </ds:Transforms>
+                <ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256" />
+                <ds:DigestValue>N7a3aa2JhuYjwcseKBGoFYec82/mhw/TzfdCInKVVE4=</ds:DigestValue>
+            </ds:Reference>
+        </ds:SignedInfo>
+        <ds:SignatureValue Id="SignatureValue-AUTO_ADADADADD-19a734e8bc10">
+            UCqe+30eE0ZdNfkwdyvGcmPUQ4zN2hBQByEwEpvbwS3W7qiLhk7lhPVxe07qfDoJ82Ujen3yu4gIjaT869G1YOvygznN7Kxq627an4zaI3QXYMQGU2Fa0GgenG5GSmfHkOQZfIqhLA012SBSbZxGoWaIVftBMAVIgzKlaWEOJLORfzXyQvEYaRl9zuK9KpsYav5iN6Laq1qsIMD8/GEqco2DurppDFZ48Cb/F+Fn/Ve0QywIfWM4nLZiEawuc7ha13YBl/2dmjwgcGKw2IDZUJ0kz9wJHPTghrfm5jdoaoiODJh84Mf/8RGbe0ak3zx4T/neHE/st+yknlHrIWVOGw==</ds:SignatureValue>
+        <ds:KeyInfo>
+            <ds:X509Data>
+                <ds:X509Certificate>
+                    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</ds:X509Certificate>
+            </ds:X509Data>
+        </ds:KeyInfo>
+        <ds:Object>
+            <xades:QualifyingProperties xmlns:xades="http://uri.etsi.org/01903/v1.3.2#"
+                Target="#AUTO_ADADADADD-19a734e8bc10">
+                <xades:SignedProperties
+                    Id="SignedProperties-AUTO_ADADADADD-19a734e8bc10-19a734e8bc20">
+                    <xades:SignedSignatureProperties>
+                        <xades:SigningTime>2025-11-11T14:25:19+00:00</xades:SigningTime>
+                        <xades:SigningCertificate>
+                            <xades:Cert>
+                                <xades:CertDigest>
+                                    <ds:DigestMethod
+                                        Algorithm="http://www.w3.org/2001/04/xmlenc#sha256" />
+                                    <ds:DigestValue>oONDetLF5sp8I4MC11VRsQ8+8PjvfU9DVu3xIXklsj0=</ds:DigestValue>
+                                </xades:CertDigest>
+                                <xades:IssuerSerial>
+                                    <ds:X509IssuerName>C=IT,organizationIdentifier=VATIT-02780480964,O=Intesi
+                                        Group S.p.A.,OU=Test Qualified Trust Service
+                                        Provider,CN=Intesi Group EU Qualified Electronic Signature
+                                        CA Test</ds:X509IssuerName>
+                                    <ds:X509SerialNumber>7701586349449991437</ds:X509SerialNumber>
+                                </xades:IssuerSerial>
+                            </xades:Cert>
+                        </xades:SigningCertificate>
+                    </xades:SignedSignatureProperties>
+                    <xades:SignedDataObjectProperties>
+                        <xades:DataObjectFormat
+                            ObjectReference="#Reference-AUTO_ADADADADD-19a734e8bc10-1">
+                            <xades:MimeType>text/xml</xades:MimeType>
+                        </xades:DataObjectFormat>
+                    </xades:SignedDataObjectProperties>
+                </xades:SignedProperties>
+            </xades:QualifyingProperties>
+        </ds:Object>
+    </ds:Signature>
+</DiPIndex>

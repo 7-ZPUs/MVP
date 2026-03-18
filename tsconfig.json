@@ -23,6 +23,6 @@
     "shared/**/*",
     "**/*.spec.ts",
     "**/*.test.ts"
-  ],
+, "core/test/unit/indexing/IndexDip.old", "core/test/unit/indexing/PackageReaderPort.test.old", "core/test/domain/dip-index-parsing.old"  ],
   "exclude": ["node_modules", "dist"]
 }

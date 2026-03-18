@@ -1,3 +1,4 @@
+import { Metadata } from "../../../value-objects/Metadata";
 import { DiPIndexXml } from "../../xml-types/DiPIndexXml";
 
 export const DIP_INDEX_PARSER_TOKEN = Symbol("IDiPIndexParser");
@@ -8,6 +9,7 @@ export const DIP_INDEX_PARSER_TOKEN = Symbol("IDiPIndexParser");
  * LocalPackageReaderAdapter that allows swapping the format
  * (e.g. XML, JSON) without changing the adapter or the domain.
  */
-export interface IDiPIndexParser {
-  parse(rawContent: string): DiPIndexXml;
+export interface IDipParser {
+  parseDipIndex(rawContent: string): DiPIndexXml;
+  parseDocumentMetadata(rawContent: string): Metadata[];
 }

@@ -31,14 +31,12 @@ export interface CreatingApplicationXml {
 
 export interface PackageContentXml {
   DiPDocuments: DiPDocumentsXml;
-  RepresentationInformation?:
-    | RepresentationInformationXml
-    | RepresentationInformationXml[];
+  RepresentationInformation?: RepresentationInformationXml[];
 }
 
 export interface DiPDocumentsXml {
-  Statement: StatementXml | StatementXml[];
-  DocumentClass: DocumentClassXml | DocumentClassXml[];
+  Statement: StatementXml[];
+  DocumentClass: DocumentClassXml[];
 }
 
 export interface StatementXml {
@@ -47,9 +45,9 @@ export interface StatementXml {
 }
 
 export interface DocumentClassXml {
-  RappresentationInformationUUID?: string | string[];
-  AiP: AiPXml | AiPXml[];
-  MoreData?: MoreDataXml | MoreDataXml[];
+  RappresentationInformationUUID?: string[];
+  AiP: AiPXml[];
+  MoreData?: MoreDataXml[];
   "@_uuid": string;
   "@_name": string;
   "@_version": string;
@@ -61,7 +59,7 @@ export interface AiPXml {
   AiPRoot: string;
   Report?: ReportXml | ReportXml[];
   SiP?: SiPXml | SiPXml[];
-  Document: DocumentXml | DocumentXml[];
+  Document: DocumentXml[];
   "@_uuid": string;
 }
 
@@ -83,9 +81,9 @@ export interface DocumentXml {
 }
 
 export interface DocumentFilesXml {
-  Metadata: FileXml;
   Primary: FileXml;
-  Attachments?: FileXml | FileXml[];
+  Metadata: FileXml;
+  Attachments?: FileXml[];
   "@_FilesCount": number;
 }
 
@@ -98,7 +96,7 @@ export interface RepresentationInformationXml {
   Name: string;
   Description: string;
   MimeType: string;
-  Content: FileXml | FileXml[];
+  Content: FileXml[];
   "@_uuid": string;
 }
 

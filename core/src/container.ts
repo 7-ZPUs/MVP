@@ -1,5 +1,5 @@
-import 'reflect-metadata';
-import { container } from 'tsyringe';
+import "reflect-metadata";
+import { container } from "tsyringe";
 
 // ---- Services ----
 import { HASHING_SERVICE_TOKEN } from "./services/IHashingService";
@@ -23,9 +23,9 @@ import { DipRepository } from "./repo/impl/DipRepository";
 import { DOCUMENT_CLASS_REPOSITORY_TOKEN } from "./repo/IDocumentClassRepository";
 import { DocumentClassRepository } from "./repo/impl/DocumentClassRepository";
 import { PACKAGE_READER_PORT_TOKEN } from "./repo/IPackageReaderPort";
-import { LocalPackageReaderAdapter } from "./repo/impl/utils/LocalPackageReaderAdapter";
-import { DIP_INDEX_PARSER_TOKEN } from "./repo/impl/utils/IDipIndexParser";
-import { XmlDipIndexParser } from "./repo/impl/utils/XmlDipIndexParser";
+import { LocalPackageReaderAdapter } from "./repo/impl/LocalPackageReaderAdapter";
+import { DIP_INDEX_PARSER_TOKEN } from "./repo/impl/utils/IDipParser";
+import { XmlDipParser } from "./repo/impl/utils/XmlDipParser";
 
 // ---- Document use cases ----
 import { DocumentoUC } from "./use-case/document/tokens";
@@ -66,7 +66,7 @@ container.register(DOCUMENT_CLASS_REPOSITORY_TOKEN, {
 });
 
 // Package reader
-container.register(DIP_INDEX_PARSER_TOKEN, { useClass: XmlDipIndexParser });
+container.register(DIP_INDEX_PARSER_TOKEN, { useClass: XmlDipParser });
 container.register(PACKAGE_READER_PORT_TOKEN, {
   useFactory: (dependencyContainer) =>
     new LocalPackageReaderAdapter(

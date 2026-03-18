@@ -3,7 +3,6 @@ import {
   DocumentClassXml,
   FileXml,
 } from "../../xml-types/DiPIndexXml";
-import { ensureArray } from "./ensureArray";
 import { Metadata } from "../../../value-objects/Metadata";
 
 export interface MappedProcess {
@@ -17,7 +16,7 @@ export interface MappedDocument {
   uuid: string;
   processUuid: string;
   documentPath: string;
-  metadata: Metadata[];
+  metadataFilename: string;
 }
 
 export interface MappedFile {
@@ -34,7 +33,7 @@ export interface MappedFile {
  * in LocalPackageReaderAdapter. This class extracts the structural
  * information from the XML index.
  */
-export class DiPIndexMapper {
+export class DipIndexMapper {
   private readonly index: DiPIndexXml;
 
   constructor(index: DiPIndexXml) {
@@ -46,13 +45,13 @@ export class DiPIndexMapper {
   }
 
   public extractDocumentClasses(): DocumentClassXml[] {
-    return ensureArray(this.index.PackageContent.DiPDocuments.DocumentClass);
+    return this.index.PackageContent.DiPDocuments.DocumentClass;
   }
 
   public extractProcesses(): MappedProcess[] {
     const result: MappedProcess[] = [];
     for (const dc of this.extractDocumentClasses()) {
-      for (const aip of ensureArray(dc.AiP)) {
+      for (const aip of dc.AiP) {
         result.push({
           uuid: aip["@_uuid"],
           documentClassUuid: dc["@_uuid"],
@@ -67,13 +66,13 @@ export class DiPIndexMapper {
   public extractDocuments(): MappedDocument[] {
     const result: MappedDocument[] = [];
     for (const dc of this.extractDocumentClasses()) {
-      for (const aip of ensureArray(dc.AiP)) {
-        for (const doc of ensureArray(aip.Document)) {
+      for (const aip of dc.AiP) {
+        for (const doc of aip.Document) {
           result.push({
             uuid: doc["@_uuid"],
             processUuid: aip["@_uuid"],
             documentPath: doc.DocumentPath,
-            metadata: [],
+            metadataFilename: doc.Files.Metadata["#text"],
           });
         }
       }
@@ -84,19 +83,19 @@ export class DiPIndexMapper {
   public extractFiles(): MappedFile[] {
     const result: MappedFile[] = [];
     for (const dc of this.extractDocumentClasses()) {
-      for (const aip of ensureArray(dc.AiP)) {
-        for (const doc of ensureArray(aip.Document)) {
+      for (const aip of dc.AiP) {
+        for (const doc of aip.Document) {
           const files = doc.Files;
           const basePath = doc.DocumentPath;
 
           // Primary file is the main document
           result.push(
             this.mapFile(files.Primary, doc["@_uuid"], basePath, true),
-            this.mapFile(files.Metadata, doc["@_uuid"], basePath, false),
+            this.mapFile(files.Primary, doc["@_uuid"], basePath, false),
           );
 
           // Attachment files
-          for (const att of ensureArray(files.Attachments)) {
+          for (const att of files.Attachments ?? []) {
             result.push(this.mapFile(att, doc["@_uuid"], basePath, false));
           }
         }

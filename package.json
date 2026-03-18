@@ -9,7 +9,7 @@
     "build:all": "npm run build:renderer && npm run build",
     "start": "ELECTRON_DISABLE_SANDBOX=1 electron .",
     "start:renderer": "cd renderer && ng serve --host 0.0.0.0",
-    "test:core": "vitest run --passWithNoTests",
+    "test:core": "vitest run --passWithNoTests --watch=false",
     "test:core:watch": "vitest",
     "test:core:coverage": "vitest run --passWithNoTests --coverage",
     "test:renderer": "cd renderer && npx ng test --watch=false",
