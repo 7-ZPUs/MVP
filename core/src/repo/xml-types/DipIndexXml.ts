@@ -3,7 +3,7 @@
  * These represent the raw XML structure as parsed by fast-xml-parser.
  */
 
-export interface DiPIndexXml {
+export interface DipIndexXml {
   ComplianceStatement: ComplianceStatementXml | ComplianceStatementXml[];
   PackageInfo: PackageInfoXml;
   PackageContent: PackageContentXml;

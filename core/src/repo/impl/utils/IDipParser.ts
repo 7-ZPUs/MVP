@@ -1,5 +1,5 @@
 import { Metadata } from "../../../value-objects/Metadata";
-import { DiPIndexXml } from "../../xml-types/DiPIndexXml";
+import { DipIndexXml } from "../../xml-types/DipIndexXml";
 
 export const DIP_INDEX_PARSER_TOKEN = Symbol("IDiPIndexParser");
 
@@ -10,6 +10,6 @@ export const DIP_INDEX_PARSER_TOKEN = Symbol("IDiPIndexParser");
  * (e.g. XML, JSON) without changing the adapter or the domain.
  */
 export interface IDipParser {
-  parseDipIndex(rawContent: string): DiPIndexXml;
+  parseDipIndex(rawContent: string): DipIndexXml;
   parseDocumentMetadata(rawContent: string): Metadata[];
 }
