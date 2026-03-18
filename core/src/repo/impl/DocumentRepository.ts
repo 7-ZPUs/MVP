@@ -139,8 +139,6 @@ export class DocumentRepository implements IDocumentRepository {
                 WHERE ${conditions}`
             )
             .all(...values);
-
-        // rowToEntity carica i metadata tramite MetadataHelper
         return rows.map((row) => this.rowToEntity(row));
     }
 }

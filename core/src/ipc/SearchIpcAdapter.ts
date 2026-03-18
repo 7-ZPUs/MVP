@@ -27,7 +27,7 @@ export class SearchIpcAdapter {
         });
 
         ipcMain.handle(IpcChannels.SEARCH_DOCUMENTS, (_event, rawFilters: SearchFilter[]) => {
-            const filters = rawFilters.map((f) => new SearchFilter(f.field, f.value));
+            const filters = rawFilters.map((f) => new SearchFilter(f.field, f.value)); // da rivedere
             return searchDocumentsUC.execute(filters).map((d) => d.toDTO());
         });
     }
