@@ -146,4 +146,6 @@ vite.config.ts.timestamp-*
 dist/
 coverage/
 
+#vscode
+
 .vscode/
