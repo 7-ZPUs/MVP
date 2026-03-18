@@ -9,12 +9,15 @@
  */
 import { inject, injectable } from 'tsyringe';
 import Database from 'better-sqlite3';
+import * as fs from 'fs';
 
 import { File, FileRow } from '../../entity/File';
 import { IntegrityStatusEnum } from '../../value-objects/IntegrityStatusEnum';
 import type { IFileRepository } from '../IFileRepository';
 import { DatabaseProvider, DATABASE_PROVIDER_TOKEN } from './DatabaseProvider';
 import { CreateFileDTO } from '../../dto/FileDTO';
+import { ExportResult } from '../../value-objects/ExportResult';
+import { PrintResult } from '../../value-objects/PrintResult';
 
 @injectable()
 export class FileRepository implements IFileRepository {
@@ -106,5 +109,33 @@ export class FileRepository implements IFileRepository {
         this.db
             .prepare('UPDATE file SET integrity_status = ? WHERE id = ?')
             .run(status, id);
+    }
+
+    async exportFile(sourcePath: string, destPath: string): Promise<ExportResult> {
+        try {
+            await fs.promises.copyFile(sourcePath, destPath);
+            return ExportResult.ok();
+        } catch (err) {
+            return ExportResult.fail(
+                'WRITE_ERROR',
+                err instanceof Error ? err.message : 'Errore scrittura'
+            );
+        }
+    }
+
+    async printFile(sourcePath: string): Promise<PrintResult> {
+        try {
+            const { shell } = await import('electron');
+            const error = await shell.openPath(sourcePath);
+            if (error !== '') {
+                return PrintResult.fail('SHELL_ERROR', error);
+            }
+            return PrintResult.ok();
+        } catch (err) {
+            return PrintResult.fail(
+                'PRINT_ERROR',
+                err instanceof Error ? err.message : 'Errore stampa'
+            );
+        }
     }
 }

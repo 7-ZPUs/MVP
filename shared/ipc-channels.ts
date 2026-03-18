@@ -55,6 +55,11 @@ export const IpcChannels = {
   BROWSE_GET_DIP_BY_STATUS: 'browse:get-dip-by-status',
   BROWSE_GET_DIP_BY_DOCUMENT_CLASS: 'browse:get-dip-by-document-class',
 
+  // ----- File viewer -----
+  FILE_OPEN_EXTERNAL: 'file:open-external',
+  FILE_DOWNLOAD:      'file:download',
+  FILE_PRINT:         'file:print',
+
 } as const;
 
 export type IpcChannel = (typeof IpcChannels)[keyof typeof IpcChannels];

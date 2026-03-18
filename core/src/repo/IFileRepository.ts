@@ -1,6 +1,8 @@
 import { CreateFileDTO } from '../dto/FileDTO';
 import type { File } from '../entity/File';
 import { IntegrityStatusEnum } from '../value-objects/IntegrityStatusEnum';
+import { ExportResult } from '../value-objects/ExportResult';
+import { PrintResult } from '../value-objects/PrintResult';
 
 export const FILE_REPOSITORY_TOKEN = Symbol('IFileRepository');
 
@@ -19,4 +21,10 @@ export interface IFileRepository {
 
     /** Aggiorna lo stato di integrità di un file. */
     updateIntegrityStatus(id: number, status: IntegrityStatusEnum): void;
+
+    /** Esportazione file */
+    exportFile(sourcePath: string, destPath: string): Promise<ExportResult>;
+
+    /** Stampa di un file */
+    printFile(sourcePath: string): Promise<PrintResult>;
 }

@@ -4,7 +4,7 @@ import { IProcessRepository } from '../../../repo/IProcessRepository';
 import { Process } from '../../../entity/Process';
 
 @injectable()
-export class SearchProcessService implements ISearchProcessUC {
+export class SearchProcessUC implements ISearchProcessUC {
     constructor(
         @inject('IProcessRepository')
         private readonly repo: IProcessRepository

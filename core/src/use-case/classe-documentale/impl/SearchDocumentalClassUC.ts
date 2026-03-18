@@ -4,7 +4,7 @@ import { IDocumentClassRepository } from '../../../repo/IDocumentClassRepository
 import { DocumentClass } from '../../../entity/DocumentClass';
 
 @injectable()
-export class SearchDocumentalClassService implements ISearchDocumentalClassUC {
+export class SearchDocumentalClassUC implements ISearchDocumentalClassUC {
     constructor(
         @inject('IDocumentClassRepository')
         private readonly repo: IDocumentClassRepository
