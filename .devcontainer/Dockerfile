@@ -19,6 +19,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libgtk-3-0 \
     xvfb \
     && rm -rf /var/lib/apt/lists/* \
-    npm install -g @angular/cli
+    && npm install -g @angular/cli
 
 # Install Angular CLI globally
