@@ -1,8 +1,8 @@
 import {
-  DiPIndexXml,
+  DipIndexXml,
   DocumentClassXml,
   FileXml,
-} from "../../xml-types/DiPIndexXml";
+} from "../../xml-types/DipIndexXml";
 import { Metadata } from "../../../value-objects/Metadata";
 
 export interface MappedProcess {
@@ -34,9 +34,9 @@ export interface MappedFile {
  * information from the XML index.
  */
 export class DipIndexMapper {
-  private readonly index: DiPIndexXml;
+  private readonly index: DipIndexXml;
 
-  constructor(index: DiPIndexXml) {
+  constructor(index: DipIndexXml) {
     this.index = index;
   }
 
@@ -91,7 +91,6 @@ export class DipIndexMapper {
           // Primary file is the main document
           result.push(
             this.mapFile(files.Primary, doc["@_uuid"], basePath, true),
-            this.mapFile(files.Primary, doc["@_uuid"], basePath, false),
           );
 
           // Attachment files

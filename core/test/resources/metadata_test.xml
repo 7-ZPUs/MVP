@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document>
+    <DocumentoInformatico>
+        <IdDoc>
+            <Identificativo>12345</Identificativo>
+        </IdDoc>
+        <Riservato>true</Riservato>
+        <TempoDiConservazione>10</TempoDiConservazione>
+        <Soggetti>
+            <Ruolo>
+                <Tipo>Autore</Tipo>
+            </Ruolo>
+            <Ruolo>
+                <Tipo>Destinatario</Tipo>
+            </Ruolo>
+        </Soggetti>
+        <Titolo>Documento di test</Titolo>
+    </DocumentoInformatico>
+</Document>

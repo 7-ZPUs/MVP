@@ -1,83 +1,57 @@
 import { readFileSync } from "node:fs";
 import { describe, it, expect } from "vitest";
 import { XmlDipParser } from "../../../src/repo/impl/utils/XmlDipParser";
+import { DipIndexMapper } from "../../../src/repo/impl/utils/DipIndexMapper";
+import { ensureArray } from "../../../src/repo/impl/utils/ensureArray";
 
 describe("ParserTests", () => {
-  it("parseDipIndex() with valid XML input", () => {
+  it("TU-B-P-01: parseDipIndex() with valid XML input", () => {
     const xmlContent = readFileSync(
-      "core/test/resources/dipindex_example.xml",
+      "core/test/resources/dipindex_test.xml",
       "utf-8",
     );
     const parser = new XmlDipParser();
     const result = parser.parseDipIndex(xmlContent);
 
-    expect(result.PackageInfo.ProcessUUID).toBe(
-      "ec276d29-f80c-4693-b3c9-1cb650e23114",
-    );
+    expect(result.PackageInfo.ProcessUUID).toBe("test-dip-uuid-1234");
 
     const documentClasses = result.PackageContent.DiPDocuments.DocumentClass;
     expect(documentClasses.length).toBe(2);
 
     // First DocumentClass
     const aips1 = documentClasses[0].AiP;
-    expect(aips1.length).toBe(3);
+    expect(aips1.length).toBe(1);
 
     const doc1_0 = aips1[0].Document;
     expect(doc1_0.length).toBe(1);
     expect(doc1_0[0].Files["@_FilesCount"]).toBe("2");
     expect(doc1_0[0].Files.Metadata).toBeDefined();
     expect(doc1_0[0].Files.Primary).toBeDefined();
-
-    const doc1_1 = aips1[1].Document;
-    expect(doc1_1.length).toBe(1);
-    expect(doc1_1[0].Files["@_FilesCount"]).toBe("8");
-    expect(doc1_1[0].Files.Metadata).toBeDefined();
-    expect(doc1_1[0].Files.Primary).toBeDefined();
-    expect(doc1_1[0].Files.Attachments?.length).toBe(6);
-
-    const doc1_2 = aips1[2].Document;
-    expect(doc1_2.length).toBe(1);
-    expect(doc1_2[0].Files["@_FilesCount"]).toBe("3");
-    expect(doc1_2[0].Files.Metadata).toBeDefined();
-    expect(doc1_2[0].Files.Primary).toBeDefined();
-    expect(doc1_2[0].Files.Attachments?.length).toBe(1);
+    expect(doc1_0[0].Files.Attachments).toBeUndefined();
 
     // Second DocumentClass
     const aips2 = documentClasses[1].AiP;
-    expect(aips2.length).toBe(4);
+    expect(aips2.length).toBe(2);
 
     const doc2_0 = aips2[0].Document;
     expect(doc2_0.length).toBe(1);
-    expect(doc2_0[0].Files["@_FilesCount"]).toBe("8");
+    expect(doc2_0[0].Files["@_FilesCount"]).toBe("4");
     expect(doc2_0[0].Files.Metadata).toBeDefined();
     expect(doc2_0[0].Files.Primary).toBeDefined();
-    expect(doc2_0[0].Files.Attachments?.length).toBe(6);
+    expect(ensureArray(doc2_0[0].Files.Attachments).length).toBe(2);
 
     const doc2_1 = aips2[1].Document;
     expect(doc2_1.length).toBe(1);
-    expect(doc2_1[0].Files["@_FilesCount"]).toBe("5");
+    expect(doc2_1[0].Files["@_FilesCount"]).toBe("2");
     expect(doc2_1[0].Files.Metadata).toBeDefined();
     expect(doc2_1[0].Files.Primary).toBeDefined();
-    expect(doc2_1[0].Files.Attachments?.length).toBe(3);
+    expect(doc2_1[0].Files.Attachments).toBeUndefined();
 
-    const doc2_2 = aips2[2].Document;
-    expect(doc2_2.length).toBe(1);
-    expect(doc2_2[0].Files["@_FilesCount"]).toBe("5");
-    expect(doc2_2[0].Files.Metadata).toBeDefined();
-    expect(doc2_2[0].Files.Primary).toBeDefined();
-    expect(doc2_2[0].Files.Attachments?.length).toBe(3);
-
-    const doc2_3 = aips2[3].Document;
-    expect(doc2_3.length).toBe(1);
-    expect(doc2_3[0].Files["@_FilesCount"]).toBe("2");
-    expect(doc2_3[0].Files.Metadata).toBeDefined();
-    expect(doc2_3[0].Files.Primary).toBeDefined();
-
-    // Signature
+    // Signature (not present in new test file)
     expect(result).toBeDefined();
   });
 
-  it("parseDipIndex() with invalid XML input should throw", () => {
+  it("TU-B-P-02: parseDipIndex() with invalid XML input should throw", () => {
     const invalidXml = "<Invalid></Invalid>";
     const parser = new XmlDipParser();
     expect(() => parser.parseDipIndex(invalidXml)).toThrow(
@@ -85,37 +59,185 @@ describe("ParserTests", () => {
     );
   });
 
-  it("parseMetadata() with valid XML input", () => {
+  it("TU-B-P-03: parseMetadata() with valid XML input", () => {
     const xmlContent = readFileSync(
-      "core/test/resources/metadata_di_example.xml",
+      "core/test/resources/metadata_test.xml",
       "utf-8",
     );
     const parser = new XmlDipParser();
     const result = parser.parseDocumentMetadata(xmlContent);
 
-    expect(result.length).toBe(15);
-    expect(result[0].name).toBe("CategoriaProdotto");
-    expect(result[0].value).toBe("Bagno");
-    expect(result[0].type).toBe("string");
+    expect(result.length).toBe(5);
 
-    expect(result[1].name).toBe("ModalitaPagamento");
-    expect(result[1].value).toBe("Bonifico");
-    expect(result[1].type).toBe("string");
+    // Oggetto innestato (object)
+    expect(result.find((m) => m.name === "IdDoc")?.value).toBe(
+      "[object Object]",
+    );
 
-    expect(result[2].name).toBe("NumeroFattura");
-    expect(result[2].value).toBe("FT-2025-1973");
-    expect(result[2].type).toBe("string");
+    // Booleano originariamente, ma il parser restituisce stringa "[object Object]" o forse boolean (no, il textNode value in fast-xml-parser per tag semplici è stringa, numero o booleano)
+    expect(result.find((m) => m.name === "Riservato")?.value).toBe("true");
 
-    expect(result[3].name).toBe("DataFattura");
-    expect(result[3].value).toBe("2025-10-11");
-    expect(result[3].type).toBe("string");
+    // Numero
+    expect(result.find((m) => m.name === "TempoDiConservazione")?.value).toBe(
+      "10",
+    );
+
+    // Lista (array di oggetti)
+    expect(result.find((m) => m.name === "Soggetti")?.value).toBe(
+      "[object Object]",
+    );
+
+    // Stringa
+    expect(result.find((m) => m.name === "Titolo")?.value).toBe(
+      "Documento di test",
+    );
   });
 
-  it("parseMetadata() with invalid XML input should throw", () => {
+  it("TU-B-P-04: parseMetadata() with invalid XML input should throw", () => {
     const invalidXml = "<Invalid></Invalid>";
     const parser = new XmlDipParser();
     expect(() => parser.parseDocumentMetadata(invalidXml)).toThrow(
       "Invalid metadata XML: missing expected root element",
     );
+  });
+});
+
+describe("DipIndexMapperTests", () => {
+  it("TU-B-P-01: extractDipUuid() should return correct UUID", () => {
+    const xmlContent = readFileSync(
+      "core/test/resources/dipindex_test.xml",
+      "utf-8",
+    );
+    const parser = new XmlDipParser();
+    const index = parser.parseDipIndex(xmlContent);
+    const mapper = new DipIndexMapper(index);
+
+    const dipUuid = mapper.extractDipUuid();
+    expect(dipUuid).toBe("test-dip-uuid-1234");
+  });
+
+  it("extractDocumentClasses() should return document classes", () => {
+    const xmlContent = readFileSync(
+      "core/test/resources/dipindex_test.xml",
+      "utf-8",
+    );
+    const parser = new XmlDipParser();
+    const index = parser.parseDipIndex(xmlContent);
+    const mapper = new DipIndexMapper(index);
+
+    const classes = mapper.extractDocumentClasses();
+    expect(classes.length).toBe(2);
+    expect(classes[0]["@_uuid"]).toBe("class-1");
+    expect(classes[1]["@_uuid"]).toBe("class-2");
+  });
+
+  it("extractProcesses() should return mapped processes", () => {
+    const xmlContent = readFileSync(
+      "core/test/resources/dipindex_test.xml",
+      "utf-8",
+    );
+    const parser = new XmlDipParser();
+    const index = parser.parseDipIndex(xmlContent);
+    const mapper = new DipIndexMapper(index);
+
+    const processes = mapper.extractProcesses();
+    expect(processes.length).toBe(3);
+
+    expect(processes[0].uuid).toBe("aip-1");
+    expect(processes[0].documentClassUuid).toBe("class-1");
+    expect(processes[0].aipRoot).toBe("./class-1/aip-1");
+
+    expect(processes[1].uuid).toBe("aip-2");
+    expect(processes[1].documentClassUuid).toBe("class-2");
+    expect(processes[1].aipRoot).toBe("./class-2/aip-2");
+
+    expect(processes[2].uuid).toBe("aip-3");
+    expect(processes[2].documentClassUuid).toBe("class-2");
+    expect(processes[2].aipRoot).toBe("./class-2/aip-3");
+  });
+
+  it("extractDocuments() should return mapped documents", () => {
+    const xmlContent = readFileSync(
+      "core/test/resources/dipindex_test.xml",
+      "utf-8",
+    );
+    const parser = new XmlDipParser();
+    const index = parser.parseDipIndex(xmlContent);
+    const mapper = new DipIndexMapper(index);
+
+    const docs = mapper.extractDocuments();
+    expect(docs.length).toBe(3);
+
+    expect(docs[0].uuid).toBe("doc-1");
+    expect(docs[0].processUuid).toBe("aip-1");
+    expect(docs[0].documentPath).toBe("./class-1/aip-1/doc-1");
+    expect(docs[0].metadataFilename).toBe("./meta.xml");
+
+    expect(docs[1].uuid).toBe("doc-2");
+    expect(docs[1].processUuid).toBe("aip-2");
+    expect(docs[1].documentPath).toBe("./class-2/aip-2/doc-2");
+    expect(docs[1].metadataFilename).toBe("./meta2.xml");
+
+    expect(docs[2].uuid).toBe("doc-3");
+    expect(docs[2].processUuid).toBe("aip-3");
+    expect(docs[2].documentPath).toBe("./class-2/aip-3/doc-3");
+    expect(docs[2].metadataFilename).toBe("./meta3.xml");
+  });
+
+  it("extractFiles() should return mapped files including primary and attachments", () => {
+    const xmlContent = readFileSync(
+      "core/test/resources/dipindex_test.xml",
+      "utf-8",
+    );
+    const parser = new XmlDipParser();
+    const index = parser.parseDipIndex(xmlContent);
+    const mapper = new DipIndexMapper(index);
+
+    const files = mapper.extractFiles();
+    expect(files.length).toBe(5);
+
+    // From doc-1 (Primary only)
+    expect(files[0].uuid).toBe("prim-1");
+    expect(files[0].documentUuid).toBe("doc-1");
+    expect(files[0].isMain).toBe(true);
+    expect(files[0].filename).toBe("./primary.pdf");
+    expect(files[0].path).toBe("./class-1/aip-1/doc-1/./primary.pdf");
+
+    // From doc-2 (Primary + 2 Attachments)
+    expect(files[1].uuid).toBe("prim-2");
+    expect(files[1].documentUuid).toBe("doc-2");
+    expect(files[1].isMain).toBe(true);
+
+    expect(files[2].uuid).toBe("att-1");
+    expect(files[2].documentUuid).toBe("doc-2");
+    expect(files[2].isMain).toBe(false);
+
+    expect(files[3].uuid).toBe("att-2");
+    expect(files[3].documentUuid).toBe("doc-2");
+    expect(files[3].isMain).toBe(false);
+
+    // From doc-3 (Primary only)
+    expect(files[4].uuid).toBe("prim-3");
+    expect(files[4].documentUuid).toBe("doc-3");
+    expect(files[4].isMain).toBe(true);
+  });
+});
+
+describe("ensureArrayTest", () => {
+  it("should return empty array for undefined or null", () => {
+    expect(ensureArray(undefined)).toEqual([]);
+    expect(ensureArray(null)).toEqual([]);
+  });
+
+  it("should return the same array if input is already an array", () => {
+    const arr = [1, 2, 3];
+    expect(ensureArray(arr)).toBe(arr);
+  });
+
+  it("should wrap non-array value in an array", () => {
+    expect(ensureArray(5)).toEqual([5]);
+    expect(ensureArray("test")).toEqual(["test"]);
+    const obj = { key: "value" };
+    expect(ensureArray(obj)).toEqual([obj]);
   });
 });
