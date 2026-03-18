@@ -1,3 +1,4 @@
+import { describe, expect, it } from "vitest";
 import { File, FileRow } from "../../../src/entity/File";
 import { IntegrityStatusEnum } from "../../../src/value-objects/IntegrityStatusEnum";
 

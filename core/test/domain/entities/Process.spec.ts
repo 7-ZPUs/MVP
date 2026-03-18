@@ -1,3 +1,4 @@
+import { describe, expect, it } from "vitest";
 import { Process, ProcessRow } from "../../../src/entity/Process";
 import { IntegrityStatusEnum } from "../../../src/value-objects/IntegrityStatusEnum";
 import { Metadata } from "../../../src/value-objects/Metadata";
