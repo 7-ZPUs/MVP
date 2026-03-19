@@ -8,7 +8,7 @@ import { File } from "../entity/File";
 export const PACKAGE_READER_PORT_TOKEN = Symbol("IPackageReaderPort");
 
 export interface IPackageReaderPort {
-  readDip(dipPath: PlatformPath): AsyncGenerator<Dip>;
+  readDip(dipPath: PlatformPath): Promise<Dip>;
   readDocumentClasses(dipPath: PlatformPath): AsyncGenerator<DocumentClass>;
   readProcesses(dipPath: PlatformPath): AsyncGenerator<Process>;
   readDocuments(dipPath: PlatformPath): AsyncGenerator<Document>;
