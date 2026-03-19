@@ -4,9 +4,6 @@ on:
   push:
     branches:
       - "**"
-  pull_request:
-    branches:
-      - "**"
   workflow_dispatch:
 
 jobs:
@@ -31,25 +28,19 @@ jobs:
           cd core && npm install && cd ..
           cd renderer && npm install && cd ..
 
-      - name: SonarQube Analysis (per branch)
-        if: github.event_name == 'push'
-        uses: sonarsource/sonarqube-scan-action@v6
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-        with:
-          args: >
-            -Dsonar.branch.name=${{ github.ref_name }}
+      - name: Prepare branch-scoped Sonar project key
+        id: sonar_meta
+        run: |
+          BRANCH_SLUG="$(echo \"${GITHUB_REF_NAME}\" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9._:-]/-/g')"
+          echo "project_key=dipreader:${BRANCH_SLUG}" >> "$GITHUB_OUTPUT"
+          echo "project_name=dipreader (${GITHUB_REF_NAME})" >> "$GITHUB_OUTPUT"
 
-      - name: SonarQube Analysis (pull request decoration)
-        if: github.event_name == 'pull_request'
+      - name: SonarQube Analysis (community branch workaround)
         uses: sonarsource/sonarqube-scan-action@v6
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           args: >
-            -Dsonar.pullrequest.key=${{ github.event.pull_request.number }}
-            -Dsonar.pullrequest.branch=${{ github.head_ref }}
-            -Dsonar.pullrequest.base=${{ github.base_ref }}
+            -Dsonar.projectKey=${{ steps.sonar_meta.outputs.project_key }}
+            -Dsonar.projectName=${{ steps.sonar_meta.outputs.project_name }}
