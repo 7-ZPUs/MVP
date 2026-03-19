@@ -30,17 +30,15 @@ export class LocalPackageReaderAdapter implements IPackageReaderPort {
     return mapper;
   }
 
-  public async *readDip(dipPath: PlatformPath): AsyncGenerator<Dip> {
+  public async readDip(dipPath: PlatformPath): Promise<Dip> {
     const mapper = this.getMapper(dipPath);
-    yield new Dip(mapper.extractDipUuid());
+    return new Dip(mapper.extractDipUuid());
   }
 
   public async *readDocumentClasses(
     dipPath: PlatformPath,
   ): AsyncGenerator<DocumentClass> {
     const mapper = this.getMapper(dipPath);
-    // dipId is not yet known (assigned by DB), use 0 as placeholder.
-    // The use-case layer will set the correct dipId after persisting the Dip.
     for (const dc of mapper.extractDocumentClasses()) {
       yield new DocumentClass(0, dc["@_uuid"], dc["@_name"], dc["@_validFrom"]);
     }
