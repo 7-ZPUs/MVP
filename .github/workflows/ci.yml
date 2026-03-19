@@ -56,6 +56,5 @@ jobs:
             -Dsonar.javascript.lcov.reportPaths=coverage/core/lcov.info,coverage/renderer/lcov.info
             -Dsonar.typescript.tsconfigPaths=tsconfig.json,renderer/tsconfig.json
             -Dsonar.sourceEncoding=UTF-8
-            # VERSION PARAMS:
             -Dsonar.branch.name=${{ github.head_ref || github.ref_name }}
             -Dsonar.projectVersion=${{ github.run_number }}
