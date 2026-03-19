@@ -43,4 +43,4 @@ jobs:
         with:
           args: >
             -Dsonar.projectKey=${{ steps.sonar_meta.outputs.project_key }}
-            -Dsonar.projectName=${{ steps.sonar_meta.outputs.project_name }}
+            "-Dsonar.projectName=${{ steps.sonar_meta.outputs.project_name }}"
