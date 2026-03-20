@@ -43,7 +43,10 @@ jobs:
           npm run test:core
 
           npm run test:coverage
-
+      - name: Fix LCOV paths
+        run: |
+          sed -i 's|SF:src/|SF:core/src/|g' coverage/core/lcov.info || true
+          sed -i 's|SF:src/|SF:renderer/src/|g' coverage/renderer/lcov.info || true
       - name: SonarQube Analysis
         uses: sonarsource/sonarqube-scan-action@v6
         env:
