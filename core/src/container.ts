@@ -10,7 +10,7 @@ import { DATABASE_PROVIDER_TOKEN, DatabaseProvider } from './repo/impl/DatabaseP
 
 // ---- AI adapter ----
 import { WORD_EMBEDDING_PORT_TOKEN } from './repo/IWordEmbedding';
-import { LocalAiAdapter } from './repo/impl/LocalAiAdapter';
+import { WordEmbedding } from './repo/impl/WordEmbedding';
 
 // ---- Repositories ----
 import { DOCUMENTO_REPOSITORY_TOKEN } from './repo/IDocumentRepository';
@@ -55,7 +55,7 @@ import { SearchDocumentalClassUC } from './use-case/classe-documentale/impl/Sear
 
 // Services
 container.registerSingleton(DATABASE_PROVIDER_TOKEN, DatabaseProvider);
-container.registerSingleton(WORD_EMBEDDING_PORT_TOKEN, LocalAiAdapter);
+container.registerSingleton(WORD_EMBEDDING_PORT_TOKEN, WordEmbedding);
 container.register(HASHING_SERVICE_TOKEN, { useClass: CryptoHashingService });
 
 // Repositories

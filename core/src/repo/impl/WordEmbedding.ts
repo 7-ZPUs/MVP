@@ -24,7 +24,7 @@ if (env.backends.onnx.wasm) {
 }
 
 @injectable()
-export class LocalAiAdapter implements IWordEmbedding {
+export class WordEmbedding implements IWordEmbedding {
     private embedder: any | null = null;
     private initialized          = false;
 
