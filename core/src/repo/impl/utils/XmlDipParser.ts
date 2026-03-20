@@ -56,11 +56,11 @@ export class XmlDipParser implements IDipParser {
       .map(([key, value]) => {
         let valueType: MetadataType;
         if (typeof value === "number") {
-          valueType = MetadataType.Number;
+          valueType = MetadataType.NUMBER;
         } else if (typeof value === "boolean") {
-          valueType = MetadataType.Boolean;
+          valueType = MetadataType.BOOLEAN;
         } else {
-          valueType = MetadataType.String;
+          valueType = MetadataType.STRING;
         }
         return new Metadata(key, String(value), valueType);
       });

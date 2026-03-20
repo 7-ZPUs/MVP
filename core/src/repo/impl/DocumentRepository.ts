@@ -11,11 +11,11 @@
 import { inject, injectable } from "tsyringe";
 import Database from "better-sqlite3";
 
-import { Document, DocumentRow } from "../../entity/Document";
-import { IntegrityStatusEnum } from "../../value-objects/IntegrityStatusEnum";
-import type { IDocumentRepository } from "../IDocumentRepository";
-import { DatabaseProvider, DATABASE_PROVIDER_TOKEN } from "./DatabaseProvider";
-import { loadMetadata, saveMetadata } from "./MetadataHelper";
+import { Document, DocumentRow } from '../../entity/Document';
+import { IntegrityStatusEnum } from '../../value-objects/IntegrityStatusEnum';
+import type { IDocumentRepository } from '../IDocumentRepository';
+import { DatabaseProvider, DATABASE_PROVIDER_TOKEN } from './DatabaseProvider';
+import { loadMetadata, saveMetadata } from './MetadataHelper';
 
 const METADATA_TABLE = "document_metadata";
 const METADATA_FK = "document_id";
@@ -104,32 +104,26 @@ export class DocumentRepository implements IDocumentRepository {
     return rows.map((r) => this.rowToEntity(r));
   }
 
-  save(document: Document): Document {
-    const metadata = document.getMetadata();
+    save(document: Document): Document {
+        const metadata = document.getMetadata();
 
-    const result = this.db
-      .prepare(
-        "INSERT INTO document (uuid, integrity_status, process_id) VALUES (?, ?, ?)",
-      )
-      .run(
-        document.getUuid(),
-        IntegrityStatusEnum.UNKNOWN,
-        document.getProcessId(),
-      );
+        const result = this.db
+            .prepare('INSERT INTO document (uuid, integrity_status, process_id) VALUES (?, ?, ?)')
+            .run(document.getUuid(), IntegrityStatusEnum.UNKNOWN, document.getProcessId());
 
     const id = result.lastInsertRowid as number;
     saveMetadata(this.db, METADATA_TABLE, METADATA_FK, id, metadata);
 
-    return Document.fromDB(
-      {
-        id,
-        uuid: document.getUuid(),
-        integrityStatus: IntegrityStatusEnum.UNKNOWN,
-        processId: document.getProcessId(),
-      },
-      metadata,
-    );
-  }
+        return Document.fromDB(
+            {
+                id,
+                uuid: document.getUuid(),
+                integrityStatus: IntegrityStatusEnum.UNKNOWN,
+                processId: document.getProcessId(),
+            },
+            metadata
+        );
+    }
 
   updateIntegrityStatus(id: number, status: IntegrityStatusEnum): void {
     this.db

@@ -70,27 +70,20 @@ export class DocumentClassRepository implements IDocumentClassRepository {
     return rows.map((row) => this.rowToEntity(row));
   }
 
-  save(documentClass: DocumentClass): DocumentClass {
-    const result = this.db
-      .prepare(
-        "INSERT INTO document_class (dip_id, uuid, name, timestamp) VALUES (?, ?, ?, ?)",
-      )
-      .run(
-        documentClass.getProcessId(),
-        documentClass.getUuid(),
-        documentClass.getName(),
-        documentClass.getTimestamp(),
-      );
+    save(documentClass: DocumentClass): DocumentClass {
+        const result = this.db
+            .prepare('INSERT INTO document_class (dip_id, uuid, name, timestamp) VALUES (?, ?, ?, ?)')
+            .run(documentClass.getProcessId(), documentClass.getUuid(), documentClass.getName(), documentClass.getTimestamp());
 
-    return DocumentClass.fromDB({
-      id: result.lastInsertRowid as number,
-      dipId: documentClass.getProcessId(),
-      uuid: documentClass.getUuid(),
-      integrityStatus: IntegrityStatusEnum.UNKNOWN,
-      name: documentClass.getName(),
-      timestamp: documentClass.getTimestamp(),
-    });
-  }
+        return DocumentClass.fromDB({
+            id: result.lastInsertRowid as number,
+            dipId: documentClass.getProcessId(),
+            uuid: documentClass.getUuid(),
+            integrityStatus: IntegrityStatusEnum.UNKNOWN,
+            name: documentClass.getName(),
+            timestamp: documentClass.getTimestamp(),
+        });
+    }
 
     search(query: string): DocumentClass[] | null {
         const result = this.db

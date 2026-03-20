@@ -1,10 +1,10 @@
 import { inject, injectable } from "tsyringe";
 import Database from "better-sqlite3";
 
-import { Dip, DipRow } from "../../entity/Dip";
-import { IntegrityStatusEnum } from "../../value-objects/IntegrityStatusEnum";
-import { IDipRepository } from "../IDipRepository";
-import { DATABASE_PROVIDER_TOKEN, DatabaseProvider } from "./DatabaseProvider";
+import { Dip, DipRow } from '../../entity/Dip';
+import { IntegrityStatusEnum } from '../../value-objects/IntegrityStatusEnum';
+import { IDipRepository } from '../IDipRepository';
+import { DATABASE_PROVIDER_TOKEN, DatabaseProvider } from './DatabaseProvider';
 
 @injectable()
 export class DipRepository implements IDipRepository {
@@ -51,17 +51,17 @@ export class DipRepository implements IDipRepository {
     return row ? Dip.fromDB(row) : null;
   }
 
-  save(dip: Dip): Dip {
-    const result = this.db
-      .prepare(`INSERT INTO dip (uuid, integrity_status) VALUES (?, ?)`)
-      .run(dip.getUuid(), IntegrityStatusEnum.UNKNOWN);
+    save(dip: Dip): Dip {
+        const result = this.db
+            .prepare(`INSERT INTO dip (uuid, integrity_status) VALUES (?, ?)`)
+            .run(dip.getUuid(), IntegrityStatusEnum.UNKNOWN);
 
-    return Dip.fromDB({
-      id: result.lastInsertRowid as number,
-      uuid: dip.getUuid(),
-      integrityStatus: IntegrityStatusEnum.UNKNOWN,
-    });
-  }
+        return Dip.fromDB({
+            id: result.lastInsertRowid as number,
+            uuid: dip.getUuid(),
+            integrityStatus: IntegrityStatusEnum.UNKNOWN,
+        });
+    }
 
   getByStatus(status: IntegrityStatusEnum): Dip[] {
     const rows = this.db

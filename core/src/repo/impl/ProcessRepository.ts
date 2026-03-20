@@ -4,7 +4,7 @@ import { IProcessRepository } from "../IProcessRepository";
 import { DATABASE_PROVIDER_TOKEN, DatabaseProvider } from "./DatabaseProvider";
 import { Process, ProcessRow } from "../../entity/Process";
 import { IntegrityStatusEnum } from "../../value-objects/IntegrityStatusEnum";
-import { loadMetadata, saveMetadata } from "./MetadataHelper";
+import { loadMetadata, saveMetadata } from './MetadataHelper';
 
 const METADATA_TABLE = "process_metadata";
 const METADATA_FK = "process_id";
@@ -83,32 +83,26 @@ export class ProcessRepository implements IProcessRepository {
     return rows.map((r) => this.rowToEntity(r));
   }
 
-  save(process: Process): Process {
-    const metadata = process.getMetadata();
+    save(process: Process): Process {
+        const metadata = process.getMetadata();
 
-    const result = this.db
-      .prepare(
-        "INSERT INTO process (document_class_id, uuid, integrity_status) VALUES (?, ?, ?)",
-      )
-      .run(
-        process.getDocumentClassId(),
-        process.getUuid(),
-        IntegrityStatusEnum.UNKNOWN,
-      );
+        const result = this.db
+            .prepare('INSERT INTO process (document_class_id, uuid, integrity_status) VALUES (?, ?, ?)')
+            .run(process.getDocumentClassId(), process.getUuid(), IntegrityStatusEnum.UNKNOWN);
 
     const id = result.lastInsertRowid as number;
     saveMetadata(this.db, METADATA_TABLE, METADATA_FK, id, metadata);
 
-    return Process.fromDB(
-      {
-        id,
-        documentClassId: process.getDocumentClassId(),
-        uuid: process.getUuid(),
-        integrityStatus: IntegrityStatusEnum.UNKNOWN,
-      },
-      metadata,
-    );
-  }
+        return Process.fromDB(
+            {
+                id,
+                documentClassId: process.getDocumentClassId(),
+                uuid: process.getUuid(),
+                integrityStatus: IntegrityStatusEnum.UNKNOWN,
+            },
+            metadata
+        );
+    }
 
   updateIntegrityStatus(id: number, status: IntegrityStatusEnum): void {
     this.db

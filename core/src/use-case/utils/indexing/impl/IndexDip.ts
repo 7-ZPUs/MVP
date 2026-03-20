@@ -59,9 +59,8 @@ export class IndexDip implements IIndexDip {
   }
 
   private async indexDip(dipPath: PlatformPath): Promise<IndexResult> {
-    for await (const dip of this.packageReader.readDip(dipPath)) {
-      this.dipRepository.save(dip);
-    }
+    const dip = await this.packageReader.readDip(dipPath);
+    this.dipRepository.save(dip);
     return { success: true };
   }
 
