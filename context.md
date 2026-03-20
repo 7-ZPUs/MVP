@@ -12,6 +12,7 @@
 
 ---
 
+
 ### **2. USE CASES (core/application/use-cases)**
 
 | Use Case | Input | Output | Descrizione |
