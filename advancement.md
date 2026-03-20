@@ -10,7 +10,7 @@
 | Category                         | Status         | Est. Remaining Time |
 | :------------------------------- | :------------- | :------------------ |
 | **Layer 0-1** (Contracts/Domain) | 🟢 Mostly Done | ~2.5 Hours          |
-| **Layer 2** (Services/Infra)     | 🟡 In Progress | ~10 Hours           |
+| **Layer 2** (Services/Infra)     | 🟡 In Progress | ~8 Hours            |
 | **Layer 3** (Routing)            | 🔴 Pending     | ~2 Hours            |
 | **Layer 4** (UI Components)      | 🔴 Not Started | ~48 Hours           |
 | **Total**                        |                | **~63.5 Hours**     |
@@ -92,7 +92,7 @@ _IPC & Hardware communication._
 | `SearchIpcGateway`       |   ✅   |     -     | `feature/search/services/search-ipc-gateway.ts`   |
 | `IndexingIpcGateway`     |   ✅   |     -     | `feature/search/services/indexing-ipc-gateway.ts` |
 | `IpcCacheService`        |   ✅   |     -     | `shared/services/ipc-cache.service.ts`            |
-| `ElectronLoggingGateway` |   🔴   |    2h     | _Pending_                                         |
+| `ElectronLoggingGateway` |   ✅   |     -     | `shared/services/electron-logging-gateway.ts`     |
 
 ---
 

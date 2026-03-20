@@ -9,7 +9,7 @@ import {
   SearchResult,
 } from '../domain/search.models';
 import { SearchQueryType } from '../domain/search.enum';
-import { IErrorHandler, ITelemetryService, ILiveAnnouncer } from '../../../shared/contracts';
+import { IErrorHandler, ITelemetry, ILiveAnnouncer } from '../../../shared/contracts';
 import { debounceTime } from 'rxjs/internal/operators/debounceTime';
 import { ISemanticIndexStatus } from '../contracts/semantic-index.interface';
 import { Subject } from 'rxjs/internal/Subject';
@@ -43,7 +43,7 @@ export class SearchFacade implements ISearchFacade {
     @Inject('ISearchChannel') private readonly ipcGateway: ISearchChannel,
     @Inject('IFilterValidator') private readonly filterValidator: IFilterValidator,
     @Inject('IErrorHandler') private readonly errorHandler: IErrorHandler,
-    @Inject('ITelemetryService') private readonly telemetryService: ITelemetryService,
+    @Inject('ITelemetry') private readonly telemetryService: ITelemetry,
     @Inject('ISemanticIndexStatus') private readonly semanticIndexStatus: ISemanticIndexStatus,
     @Inject('ILiveAnnouncer') private readonly liveAnnouncer: ILiveAnnouncer,
   ) {

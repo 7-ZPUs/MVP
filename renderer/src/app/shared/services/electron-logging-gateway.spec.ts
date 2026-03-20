@@ -23,7 +23,6 @@ describe('ElectronLoggingGateway', () => {
   });
 
   it('dovrebbe chiamare il bridge IPC corretto e completarsi con successo', async () => {
-    // Simuliamo una scrittura su file andata a buon fine
     (mockBridge.invoke as Mock).mockResolvedValue(undefined);
 
     await new Promise<void>((resolve) => {
@@ -32,7 +31,6 @@ describe('ElectronLoggingGateway', () => {
       });
     });
 
-    // Verifichiamo che il canale corretto sia stato invocato con i dati esatti
     expect(mockBridge.invoke).toHaveBeenCalledWith('ipc:log:write', mockLogEntry);
   });
 
