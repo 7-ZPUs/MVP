@@ -1,5 +1,4 @@
 import { describe, it, expect, beforeEach, vi, Mock } from 'vitest';
-import { of } from 'rxjs';
 import { SearchIpcGateway } from './search-ipc-gateway';
 import { SearchQuery, SearchQueryType } from '../domain';
 import { ICacheService, IErrorHandler, IElectronContextBridge } from '../../../shared/contracts';
@@ -103,5 +102,125 @@ describe('SearchIpcGateway', () => {
 
     expect(mockErrorHandler.handle).toHaveBeenCalledWith(mockError);
     expect((errorResult as any).message).toBe('IPC timeout');
+  });
+
+  describe('searchAdvanced e searchSemantic', () => {
+    const mockFilters: any = { common: { text: 'test' } };
+
+    it('dovrebbe usare la cache e chiamare il canale corretto per searchAdvanced', async () => {
+      (mockCache.get as Mock).mockReturnValue(null);
+      (mockBridge.invoke as Mock).mockResolvedValue(mockResults);
+      const abortController = new AbortController();
+
+      const result = await new Promise((resolve) => {
+        gateway.searchAdvanced(mockFilters, abortController.signal).subscribe(resolve);
+      });
+
+      expect(mockBridge.invoke).toHaveBeenCalledWith(
+        'ipc:search:advanced',
+        mockFilters,
+        abortController.signal,
+      );
+      expect(result).toEqual(mockResults);
+
+      (mockCache.get as Mock).mockReturnValue(mockResults);
+      let cachedResult: any;
+      gateway
+        .searchAdvanced(mockFilters, abortController.signal)
+        .subscribe((res) => (cachedResult = res));
+
+      expect(mockCache.get).toHaveBeenCalledWith(`search:advanced:${JSON.stringify(mockFilters)}`);
+      expect(cachedResult).toEqual(mockResults);
+    });
+
+    it('dovrebbe usare la cache e chiamare il canale corretto per searchSemantic', async () => {
+      (mockCache.get as Mock).mockReturnValue(null);
+      (mockBridge.invoke as Mock).mockResolvedValue(mockResults);
+      const abortController = new AbortController();
+
+      const result = await new Promise((resolve) => {
+        gateway.searchSemantic(mockQuery, abortController.signal).subscribe(resolve);
+      });
+
+      expect(mockBridge.invoke).toHaveBeenCalledWith(
+        'ipc:search:semantic',
+        mockQuery,
+        abortController.signal,
+      );
+      expect(result).toEqual(mockResults);
+
+      (mockCache.get as Mock).mockReturnValue(mockResults);
+      let cachedResult: any;
+      gateway
+        .searchSemantic(mockQuery, abortController.signal)
+        .subscribe((res) => (cachedResult = res));
+
+      expect(mockCache.get).toHaveBeenCalledWith(`search:semantic:${JSON.stringify(mockQuery)}`);
+      expect(cachedResult).toEqual(mockResults);
+    });
+  });
+
+  describe('Edge Cases del Segnale di Annullamento (AbortSignal)', () => {
+    it('dovrebbe fallire immediatamente se il segnale è già stato annullato prima di iniziare', () => {
+      (mockCache.get as Mock).mockReturnValue(null);
+      const abortController = new AbortController();
+      abortController.abort();
+
+      let errorResult: any;
+      gateway.search(mockQuery, abortController.signal).subscribe({
+        error: (err) => (errorResult = err),
+      });
+
+      expect(mockBridge.invoke).not.toHaveBeenCalled();
+      expect(mockCache.invalidatePrefix).toHaveBeenCalledWith('search:text');
+      expect(errorResult.message).toBe('AbortError');
+    });
+
+    it('NON deve emettere risultati se la promise IPC si risolve in ritardo (dopo un abort)', async () => {
+      (mockCache.get as Mock).mockReturnValue(null);
+
+      let resolvePromise: any;
+      const pendingPromise = new Promise((resolve) => {
+        resolvePromise = resolve;
+      });
+      (mockBridge.invoke as Mock).mockReturnValue(pendingPromise);
+
+      const abortController = new AbortController();
+
+      let nextCalled = false;
+      gateway.search(mockQuery, abortController.signal).subscribe({
+        next: () => (nextCalled = true),
+        error: () => {},
+      });
+
+      abortController.abort();
+      resolvePromise(mockResults);
+      await new Promise((r) => setTimeout(r, 0));
+
+      expect(nextCalled).toBe(false);
+    });
+
+    it('NON deve propagare errori se la promise IPC fallisce in ritardo (dopo un abort)', async () => {
+      (mockCache.get as Mock).mockReturnValue(null);
+
+      let rejectPromise: any;
+      const pendingPromise = new Promise((_, reject) => {
+        rejectPromise = reject;
+      });
+      (mockBridge.invoke as Mock).mockReturnValue(pendingPromise);
+
+      const abortController = new AbortController();
+
+      let errorCount = 0;
+      gateway.search(mockQuery, abortController.signal).subscribe({
+        error: () => errorCount++,
+      });
+      abortController.abort();
+
+      rejectPromise(new Error('Errore in ritardo'));
+
+      await new Promise((r) => setTimeout(r, 0));
+      expect(errorCount).toBe(1);
+    });
   });
 });
