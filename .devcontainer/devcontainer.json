@@ -44,8 +44,9 @@
   "containerEnv": {
     "ANGULAR_BASE_HREF": "./",
     // --- AGGIUNTE PER ELECTRON ---
-    "DISPLAY": "${localEnv:DISPLAY}",
-    "ELECTRON_DISABLE_SANDBOX": "1"
+    "DISPLAY": "${env:DISPLAY}",
+    "ELECTRON_DISABLE_SANDBOX": "1",
+    "LIBGL_ALWAYS_SOFTWARE": "1"
     // -----------------------------
   },
   "forwardPorts": [4200],
