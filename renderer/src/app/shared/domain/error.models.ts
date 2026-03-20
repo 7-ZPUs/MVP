@@ -11,6 +11,6 @@ export interface AppError {
   recoverable: boolean;
   message: string;
   source: string;
-  context: AppErrorContext;
+  context: AppErrorContext | null;
   detail: string | null;
 }
