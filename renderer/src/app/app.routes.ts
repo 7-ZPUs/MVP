@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { DocumentDetailPageComponent } from './features/dip-explorer/document-detail/pages/document-detail-page/document-detail-page.component';
+import { DocumentDetailPageComponent } from './features/dip-explorer/document-detail/ui/smart/document-detail-page/document-detail-page.component';
 
 export const routes: Routes = [
   {

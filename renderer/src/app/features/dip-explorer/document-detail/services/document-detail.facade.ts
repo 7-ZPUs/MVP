@@ -1,7 +1,7 @@
 // renderer/src/app/core/facades/document-detail.facade.ts
 
 import { Injectable, signal } from '@angular/core';
-import { DocumentDetailDTO } from '../../shared/domain/document-detail.model';
+import { DocumentDetailDTO } from '../domain/document-detail.model';
 
 @Injectable({ providedIn: 'root' })
 export class DocumentDetailFacade {

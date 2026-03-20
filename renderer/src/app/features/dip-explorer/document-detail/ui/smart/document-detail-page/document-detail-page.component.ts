@@ -1,9 +1,9 @@
 import { Component, inject, OnInit, input, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { DocumentDetailFacade } from '../../../../../core/facades/document-detail.facade';
-import { DocumentToolbarComponent } from '../../components/document-toolbar/document-toolbar.component';
-import { PreviewPanelComponent } from '../../components/preview-panel/preview-panel.component';
-import { MetadataPanelComponent } from '../../components/metadata-panel/metadata-panel.component';
+import { DocumentDetailFacade } from '../../../services/document-detail.facade';
+import { DocumentToolbarComponent } from '../../dumb/document-toolbar/document-toolbar.component';
+import { PreviewPanelComponent } from '../../dumb/preview-panel/preview-panel.component';
+import { MetadataPanelComponent } from '../../dumb/metadata-panel/metadata-panel.component';
 
 @Component({
   selector: 'app-document-detail-page',
