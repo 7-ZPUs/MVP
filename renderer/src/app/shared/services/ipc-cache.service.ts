@@ -1,42 +1,38 @@
 import { Injectable } from '@angular/core';
-import { ICacheService } from '../contracts/cache-service.interface';
+import { ICacheService, CacheEntry } from '../contracts';
 
-interface CacheEntry<T> {
-  value: T;
-  expiresAt: number;
-}
-
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable({ providedIn: 'root' })
 export class IpcCacheService implements ICacheService {
-  private cache = new Map<string, CacheEntry<unknown>>();
+  private readonly store = new Map<string, CacheEntry>();
 
   public get<T>(key: string): T | null {
-    const entry = this.cache.get(key);
+    const entry = this.store.get(key);
+
     if (!entry) {
       return null;
     }
+
     if (Date.now() > entry.expiresAt) {
-      this.cache.delete(key);
+      this.store.delete(key);
       return null;
     }
+
     return entry.value as T;
   }
 
   public set<T>(key: string, value: T, ttlMs: number): void {
     const expiresAt = Date.now() + ttlMs;
-    this.cache.set(key, { value, expiresAt });
+    this.store.set(key, { value, expiresAt });
   }
 
   public invalidate(key: string): void {
-    this.cache.delete(key);
+    this.store.delete(key);
   }
 
   public invalidatePrefix(prefix: string): void {
-    for (const key of this.cache.keys()) {
+    for (const key of this.store.keys()) {
       if (key.startsWith(prefix)) {
-        this.cache.delete(key);
+        this.store.delete(key);
       }
     }
   }

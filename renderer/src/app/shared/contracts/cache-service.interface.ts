@@ -4,3 +4,8 @@ export interface ICacheService {
   invalidate(key: string): void;
   invalidatePrefix(prefix: string): void;
 }
+
+export interface CacheEntry {
+  value: unknown;
+  expiresAt: number;
+}

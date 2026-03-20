@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { IpcErrorHandlerService } from './ipc-error-handler';
-import { ErrorCode, ErrorCategory, ErrorSeverity } from '../domain/';
+import { IpcErrorHandlerService } from './ipc-error-handler.service';
+import { ErrorCode, ErrorCategory, ErrorSeverity } from '../domain';
 
 describe('IpcErrorHandlerService', () => {
   let service: IpcErrorHandlerService;
@@ -74,6 +74,30 @@ describe('IpcErrorHandlerService', () => {
       expect(result.code).toBe(ErrorCode.SEARCH_ENGINE_ERROR);
       expect(result.message).toBe('Qualcosa è andato storto');
       expect(result.source).toBe('IPC Gateway');
+    });
+  });
+  describe('Casi limite (Edge Cases) e Coverage', () => {
+    it('dovrebbe usare la configurazione di default in createError per un codice non mappato (righe 67-77)', () => {
+      const error = service.createError(
+        'UNMAPPED_CODE' as ErrorCode,
+        'Messaggio di test',
+        'Test Source',
+      );
+
+      expect(error.category).toBe(ErrorCategory.IPC);
+      expect(error.severity).toBe(ErrorSeverity.ERROR);
+      expect(error.recoverable).toBe(false);
+    });
+
+    it("dovrebbe fare fallback se l'oggetto raw ha una proprietà code non presente nell'enum (riga 98)", () => {
+      const rawError = {
+        code: 'INVALID_OR_FAKE_CODE',
+        message: 'Codice di errore sconosciuto',
+      };
+
+      const result = service.handle(rawError);
+
+      expect(result.code).toBe(ErrorCode.SEARCH_ENGINE_ERROR);
     });
   });
 });
