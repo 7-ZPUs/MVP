@@ -1,7 +1,6 @@
 import { inject, injectable } from 'tsyringe';
 import Database from 'better-sqlite3';
 
-import { CreateDipDTO } from '../../dto/DipDTO';
 import { Dip, DipRow } from '../../entity/Dip';
 import { IntegrityStatusEnum } from '../../value-objects/IntegrityStatusEnum';
 import { IDipRepository } from '../IDipRepository';
@@ -50,14 +49,14 @@ export class DipRepository implements IDipRepository {
         return row ? Dip.fromDB(row) : null;
     }
 
-    save(dto: CreateDipDTO): Dip {
+    save(dip: Dip): Dip {
         const result = this.db
             .prepare(`INSERT INTO dip (uuid, integrity_status) VALUES (?, ?)`)
-            .run(dto.uuid, IntegrityStatusEnum.UNKNOWN);
+            .run(dip.getUuid(), IntegrityStatusEnum.UNKNOWN);
 
         return Dip.fromDB({
             id: result.lastInsertRowid as number,
-            uuid: dto.uuid,
+            uuid: dip.getUuid(),
             integrityStatus: IntegrityStatusEnum.UNKNOWN,
         });
     }

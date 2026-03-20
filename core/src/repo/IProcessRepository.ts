@@ -1,4 +1,3 @@
-import { CreateProcessDTO } from "../dto/ProcessDTO";
 import { Process } from "../entity/Process";
 import { IntegrityStatusEnum } from "../value-objects/IntegrityStatusEnum";
 
@@ -15,7 +14,7 @@ export interface IProcessRepository {
     getByStatus(status: IntegrityStatusEnum): Process[];
 
     /** Persiste un nuovo processo e restituisce l'entità con l'id assegnato. */
-    save(dto: CreateProcessDTO): Process;
+    save(process: Process): Process;
 
     /** Aggiorna lo stato di integrità di un processo. */
     updateIntegrityStatus(id: number, status: IntegrityStatusEnum): void;

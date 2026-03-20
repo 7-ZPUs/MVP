@@ -16,8 +16,6 @@ import { IntegrityStatusEnum } from '../../value-objects/IntegrityStatusEnum';
 import type { IDocumentRepository } from '../IDocumentRepository';
 import { DatabaseProvider, DATABASE_PROVIDER_TOKEN } from './DatabaseProvider';
 import { loadMetadata, saveMetadata } from './MetadataHelper';
-import { CreateDocumentDTO } from '../../dto/DocumentDTO';
-import { Metadata } from '../../value-objects/Metadata';
 
 const METADATA_TABLE = 'document_metadata';
 const METADATA_FK = 'document_id';
@@ -106,12 +104,12 @@ export class DocumentRepository implements IDocumentRepository {
         return rows.map((r) => this.rowToEntity(r));
     }
 
-    save(dto: CreateDocumentDTO): Document {
-        const metadata = dto.metadata.map((m) => new Metadata(m.name, m.value, m.type));
+    save(document: Document): Document {
+        const metadata = document.getMetadata();
 
         const result = this.db
             .prepare('INSERT INTO document (uuid, integrity_status, process_id) VALUES (?, ?, ?)')
-            .run(dto.uuid, IntegrityStatusEnum.UNKNOWN, dto.processId);
+            .run(document.getUuid(), IntegrityStatusEnum.UNKNOWN, document.getProcessId());
 
         const id = result.lastInsertRowid as number;
         saveMetadata(this.db, METADATA_TABLE, METADATA_FK, id, metadata);
@@ -119,9 +117,9 @@ export class DocumentRepository implements IDocumentRepository {
         return Document.fromDB(
             {
                 id,
-                uuid: dto.uuid,
+                uuid: document.getUuid(),
                 integrityStatus: IntegrityStatusEnum.UNKNOWN,
-                processId: dto.processId,
+                processId: document.getProcessId(),
             },
             metadata
         );

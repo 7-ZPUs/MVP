@@ -4,7 +4,6 @@ import Database from "better-sqlite3";
 import { DATABASE_PROVIDER_TOKEN, DatabaseProvider } from "./DatabaseProvider";
 import { DocumentClassRow, DocumentClass } from "../../entity/DocumentClass";
 import { IntegrityStatusEnum } from "../../value-objects/IntegrityStatusEnum";
-import { CreateDocumentClassDTO } from "../../dto/DocumentClassDTO";
 
 @injectable()
 export class DocumentClassRepository implements IDocumentClassRepository {
@@ -68,18 +67,18 @@ export class DocumentClassRepository implements IDocumentClassRepository {
         return rows.map(row => this.rowToEntity(row));
     }
 
-    save(dto: CreateDocumentClassDTO): DocumentClass {
+    save(documentClass: DocumentClass): DocumentClass {
         const result = this.db
             .prepare('INSERT INTO document_class (dip_id, uuid, name, timestamp) VALUES (?, ?, ?, ?)')
-            .run(dto.dipId, dto.uuid, dto.name, dto.timestamp);
+            .run(documentClass.getProcessId(), documentClass.getUuid(), documentClass.getName(), documentClass.getTimestamp());
 
         return DocumentClass.fromDB({
             id: result.lastInsertRowid as number,
-            dipId: dto.dipId,
-            uuid: dto.uuid,
+            dipId: documentClass.getProcessId(),
+            uuid: documentClass.getUuid(),
             integrityStatus: IntegrityStatusEnum.UNKNOWN,
-            name: dto.name,
-            timestamp: dto.timestamp,
+            name: documentClass.getName(),
+            timestamp: documentClass.getTimestamp(),
         });
     }
 

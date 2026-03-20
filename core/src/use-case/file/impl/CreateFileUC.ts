@@ -1,9 +1,8 @@
 import { inject, injectable } from 'tsyringe';
-import { CreateFileDTO } from '../../../dto/FileDTO';
-import type { File } from '../../../entity/File';
+import { File } from '../../../entity/File';
 import type { IFileRepository } from '../../../repo/IFileRepository';
 import { FILE_REPOSITORY_TOKEN } from '../../../repo/IFileRepository';
-import { ICreateFileUC } from '../ICreateFileUC';
+import type { CreateFileInput, ICreateFileUC } from '../ICreateFileUC';
 
 @injectable()
 export class CreateFileUC implements ICreateFileUC {
@@ -12,7 +11,15 @@ export class CreateFileUC implements ICreateFileUC {
         private readonly repo: IFileRepository
     ) { }
 
-    execute(dto: CreateFileDTO): File {
-        return this.repo.save(dto);
+    execute(input: CreateFileInput): File {
+        const file = new File(
+            input.filename,
+            input.path,
+            input.hash,
+            input.isMain,
+            input.documentId,
+        );
+
+        return this.repo.save(file);
     }
 }

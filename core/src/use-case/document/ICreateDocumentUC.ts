@@ -1,6 +1,15 @@
-import { CreateDocumentDTO } from '../../dto/DocumentDTO';
 import type { Document } from '../../entity/Document';
 
+export interface CreateDocumentInput {
+    processId: number;
+    uuid: string;
+    metadata: {
+        name: string;
+        value: string;
+        type: string;
+    }[];
+}
+
 export interface ICreateDocumentUC {
-    execute(dto: CreateDocumentDTO): Document;
+    execute(input: CreateDocumentInput): Document;
 }

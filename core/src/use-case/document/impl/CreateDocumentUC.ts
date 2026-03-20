@@ -1,9 +1,9 @@
 import { inject, injectable } from 'tsyringe';
-import { CreateDocumentDTO } from '../../../dto/DocumentDTO';
-import type { Document } from '../../../entity/Document';
+import { Document } from '../../../entity/Document';
 import type { IDocumentRepository } from '../../../repo/IDocumentRepository';
 import { DOCUMENTO_REPOSITORY_TOKEN } from '../../../repo/IDocumentRepository';
-import { ICreateDocumentUC } from '../ICreateDocumentUC';
+import type { CreateDocumentInput, ICreateDocumentUC } from '../ICreateDocumentUC';
+import { Metadata } from '../../../value-objects/Metadata';
 
 @injectable()
 export class CreateDocumentUC implements ICreateDocumentUC {
@@ -12,7 +12,9 @@ export class CreateDocumentUC implements ICreateDocumentUC {
         private readonly repo: IDocumentRepository
     ) { }
 
-    execute(dto: CreateDocumentDTO): Document {
-        return this.repo.save(dto);
+    execute(input: CreateDocumentInput): Document {
+        const metadata = input.metadata.map((m) => new Metadata(m.name, m.value, m.type));
+        const document = new Document(input.uuid, metadata, input.processId);
+        return this.repo.save(document);
     }
 }

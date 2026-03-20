@@ -1,8 +1,7 @@
 import { injectable, inject } from "tsyringe";
 import { Dip } from "../../../entity/Dip";
 import { DIP_REPOSITORY_TOKEN, IDipRepository } from "../../../repo/IDipRepository";
-import { ICreateDipUC } from "../ICreateDipUC";
-import { CreateDipDTO } from "../../../dto/DipDTO";
+import type { CreateDipInput, ICreateDipUC } from "../ICreateDipUC";
 
 @injectable()
 export class CreateDipUC implements ICreateDipUC {
@@ -11,7 +10,8 @@ export class CreateDipUC implements ICreateDipUC {
         private readonly repo: IDipRepository
     ) { }
 
-    execute(dto: CreateDipDTO): Dip {
-        return this.repo.save(dto);
+    execute(input: CreateDipInput): Dip {
+        const dip = new Dip(input.uuid);
+        return this.repo.save(dip);
     }
 }
