@@ -1,6 +1,5 @@
 import { IIndexDip } from "../IIndexDip";
 import { PlatformPath } from "node:path";
-import "../IndexResult";
 import {
   IPackageReaderPort,
   PACKAGE_READER_PORT_TOKEN,
