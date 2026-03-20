@@ -1,5 +1,13 @@
-import type { File } from "../../entity/File";
+import type { File } from '../../entity/File';
+
+export interface CreateFileInput {
+    documentId: number;
+    filename: string;
+    path: string;
+    isMain: boolean;
+    hash: string;
+}
 
 export interface ICreateFileUC {
-  execute(file: File): File;
+    execute(input: CreateFileInput): File;
 }

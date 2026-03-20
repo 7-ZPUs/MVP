@@ -4,7 +4,10 @@ import {
   DOCUMENT_CLASS_REPOSITORY_TOKEN,
   IDocumentClassRepository,
 } from "../../../repo/IDocumentClassRepository";
-import { ICreateDocumentClassUC } from "../ICreateDocumentClassUC";
+import type {
+  CreateDocumentClassInput,
+  ICreateDocumentClassUC,
+} from "../ICreateDocumentClassUC";
 
 @injectable()
 export class CreateDocumentClassUC implements ICreateDocumentClassUC {
@@ -13,7 +16,13 @@ export class CreateDocumentClassUC implements ICreateDocumentClassUC {
     private readonly repo: IDocumentClassRepository,
   ) {}
 
-  execute(documentClass: DocumentClass): DocumentClass {
+  execute(input: CreateDocumentClassInput): DocumentClass {
+    const documentClass = new DocumentClass(
+      input.dipId,
+      input.uuid,
+      input.name,
+      input.timestamp,
+    );
     return this.repo.save(documentClass);
   }
 }

@@ -1,5 +1,9 @@
 import { Dip } from "../../entity/Dip";
 
+export interface CreateDipInput {
+  uuid: string;
+}
+
 export interface ICreateDipUC {
-  execute(dip: Dip): Dip;
+  execute(input: CreateDipInput): Dip;
 }

@@ -9,91 +9,79 @@ import { container } from "tsyringe";
 
 import { IpcChannels } from "../../../shared/ipc-channels";
 
-import { CreateDocumentDTO } from "../dto/DocumentDTO";
-import { CreateFileDTO } from "../dto/FileDTO";
-import { CreateProcessDTO } from "../dto/ProcessDTO";
-import { CreateDocumentClassDTO } from "../dto/DocumentClassDTO";
-import { CreateDipDTO } from "../dto/DipDTO";
-import type { MetadataDTO } from "../dto/MetadataDTO";
-import { Document } from "../entity/Document";
-import { File } from "../entity/File";
-import { Process } from "../entity/Process";
-import { DocumentClass } from "../entity/DocumentClass";
-import { Dip } from "../entity/Dip";
-import { Metadata } from "../value-objects/Metadata";
-import type { ICreateDocumentUC } from "../use-case/document/ICreateDocumentUC";
-import { DocumentoUC } from "../use-case/document/tokens";
-import type { ICreateFileUC } from "../use-case/file/ICreateFileUC";
-import { FileUC } from "../use-case/file/tokens";
-import type { ICreateProcessUC } from "../use-case/process/ICreateProcessUC";
-import { ProcessUC } from "../use-case/process/token";
-import { ICreateDocumentClassUC } from "../use-case/classe-documentale/ICreateDocumentClassUC";
-import { DocumentClassUC } from "../use-case/classe-documentale/tokens";
-import { ICreateDipUC } from "../use-case/dip/ICreateDipUC";
-import { DipUC } from "../use-case/dip/token";
+import { CreateDocumentDTO } from '../dto/DocumentDTO';
+import { CreateFileDTO } from '../dto/FileDTO';
+import { CreateProcessDTO } from '../dto/ProcessDTO';
+import type { CreateDocumentInput, ICreateDocumentUC } from '../use-case/document/ICreateDocumentUC';
+import { DocumentoUC } from '../use-case/document/tokens';
+import type { CreateFileInput, ICreateFileUC } from '../use-case/file/ICreateFileUC';
+import { FileUC } from '../use-case/file/tokens';
+import type { CreateProcessInput, ICreateProcessUC } from '../use-case/process/ICreateProcessUC';
+import { ProcessUC } from '../use-case/process/token';
+import type { CreateDocumentClassInput, ICreateDocumentClassUC } from '../use-case/classe-documentale/ICreateDocumentClassUC';
+import { DocumentClassUC } from '../use-case/classe-documentale/tokens';
+import { CreateDocumentClassDTO } from '../dto/DocumentClassDTO';
+import type { CreateDipInput, ICreateDipUC } from '../use-case/dip/ICreateDipUC';
+import { DipUC } from '../use-case/dip/token';
+import { CreateDipDTO } from '../dto/DipDTO';
 
 export class CreateIpcAdapter {
-  static register(ipcMain: IpcMain): void {
-    const createDocumentUC = container.resolve<ICreateDocumentUC>(
-      DocumentoUC.CREATE,
-    );
-    const createFileUC = container.resolve<ICreateFileUC>(FileUC.CREATE);
-    const createProcessUC = container.resolve<ICreateProcessUC>(
-      ProcessUC.CREATE,
-    );
-    const createDocumentClassUC = container.resolve<ICreateDocumentClassUC>(
-      DocumentClassUC.CREATE,
-    );
-    const createDipUC = container.resolve<ICreateDipUC>(DipUC.CREATE);
+    static register(ipcMain: IpcMain): void {
+        const createDocumentUC = container.resolve<ICreateDocumentUC>(DocumentoUC.CREATE);
+        const createFileUC = container.resolve<ICreateFileUC>(FileUC.CREATE);
+        const createProcessUC = container.resolve<ICreateProcessUC>(ProcessUC.CREATE);
+        const createDocumentClassUC = container.resolve<ICreateDocumentClassUC>(DocumentClassUC.CREATE);
+        const createDipUC = container.resolve<ICreateDipUC>(DipUC.CREATE);
 
-    const toMetadata = (dto: MetadataDTO) =>
-      new Metadata(dto.name, dto.value, dto.type);
+        ipcMain.handle(IpcChannels.CREATE_DOCUMENT, (_event, dto: CreateDocumentDTO) => {
+            const input: CreateDocumentInput = {
+                processId: dto.processId,
+                uuid: dto.uuid,
+                metadata: dto.metadata,
+            };
 
-    ipcMain.handle(
-      IpcChannels.CREATE_DOCUMENT,
-      (_event, dto: CreateDocumentDTO) => {
-        const document = new Document(
-          dto.uuid,
-          dto.metadata.map(toMetadata),
-          dto.processId,
-        );
-        return createDocumentUC.execute(document).toDTO();
-      },
-    );
+            return createDocumentUC.execute(input).toDTO();
+        });
 
-    ipcMain.handle(IpcChannels.CREATE_FILE, (_event, dto: CreateFileDTO) => {
-      const file = new File(dto.filename, dto.path, dto.isMain, dto.documentId);
-      return createFileUC.execute(file).toDTO();
-    });
+        ipcMain.handle(IpcChannels.CREATE_FILE, (_event, dto: CreateFileDTO) => {
+            const input: CreateFileInput = {
+                documentId: dto.documentId,
+                filename: dto.filename,
+                path: dto.path,
+                isMain: dto.isMain,
+                hash: dto.hash,
+            };
 
-    ipcMain.handle(
-      IpcChannels.CREATE_PROCESS,
-      (_event, dto: CreateProcessDTO) => {
-        const process = new Process(
-          dto.documentClassId,
-          dto.uuid,
-          dto.metadata.map(toMetadata),
-        );
-        return createProcessUC.execute(process).toDTO();
-      },
-    );
+            return createFileUC.execute(input).toDTO();
+        });
 
-    ipcMain.handle(
-      IpcChannels.CREATE_DOCUMENT_CLASS,
-      (_event, dto: CreateDocumentClassDTO) => {
-        const documentClass = new DocumentClass(
-          dto.dipId,
-          dto.uuid,
-          dto.name,
-          dto.timestamp,
-        );
-        return createDocumentClassUC.execute(documentClass).toDTO();
-      },
-    );
+        ipcMain.handle(IpcChannels.CREATE_PROCESS, (_event, dto: CreateProcessDTO) => {
+            const input: CreateProcessInput = {
+                documentClassId: dto.documentClassId,
+                uuid: dto.uuid,
+                metadata: dto.metadata,
+            };
 
-    ipcMain.handle(IpcChannels.CREATE_DIP, (_event, dto: CreateDipDTO) => {
-      const dip = new Dip(dto.uuid);
-      return createDipUC.execute(dip).toDTO();
-    });
-  }
+            return createProcessUC.execute(input).toDTO();
+        });
+
+        ipcMain.handle(IpcChannels.CREATE_DOCUMENT_CLASS, (_event, dto: CreateDocumentClassDTO) => {
+            const input: CreateDocumentClassInput = {
+                dipId: dto.dipId,
+                uuid: dto.uuid,
+                name: dto.name,
+                timestamp: dto.timestamp,
+            };
+
+            return createDocumentClassUC.execute(input).toDTO();
+        });
+
+        ipcMain.handle(IpcChannels.CREATE_DIP, (_event, dto: CreateDipDTO) => {
+            const input: CreateDipInput = {
+                uuid: dto.uuid,
+            };
+
+            return createDipUC.execute(input).toDTO();
+        });
+    }
 }

@@ -33,6 +33,7 @@ export class FileRepository implements IFileRepository {
                 id               INTEGER PRIMARY KEY AUTOINCREMENT,
                 filename         TEXT    NOT NULL,
                 path             TEXT    NOT NULL,
+                hash             TEXT    NOT NULL,
                 integrity_status TEXT    NOT NULL DEFAULT 'UNKNOWN',
                 is_main          INTEGER NOT NULL DEFAULT 0,
                 document_id      INTEGER NOT NULL REFERENCES document(id) ON DELETE CASCADE
@@ -56,8 +57,8 @@ export class FileRepository implements IFileRepository {
   getById(id: number): File | null {
     const row = this.db
       .prepare<[number], FileRow>(
-        `SELECT id, filename, path, integrity_status as integrityStatus,
-                        is_main as isMain, document_id as documentId
+        `SELECT id, filename, path, hash, integrity_status as integrityStatus,
+                    is_main as isMain, document_id as documentId
                  FROM file WHERE id = ?`,
       )
       .get(id);
@@ -67,8 +68,8 @@ export class FileRepository implements IFileRepository {
   getByDocumentId(documentId: number): File[] {
     const rows = this.db
       .prepare<[number], FileRow>(
-        `SELECT id, filename, path, integrity_status as integrityStatus,
-                        is_main as isMain, document_id as documentId
+        `SELECT id, filename, path, hash, integrity_status as integrityStatus,
+                    is_main as isMain, document_id as documentId
                  FROM file WHERE document_id = ? ORDER BY is_main DESC, id`,
       )
       .all(documentId);
@@ -78,8 +79,8 @@ export class FileRepository implements IFileRepository {
   getByStatus(status: IntegrityStatusEnum): File[] {
     const rows = this.db
       .prepare<[string], FileRow>(
-        `SELECT id, filename, path, integrity_status as integrityStatus,
-                        is_main as isMain, document_id as documentId
+        `SELECT id, filename, path, hash, integrity_status as integrityStatus,
+                    is_main as isMain, document_id as documentId
                  FROM file WHERE integrity_status = ? ORDER BY id`,
       )
       .all(status);
@@ -89,12 +90,13 @@ export class FileRepository implements IFileRepository {
   save(file: File): File {
     const result = this.db
       .prepare(
-        `INSERT INTO file (filename, path, integrity_status, is_main, document_id)
-                 VALUES (?, ?, ?, ?, ?)`,
+        `INSERT INTO file (filename, path, hash, integrity_status, is_main, document_id)
+                 VALUES (?, ?, ?, ?, ?, ?)`,
       )
       .run(
         file.getFilename(),
         file.getPath(),
+        file.getHash(),
         IntegrityStatusEnum.UNKNOWN,
         file.getIsMain() ? 1 : 0,
         file.getDocumentId(),
@@ -104,6 +106,7 @@ export class FileRepository implements IFileRepository {
       id: result.lastInsertRowid as number,
       filename: file.getFilename(),
       path: file.getPath(),
+      hash: file.getHash(),
       integrityStatus: IntegrityStatusEnum.UNKNOWN,
       isMain: file.getIsMain() ? 1 : 0,
       documentId: file.getDocumentId(),

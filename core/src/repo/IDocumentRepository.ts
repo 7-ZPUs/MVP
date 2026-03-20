@@ -1,5 +1,5 @@
-import type { Document } from "../entity/Document";
-import { IntegrityStatusEnum } from "../value-objects/IntegrityStatusEnum";
+import type { Document } from '../entity/Document';
+import { IntegrityStatusEnum } from '../value-objects/IntegrityStatusEnum';
 
 export const DOCUMENTO_REPOSITORY_TOKEN = Symbol("IDocumentRepository");
 
@@ -13,8 +13,8 @@ export interface IDocumentRepository {
   /** Restituisce tutti i documenti con un determinato stato di integrità. */
   getByStatus(status: IntegrityStatusEnum): Document[];
 
-  /** Persiste un nuovo document e restituisce l'entità con l'id assegnato. */
-  save(document: Document): Document;
+    /** Persiste un nuovo document e restituisce l'entità con l'id assegnato. */
+    save(document: Document): Document;
 
   /** Aggiorna lo stato di integrità di un document. */
   updateIntegrityStatus(id: number, status: IntegrityStatusEnum): void;

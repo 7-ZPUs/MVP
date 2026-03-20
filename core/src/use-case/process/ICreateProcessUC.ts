@@ -1,5 +1,15 @@
-import type { Process } from "../../entity/Process";
+import type { Process } from '../../entity/Process';
+
+export interface CreateProcessInput {
+    documentClassId: number;
+    uuid: string;
+    metadata: {
+        name: string;
+        value: string;
+        type: string;
+    }[];
+}
 
 export interface ICreateProcessUC {
-  execute(process: Process): Process;
+    execute(input: CreateProcessInput): Process;
 }

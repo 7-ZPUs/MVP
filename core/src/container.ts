@@ -35,10 +35,11 @@ import { GetDocumentByStatusUC } from "./use-case/document/impl/GetDocumentBySta
 import { CreateDocumentUC } from "./use-case/document/impl/CreateDocumentUC";
 
 // ---- File use cases ----
-import { FileUC } from "./use-case/file/tokens";
-import { GetFileByIdUC } from "./use-case/file/impl/GetFileByIdUC";
-import { GetFileByDocumentUC } from "./use-case/file/impl/GetFileByDocumentUC";
-import { GetFileByStatusUC } from "./use-case/file/impl/GetFileByStatusUC";
+import { FileUC } from './use-case/file/tokens';
+import { GetFileByIdUC } from './use-case/file/impl/GetFileByIdUC';
+import { GetFileByDocumentUC } from './use-case/file/impl/GetFileByDocumentUC';
+import { GetFileByStatusUC } from './use-case/file/impl/GetFileByStatusUC';
+import { CheckFileIntegrityStatusUC } from './use-case/file/impl/CheckFileIntegrityStatusUC';
 
 // ---- Process use cases ----
 import { ProcessUC } from "./use-case/process/token";
@@ -89,6 +90,7 @@ container.register(FileUC.GET_BY_ID, { useClass: GetFileByIdUC });
 container.register(FileUC.GET_BY_DOCUMENT, { useClass: GetFileByDocumentUC });
 container.register(FileUC.GET_BY_STATUS, { useClass: GetFileByStatusUC });
 container.register(FileUC.CREATE, { useClass: CreateFileUC });
+container.register(FileUC.CHECK_INTEGRITY_STATUS, { useClass: CheckFileIntegrityStatusUC });
 
 // Process use cases
 container.register(ProcessUC.GET_BY_STATUS, { useClass: GetProcessByStatusUC });

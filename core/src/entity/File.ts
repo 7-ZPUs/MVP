@@ -6,6 +6,7 @@ export interface FileRow {
     id: number;
     filename: string;
     path: string;
+    hash: string;
     integrityStatus: string;
     isMain: number; // SQLite stores booleans as 0/1
     documentId: number;
@@ -19,6 +20,7 @@ export class File {
     private id: number | null = null;
     private readonly filename: string;
     private readonly path: string;
+    private readonly hash: string;
     private integrityStatus: IntegrityStatusEnum;
     private readonly isMain: boolean;
     /** Chiave esterna verso Documento — sempre obbligatoria. */
@@ -28,9 +30,10 @@ export class File {
      * Costruttore usato per creare un nuovo file non ancora persistito.
      * L'id viene omesso: il DB lo assegnerà all'INSERT.
      */
-    constructor(filename: string, path: string, isMain: boolean, documentId: number) {
+    constructor(filename: string, path: string, hash: string, isMain: boolean, documentId: number) {
         this.filename = filename;
         this.path = path;
+        this.hash = hash;
         this.isMain = isMain;
         this.documentId = documentId;
         this.integrityStatus = IntegrityStatusEnum.UNKNOWN;
@@ -44,6 +47,7 @@ export class File {
         const file = new File(
             row.filename,
             row.path,
+            row.hash,
             row.isMain === 1,
             row.documentId
         );
@@ -62,6 +66,10 @@ export class File {
 
     public getPath(): string {
         return this.path;
+    }
+
+    public getHash(): string {
+        return this.hash;
     }
 
     public getIntegrityStatus(): IntegrityStatusEnum {
@@ -93,6 +101,7 @@ export class File {
             documentId: this.documentId,
             filename: this.filename,
             path: this.path,
+            hash: this.hash,
             integrityStatus: this.integrityStatus,
             isMain: this.isMain,
         };

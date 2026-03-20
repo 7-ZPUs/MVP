@@ -13,8 +13,8 @@ export interface IProcessRepository {
   /** Restituisce tutti i processi con un determinato stato di integrità. */
   getByStatus(status: IntegrityStatusEnum): Process[];
 
-  /** Persiste un nuovo processo e restituisce l'entità con l'id assegnato. */
-  save(process: Process): Process;
+    /** Persiste un nuovo processo e restituisce l'entità con l'id assegnato. */
+    save(process: Process): Process;
 
   /** Aggiorna lo stato di integrità di un processo. */
   updateIntegrityStatus(id: number, status: IntegrityStatusEnum): void;

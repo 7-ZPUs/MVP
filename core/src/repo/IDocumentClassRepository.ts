@@ -6,9 +6,9 @@ export const DOCUMENT_CLASS_REPOSITORY_TOKEN = Symbol(
 );
 
 export interface IDocumentClassRepository {
-  getById(id: number): DocumentClass | null;
-  getByDipId(dipId: number): DocumentClass[];
-  getByStatus(status: IntegrityStatusEnum): DocumentClass[];
-  save(documentClass: DocumentClass): DocumentClass;
-  updateIntegrityStatus(id: number, status: IntegrityStatusEnum): void;
+    getById(id: number): DocumentClass | null;
+    getByDipId(dipId: number): DocumentClass[];
+    getByStatus(status: IntegrityStatusEnum): DocumentClass[];
+    save(documentClass: DocumentClass): DocumentClass;
+    updateIntegrityStatus(id: number, status: IntegrityStatusEnum): void;
 }
