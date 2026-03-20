@@ -9,7 +9,7 @@
 
 | Category                         | Status         | Est. Remaining Time |
 | :------------------------------- | :------------- | :------------------ |
-| **Layer 0-1** (Contracts/Domain) | 🟢 Mostly Done | ~3.5 Hours          |
+| **Layer 0-1** (Contracts/Domain) | 🟢 Mostly Done | ~2.5 Hours          |
 | **Layer 2** (Services/Infra)     | 🟡 In Progress | ~10 Hours           |
 | **Layer 3** (Routing)            | 🔴 Pending     | ~2 Hours            |
 | **Layer 4** (UI Components)      | 🔴 Not Started | ~48 Hours           |
@@ -63,8 +63,8 @@ _Data definitions. Search domain is solid; Document domain missing._
 | `DocumentBlob`          |   🔴   |   0.25h   | _Pending_                                                  |
 | `DocumentMetadata`      |   🔴   |   0.25h   | _Pending_                                                  |
 | `AipInfo`               |   🔴   |   0.25h   | _Pending_                                                  |
-| `ValidationResult`      |   🔴   |   0.5h    | _Pending (Generic)_                                        |
-| `ValidationError`       |   🔴   |   0.5h    | _Pending (Generic)_                                        |
+| `ValidationResult`      |   ✅   |     -     | `search/contracts/search.models`                           |
+| `ValidationError`       |   ✅   |     -     | `search/contracts/search.models` \_                        |
 
 ---
 
