@@ -35,7 +35,7 @@ export class SearchIpcAdapter {
         });
 
         ipcMain.handle(IpcChannels.SEARCH_DOCUMENTS, (_event, rawFilters: SearchFilter[]) => {
-            const filters = rawFilters.map((f) => new SearchFilter(f.field, f.value)); // da rivedere
+            const filters = rawFilters.map((f) => new SearchFilter(f.field, f.value)); // da rivedere per quanto riguarda i SearchFilter per adattarli a quello che ha fatto Lore
             return searchDocumentsUC.execute(filters).map((d) => d.toDTO());
         });
 
@@ -43,8 +43,8 @@ export class SearchIpcAdapter {
             return searchSemanticUC.execute(query);
         });
 
-        ipcMain.handle(IpcChannels.SEARCH_GET_AI_STATE, () => ({
-            initialized:      aiAdapter.isInitialized(),
+        ipcMain.handle(IpcChannels.SEARCH_GET_AI_STATE, () => ({ // ritorna se il modello è caricato e quanti documenti sono indicizzati
+            initialized: aiAdapter.isInitialized(),
             indexedDocuments: documentRepo.getIndexedDocumentsCount(),
         }));
     }

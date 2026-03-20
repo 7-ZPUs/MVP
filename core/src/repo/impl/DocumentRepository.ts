@@ -59,7 +59,7 @@ export class DocumentRepository implements IDocumentRepository {
         return Document.fromDB(row, metadata);
     }
 
-    private toBuffer(vector: Float32Array): Buffer {
+    private toBuffer(vector: Float32Array): Buffer { // converte un Float32Array in Buffer per sqlite-vss
         return Buffer.from(vector.buffer);
     }
 
@@ -141,21 +141,19 @@ export class DocumentRepository implements IDocumentRepository {
         return rows.map((row) => this.rowToEntity(row));
     }
 
-    async searchDocumentSemantic(
-        query: string
-    ): Promise<Array<{ document: Document; score: number }>> {
-        const queryVector = await this.aiAdapter.generateEmbedding(query);
+    async searchDocumentSemantic( query: string ): Promise<Array<{ document: Document; score: number }>> {
+        const queryVector = await this.aiAdapter.generateEmbedding(query); // genera vettore 
 
-        const rows = this.db
+        const rows = this.db // interroga la tabella virtuale usando vss_search per trovare i documenti più simili al vettore di query
             .prepare<[Buffer, number], { rowid: number; distance: number }>(
                 `SELECT rowid, distance
                  FROM vss_documents
                  WHERE vss_search(embedding, ?)
                  LIMIT ?`
             )
-            .all(this.toBuffer(queryVector), 10);
+            .all(this.toBuffer(queryVector), 10); // to buffer perchè sqlite-vss si aspetta un buffer, non un Float32Array.
 
-        return rows
+        return rows // per ogni risultato, recupera il documento originale usando getById e calcola un punteggio di similarità (1 - distanza)
             .map(({ rowid, distance }) => {
                 const doc = this.getById(rowid);
                 if (!doc) return null;

@@ -1,6 +1,6 @@
 export interface SearchResult {
-    id: number;
-    score: number;
+    id: number; // id del documento
+    score: number; // punteggio similarità
 }
 
 export interface ISearchSemanticUC {
