@@ -42,6 +42,11 @@ jobs:
           # Test Core (Electron)
           npm run test:core
 
+          npm run test:coverage
+      - name: Fix LCOV paths
+        run: |
+          sed -i 's|SF:src/|SF:core/src/|g' coverage/core/lcov.info || true
+          sed -i 's|SF:src/|SF:renderer/src/|g' coverage/renderer/lcov.info || true
       - name: SonarQube Analysis
         uses: sonarsource/sonarqube-scan-action@v6
         env:
@@ -54,7 +59,7 @@ jobs:
             -Dsonar.sources=core/src,renderer/src,shared,main.ts
             -Dsonar.tests=core/test,renderer/src
             -Dsonar.test.inclusions=**/*.spec.ts,**/*.test.ts
-            -Dsonar.javascript.lcov.reportPaths=core/coverage/lcov.info,renderer/coverage/lcov.info
+            -Dsonar.javascript.lcov.reportPaths=coverage/core/lcov.info,coverage/renderer/lcov.info
             -Dsonar.typescript.tsconfigPaths=tsconfig.json,renderer/tsconfig.json
             -Dsonar.sourceEncoding=UTF-8
             -Dsonar.branch.name=${{ github.head_ref || github.ref_name }}
