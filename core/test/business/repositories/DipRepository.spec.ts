@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { DipRepository } from "../../../src/repo/impl/DipRepository";
 import { IntegrityStatusEnum } from "../../../src/value-objects/IntegrityStatusEnum";
 import { DatabaseProvider } from "../../../src/repo/impl/DatabaseProvider";
+import { Dip } from "../../../src/entity/Dip";
 
 describe("DipRepository", () => {
     const makeDb = () => ({
@@ -23,11 +24,7 @@ describe("DipRepository", () => {
             run: vi.fn().mockReturnValue({ lastInsertRowid: 11 }),
         });
 
-        const saved = repo.save({
-            dipId: 0,
-            uuid: "dip-1",
-            integrityStatus: IntegrityStatusEnum.VALID,
-        });
+        const saved = repo.save(new Dip("dip-1"));
 
         expect(saved.getId()).toBeTypeOf("number");
         expect(saved.getUuid()).toBe("dip-1");

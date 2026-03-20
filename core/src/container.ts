@@ -32,21 +32,19 @@ import { DocumentoUC } from "./use-case/document/tokens";
 import { GetDocumentByIdUC } from "./use-case/document/impl/GetDocumentByIdUC";
 import { GetDocumentByProcessUC } from "./use-case/document/impl/GetDocumentByProcessUC";
 import { GetDocumentByStatusUC } from "./use-case/document/impl/GetDocumentByStatusUC";
-import { CreateDocumentUC } from "./use-case/document/impl/CreateDocumentUC";
 
 // ---- File use cases ----
 import { FileUC } from "./use-case/file/tokens";
 import { GetFileByIdUC } from "./use-case/file/impl/GetFileByIdUC";
 import { GetFileByDocumentUC } from "./use-case/file/impl/GetFileByDocumentUC";
 import { GetFileByStatusUC } from "./use-case/file/impl/GetFileByStatusUC";
+import { CheckFileIntegrityStatusUC } from "./use-case/file/impl/CheckFileIntegrityStatusUC";
 
 // ---- Process use cases ----
 import { ProcessUC } from "./use-case/process/token";
 import { GetProcessByStatusUC } from "./use-case/process/impl/GetProcessByStatus";
 import { GetProcessByIdUC } from "./use-case/process/impl/GetProcessByIdUC";
 import { GetProcessByDocumentClassUC } from "./use-case/process/impl/GetProcessByDocumentClassUC";
-import { CreateProcessUC } from "./use-case/process/impl/CreateProcessUC";
-import { CreateFileUC } from "./use-case/file/impl/CreateFileUC";
 import { INDEX_DIP_TOKEN } from "./use-case/utils/indexing/IIndexDip";
 import { IndexDip } from "./use-case/utils/indexing/impl/IndexDip";
 
@@ -82,13 +80,14 @@ container.register(DocumentoUC.GET_BY_PROCESS, {
 container.register(DocumentoUC.GET_BY_STATUS, {
   useClass: GetDocumentByStatusUC,
 });
-container.register(DocumentoUC.CREATE, { useClass: CreateDocumentUC });
 
 // File use cases
 container.register(FileUC.GET_BY_ID, { useClass: GetFileByIdUC });
 container.register(FileUC.GET_BY_DOCUMENT, { useClass: GetFileByDocumentUC });
 container.register(FileUC.GET_BY_STATUS, { useClass: GetFileByStatusUC });
-container.register(FileUC.CREATE, { useClass: CreateFileUC });
+container.register(FileUC.CHECK_INTEGRITY_STATUS, {
+  useClass: CheckFileIntegrityStatusUC,
+});
 
 // Process use cases
 container.register(ProcessUC.GET_BY_STATUS, { useClass: GetProcessByStatusUC });
@@ -96,9 +95,9 @@ container.register(ProcessUC.GET_BY_ID, { useClass: GetProcessByIdUC });
 container.register(ProcessUC.GET_BY_DOCUMENT_CLASS, {
   useClass: GetProcessByDocumentClassUC,
 });
-container.register(ProcessUC.CREATE, { useClass: CreateProcessUC });
 
 // Indexing use cases
 container.register(INDEX_DIP_TOKEN, { useClass: IndexDip });
+container.register(DIP_INDEX_PARSER_TOKEN, { useClass: XmlDipParser });
 
 export { container } from "tsyringe";

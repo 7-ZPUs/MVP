@@ -69,7 +69,7 @@ export class LocalPackageReaderAdapter implements IPackageReaderPort {
   public async *readFiles(dipPath: PlatformPath): AsyncGenerator<File> {
     const mapper = this.getMapper(dipPath);
     for (const file of mapper.extractFiles()) {
-      yield new File(file.filename, file.path, file.isMain, 0);
+      yield new File(file.filename, file.path, "", file.isMain, 0);
     }
   }
 
