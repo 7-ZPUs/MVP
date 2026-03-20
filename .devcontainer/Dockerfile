@@ -20,4 +20,5 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     xvfb \
     && rm -rf /var/lib/apt/lists/* \
     && npm install -g @angular/cli
+
 # Install Angular CLI globally
