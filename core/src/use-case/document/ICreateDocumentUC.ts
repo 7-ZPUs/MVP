@@ -1,6 +1,5 @@
-import { CreateDocumentDTO } from '../../dto/DocumentDTO';
-import type { Document } from '../../entity/Document';
+import type { Document } from "../../entity/Document";
 
 export interface ICreateDocumentUC {
-    execute(dto: CreateDocumentDTO): Document;
+  execute(document: Document): Document;
 }

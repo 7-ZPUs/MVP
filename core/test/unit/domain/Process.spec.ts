@@ -5,7 +5,7 @@ import { describe, it, expect } from "vitest";
 
 const meta = [
   new Metadata("tipo", "verbale"),
-  new Metadata("anno", "2025", MetadataType.NUMBER),
+  new Metadata("anno", "2025", MetadataType.Number),
 ];
 
 describe("Process entity", () => {

@@ -5,7 +5,7 @@ import { describe, it, expect } from "vitest";
 
 const meta = [
   new Metadata("autore", "Mario Rossi"),
-  new Metadata("anno", "2024", MetadataType.NUMBER),
+  new Metadata("anno", "2024", MetadataType.Number),
 ];
 
 describe("Document entity", () => {

@@ -1,6 +1,5 @@
-import { CreateProcessDTO } from '../../dto/ProcessDTO';
-import type { Process } from '../../entity/Process';
+import type { Process } from "../../entity/Process";
 
 export interface ICreateProcessUC {
-    execute(dto: CreateProcessDTO): Process;
+  execute(process: Process): Process;
 }
