@@ -1,2 +1,2 @@
-export type { ISearchChannel } from './search-channel.interface';
+export type { SemanticIndexFacade } from './semantic-index-facade';
 export type { SearchFacade } from './search-facade';

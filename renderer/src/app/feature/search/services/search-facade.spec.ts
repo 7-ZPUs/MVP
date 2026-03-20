@@ -1,7 +1,7 @@
 import { signal } from '@angular/core';
 import { SearchFacade } from './search-facade';
 import { TestBed } from '@angular/core/testing';
-import { of, Subject, throwError } from 'rxjs';
+import { of, Subject, throwError, Observable } from 'rxjs';
 import { SearchQueryType } from '../domain/search.enum';
 
 describe('SearchFacade', () => {
@@ -15,7 +15,6 @@ describe('SearchFacade', () => {
   let mockLiveAnnouncer: any;
 
   beforeEach(() => {
-    // Enable Vitest's native fake timers to handle RxJS debounceTime
     vi.useFakeTimers();
 
     mockSearchChannel = {
@@ -49,7 +48,6 @@ describe('SearchFacade', () => {
   });
 
   afterEach(() => {
-    // Restore normal timing and clear mocks after each test
     vi.useRealTimers();
     vi.restoreAllMocks();
   });
@@ -65,7 +63,7 @@ describe('SearchFacade', () => {
       facade.setQuery({ text: 'test', type: SearchQueryType.FREE, useSemanticSearch: false });
 
       facade.search();
-      await vi.advanceTimersByTimeAsync(300); // Wait for debounce and flush microtasks
+      await vi.advanceTimersByTimeAsync(300);
 
       const state = facade.getState()();
       expect(state.error).toEqual(appError);
@@ -271,11 +269,11 @@ describe('SearchFacade', () => {
       await vi.advanceTimersByTimeAsync(100);
       expect(mockSearchChannel.search).not.toHaveBeenCalled();
 
-      facade.search(); // This resets the debounce timer
+      facade.search();
       await vi.advanceTimersByTimeAsync(100);
       expect(mockSearchChannel.search).not.toHaveBeenCalled();
 
-      await vi.advanceTimersByTimeAsync(200); // Complete the 300ms from the second call
+      await vi.advanceTimersByTimeAsync(200);
       expect(mockSearchChannel.search).toHaveBeenCalledTimes(1);
     });
   });
@@ -322,6 +320,134 @@ describe('SearchFacade', () => {
       expect(mockSearchChannel.search).toHaveBeenCalledTimes(1);
 
       pendingRequest.complete();
+    });
+  });
+
+  describe('Guardie di concorrenza (Mutex) e Coverage', () => {
+    beforeEach(() => {
+      mockValidator.validate.mockReturnValue({ isValid: true, errors: new Map() });
+    });
+
+    it("dovrebbe bloccare executeAdvancedSearch se un'altra ricerca è in corso (riga 152)", () => {
+      let resolveFirstSearch: any;
+
+      mockSearchChannel.searchAdvanced.mockReturnValue(
+        new Observable((subscriber) => {
+          resolveFirstSearch = () => {
+            subscriber.next([]);
+            subscriber.complete();
+          };
+        }),
+      );
+
+      facade.searchAdvanced({} as any);
+      expect(facade.getState()().isSearching).toBe(true);
+
+      facade.searchAdvanced({} as any);
+      expect(mockSearchChannel.searchAdvanced).toHaveBeenCalledTimes(1);
+
+      resolveFirstSearch();
+    });
+
+    it("dovrebbe bloccare executeSemanticSearch se un'altra ricerca è in corso (riga 162)", () => {
+      mockSemanticStatus.getStatus.mockReturnValue(signal({ status: 'READY' }));
+
+      let resolveSemantic: any;
+      mockSearchChannel.searchSemantic.mockReturnValue(
+        new Observable((subscriber) => {
+          resolveSemantic = () => {
+            subscriber.next([]);
+            subscriber.complete();
+          };
+        }),
+      );
+
+      facade.searchSemantic({ text: 'test', type: SearchQueryType.FREE, useSemanticSearch: true });
+      expect(facade.getState()().isSearching).toBe(true);
+
+      facade.searchSemantic({ text: 'test2', type: SearchQueryType.FREE, useSemanticSearch: true });
+      expect(mockSearchChannel.searchSemantic).toHaveBeenCalledTimes(1);
+
+      resolveSemantic();
+    });
+
+    it('dovrebbe bloccare executeFullTextSearch se il mutex si attiva durante il debounce (riga 136)', () => {
+      facade.search();
+
+      let resolveAdvanced: any;
+
+      mockSearchChannel.searchAdvanced.mockReturnValue(
+        new Observable((subscriber) => {
+          resolveAdvanced = () => {
+            subscriber.next([]);
+            subscriber.complete();
+          };
+        }),
+      );
+      facade.searchAdvanced({} as any);
+
+      vi.advanceTimersByTime(300);
+      expect(mockSearchChannel.search).not.toHaveBeenCalled();
+
+      resolveAdvanced();
+    });
+  });
+
+  describe('Copertura Rami (Branch Coverage)', () => {
+    it('cancelSearch() non deve fallire o lanciare eccezioni se abortController è null', () => {
+      facade['abortController'] = null;
+
+      expect(() => facade.cancelSearch()).not.toThrow();
+      expect(facade.getState()().isSearching).toBe(false);
+    });
+
+    it('prepareForSearch() deve abortire un vecchio controller se ancora presente', async () => {
+      const mockController = new AbortController();
+      const abortSpy = vi.spyOn(mockController, 'abort');
+      facade['abortController'] = mockController;
+
+      facade.search();
+      await vi.advanceTimersByTimeAsync(300);
+
+      expect(abortSpy).toHaveBeenCalled();
+    });
+
+    it('executeAdvancedSearch() deve gestire correttamente gli errori nel blocco catch', async () => {
+      mockValidator.validate.mockReturnValue({ isValid: true, errors: new Map() });
+      const rawError = new Error('Timeout avanzato');
+
+      mockSearchChannel.searchAdvanced.mockReturnValue(throwError(() => rawError));
+      mockErrorHandler.handle.mockReturnValue({ code: 'ERR_ADV', message: 'Errore' });
+
+      facade.searchAdvanced({} as any);
+      await vi.advanceTimersByTimeAsync(0);
+
+      expect(mockErrorHandler.handle).toHaveBeenCalledWith(rawError);
+      expect(facade.getState()().error).toEqual({ code: 'ERR_ADV', message: 'Errore' });
+    });
+
+    it('executeSemanticSearch() deve gestire correttamente gli errori nel blocco catch', async () => {
+      mockSemanticStatus.getStatus.mockReturnValue(signal({ status: 'READY' }));
+      const rawError = new Error('Timeout semantico');
+
+      mockSearchChannel.searchSemantic.mockReturnValue(throwError(() => rawError));
+      mockErrorHandler.handle.mockReturnValue({ code: 'ERR_SEM', message: 'Errore' });
+
+      facade.searchSemantic({ text: 'test', type: SearchQueryType.FREE, useSemanticSearch: true });
+      await vi.advanceTimersByTimeAsync(0);
+
+      expect(mockErrorHandler.handle).toHaveBeenCalledWith(rawError);
+      expect(facade.getState()().error).toEqual({ code: 'ERR_SEM', message: 'Errore' });
+    });
+
+    it('handleError() deve processare correttamente un errore nullo o senza proprietà name', async () => {
+      mockSearchChannel.search.mockReturnValue(throwError(() => null));
+      mockErrorHandler.handle.mockReturnValue({ code: 'UNKNOWN' });
+
+      facade.search();
+      await vi.advanceTimersByTimeAsync(300);
+
+      expect(mockErrorHandler.handle).toHaveBeenCalledWith(null);
     });
   });
 });

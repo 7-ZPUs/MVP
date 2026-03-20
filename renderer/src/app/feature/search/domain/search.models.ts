@@ -1,10 +1,10 @@
-import { CommonFilterValues } from '../domain/search-common-filters-models';
-import { DiDaiFilterValues } from '../domain/search-diDai-filters-models';
-import { AggregateFilterValues } from '../domain/search-aggregate-filters-models';
-import { SubjectCriteria } from '../domain/search-subject-filters-models';
-import { SearchQueryType } from '../domain/search.enum';
+import { CommonFilterValues } from './search-common-filters-models';
+import { DiDaiFilterValues } from './search-diDai-filters-models';
+import { AggregateFilterValues } from './search-aggregate-filters-models';
+import { SubjectCriteria } from './search-subject-filters-models';
+import { SearchQueryType } from './search.enum';
 import { AppError } from '../../../shared/domain/error.models';
-import { CustomFilterValues } from '../domain/search-custom-filters-models';
+import { CustomFilterValues } from './search-custom-filters-models';
 
 export interface SearchQuery {
   text: string;

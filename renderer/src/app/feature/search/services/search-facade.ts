@@ -7,7 +7,7 @@ import {
   ValidationError,
   PartialSearchFilters,
   SearchResult,
-} from '../contracts/search.models';
+} from '../domain/search.models';
 import { SearchQueryType } from '../domain/search.enum';
 import { IErrorHandler, ITelemetryService, ILiveAnnouncer } from '../../../shared/contracts';
 import { debounceTime } from 'rxjs/internal/operators/debounceTime';
@@ -15,7 +15,7 @@ import { ISemanticIndexStatus } from '../contracts/semantic-index.interface';
 import { Subject } from 'rxjs/internal/Subject';
 import { IFilterValidator } from '../contracts/filter-validator.interface';
 import { firstValueFrom } from 'rxjs';
-import { ISearchChannel } from './search-channel.interface';
+import { ISearchChannel } from '../contracts/search-channel.interface';
 import { TelemetryEvent } from '../../../shared/domain/';
 
 @Injectable({ providedIn: 'root' })

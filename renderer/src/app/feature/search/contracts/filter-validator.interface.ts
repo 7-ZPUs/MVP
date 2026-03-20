@@ -1,4 +1,4 @@
-import { PartialSearchFilters, ValidationError, ValidationResult } from './search.models';
+import { PartialSearchFilters, ValidationError, ValidationResult } from '../domain/search.models';
 import { FilterFieldType } from '../domain/search.enum';
 
 export interface IFilterValidator {
