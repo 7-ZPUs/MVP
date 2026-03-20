@@ -9,6 +9,7 @@ import Database from 'better-sqlite3';
 import * as path from 'node:path';
 import * as os from 'node:os';
 import * as fs from 'node:fs';
+import * as sqliteVss from 'sqlite-vss';
 
 export const DATABASE_PROVIDER_TOKEN = Symbol('DatabaseProvider');
 
@@ -25,6 +26,7 @@ export class DatabaseProvider {
             this._db = new Database(dbPath);
             this._db.pragma('journal_mode = WAL');
             this._db.pragma('foreign_keys = ON');
+            sqliteVss.load(this._db);
         }
         return this._db;
     }

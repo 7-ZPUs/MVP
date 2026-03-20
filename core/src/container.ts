@@ -8,6 +8,10 @@ import { CryptoHashingService } from './services/impl/CryptoHashingService';
 // ---- Database provider ----
 import { DATABASE_PROVIDER_TOKEN, DatabaseProvider } from './repo/impl/DatabaseProvider';
 
+// ---- AI adapter ----
+import { WORD_EMBEDDING_PORT_TOKEN } from './repo/IWordEmbedding';
+import { LocalAiAdapter } from './repo/impl/LocalAiAdapter';
+
 // ---- Repositories ----
 import { DOCUMENTO_REPOSITORY_TOKEN } from './repo/IDocumentRepository';
 import { DocumentRepository } from './repo/impl/DocumentRepository';
@@ -25,6 +29,7 @@ import { GetDocumentByProcessUC } from './use-case/document/impl/GetDocumentByPr
 import { GetDocumentByStatusUC } from './use-case/document/impl/GetDocumentByStatusUC';
 import { CreateDocumentUC } from './use-case/document/impl/CreateDocumentUC';
 import { SearchDocumentsUC } from './use-case/document/impl/SearchDocumentsUC';
+import { SearchSemanticUC } from './use-case/document/impl/SearchSemanticUC';
 
 // ---- File use cases ----
 import { FileUC } from './use-case/file/tokens';
@@ -50,38 +55,39 @@ import { SearchDocumentalClassUC } from './use-case/classe-documentale/impl/Sear
 
 // Services
 container.registerSingleton(DATABASE_PROVIDER_TOKEN, DatabaseProvider);
+container.registerSingleton(WORD_EMBEDDING_PORT_TOKEN, LocalAiAdapter);
 container.register(HASHING_SERVICE_TOKEN, { useClass: CryptoHashingService });
 
 // Repositories
-container.register(DOCUMENTO_REPOSITORY_TOKEN, { useClass: DocumentRepository });
-container.register(FILE_REPOSITORY_TOKEN, { useClass: FileRepository });
-container.register(PROCESS_REPOSITORY_TOKEN, { useClass: ProcessRepository });
+container.register(DOCUMENTO_REPOSITORY_TOKEN,      { useClass: DocumentRepository });
+container.register(FILE_REPOSITORY_TOKEN,           { useClass: FileRepository });
+container.register(PROCESS_REPOSITORY_TOKEN,        { useClass: ProcessRepository });
 container.register(DOCUMENT_CLASS_REPOSITORY_TOKEN, { useClass: DocumentClassRepository });
 
 // Documento use cases
-container.register(DocumentoUC.GET_BY_ID, { useClass: GetDocumentByIdUC });
-container.register(DocumentoUC.GET_BY_PROCESS, { useClass: GetDocumentByProcessUC });
-container.register(DocumentoUC.GET_BY_STATUS, { useClass: GetDocumentByStatusUC });
-container.register(DocumentoUC.CREATE, { useClass: CreateDocumentUC });
-container.register(DocumentoUC.SEARCH_BY_FILTERS, { useClass: SearchDocumentsUC });
+container.register(DocumentoUC.GET_BY_ID,          { useClass: GetDocumentByIdUC });
+container.register(DocumentoUC.GET_BY_PROCESS,     { useClass: GetDocumentByProcessUC });
+container.register(DocumentoUC.GET_BY_STATUS,      { useClass: GetDocumentByStatusUC });
+container.register(DocumentoUC.CREATE,             { useClass: CreateDocumentUC });
+container.register(DocumentoUC.SEARCH_BY_FILTERS,  { useClass: SearchDocumentsUC });
+container.register(DocumentoUC.SEARCH_SEMANTIC,    { useClass: SearchSemanticUC });
 
 // File use cases
-container.register(FileUC.GET_BY_ID, { useClass: GetFileByIdUC });
+container.register(FileUC.GET_BY_ID,       { useClass: GetFileByIdUC });
 container.register(FileUC.GET_BY_DOCUMENT, { useClass: GetFileByDocumentUC });
-container.register(FileUC.GET_BY_STATUS, { useClass: GetFileByStatusUC });
-container.register(FileUC.CREATE, { useClass: CreateFileUC });
-container.register(FileUC.EXPORT_FILE, { useClass: ExportFileUC });
-container.register(FileUC.PRINT_FILE, { useClass: PrintFileUC });
+container.register(FileUC.GET_BY_STATUS,   { useClass: GetFileByStatusUC });
+container.register(FileUC.CREATE,          { useClass: CreateFileUC });
+container.register(FileUC.EXPORT_FILE,     { useClass: ExportFileUC });
+container.register(FileUC.PRINT_FILE,      { useClass: PrintFileUC });
 
 // Process use cases
-container.register(ProcessUC.GET_BY_STATUS, { useClass: GetProcessByStatusUC });
-container.register(ProcessUC.GET_BY_ID, { useClass: GetProcessByIdUC });
-container.register(ProcessUC.GET_BY_DOCUMENT_CLASS, { useClass: GetProcessByDocumentClassUC });
-container.register(ProcessUC.CREATE, { useClass: CreateProcessUC });
+container.register(ProcessUC.GET_BY_STATUS,          { useClass: GetProcessByStatusUC });
+container.register(ProcessUC.GET_BY_ID,              { useClass: GetProcessByIdUC });
+container.register(ProcessUC.GET_BY_DOCUMENT_CLASS,  { useClass: GetProcessByDocumentClassUC });
+container.register(ProcessUC.CREATE,                 { useClass: CreateProcessUC });
 container.register(ProcessUC.SEARCH_BY_PROCESS_UUID, { useClass: SearchProcessUC });
 
 // DocumentClass use cases
 container.register(DocumentClassUC.SEARCH_BY_DOCUMENTAL_CLASS_NAME, { useClass: SearchDocumentalClassUC });
-
 
 export { container };

@@ -23,4 +23,10 @@ export interface IDocumentRepository {
 
     /** Ricerca documenti mediante metadati */
     searchDocument(filters: SearchFilter[]): Document[];
+
+    /** metodo per indicizzazione e ricerca semantica */
+    searchDocumentSemantic(query: string): Promise<Array<{ document: Document; score: number }>>;
+
+    /** per recuperare il numero di documenti indicizzati */
+    getIndexedDocumentsCount(): number;
 }

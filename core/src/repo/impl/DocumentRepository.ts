@@ -1,13 +1,3 @@
-/**
- * DocumentRepository — Infrastructure Repository (SQLite)
- *
- * Implementa IDocumentRepository usando better-sqlite3.
- * Zero business logic: solo persistenza.
- *
- * Schema gestito:
- *   document            (id, uuid, integrity_status, process_id)
- *   document_metadata   (id, document_id, name, value, type)
- */
 import { inject, injectable } from 'tsyringe';
 import Database from 'better-sqlite3';
 
@@ -19,6 +9,7 @@ import { loadMetadata, saveMetadata } from './MetadataHelper';
 import { CreateDocumentDTO } from '../../dto/DocumentDTO';
 import { Metadata } from '../../value-objects/Metadata';
 import { SearchFilter } from '../../value-objects/SearchFilter';
+import { IWordEmbedding, WORD_EMBEDDING_PORT_TOKEN } from '../IWordEmbedding';
 
 const METADATA_TABLE = 'document_metadata';
 const METADATA_FK = 'document_id';
@@ -29,7 +20,9 @@ export class DocumentRepository implements IDocumentRepository {
 
     constructor(
         @inject(DATABASE_PROVIDER_TOKEN)
-        private readonly dbProvider: DatabaseProvider
+        private readonly dbProvider: DatabaseProvider,
+        @inject(WORD_EMBEDDING_PORT_TOKEN)
+        private readonly aiAdapter: IWordEmbedding
     ) {
         this.db = dbProvider.db;
         this.createSchema();
@@ -51,6 +44,9 @@ export class DocumentRepository implements IDocumentRepository {
                 value       TEXT    NOT NULL,
                 type        TEXT    NOT NULL DEFAULT 'string'
             );
+
+            CREATE VIRTUAL TABLE IF NOT EXISTS vss_documents
+            USING vss0(embedding(384));
         `);
     }
 
@@ -63,15 +59,18 @@ export class DocumentRepository implements IDocumentRepository {
         return Document.fromDB(row, metadata);
     }
 
+    private toBuffer(vector: Float32Array): Buffer {
+        return Buffer.from(vector.buffer);
+    }
+
     // -------------------------------------------------------------------------
     // IDocumentRepository implementation
     // -------------------------------------------------------------------------
 
     getById(id: number): Document | null {
         const row = this.db
-            // possiamo anche usare SELECT * a questo punto 
             .prepare<[number], DocumentRow>(
-                `SELECT id, uuid, integrity_status as integrityStatus, process_id as processId 
+                `SELECT id, uuid, integrity_status as integrityStatus, process_id as processId
                  FROM document WHERE id = ?`
             )
             .get(id);
@@ -140,5 +139,35 @@ export class DocumentRepository implements IDocumentRepository {
             )
             .all(...values);
         return rows.map((row) => this.rowToEntity(row));
+    }
+
+    async searchDocumentSemantic(
+        query: string
+    ): Promise<Array<{ document: Document; score: number }>> {
+        const queryVector = await this.aiAdapter.generateEmbedding(query);
+
+        const rows = this.db
+            .prepare<[Buffer, number], { rowid: number; distance: number }>(
+                `SELECT rowid, distance
+                 FROM vss_documents
+                 WHERE vss_search(embedding, ?)
+                 LIMIT ?`
+            )
+            .all(this.toBuffer(queryVector), 10);
+
+        return rows
+            .map(({ rowid, distance }) => {
+                const doc = this.getById(rowid);
+                if (!doc) return null;
+                return { document: doc, score: 1 - distance };
+            })
+            .filter((r): r is { document: Document; score: number } => r !== null);
+    }
+
+    getIndexedDocumentsCount(): number {
+        const row = this.db
+            .prepare<[], { count: number }>('SELECT count(*) as count FROM vss_documents')
+            .get();
+        return row?.count ?? 0;
     }
 }

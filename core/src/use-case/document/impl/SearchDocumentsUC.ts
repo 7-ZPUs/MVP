@@ -1,13 +1,13 @@
 import { inject, injectable } from 'tsyringe';
 import { ISearchDocumentsUC } from '../ISearchDocumentsUC';
-import { IDocumentRepository } from '../../../repo/IDocumentRepository';
+import { DOCUMENTO_REPOSITORY_TOKEN, IDocumentRepository } from '../../../repo/IDocumentRepository';
 import { SearchFilter } from '../../../value-objects/SearchFilter';
 import { Document } from '../../../entity/Document';
 
 @injectable()
 export class SearchDocumentsUC implements ISearchDocumentsUC {
     constructor(
-        @inject('IDocumentRepository')
+        @inject(DOCUMENTO_REPOSITORY_TOKEN)
         private readonly repo: IDocumentRepository
     ) {}
 
