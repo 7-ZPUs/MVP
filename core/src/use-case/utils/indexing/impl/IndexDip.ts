@@ -29,9 +29,9 @@ import { inject, injectable } from "tsyringe";
 import { IndexResult } from "../IndexResult";
 
 /*
- * Implementation of the IndexDip use case.
- * this class is responsible of piping the data from the package reader to the repositories.
- * Use the IndexDipBuilder to create an instance of this class with the required dependencies.
+ * Implementation of the IndexDip use case
+ * this class is responsible of piping the data from the package reader to the repositories
+ * Use the IndexDipBuilder to create an instance of this class with the required dependencies
  */
 @injectable()
 export class IndexDip implements IIndexDip {
