@@ -1,6 +1,5 @@
 import { IIndexDip } from "../IIndexDip";
-import { PlatformPath } from "node:path";
-import "../IndexResult";
+import { IndexResult } from "../IndexResult";
 import {
   IPackageReaderPort,
   PACKAGE_READER_PORT_TOKEN,
@@ -26,7 +25,6 @@ import {
   DIP_REPOSITORY_TOKEN,
 } from "../../../../repo/IDipRepository";
 import { inject, injectable } from "tsyringe";
-import { IndexResult } from "../IndexResult";
 
 /*
  * Implementation of the IndexDip use case.
@@ -49,7 +47,7 @@ export class IndexDip implements IIndexDip {
     @inject(FILE_REPOSITORY_TOKEN)
     private readonly fileRepository: IFileRepository,
   ) {}
-  public async execute(dipPath: PlatformPath): Promise<IndexResult> {
+  public async execute(dipPath: string): Promise<IndexResult> {
     this.indexDip(dipPath);
     this.indexDocumentClasses(dipPath);
     this.indexProcesses(dipPath);
@@ -58,15 +56,13 @@ export class IndexDip implements IIndexDip {
     return { success: true };
   }
 
-  private async indexDip(dipPath: PlatformPath): Promise<IndexResult> {
+  private async indexDip(dipPath: string): Promise<IndexResult> {
     const dip = await this.packageReader.readDip(dipPath);
     this.dipRepository.save(dip);
     return { success: true };
   }
 
-  private async indexDocumentClasses(
-    dipPath: PlatformPath,
-  ): Promise<IndexResult> {
+  private async indexDocumentClasses(dipPath: string): Promise<IndexResult> {
     for await (const documentClass of this.packageReader.readDocumentClasses(
       dipPath,
     )) {
@@ -75,21 +71,21 @@ export class IndexDip implements IIndexDip {
     return { success: true };
   }
 
-  private async indexProcesses(dipPath: PlatformPath): Promise<IndexResult> {
+  private async indexProcesses(dipPath: string): Promise<IndexResult> {
     for await (const process of this.packageReader.readProcesses(dipPath)) {
       this.processRepository.save(process);
     }
     return { success: true };
   }
 
-  private async indexDocuments(dipPath: PlatformPath): Promise<IndexResult> {
+  private async indexDocuments(dipPath: string): Promise<IndexResult> {
     for await (const document of this.packageReader.readDocuments(dipPath)) {
       this.documentRepository.save(document);
     }
     return { success: true };
   }
 
-  private async indexFiles(dipPath: PlatformPath): Promise<IndexResult> {
+  private async indexFiles(dipPath: string): Promise<IndexResult> {
     for await (const file of this.packageReader.readFiles(dipPath)) {
       this.fileRepository.save(file);
     }
