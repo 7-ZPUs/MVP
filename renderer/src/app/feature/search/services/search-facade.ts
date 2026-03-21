@@ -13,7 +13,7 @@ import { IErrorHandler, ITelemetry, ILiveAnnouncer } from '../../../shared/contr
 import { debounceTime } from 'rxjs/internal/operators/debounceTime';
 import { ISemanticIndexStatus } from '../contracts/semantic-index.interface';
 import { Subject } from 'rxjs/internal/Subject';
-import { IFilterValidator } from '../contracts/filter-validator.interface';
+import { IFilterValidator } from '../../validation/contracts/filter-validator.interface';
 import { firstValueFrom } from 'rxjs';
 import { ISearchChannel } from '../contracts/search-channel.interface';
 import { TelemetryEvent } from '../../../shared/domain/';
@@ -75,7 +75,7 @@ export class SearchFacade implements ISearchFacade {
 
     if (!validation.isValid) {
       const validationErrors = new Map<string, ValidationError>();
-      validation.errors.forEach((errors, key) => {
+      validation.errors.forEach((errors: ValidationError[], key: string) => {
         validationErrors.set(key, errors[0]);
       });
       this.state.update((s) => ({ ...s, validationErrors }));
