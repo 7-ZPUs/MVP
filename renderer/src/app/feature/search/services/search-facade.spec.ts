@@ -406,6 +406,8 @@ describe('SearchFacade', () => {
       const abortSpy = vi.spyOn(mockController, 'abort');
       facade['abortController'] = mockController;
 
+      mockSearchChannel.search.mockReturnValue(of([]));
+
       facade.search();
       await vi.advanceTimersByTimeAsync(300);
 
