@@ -1,7 +1,15 @@
 import { describe, it, expect, beforeEach, vi, Mock } from 'vitest';
 import { SearchIpcGateway } from './search-ipc-gateway';
 import { SearchQuery, SearchQueryType } from '../domain';
-import { ICacheService, IErrorHandler, IElectronContextBridge } from '../../../shared/contracts';
+import {
+  ICacheService,
+  IErrorHandler,
+  IElectronContextBridge,
+  ERROR_HANDLER_TOKEN,
+  CACHE_SERVICE_TOKEN,
+  ELECTRON_CONTEXT_BRIDGE_TOKEN,
+} from '../../../shared/contracts';
+import { TestBed } from '@angular/core/testing';
 
 describe('SearchIpcGateway', () => {
   let gateway: SearchIpcGateway;
@@ -33,7 +41,16 @@ describe('SearchIpcGateway', () => {
       createError: vi.fn(),
     };
 
-    gateway = new SearchIpcGateway(mockBridge, mockCache, mockErrorHandler);
+    TestBed.configureTestingModule({
+      providers: [
+        SearchIpcGateway,
+        { provide: ELECTRON_CONTEXT_BRIDGE_TOKEN, useValue: mockBridge },
+        { provide: CACHE_SERVICE_TOKEN, useValue: mockCache },
+        { provide: ERROR_HANDLER_TOKEN, useValue: mockErrorHandler },
+      ],
+    });
+
+    gateway = TestBed.inject(SearchIpcGateway);
   });
 
   it('dovrebbe restituire i risultati dalla cache se disponibili (senza chiamare IPC)', () => {

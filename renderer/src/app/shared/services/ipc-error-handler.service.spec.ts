@@ -1,12 +1,17 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { IpcErrorHandlerService } from './ipc-error-handler.service';
 import { ErrorCode, ErrorCategory, ErrorSeverity } from '../domain';
+import { TestBed } from '@angular/core/testing';
 
 describe('IpcErrorHandlerService', () => {
   let service: IpcErrorHandlerService;
 
   beforeEach(() => {
-    service = new IpcErrorHandlerService();
+    TestBed.configureTestingModule({
+      providers: [IpcErrorHandlerService],
+    });
+
+    service = TestBed.inject(IpcErrorHandlerService);
   });
 
   describe('createError()', () => {

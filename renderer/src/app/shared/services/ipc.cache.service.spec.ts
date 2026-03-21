@@ -1,12 +1,18 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { IpcCacheService } from './ipc-cache.service';
+import { TestBed } from '@angular/core/testing';
 
 describe('IpcCacheService', () => {
   let cacheService: IpcCacheService;
 
   beforeEach(() => {
     vi.useFakeTimers();
-    cacheService = new IpcCacheService();
+
+    TestBed.configureTestingModule({
+      providers: [IpcCacheService],
+    });
+
+    cacheService = TestBed.inject(IpcCacheService);
   });
 
   afterEach(() => {

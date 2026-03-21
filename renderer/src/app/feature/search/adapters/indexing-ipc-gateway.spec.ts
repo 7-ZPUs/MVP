@@ -2,7 +2,13 @@ import { describe, it, expect, beforeEach, vi, Mock } from 'vitest';
 import { IndexingIpcGateway } from './indexing-ipc-gateway';
 import { SemanticIndexState } from '../domain/semantic-filter-models';
 import { IndexingStatus } from '../domain/search.enum';
-import { IErrorHandler, IElectronContextBridge } from '../../../shared/contracts';
+import {
+  IErrorHandler,
+  IElectronContextBridge,
+  ERROR_HANDLER_TOKEN,
+  ELECTRON_CONTEXT_BRIDGE_TOKEN,
+} from '../../../shared/contracts';
+import { TestBed } from '@angular/core/testing';
 
 describe('IndexingIpcGateway', () => {
   let gateway: IndexingIpcGateway;
@@ -19,7 +25,17 @@ describe('IndexingIpcGateway', () => {
       createError: vi.fn(),
     };
 
-    gateway = new IndexingIpcGateway(mockBridge, mockErrorHandler);
+    // 4. Configura il modulo di test per processare il decoratore
+    TestBed.configureTestingModule({
+      providers: [
+        IndexingIpcGateway,
+        { provide: ELECTRON_CONTEXT_BRIDGE_TOKEN, useValue: mockBridge },
+        { provide: ERROR_HANDLER_TOKEN, useValue: mockErrorHandler },
+      ],
+    });
+
+    // 5. Inietta il servizio compilato tramite Angular
+    gateway = TestBed.inject(IndexingIpcGateway);
   });
 
   it('dovrebbe chiamare il canale IPC corretto per getIndexingStatus e restituire lo stato', async () => {

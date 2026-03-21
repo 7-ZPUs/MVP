@@ -1,7 +1,8 @@
 import { describe, it, expect, beforeEach, vi, Mock } from 'vitest';
 import { ElectronLoggingGateway } from './electron-logging-gateway';
 import { LogEntry, LogLevel } from '../domain';
-import { IElectronContextBridge } from '../contracts';
+import { ELECTRON_CONTEXT_BRIDGE_TOKEN, IElectronContextBridge } from '../contracts';
+import { TestBed } from '@angular/core/testing';
 
 describe('ElectronLoggingGateway', () => {
   let gateway: ElectronLoggingGateway;
@@ -19,7 +20,14 @@ describe('ElectronLoggingGateway', () => {
       invoke: vi.fn(),
     };
 
-    gateway = new ElectronLoggingGateway(mockBridge);
+    TestBed.configureTestingModule({
+      providers: [
+        ElectronLoggingGateway,
+        { provide: ELECTRON_CONTEXT_BRIDGE_TOKEN, useValue: mockBridge },
+      ],
+    });
+
+    gateway = TestBed.inject(ElectronLoggingGateway);
   });
 
   it('dovrebbe chiamare il bridge IPC corretto e completarsi con successo', async () => {

@@ -1,9 +1,10 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { Subject } from 'rxjs';
 import { SemanticIndexFacade } from './semantic-index-facade';
-import { IIndexingChannel } from '../contracts/semantic-index.interface';
+import { IIndexingChannel, INDEXING_CHANNEL_TOKEN } from '../contracts/semantic-index.interface';
 import { SemanticIndexState } from '../domain/semantic-filter-models';
 import { IndexingStatus } from '../domain/search.enum';
+import { TestBed } from '@angular/core/testing';
 
 describe('SemanticIndexFacade', () => {
   let facade: SemanticIndexFacade;
@@ -18,7 +19,15 @@ describe('SemanticIndexFacade', () => {
     mockIpcGateway = {
       getIndexingStatus: vi.fn().mockReturnValue(statusSubject.asObservable()),
     };
-    facade = new SemanticIndexFacade(mockIpcGateway);
+
+    TestBed.configureTestingModule({
+      providers: [
+        SemanticIndexFacade,
+        { provide: INDEXING_CHANNEL_TOKEN, useValue: mockIpcGateway },
+      ],
+    });
+
+    facade = TestBed.inject(SemanticIndexFacade);
   });
 
   afterEach(() => {

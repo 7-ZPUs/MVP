@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi, Mock } from 'vitest';
 import { of, throwError } from 'rxjs';
 import { TelemetryService } from './telemetry.service';
-import { ILoggingChannel } from '../contracts';
+import { ILoggingChannel, LOGGING_CHANNEL_TOKEN } from '../contracts';
 import {
   AppError,
   TelemetryEvent,
@@ -11,6 +11,7 @@ import {
   ErrorSeverity,
   ErrorCode,
 } from '../domain';
+import { TestBed } from '@angular/core/testing';
 
 describe('TelemetryService', () => {
   let service: TelemetryService;
@@ -19,18 +20,22 @@ describe('TelemetryService', () => {
   const MOCK_TIME = 1620000000000;
 
   beforeEach(() => {
-    // Blocchiamo il tempo a un valore fisso per poter testare l'esatto timestamp
     vi.useFakeTimers();
     vi.setSystemTime(MOCK_TIME);
 
-    // Mock del canale di logging
     mockLoggingChannel = {
       writeLog: vi.fn().mockReturnValue(of(undefined)),
     };
 
-    service = new TelemetryService(mockLoggingChannel);
+    TestBed.configureTestingModule({
+      providers: [
+        TelemetryService,
+        { provide: LOGGING_CHANNEL_TOKEN, useValue: mockLoggingChannel },
+      ],
+    });
 
-    // Spia per silenziare i console.error attesi nei test
+    service = TestBed.inject(TelemetryService);
+
     vi.spyOn(console, 'error').mockImplementation(() => {});
   });
 
