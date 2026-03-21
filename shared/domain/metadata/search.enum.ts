@@ -24,7 +24,6 @@ export enum IndexingStatus {
   READY = 'READY',
   ERROR = 'ERROR',
   TIMEOUT = 'TIMEOUT',
-  CANCELLED = 'CANCELLED',
 }
 
 export enum FlowType {

@@ -3,5 +3,5 @@ import { IndexingStatus } from './search.enum';
 export interface SemanticIndexState {
   status: IndexingStatus;
   progressPercentage: number;
-  lastIndexingTime: Date | null;
+  lastIndexedAt: Date | null;
 }
