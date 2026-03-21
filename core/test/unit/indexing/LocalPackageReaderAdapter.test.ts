@@ -1,8 +1,9 @@
 import { readFileSync } from "node:fs";
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { XmlDipParser } from "../../../src/repo/impl/utils/XmlDipParser";
 import { DipIndexMapper } from "../../../src/repo/impl/utils/DipIndexMapper";
 import { ensureArray } from "../../../src/repo/impl/utils/ensureArray";
+import type { DipIndexXml } from "../../../src/repo/xml-types/DipIndexXml";
 
 describe("ParserTests", () => {
   it("TU-B-P-01: parseDipIndex() with valid XML input", () => {
@@ -103,44 +104,66 @@ describe("ParserTests", () => {
 });
 
 describe("DipIndexMapperTests", () => {
+  const RAW_DIP_INDEX_XML = "<DiPIndex />";
+
   it("TU-B-P-01: extractDipUuid() should return correct UUID", () => {
-    const xmlContent = readFileSync(
-      "core/test/resources/dipindex_test.xml",
-      "utf-8",
-    );
-    const parser = new XmlDipParser();
-    const index = parser.parseDipIndex(xmlContent);
-    const mapper = new DipIndexMapper(index);
+    const parseDipIndexMock = vi
+      .fn<(rawContent: string) => DipIndexXml>()
+      .mockReturnValue({
+        PackageInfo: { ProcessUUID: "test-dip-uuid-1234" },
+      } as unknown as DipIndexXml);
+    const mapper = new DipIndexMapper(parseDipIndexMock(RAW_DIP_INDEX_XML));
 
     const dipUuid = mapper.extractDipUuid();
+    expect(parseDipIndexMock).toHaveBeenCalledWith(RAW_DIP_INDEX_XML);
     expect(dipUuid).toBe("test-dip-uuid-1234");
   });
 
   it("extractDocumentClasses() should return document classes", () => {
-    const xmlContent = readFileSync(
-      "core/test/resources/dipindex_test.xml",
-      "utf-8",
-    );
-    const parser = new XmlDipParser();
-    const index = parser.parseDipIndex(xmlContent);
-    const mapper = new DipIndexMapper(index);
+    const parseDipIndexMock = vi
+      .fn<(rawContent: string) => DipIndexXml>()
+      .mockReturnValue({
+        PackageContent: {
+          DiPDocuments: {
+            DocumentClass: [{ "@_uuid": "class-1" }, { "@_uuid": "class-2" }],
+          },
+        },
+      } as unknown as DipIndexXml);
+    const mapper = new DipIndexMapper(parseDipIndexMock(RAW_DIP_INDEX_XML));
 
     const classes = mapper.extractDocumentClasses();
+    expect(parseDipIndexMock).toHaveBeenCalledWith(RAW_DIP_INDEX_XML);
     expect(classes.length).toBe(2);
     expect(classes[0]["@_uuid"]).toBe("class-1");
     expect(classes[1]["@_uuid"]).toBe("class-2");
   });
 
   it("extractProcesses() should return mapped processes", () => {
-    const xmlContent = readFileSync(
-      "core/test/resources/dipindex_test.xml",
-      "utf-8",
-    );
-    const parser = new XmlDipParser();
-    const index = parser.parseDipIndex(xmlContent);
-    const mapper = new DipIndexMapper(index);
+    const parseDipIndexMock = vi
+      .fn<(rawContent: string) => DipIndexXml>()
+      .mockReturnValue({
+        PackageContent: {
+          DiPDocuments: {
+            DocumentClass: [
+              {
+                "@_uuid": "class-1",
+                AiP: [{ "@_uuid": "aip-1", AiPRoot: "./class-1/aip-1" }],
+              },
+              {
+                "@_uuid": "class-2",
+                AiP: [
+                  { "@_uuid": "aip-2", AiPRoot: "./class-2/aip-2" },
+                  { "@_uuid": "aip-3", AiPRoot: "./class-2/aip-3" },
+                ],
+              },
+            ],
+          },
+        },
+      } as unknown as DipIndexXml);
+    const mapper = new DipIndexMapper(parseDipIndexMock(RAW_DIP_INDEX_XML));
 
     const processes = mapper.extractProcesses();
+    expect(parseDipIndexMock).toHaveBeenCalledWith(RAW_DIP_INDEX_XML);
     expect(processes.length).toBe(3);
 
     expect(processes[0].uuid).toBe("aip-1");
@@ -157,15 +180,58 @@ describe("DipIndexMapperTests", () => {
   });
 
   it("extractDocuments() should return mapped documents", () => {
-    const xmlContent = readFileSync(
-      "core/test/resources/dipindex_test.xml",
-      "utf-8",
-    );
-    const parser = new XmlDipParser();
-    const index = parser.parseDipIndex(xmlContent);
-    const mapper = new DipIndexMapper(index);
+    const parseDipIndexMock = vi
+      .fn<(rawContent: string) => DipIndexXml>()
+      .mockReturnValue({
+        PackageContent: {
+          DiPDocuments: {
+            DocumentClass: [
+              {
+                AiP: [
+                  {
+                    "@_uuid": "aip-1",
+                    Document: [
+                      {
+                        "@_uuid": "doc-1",
+                        DocumentPath: "./class-1/aip-1/doc-1",
+                        Files: { Metadata: { "#text": "./meta.xml" } },
+                      },
+                    ],
+                  },
+                ],
+              },
+              {
+                AiP: [
+                  {
+                    "@_uuid": "aip-2",
+                    Document: [
+                      {
+                        "@_uuid": "doc-2",
+                        DocumentPath: "./class-2/aip-2/doc-2",
+                        Files: { Metadata: { "#text": "./meta2.xml" } },
+                      },
+                    ],
+                  },
+                  {
+                    "@_uuid": "aip-3",
+                    Document: [
+                      {
+                        "@_uuid": "doc-3",
+                        DocumentPath: "./class-2/aip-3/doc-3",
+                        Files: { Metadata: { "#text": "./meta3.xml" } },
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        },
+      } as unknown as DipIndexXml);
+    const mapper = new DipIndexMapper(parseDipIndexMock(RAW_DIP_INDEX_XML));
 
     const docs = mapper.extractDocuments();
+    expect(parseDipIndexMock).toHaveBeenCalledWith(RAW_DIP_INDEX_XML);
     expect(docs.length).toBe(3);
 
     expect(docs[0].uuid).toBe("doc-1");
@@ -185,15 +251,74 @@ describe("DipIndexMapperTests", () => {
   });
 
   it("extractFiles() should return mapped files including primary and attachments", () => {
-    const xmlContent = readFileSync(
-      "core/test/resources/dipindex_test.xml",
-      "utf-8",
-    );
-    const parser = new XmlDipParser();
-    const index = parser.parseDipIndex(xmlContent);
-    const mapper = new DipIndexMapper(index);
+    const parseDipIndexMock = vi
+      .fn<(rawContent: string) => DipIndexXml>()
+      .mockReturnValue({
+        PackageContent: {
+          DiPDocuments: {
+            DocumentClass: [
+              {
+                AiP: [
+                  {
+                    Document: [
+                      {
+                        "@_uuid": "doc-1",
+                        DocumentPath: "./class-1/aip-1/doc-1",
+                        Files: {
+                          Primary: {
+                            "@_uuid": "prim-1",
+                            "#text": "./primary.pdf",
+                          },
+                        },
+                      },
+                    ],
+                  },
+                ],
+              },
+              {
+                AiP: [
+                  {
+                    Document: [
+                      {
+                        "@_uuid": "doc-2",
+                        DocumentPath: "./class-2/aip-2/doc-2",
+                        Files: {
+                          Primary: {
+                            "@_uuid": "prim-2",
+                            "#text": "./primary2.pdf",
+                          },
+                          Attachments: [
+                            { "@_uuid": "att-1", "#text": "./att1.pdf" },
+                            { "@_uuid": "att-2", "#text": "./att2.pdf" },
+                          ],
+                        },
+                      },
+                    ],
+                  },
+                  {
+                    Document: [
+                      {
+                        "@_uuid": "doc-3",
+                        DocumentPath: "./class-2/aip-3/doc-3",
+                        Files: {
+                          Primary: {
+                            "@_uuid": "prim-3",
+                            "#text": "./primary3.pdf",
+                          },
+                        },
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        },
+      } as unknown as DipIndexXml);
+    const mapper = new DipIndexMapper(parseDipIndexMock(RAW_DIP_INDEX_XML));
 
     const files = mapper.extractFiles();
+    expect(parseDipIndexMock).toHaveBeenCalledWith(RAW_DIP_INDEX_XML);
     expect(files.length).toBe(5);
 
     // From doc-1 (Primary only)
