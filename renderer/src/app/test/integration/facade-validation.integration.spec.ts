@@ -2,14 +2,15 @@ import { TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { of } from 'rxjs';
-import { SearchFacade } from './search-facade';
+import { SearchFacade } from '../../feature/search/services/search-facade';
 import {
   RegistryContradictionValidationStrategy,
   FormationModeContradictionStrategy,
   SearchRangeValidationStrategy,
 } from '../../feature/validation/strategies';
-import { SearchFilters } from '../domain';
-import { RegisterType, DIDAIFormation } from '../domain/search.enum';
+import { SearchFilters } from '../../feature/search/domain';
+import { RegisterType, DIDAIFormation } from '../../feature/search/domain/search.enum';
+import { FilterValidatorService } from '../../feature/validation/services/filter-validator.service';
 
 describe('Search Domain Integration (Facade + Validator + Strategies)', () => {
   let facade: SearchFacade;
@@ -22,20 +23,16 @@ describe('Search Domain Integration (Facade + Validator + Strategies)', () => {
   beforeEach(() => {
     vi.useFakeTimers();
 
-    // 1. Mockiamo l'infrastruttura (IPC, Telemetria, ecc.)
     mockSearchChannel = { searchAdvanced: vi.fn().mockReturnValue(of([])) };
     mockErrorHandler = { handle: vi.fn() };
     mockTelemetry = { trackEvent: vi.fn(), trackError: vi.fn() };
     mockSemanticStatus = { getStatus: vi.fn().mockReturnValue(signal({ status: 'READY' })) };
     mockLiveAnnouncer = { announce: vi.fn() };
 
-    // 2. Prepariamo il TestBed usando la VERA implementazione del validatore
     TestBed.configureTestingModule({
       providers: [
         SearchFacade,
-        // Forniamo la classe reale
         FilterValidatorService,
-        // Diciamo ad Angular che quando la Facade chiede 'IFilterValidator', deve usare il nostro servizio reale
         { provide: 'IFilterValidator', useExisting: FilterValidatorService },
 
         // Mock infrastrutturali
@@ -46,15 +43,10 @@ describe('Search Domain Integration (Facade + Validator + Strategies)', () => {
         { provide: 'ILiveAnnouncer', useValue: mockLiveAnnouncer },
       ],
     });
-
-    // 3. Recuperiamo il VERO servizio di validazione e registriamo le strategie
-    // (A meno che tu non abbia già inserito queste registrazioni nel costruttore di FilterValidatorService,
-    // nel qual caso queste righe non servono, ma male non fanno per sicurezza nel test).
     const validatorService = TestBed.inject(FilterValidatorService);
     validatorService.registerStrategy(new RegistryContradictionValidationStrategy());
     validatorService.registerStrategy(new FormationModeContradictionStrategy());
     validatorService.registerStrategy(new SearchRangeValidationStrategy());
-    validatorService.registerStrategy(new AggregationContradictionStrategy());
 
     facade = TestBed.inject(SearchFacade);
   });
