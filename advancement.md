@@ -10,7 +10,7 @@
 | Category                         | Status         | Est. Remaining Time |
 | :------------------------------- | :------------- | :------------------ |
 | **Layer 0-1** (Contracts/Domain) | 🟢 Mostly Done | ~2.5 Hours          |
-| **Layer 2** (Services/Infra)     | 🟡 In Progress | ~8 Hours            |
+| **Layer 2** (Services/Infra)     | 🟡 In Progress | ~6 Hours            |
 | **Layer 3** (Routing)            | 🔴 Pending     | ~2 Hours            |
 | **Layer 4** (UI Components)      | 🔴 Not Started | ~48 Hours           |
 | **Total**                        |                | **~63.5 Hours**     |
@@ -78,7 +78,7 @@ _Business Logic. Core Search is ready._
 | `SemanticIndexFacade`    |   ✅   |     -     | `feature/search/services/semantic-index-facade.ts` |
 | `IpcErrorHandlerService` |   ✅   |     -     | `shared/services/ipc-error-handler.service.ts`     |
 | `FilterValidatorService` |   🔴   |    4h     | _Pending in feature/validation_                    |
-| `TelemetryService`       |   🔴   |    2h     | _Pending in shared/services_                       |
+| `TelemetryService`       |   ✅   |     -     | `shared/services/telemetry.service.ts`             |
 | `LiveAnnouncerService`   |   🔴   |    2h     | _Pending in shared/services_                       |
 
 ---
