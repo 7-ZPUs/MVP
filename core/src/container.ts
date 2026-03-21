@@ -8,11 +8,9 @@ import { PACKAGE_READER_PORT_TOKEN } from "./repo/IPackageReaderPort";
 import { LocalPackageReaderAdapter } from "./repo/impl/LocalPackageReaderAdapter";
 import { DIP_INDEX_PARSER_TOKEN } from "./repo/impl/utils/IDipParser";
 import { XmlDipParser } from "./repo/impl/utils/XmlDipParser";
+import { FileSystemProvider } from "./repo/impl/utils/FileSystemProvider";
 
 // ---- Document use cases ----
-
-// ---- File use cases ----
-import { FileUC } from "./use-case/file/tokens";
 
 // ---- Process use cases ----
 import { INDEX_DIP_TOKEN } from "./use-case/utils/indexing/IIndexDip";
@@ -24,10 +22,12 @@ import { IndexDip } from "./use-case/utils/indexing/impl/IndexDip";
 
 // Package reader
 container.register(DIP_INDEX_PARSER_TOKEN, { useClass: XmlDipParser });
+container.register(FileSystemProvider, { useClass: FileSystemProvider });
 container.register(PACKAGE_READER_PORT_TOKEN, {
   useFactory: (dependencyContainer) =>
     new LocalPackageReaderAdapter(
       dependencyContainer.resolve(DIP_INDEX_PARSER_TOKEN),
+      dependencyContainer.resolve(FileSystemProvider),
     ),
 });
 

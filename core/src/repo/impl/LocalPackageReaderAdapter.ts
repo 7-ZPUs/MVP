@@ -1,6 +1,4 @@
-import * as fs from "node:fs";
 import * as path from "node:path";
-import { Readable } from "node:stream";
 import { IPackageReaderPort } from "../IPackageReaderPort";
 import { IDipParser } from "./utils/IDipParser";
 import { Dip } from "../../entity/Dip";
@@ -9,72 +7,88 @@ import { Process } from "../../entity/Process";
 import { Document } from "../../entity/Document";
 import { File } from "../../entity/File";
 import { DipIndexMapper } from "./utils/DipIndexMapper";
-import { PlatformPath } from "node:path";
+import type { IFileSystemProvider } from "./utils/IFileSystemProvider";
 
 const DIP_INDEX_FILENAME = "DiPIndex.xml";
+type MapperFactory = (
+  dipPath: string,
+) => DipIndexMapper | Promise<DipIndexMapper>;
 
 export class LocalPackageReaderAdapter implements IPackageReaderPort {
   private readonly mapperCache = new Map<string, DipIndexMapper>();
 
-  constructor(private readonly parser: IDipParser) {}
+  private readonly mapperFactory?: MapperFactory;
 
-  private getMapper(dipPath: PlatformPath): DipIndexMapper {
-    const key = dipPath as unknown as string;
+  constructor(
+    private readonly parser: IDipParser,
+    private readonly fileSystemProvider: IFileSystemProvider,
+    mapperFactory?: MapperFactory,
+  ) {
+    this.mapperFactory = mapperFactory;
+  }
+
+  private async getMapper(dipPath: string): Promise<DipIndexMapper> {
+    const key = dipPath;
     const cached = this.mapperCache.get(key);
     if (cached) return cached;
 
-    const indexPath = path.join(key, DIP_INDEX_FILENAME);
-    const rawContent = fs.readFileSync(indexPath, "utf-8");
-    const mapper = new DipIndexMapper(this.parser.parseDipIndex(rawContent));
+    const mapper =
+      (await this.mapperFactory?.(key)) ??
+      new DipIndexMapper(
+        this.parser.parseDipIndex(
+          await this.fileSystemProvider.readTextFile(
+            path.join(key, DIP_INDEX_FILENAME),
+          ),
+        ),
+      );
     this.mapperCache.set(key, mapper);
     return mapper;
   }
 
-  public async readDip(dipPath: PlatformPath): Promise<Dip> {
-    const mapper = this.getMapper(dipPath);
+  public async readDip(dipPath: string): Promise<Dip> {
+    const mapper = await this.getMapper(dipPath);
     return new Dip(mapper.extractDipUuid());
   }
 
   public async *readDocumentClasses(
-    dipPath: PlatformPath,
+    dipPath: string,
   ): AsyncGenerator<DocumentClass> {
-    const mapper = this.getMapper(dipPath);
+    const mapper = await this.getMapper(dipPath);
     for (const dc of mapper.extractDocumentClasses()) {
       yield new DocumentClass(0, dc["@_uuid"], dc["@_name"], dc["@_validFrom"]);
     }
   }
 
-  public async *readProcesses(dipPath: PlatformPath): AsyncGenerator<Process> {
-    const mapper = this.getMapper(dipPath);
+  public async *readProcesses(dipPath: string): AsyncGenerator<Process> {
+    const mapper = await this.getMapper(dipPath);
     for (const proc of mapper.extractProcesses()) {
       yield new Process(0, proc.uuid, proc.metadata);
     }
   }
 
-  public async *readDocuments(dipPath: PlatformPath): AsyncGenerator<Document> {
-    const mapper = this.getMapper(dipPath);
+  public async *readDocuments(dipPath: string): AsyncGenerator<Document> {
+    const mapper = await this.getMapper(dipPath);
     for (const doc of mapper.extractDocuments()) {
       const metadataPath = path.join(
-        dipPath as unknown as string,
+        dipPath,
         doc.documentPath,
         doc.metadataFilename,
       );
       const metadata = this.parser.parseDocumentMetadata(
-        fs.readFileSync(metadataPath, "utf-8"),
+        await this.fileSystemProvider.readTextFile(metadataPath),
       );
       yield new Document(doc.uuid, metadata, 0);
     }
   }
 
-  public async *readFiles(dipPath: PlatformPath): AsyncGenerator<File> {
-    const mapper = this.getMapper(dipPath);
+  public async *readFiles(dipPath: string): AsyncGenerator<File> {
+    const mapper = await this.getMapper(dipPath);
     for (const file of mapper.extractFiles()) {
       yield new File(file.filename, file.path, "", file.isMain, 0);
     }
   }
 
-  public readFileBytes(filePath: PlatformPath): ReadableStream {
-    const nodeStream = fs.createReadStream(filePath as unknown as string);
-    return Readable.toWeb(nodeStream) as ReadableStream;
+  public async readFileBytes(filePath: string): Promise<ReadableStream> {
+    return this.fileSystemProvider.openReadStream(filePath);
   }
 }

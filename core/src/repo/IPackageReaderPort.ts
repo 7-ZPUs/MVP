@@ -1,4 +1,3 @@
-import { PlatformPath } from "node:path";
 import { Dip } from "../entity/Dip";
 import { DocumentClass } from "../entity/DocumentClass";
 import { Process } from "../entity/Process";
@@ -8,10 +7,10 @@ import { File } from "../entity/File";
 export const PACKAGE_READER_PORT_TOKEN = Symbol("IPackageReaderPort");
 
 export interface IPackageReaderPort {
-  readDip(dipPath: PlatformPath): Promise<Dip>;
-  readDocumentClasses(dipPath: PlatformPath): AsyncGenerator<DocumentClass>;
-  readProcesses(dipPath: PlatformPath): AsyncGenerator<Process>;
-  readDocuments(dipPath: PlatformPath): AsyncGenerator<Document>;
-  readFiles(dipPath: PlatformPath): AsyncGenerator<File>;
-  readFileBytes(filePath: PlatformPath): ReadableStream;
+  readDip(dipPath: string): Promise<Dip>;
+  readDocumentClasses(dipPath: string): AsyncGenerator<DocumentClass>;
+  readProcesses(dipPath: string): AsyncGenerator<Process>;
+  readDocuments(dipPath: string): AsyncGenerator<Document>;
+  readFiles(dipPath: string): AsyncGenerator<File>;
+  readFileBytes(filePath: string): Promise<ReadableStream>;
 }

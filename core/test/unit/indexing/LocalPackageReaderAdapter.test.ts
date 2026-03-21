@@ -4,6 +4,8 @@ import { XmlDipParser } from "../../../src/repo/impl/utils/XmlDipParser";
 import { DipIndexMapper } from "../../../src/repo/impl/utils/DipIndexMapper";
 import { ensureArray } from "../../../src/repo/impl/utils/ensureArray";
 import type { DipIndexXml } from "../../../src/repo/xml-types/DipIndexXml";
+import { LocalPackageReaderAdapter } from "../../../src/repo/impl/LocalPackageReaderAdapter";
+import { Dip } from "../../../src/entity/Dip";
 
 describe("ParserTests", () => {
   it("TU-B-P-01: parseDipIndex() with valid XML input", () => {
@@ -108,7 +110,7 @@ describe("DipIndexMapperTests", () => {
 
   it("TU-B-P-01: extractDipUuid() should return correct UUID", () => {
     const parseDipIndexMock = vi
-      .fn<(rawContent: string) => DipIndexXml>()
+      .fn<[rawContent: string], DipIndexXml>()
       .mockReturnValue({
         PackageInfo: { ProcessUUID: "test-dip-uuid-1234" },
       } as unknown as DipIndexXml);
@@ -121,7 +123,7 @@ describe("DipIndexMapperTests", () => {
 
   it("extractDocumentClasses() should return document classes", () => {
     const parseDipIndexMock = vi
-      .fn<(rawContent: string) => DipIndexXml>()
+      .fn<[rawContent: string], DipIndexXml>()
       .mockReturnValue({
         PackageContent: {
           DiPDocuments: {
@@ -140,7 +142,7 @@ describe("DipIndexMapperTests", () => {
 
   it("extractProcesses() should return mapped processes", () => {
     const parseDipIndexMock = vi
-      .fn<(rawContent: string) => DipIndexXml>()
+      .fn<[rawContent: string], DipIndexXml>()
       .mockReturnValue({
         PackageContent: {
           DiPDocuments: {
@@ -181,7 +183,7 @@ describe("DipIndexMapperTests", () => {
 
   it("extractDocuments() should return mapped documents", () => {
     const parseDipIndexMock = vi
-      .fn<(rawContent: string) => DipIndexXml>()
+      .fn<[rawContent: string], DipIndexXml>()
       .mockReturnValue({
         PackageContent: {
           DiPDocuments: {
@@ -252,7 +254,7 @@ describe("DipIndexMapperTests", () => {
 
   it("extractFiles() should return mapped files including primary and attachments", () => {
     const parseDipIndexMock = vi
-      .fn<(rawContent: string) => DipIndexXml>()
+      .fn<[rawContent: string], DipIndexXml>()
       .mockReturnValue({
         PackageContent: {
           DiPDocuments: {
@@ -364,5 +366,96 @@ describe("ensureArrayTest", () => {
     expect(ensureArray("test")).toEqual(["test"]);
     const obj = { key: "value" };
     expect(ensureArray(obj)).toEqual([obj]);
+  });
+});
+
+describe("LocalPackageReaderAdapter", () => {
+  it("should read and map data from package reader", async () => {
+    const mapperFactory = vi.fn().mockReturnValue({
+      extractDipUuid: () => "dip-1",
+      extractDocumentClasses: () => [
+        {
+          "@_uuid": "dc-1",
+          "@_name": "Class 1",
+          "@_validFrom": "2026-01-01",
+        },
+      ],
+      extractProcesses: () => [
+        {
+          uuid: "proc-1",
+          documentClassUuid: "dc-1",
+          aipRoot: "./dc-1/proc-1",
+          metadata: [],
+        },
+      ],
+      extractDocuments: () => [
+        {
+          uuid: "doc-1",
+          processUuid: "proc-1",
+          documentPath: "docs/doc-1",
+          metadataFilename: "metadata.xml",
+        },
+      ],
+      extractFiles: () => [
+        {
+          uuid: "file-1",
+          documentUuid: "doc-1",
+          filename: "main.pdf",
+          path: "docs/doc-1/main.pdf",
+          isMain: true,
+        },
+      ],
+    });
+
+    const mockParser = {
+      parseDipIndex: vi.fn().mockReturnValue({}),
+      parseDocumentMetadata: vi.fn().mockReturnValue([]),
+    };
+    const readTextFile = vi.fn().mockResolvedValue("<DocumentMetadata />");
+    const fileSystemProvider = {
+      readFile: vi.fn(),
+      openReadStream: vi.fn(),
+      readTextFile,
+      openReadTextStream: vi.fn(),
+      fileExists: vi.fn(),
+    };
+    const adapter = new LocalPackageReaderAdapter(
+      mockParser,
+      fileSystemProvider,
+      mapperFactory,
+    );
+
+    await expect(adapter.readDip("dummy/path")).resolves.toBeInstanceOf(Dip);
+    await expect(
+      adapter.readDocumentClasses("dummy/path").next(),
+    ).resolves.toEqual(
+      expect.objectContaining({
+        value: expect.any(Object),
+        done: expect.any(Boolean),
+      }),
+    );
+    await expect(adapter.readProcesses("dummy/path").next()).resolves.toEqual(
+      expect.objectContaining({
+        value: expect.any(Object),
+        done: expect.any(Boolean),
+      }),
+    );
+    await expect(adapter.readDocuments("dummy/path").next()).resolves.toEqual(
+      expect.objectContaining({
+        value: expect.any(Object),
+        done: expect.any(Boolean),
+      }),
+    );
+    await expect(adapter.readFiles("dummy/path").next()).resolves.toEqual(
+      expect.objectContaining({
+        value: expect.any(Object),
+        done: expect.any(Boolean),
+      }),
+    );
+
+    expect(mapperFactory).toHaveBeenCalledWith("dummy/path");
+    expect(readTextFile).toHaveBeenCalledWith(
+      "dummy/path/docs/doc-1/metadata.xml",
+    );
   });
 });
