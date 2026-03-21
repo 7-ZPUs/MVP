@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { RegistryContradictionValidationStrategy } from './registry-contradiction-validation.strategy';
-import { PartialSearchFilters } from '../../search/domain/search.models';
+import { PartialSearchFilters } from '../../search/domain';
 import { RegisterType } from '../../search/domain/search.enum';
 
 describe('RegistryContradictionValidationStrategy', () => {

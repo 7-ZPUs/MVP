@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { FilterValidatorService } from './filter-validator.service';
 import { IFilterValidationStrategy } from '../contracts/filter-validator.interface';
-import { PartialSearchFilters } from '../../search/domain/search.models';
+import { PartialSearchFilters } from '../../search/domain';
 
 describe('FilterValidatorService', () => {
   let service: FilterValidatorService;

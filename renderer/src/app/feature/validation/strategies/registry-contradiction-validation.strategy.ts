@@ -1,5 +1,5 @@
 import { IFilterValidationStrategy } from '../contracts/filter-validator.interface';
-import { PartialSearchFilters, ValidationError } from '../../search/domain/search.models';
+import { PartialSearchFilters, ValidationError } from '../../search/domain';
 import { RegisterType } from '../../search/domain/search.enum';
 
 export class RegistryContradictionValidationStrategy implements IFilterValidationStrategy {

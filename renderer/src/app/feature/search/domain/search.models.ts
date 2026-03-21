@@ -20,13 +20,6 @@ export interface SearchFilters {
   custom: CustomFilterValues | null;
 }
 
-export interface PartialSearchFilters {
-  common: CommonFilterValues;
-  diDai: DiDaiFilterValues;
-  aggregate: AggregateFilterValues;
-  custom: CustomFilterValues | null;
-}
-
 export interface SearchResult {
   documentId: string;
   name: string;

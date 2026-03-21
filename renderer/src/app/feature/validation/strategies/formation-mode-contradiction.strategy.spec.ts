@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { FormationModeContradictionStrategy } from './formation-mode-contradiction.strategy';
-import { PartialSearchFilters } from '../../search/domain/search.models';
+import { PartialSearchFilters } from '../../search/domain';
 import { DIDAIFormation } from '../../search/domain/search.enum';
 
 describe('FormationModeContradictionStrategy', () => {

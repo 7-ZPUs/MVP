@@ -7,7 +7,7 @@ import {
   ValidationError,
   PartialSearchFilters,
   SearchResult,
-} from '../domain/search.models';
+} from '../domain';
 import { SearchQueryType } from '../domain/search.enum';
 import { IErrorHandler, ITelemetry, ILiveAnnouncer } from '../../../shared/contracts';
 import { debounceTime } from 'rxjs/internal/operators/debounceTime';
