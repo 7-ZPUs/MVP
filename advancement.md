@@ -7,13 +7,13 @@
 
 ## ⏱️ Timeline Summary
 
-| Category                         | Status         | Est. Remaining Time |
-| :------------------------------- | :------------- | :------------------ |
-| **Layer 0-1** (Contracts/Domain) | 🟢 Mostly Done | ~2.5 Hours          |
-| **Layer 2** (Services/Infra)     | 🟡 In Progress | ~4 Hours            |
-| **Layer 3** (Routing)            | 🔴 Pending     | ~2 Hours            |
-| **Layer 4** (UI Components)      | 🔴 Not Started | ~48 Hours           |
-| **Total**                        |                | **~56.5 Hours**     |
+| Category                         | Status         | Est. Remaining Time         |
+| :------------------------------- | :------------- | :-------------------------- |
+| **Layer 0-1** (Contracts/Domain) | 🟢 Mostly Done | ~2.5 Hours                  |
+| **Layer 2** (Services/Infra)     | 🟢 Mostly Done | ~0 Hours (Add Valid. Strat) |
+| **Layer 3** (Routing)            | 🔴 Pending     | ~2 Hours                    |
+| **Layer 4** (UI Components)      | 🔴 Not Started | ~48 Hours                   |
+| **Total**                        |                | **~56.5 Hours**             |
 
 ---
 
@@ -77,7 +77,7 @@ _Business Logic. Core Search is ready._
 | `SearchFacade`           |   ✅   |     -     | `feature/search/services/search-facade.ts`         |
 | `SemanticIndexFacade`    |   ✅   |     -     | `feature/search/services/semantic-index-facade.ts` |
 | `IpcErrorHandlerService` |   ✅   |     -     | `shared/services/ipc-error-handler.service.ts`     |
-| `FilterValidatorService` |   🔴   |    4h     | _Pending in feature/validation_                    |
+| `FilterValidatorService` |   ✅   |     -     | `feature/search/services/filter-validator.service` |
 | `TelemetryService`       |   ✅   |     -     | `shared/services/telemetry.service.ts`             |
 | `LiveAnnouncerService`   |   ✅   |     -     | `shared/services/live-announcer.service.ts`        |
 

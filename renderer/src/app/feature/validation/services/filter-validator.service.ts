@@ -11,7 +11,7 @@ import {
 
 @Injectable({ providedIn: 'root' })
 export class FilterValidatorService implements IFilterValidator {
-  private strategies: IFilterValidationStrategy[] = [];
+  private readonly strategies: IFilterValidationStrategy[] = [];
 
   public registerStrategy(strategy: IFilterValidationStrategy): void {
     this.strategies.push(strategy);
