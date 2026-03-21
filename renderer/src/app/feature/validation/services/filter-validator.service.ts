@@ -9,9 +9,20 @@ import {
   ValidationError,
 } from '../../search/domain/search.models';
 
+import { RegistryContradictionValidationStrategy } from '../strategies/registry-contradiction-validation.strategy';
+import { FormationModeContradictionStrategy } from '../strategies/formation-mode-contradiction.strategy';
+import { SearchRangeValidationStrategy } from '../strategies/search-range-validation.strategy';
+//TODO import { AggregationContradictionStrategy } from '../strategies/aggregation-contradiction.strategy';
+
 @Injectable({ providedIn: 'root' })
 export class FilterValidatorService implements IFilterValidator {
   private readonly strategies: IFilterValidationStrategy[] = [];
+
+  constructor() {
+    this.registerStrategy(new RegistryContradictionValidationStrategy());
+    this.registerStrategy(new FormationModeContradictionStrategy());
+    this.registerStrategy(new SearchRangeValidationStrategy());
+  }
 
   public registerStrategy(strategy: IFilterValidationStrategy): void {
     this.strategies.push(strategy);
