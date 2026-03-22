@@ -48,11 +48,11 @@ export class IndexDip implements IIndexDip {
     private readonly fileRepository: IFileRepository,
   ) {}
   public async execute(dipPath: string): Promise<IndexResult> {
-    this.indexDip(dipPath);
-    this.indexDocumentClasses(dipPath);
-    this.indexProcesses(dipPath);
-    this.indexDocuments(dipPath);
-    this.indexFiles(dipPath);
+    await this.indexDip(dipPath);
+    await this.indexDocumentClasses(dipPath);
+    await this.indexProcesses(dipPath);
+    await this.indexDocuments(dipPath);
+    await this.indexFiles(dipPath);
     return { success: true };
   }
 

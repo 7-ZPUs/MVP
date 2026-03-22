@@ -1,3 +1,4 @@
+import "reflect-metadata";
 import { afterEach } from "vitest";
 import * as fs from "node:fs";
 

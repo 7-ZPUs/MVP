@@ -6,6 +6,7 @@ import { ensureArray } from "../../../src/repo/impl/utils/ensureArray";
 import type { DipIndexXml } from "../../../src/repo/xml-types/DipIndexXml";
 import { LocalPackageReaderAdapter } from "../../../src/repo/impl/LocalPackageReaderAdapter";
 import { Dip } from "../../../src/entity/Dip";
+import { FileSystemProvider } from "../../../src/repo/impl/utils/FileSystemProvider";
 
 describe("ParserTests", () => {
   it("TU-B-P-01: parseDipIndex() with valid XML input", () => {
@@ -457,5 +458,44 @@ describe("LocalPackageReaderAdapter", () => {
     expect(readTextFile).toHaveBeenCalledWith(
       "dummy/path/docs/doc-1/metadata.xml",
     );
+  });
+});
+
+describe("FileSystemProvider", () => {
+  it("should read file content as Uint8Array", async () => {
+    const provider = new FileSystemProvider();
+    const content = await provider.readFile("core/test/resources/sample.txt");
+    expect(content).toBeInstanceOf(Uint8Array);
+    expect(new TextDecoder().decode(content)).toBe("Sample text content");
+  });
+
+  it("should read text file content", async () => {
+    const provider = new FileSystemProvider();
+    const content = await provider.readTextFile(
+      "core/test/resources/sample.txt",
+    );
+    expect(content).toBe("Sample text content");
+  });
+
+  it("read file through stream", async () => {
+    const provider = new FileSystemProvider();
+    const stream = await provider.openReadStream(
+      "core/test/resources/sample.txt",
+    );
+    let data = "";
+    for await (const chunk of stream) {
+      data += chunk;
+    }
+    expect(data).toBe("Sample text content");
+  });
+
+  it("should check file existence", async () => {
+    const provider = new FileSystemProvider();
+    const exists = await provider.fileExists("core/test/resources/sample.txt");
+    expect(exists).toBe(true);
+    const notExists = await provider.fileExists(
+      "core/test/resources/nonexistent.txt",
+    );
+    expect(notExists).toBe(false);
   });
 });

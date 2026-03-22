@@ -9,18 +9,13 @@ export class FileSystemProvider implements IFileSystemProvider {
     return new Uint8Array(file);
   }
 
-  public async openReadStream(filePath: string): Promise<ReadableStream> {
+  public async openReadStream(filePath: string): Promise<Readable> {
     const nodeStream = fs.createReadStream(filePath);
-    return Readable.toWeb(nodeStream) as ReadableStream;
+    return nodeStream;
   }
 
   public async readTextFile(filePath: string): Promise<string> {
     return readFile(filePath, "utf-8");
-  }
-
-  public async openReadTextStream(filePath: string): Promise<ReadableStream> {
-    const nodeStream = fs.createReadStream(filePath, { encoding: "utf-8" });
-    return Readable.toWeb(nodeStream) as ReadableStream;
   }
 
   public async fileExists(filePath: string): Promise<boolean> {
