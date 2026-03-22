@@ -6,32 +6,26 @@ import { DocumentClass } from "../../entity/DocumentClass";
 import { Process } from "../../entity/Process";
 import { Document } from "../../entity/Document";
 import { File } from "../../entity/File";
-import { DipIndexMapper } from "./utils/DipIndexMapper";
 import type { IFileSystemProvider } from "./utils/IFileSystemProvider";
+import type { ParsedDipIndex } from "./utils/IDipParser";
 
 const DIP_INDEX_FILENAME_REGEX = /^DiPIndex\..+\.xml$/;
-type MapperFactory = (
-  dipPath: string,
-) => DipIndexMapper | Promise<DipIndexMapper>;
 
 export class LocalPackageReaderAdapter implements IPackageReaderPort {
-  private readonly mapperCache = new Map<string, DipIndexMapper>();
+  private currentDipPath?: string;
 
-  private readonly mapperFactory?: MapperFactory;
+  private currentParsedIndex?: ParsedDipIndex;
 
   constructor(
     private readonly parser: IDipParser,
     private readonly fileSystemProvider: IFileSystemProvider,
-    mapperFactory?: MapperFactory,
-  ) {
-    this.mapperFactory = mapperFactory;
-  }
+  ) {}
 
   private async resolveDipIndexFilename(dipPath: string): Promise<string> {
     const files = await this.fileSystemProvider.listFiles(dipPath);
     const filename = files
       .filter((file) => DIP_INDEX_FILENAME_REGEX.test(file))
-      .sort()[0];
+      .sort((a, b) => a.localeCompare(b))[0];
 
     if (!filename) {
       throw new Error(
@@ -42,49 +36,47 @@ export class LocalPackageReaderAdapter implements IPackageReaderPort {
     return filename;
   }
 
-  private async getMapper(dipPath: string): Promise<DipIndexMapper> {
-    const key = dipPath;
-    const cached = this.mapperCache.get(key);
-    if (cached) return cached;
+  private async getParsedIndex(dipPath: string): Promise<ParsedDipIndex> {
+    if (this.currentDipPath === dipPath && this.currentParsedIndex) {
+      return this.currentParsedIndex;
+    }
 
-    const mapperFromFactory = await this.mapperFactory?.(key);
-    const mapper =
-      mapperFromFactory ??
-      new DipIndexMapper(
-        this.parser.parseDipIndex(
-          await this.fileSystemProvider.readTextFile(
-            path.join(key, await this.resolveDipIndexFilename(key)),
-          ),
-        ),
-      );
-    this.mapperCache.set(key, mapper);
-    return mapper;
+    const parsedIndex = this.parser.parseDipIndex(
+      await this.fileSystemProvider.readTextFile(
+        path.join(dipPath, await this.resolveDipIndexFilename(dipPath)),
+      ),
+    );
+
+    this.currentDipPath = dipPath;
+    this.currentParsedIndex = parsedIndex;
+
+    return parsedIndex;
   }
 
   public async readDip(dipPath: string): Promise<Dip> {
-    const mapper = await this.getMapper(dipPath);
-    return new Dip(mapper.extractDipUuid());
+    const parsedIndex = await this.getParsedIndex(dipPath);
+    return new Dip(parsedIndex.dipUuid);
   }
 
   public async *readDocumentClasses(
     dipPath: string,
   ): AsyncGenerator<DocumentClass> {
-    const mapper = await this.getMapper(dipPath);
-    for (const dc of mapper.extractDocumentClasses()) {
-      yield new DocumentClass(0, dc["@_uuid"], dc["@_name"], dc["@_validFrom"]);
+    const parsedIndex = await this.getParsedIndex(dipPath);
+    for (const dc of parsedIndex.documentClasses) {
+      yield new DocumentClass(0, dc.uuid, dc.name, dc.timestamp as string);
     }
   }
 
   public async *readProcesses(dipPath: string): AsyncGenerator<Process> {
-    const mapper = await this.getMapper(dipPath);
-    for (const proc of mapper.extractProcesses()) {
+    const parsedIndex = await this.getParsedIndex(dipPath);
+    for (const proc of parsedIndex.processes) {
       yield new Process(0, proc.uuid, proc.metadata);
     }
   }
 
   public async *readDocuments(dipPath: string): AsyncGenerator<Document> {
-    const mapper = await this.getMapper(dipPath);
-    for (const doc of mapper.extractDocuments()) {
+    const parsedIndex = await this.getParsedIndex(dipPath);
+    for (const doc of parsedIndex.documents) {
       const metadataPath = path.join(
         dipPath,
         doc.documentPath,
@@ -98,8 +90,8 @@ export class LocalPackageReaderAdapter implements IPackageReaderPort {
   }
 
   public async *readFiles(dipPath: string): AsyncGenerator<File> {
-    const mapper = await this.getMapper(dipPath);
-    for (const file of mapper.extractFiles()) {
+    const parsedIndex = await this.getParsedIndex(dipPath);
+    for (const file of parsedIndex.files) {
       yield new File(file.filename, file.path, "", file.isMain, 0);
     }
   }

@@ -1,7 +1,8 @@
 import { XMLParser } from "fast-xml-parser";
-import { IDipParser } from "./IDipParser";
+import { IDipParser, ParsedDipIndex } from "./IDipParser";
 import { DipIndexXml } from "../../xml-types/DipIndexXml";
 import { Metadata, MetadataType } from "../../../value-objects/Metadata";
+import { DipIndexMapper } from "./DipIndexMapper";
 
 export class XmlDipParser implements IDipParser {
   private readonly parser: XMLParser;
@@ -33,13 +34,24 @@ export class XmlDipParser implements IDipParser {
     });
   }
 
-  public parseDipIndex(rawContent: string): DipIndexXml {
+  public parseDipIndex(rawContent: string): ParsedDipIndex {
     const parsed = this.parser.parse(rawContent);
     const root = parsed.DiPIndex;
     if (!root) {
       throw new Error("Invalid DiPIndex XML: missing root element 'DiPIndex'");
     }
-    return root as DipIndexXml;
+    const mapper = new DipIndexMapper(root as DipIndexXml);
+    return {
+      dipUuid: mapper.extractDipUuid(),
+      documentClasses: mapper.extractDocumentClasses().map((dc) => ({
+        uuid: dc["@_uuid"],
+        name: dc["@_name"],
+        timestamp: dc["@_validFrom"],
+      })),
+      processes: mapper.extractProcesses(),
+      documents: mapper.extractDocuments(),
+      files: mapper.extractFiles(),
+    };
   }
 
   public parseDocumentMetadata(rawContent: string): Metadata[] {

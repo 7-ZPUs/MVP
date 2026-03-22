@@ -17,42 +17,22 @@ describe("ParserTests", () => {
     const parser = new XmlDipParser();
     const result = parser.parseDipIndex(xmlContent);
 
-    expect(result.PackageInfo.ProcessUUID).toBe("test-dip-uuid-1234");
-
-    const documentClasses = result.PackageContent.DiPDocuments.DocumentClass;
-    expect(documentClasses.length).toBe(2);
-
-    // First DocumentClass
-    const aips1 = documentClasses[0].AiP;
-    expect(aips1.length).toBe(1);
-
-    const doc1_0 = aips1[0].Document;
-    expect(doc1_0.length).toBe(1);
-    expect(doc1_0[0].Files["@_FilesCount"]).toBe("2");
-    expect(doc1_0[0].Files.Metadata).toBeDefined();
-    expect(doc1_0[0].Files.Primary).toBeDefined();
-    expect(doc1_0[0].Files.Attachments).toBeUndefined();
-
-    // Second DocumentClass
-    const aips2 = documentClasses[1].AiP;
-    expect(aips2.length).toBe(2);
-
-    const doc2_0 = aips2[0].Document;
-    expect(doc2_0.length).toBe(1);
-    expect(doc2_0[0].Files["@_FilesCount"]).toBe("4");
-    expect(doc2_0[0].Files.Metadata).toBeDefined();
-    expect(doc2_0[0].Files.Primary).toBeDefined();
-    expect(ensureArray(doc2_0[0].Files.Attachments).length).toBe(2);
-
-    const doc2_1 = aips2[1].Document;
-    expect(doc2_1.length).toBe(1);
-    expect(doc2_1[0].Files["@_FilesCount"]).toBe("2");
-    expect(doc2_1[0].Files.Metadata).toBeDefined();
-    expect(doc2_1[0].Files.Primary).toBeDefined();
-    expect(doc2_1[0].Files.Attachments).toBeUndefined();
-
-    // Signature (not present in new test file)
-    expect(result).toBeDefined();
+    expect(result.dipUuid).toBe("test-dip-uuid-1234");
+    expect(result.documentClasses).toHaveLength(2);
+    expect(result.processes).toHaveLength(3);
+    expect(result.documents).toHaveLength(3);
+    expect(result.files).toHaveLength(5);
+    expect(result.documentClasses[0]).toMatchObject({
+      uuid: "class-1",
+      name: "Class1",
+    });
+    expect(result.processes[0].uuid).toBe("aip-1");
+    expect(result.documents[0].uuid).toBe("doc-1");
+    expect(result.files[0]).toMatchObject({
+      documentUuid: "doc-1",
+      filename: "./primary.pdf",
+      isMain: true,
+    });
   });
 
   it("TU-B-P-02: parseDipIndex() with invalid XML input should throw", () => {
@@ -372,16 +352,16 @@ describe("ensureArrayTest", () => {
 
 describe("LocalPackageReaderAdapter", () => {
   it("should read and map data from package reader", async () => {
-    const mapperFactory = vi.fn().mockReturnValue({
-      extractDipUuid: () => "dip-1",
-      extractDocumentClasses: () => [
+    const parsedDipIndex = {
+      dipUuid: "dip-1",
+      documentClasses: [
         {
-          "@_uuid": "dc-1",
-          "@_name": "Class 1",
-          "@_validFrom": "2026-01-01",
+          uuid: "dc-1",
+          name: "Class 1",
+          timestamp: "2026-01-01",
         },
       ],
-      extractProcesses: () => [
+      processes: [
         {
           uuid: "proc-1",
           documentClassUuid: "dc-1",
@@ -389,7 +369,7 @@ describe("LocalPackageReaderAdapter", () => {
           metadata: [],
         },
       ],
-      extractDocuments: () => [
+      documents: [
         {
           uuid: "doc-1",
           processUuid: "proc-1",
@@ -397,7 +377,7 @@ describe("LocalPackageReaderAdapter", () => {
           metadataFilename: "metadata.xml",
         },
       ],
-      extractFiles: () => [
+      files: [
         {
           uuid: "file-1",
           documentUuid: "doc-1",
@@ -406,13 +386,17 @@ describe("LocalPackageReaderAdapter", () => {
           isMain: true,
         },
       ],
-    });
+    };
 
+    const parseDipIndex = vi.fn().mockReturnValue(parsedDipIndex);
     const mockParser = {
-      parseDipIndex: vi.fn().mockReturnValue({}),
+      parseDipIndex,
       parseDocumentMetadata: vi.fn().mockReturnValue([]),
     };
-    const readTextFile = vi.fn().mockResolvedValue("<DocumentMetadata />");
+    const readTextFile = vi
+      .fn()
+      .mockResolvedValueOnce("<DiPIndex />")
+      .mockResolvedValue("<DocumentMetadata />");
     const fileSystemProvider = {
       readFile: vi.fn(),
       openReadStream: vi.fn(),
@@ -428,7 +412,6 @@ describe("LocalPackageReaderAdapter", () => {
     const adapter = new LocalPackageReaderAdapter(
       mockParser,
       fileSystemProvider,
-      mapperFactory,
     );
 
     await expect(adapter.readDip("dummy/path")).resolves.toBeInstanceOf(Dip);
@@ -459,7 +442,11 @@ describe("LocalPackageReaderAdapter", () => {
       }),
     );
 
-    expect(mapperFactory).toHaveBeenCalledWith("dummy/path");
+    expect(parseDipIndex).toHaveBeenCalledTimes(1);
+    expect(readTextFile).toHaveBeenNthCalledWith(
+      1,
+      "dummy/path/DiPIndex.123e4567-e89b-12d3-a456-426614174000.xml",
+    );
     expect(readTextFile).toHaveBeenCalledWith(
       "dummy/path/docs/doc-1/metadata.xml",
     );
@@ -467,8 +454,11 @@ describe("LocalPackageReaderAdapter", () => {
 
   it("should resolve DiP index file using regex format DiPIndex.<uuid>.xml", async () => {
     const parseDipIndex = vi.fn().mockReturnValue({
-      PackageInfo: { ProcessUUID: "dip-uuid-1" },
-      PackageContent: { DiPDocuments: { DocumentClass: [] } },
+      dipUuid: "dip-uuid-1",
+      documentClasses: [],
+      processes: [],
+      documents: [],
+      files: [],
     });
     const mockParser = {
       parseDipIndex,
@@ -499,6 +489,50 @@ describe("LocalPackageReaderAdapter", () => {
       "dummy/path/DiPIndex.abc-123.xml",
     );
     expect(parseDipIndex).toHaveBeenCalledWith("<DiPIndex />");
+  });
+
+  it("should reuse current parsed index for the same dipPath and reload for a different dipPath", async () => {
+    const parseDipIndex = vi.fn().mockReturnValue({
+      dipUuid: "dip-uuid-1",
+      documentClasses: [],
+      processes: [],
+      documents: [],
+      files: [],
+    });
+    const mockParser = {
+      parseDipIndex,
+      parseDocumentMetadata: vi.fn().mockReturnValue([]),
+    };
+    const listFiles = vi.fn().mockResolvedValue(["DiPIndex.aaa.xml"]);
+    const readTextFile = vi.fn().mockResolvedValue("<DiPIndex />");
+    const fileSystemProvider = {
+      readFile: vi.fn(),
+      openReadStream: vi.fn(),
+      readTextFile,
+      openReadTextStream: vi.fn(),
+      fileExists: vi.fn(),
+      listFiles,
+    };
+
+    const adapter = new LocalPackageReaderAdapter(
+      mockParser,
+      fileSystemProvider,
+    );
+
+    await adapter.readDip("dip/path/a");
+    await adapter.readDip("dip/path/a");
+    await adapter.readDip("dip/path/b");
+
+    expect(parseDipIndex).toHaveBeenCalledTimes(2);
+    expect(listFiles).toHaveBeenCalledTimes(2);
+    expect(readTextFile).toHaveBeenNthCalledWith(
+      1,
+      "dip/path/a/DiPIndex.aaa.xml",
+    );
+    expect(readTextFile).toHaveBeenNthCalledWith(
+      2,
+      "dip/path/b/DiPIndex.aaa.xml",
+    );
   });
 });
 
