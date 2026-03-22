@@ -26,4 +26,8 @@ export class FileSystemProvider implements IFileSystemProvider {
       return false;
     }
   }
+
+  public async listFiles(dirPath: string): Promise<string[]> {
+    return fs.promises.readdir(dirPath);
+  }
 }

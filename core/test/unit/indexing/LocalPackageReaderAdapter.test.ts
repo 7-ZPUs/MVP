@@ -419,6 +419,11 @@ describe("LocalPackageReaderAdapter", () => {
       readTextFile,
       openReadTextStream: vi.fn(),
       fileExists: vi.fn(),
+      listFiles: vi
+        .fn()
+        .mockResolvedValue([
+          "DiPIndex.123e4567-e89b-12d3-a456-426614174000.xml",
+        ]),
     };
     const adapter = new LocalPackageReaderAdapter(
       mockParser,
@@ -459,6 +464,42 @@ describe("LocalPackageReaderAdapter", () => {
       "dummy/path/docs/doc-1/metadata.xml",
     );
   });
+
+  it("should resolve DiP index file using regex format DiPIndex.<uuid>.xml", async () => {
+    const parseDipIndex = vi.fn().mockReturnValue({
+      PackageInfo: { ProcessUUID: "dip-uuid-1" },
+      PackageContent: { DiPDocuments: { DocumentClass: [] } },
+    });
+    const mockParser = {
+      parseDipIndex,
+      parseDocumentMetadata: vi.fn().mockReturnValue([]),
+    };
+    const listFiles = vi
+      .fn()
+      .mockResolvedValue(["README.md", "DiPIndex.abc-123.xml", "other.xml"]);
+    const readTextFile = vi.fn().mockResolvedValue("<DiPIndex />");
+    const fileSystemProvider = {
+      readFile: vi.fn(),
+      openReadStream: vi.fn(),
+      readTextFile,
+      openReadTextStream: vi.fn(),
+      fileExists: vi.fn(),
+      listFiles,
+    };
+
+    const adapter = new LocalPackageReaderAdapter(
+      mockParser,
+      fileSystemProvider,
+    );
+    const dip = await adapter.readDip("dummy/path");
+
+    expect(dip).toBeInstanceOf(Dip);
+    expect(listFiles).toHaveBeenCalledWith("dummy/path");
+    expect(readTextFile).toHaveBeenCalledWith(
+      "dummy/path/DiPIndex.abc-123.xml",
+    );
+    expect(parseDipIndex).toHaveBeenCalledWith("<DiPIndex />");
+  });
 });
 
 describe("FileSystemProvider", () => {
@@ -497,5 +538,11 @@ describe("FileSystemProvider", () => {
       "core/test/resources/nonexistent.txt",
     );
     expect(notExists).toBe(false);
+  });
+
+  it("should list files in a directory", async () => {
+    const provider = new FileSystemProvider();
+    const files = await provider.listFiles("core/test/resources");
+    expect(files).toContain("sample.txt");
   });
 });

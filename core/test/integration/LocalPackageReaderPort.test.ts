@@ -9,6 +9,7 @@ import { IntegrityStatusEnum } from "../../src/value-objects/IntegrityStatusEnum
 import { MetadataType } from "../../src/value-objects/Metadata";
 
 const RESOURCES_DIR = "core/test/resources";
+const DIP_INDEX_FILE = "DiPIndex.123e4567-e89b-12d3-a456-426614174000.xml";
 
 async function createSampleDipPackageFromResources(): Promise<string> {
   const tempDir = await mkdtemp(path.join(os.tmpdir(), "dip-package-it-"));
@@ -25,7 +26,7 @@ async function createSampleDipPackageFromResources(): Promise<string> {
     path.join(RESOURCES_DIR, "sample.txt"),
   );
 
-  await writeFile(path.join(tempDir, "DiPIndex.xml"), dipIndexContent, "utf-8");
+  await writeFile(path.join(tempDir, DIP_INDEX_FILE), dipIndexContent, "utf-8");
 
   const documents = [
     {

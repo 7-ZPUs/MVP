@@ -9,7 +9,7 @@ import { File } from "../../entity/File";
 import { DipIndexMapper } from "./utils/DipIndexMapper";
 import type { IFileSystemProvider } from "./utils/IFileSystemProvider";
 
-const DIP_INDEX_FILENAME = "DiPIndex.xml";
+const DIP_INDEX_FILENAME_REGEX = /^DiPIndex\..+\.xml$/;
 type MapperFactory = (
   dipPath: string,
 ) => DipIndexMapper | Promise<DipIndexMapper>;
@@ -27,17 +27,33 @@ export class LocalPackageReaderAdapter implements IPackageReaderPort {
     this.mapperFactory = mapperFactory;
   }
 
+  private async resolveDipIndexFilename(dipPath: string): Promise<string> {
+    const files = await this.fileSystemProvider.listFiles(dipPath);
+    const filename = files
+      .filter((file) => DIP_INDEX_FILENAME_REGEX.test(file))
+      .sort()[0];
+
+    if (!filename) {
+      throw new Error(
+        `DiP index file not found in '${dipPath}'. Expected format: DiPIndex.<uuid>.xml`,
+      );
+    }
+
+    return filename;
+  }
+
   private async getMapper(dipPath: string): Promise<DipIndexMapper> {
     const key = dipPath;
     const cached = this.mapperCache.get(key);
     if (cached) return cached;
 
+    const mapperFromFactory = await this.mapperFactory?.(key);
     const mapper =
-      (await this.mapperFactory?.(key)) ??
+      mapperFromFactory ??
       new DipIndexMapper(
         this.parser.parseDipIndex(
           await this.fileSystemProvider.readTextFile(
-            path.join(key, DIP_INDEX_FILENAME),
+            path.join(key, await this.resolveDipIndexFilename(key)),
           ),
         ),
       );

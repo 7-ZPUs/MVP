@@ -3,4 +3,5 @@ export interface IFileSystemProvider {
   openReadStream: (filePath: string) => Promise<Readable>;
   readTextFile: (filePath: string) => Promise<string>;
   fileExists: (filePath: string) => Promise<boolean>;
+  listFiles: (dirPath: string) => Promise<string[]>;
 }
