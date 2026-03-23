@@ -118,4 +118,35 @@ export class FileRepository implements IFileRepository {
             .prepare('UPDATE file SET integrity_status = ? WHERE id = ?')
             .run(status, id);
     }
+
+    getAggregatedIntegrityStatusByDocumentId(documentId: number): IntegrityStatusEnum {
+        const row = this.db
+            .prepare<[number], { total: number; invalidCount: number; unknownCount: number }>(
+                `SELECT
+                    COUNT(*) AS total,
+                    SUM(CASE WHEN integrity_status = 'INVALID' THEN 1 ELSE 0 END) AS invalidCount,
+                    SUM(CASE WHEN integrity_status = 'UNKNOWN' THEN 1 ELSE 0 END) AS unknownCount
+                 FROM file
+                 WHERE document_id = ?`
+            )
+            .get(documentId);
+
+        const total = row?.total ?? 0;
+        const invalidCount = row?.invalidCount ?? 0;
+        const unknownCount = row?.unknownCount ?? 0;
+
+        if (!total) {
+            return IntegrityStatusEnum.UNKNOWN;
+        }
+
+        if (invalidCount) {
+            return IntegrityStatusEnum.INVALID;
+        }
+
+        if (unknownCount) {
+            return IntegrityStatusEnum.UNKNOWN;
+        }
+
+        return IntegrityStatusEnum.VALID;
+    }
 }
