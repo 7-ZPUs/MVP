@@ -5,6 +5,7 @@ import { SubjectCriteria } from './search-subject-filters-models';
 import { SearchQueryType } from './search.enum';
 import { AppError } from '../../../shared/domain/error.models';
 import { CustomFilterValues } from './search-custom-filters-models';
+import { PartialSearchFilters } from './partial-filters-models';
 
 export interface SearchQuery {
   text: string;
@@ -47,3 +48,5 @@ export interface SearchState {
   error: AppError | null;
   validationErrors: Map<string, ValidationError>;
 }
+
+export type FilterValidatorFn = (filters: PartialSearchFilters) => ValidationResult;

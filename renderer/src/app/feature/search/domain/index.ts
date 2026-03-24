@@ -15,3 +15,5 @@ export type {
   SearchState,
 } from './search.models';
 export { SearchQueryType } from './search.enum';
+
+export type { FilterValidatorFn } from './search.models';
