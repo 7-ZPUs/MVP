@@ -1,0 +1,64 @@
+<fieldset class="filter-fieldset" [formGroup]="form">
+  <legend>Dati di Aggregazione</legend>
+
+  <div class="form-row">
+    <div class="form-group">
+      <label for="fascicolo">Fascicolo</label>
+      <input
+        type="text"
+        id="fascicolo"
+        formControlName="fascicolo"
+        [attr.aria-invalid]="!!getError('fascicolo')"
+        [attr.aria-describedby]="getError('fascicolo') ? 'err-fascicolo' : null"
+      />
+      <div
+        *ngIf="getError('fascicolo') as err"
+        id="err-fascicolo"
+        class="validation-error"
+        aria-live="polite"
+      >
+        {{ err.message }}
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="volume">Volume</label>
+      <input
+        type="text"
+        id="volume"
+        formControlName="volume"
+        [attr.aria-invalid]="!!getError('volume')"
+        [attr.aria-describedby]="getError('volume') ? 'err-volume' : null"
+      />
+      <div
+        *ngIf="getError('volume') as err"
+        id="err-volume"
+        class="validation-error"
+        aria-live="polite"
+      >
+        {{ err.message }}
+      </div>
+    </div>
+  </div>
+
+  <div class="form-row">
+    <div class="form-group">
+      <label for="serie">Serie</label>
+      <input
+        type="text"
+        id="serie"
+        formControlName="serie"
+        [attr.aria-invalid]="!!getError('serie')"
+        [attr.aria-describedby]="getError('serie') ? 'err-serie' : null"
+      />
+      <div
+        *ngIf="getError('serie') as err"
+        id="err-serie"
+        class="validation-error"
+        aria-live="polite"
+      >
+        {{ err.message }}
+      </div>
+    </div>
+  </div>
+</fieldset>

@@ -3,9 +3,10 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { By } from '@angular/platform-browser';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
-import { AdvancedFilterPanelComponent } from '../../feature/search/ui/smart/advanced-filter-panel/advanced-filter-panel'; // Aggiusta il percorso se serve
+import { AdvancedFilterPanelComponent } from '../../feature/search/ui/smart/advanced-filter-panel/advanced-filter-panel';
 import { CommonFiltersComponent } from '../../feature/search/ui/dumb/common-filters.component/common-filters.component';
 import { DiDaiFiltersComponent } from '../../feature/search/ui/dumb/di-dai-filters.component/di-dai-filters.component';
+import { AggregateFiltersComponent } from '../../feature/search/ui/dumb/aggregate-filters.component/aggregate-filters.component';
 
 describe('AdvancedFilterPanelComponent - Test di Integrazione', () => {
   let component: AdvancedFilterPanelComponent;
@@ -19,6 +20,7 @@ describe('AdvancedFilterPanelComponent - Test di Integrazione', () => {
         AdvancedFilterPanelComponent,
         CommonFiltersComponent,
         DiDaiFiltersComponent,
+        AggregateFiltersComponent,
       ],
     }).compileComponents();
 
@@ -65,11 +67,23 @@ describe('AdvancedFilterPanelComponent - Test di Integrazione', () => {
     const diDaiFiltersDebug = fixture.debugElement.query(By.directive(DiDaiFiltersComponent));
     const diDaiComponent = diDaiFiltersDebug.componentInstance as DiDaiFiltersComponent;
 
-    // 1. Simuliamo l'emissione di un dato dal figlio
     const mockDiDaiUpdate = { annoRegistro: 2024 } as any;
     diDaiComponent.filtersChanged.emit(mockDiDaiUpdate);
 
-    // 2. Verifichiamo il cablaggio sul padre
     expect(component.panelForm.value.diDai.annoRegistro).toBe(2024);
+  });
+
+  it('dovrebbe ricevere gli eventi dal figlio AggregateFilters e aggiornare il form del genitore', () => {
+    const aggregateFiltersDebug = fixture.debugElement.query(
+      By.directive(AggregateFiltersComponent),
+    );
+    expect(aggregateFiltersDebug).toBeTruthy();
+
+    const aggregateComponent = aggregateFiltersDebug.componentInstance as AggregateFiltersComponent;
+
+    const mockAggregateUpdate = { fascicolo: 'FAS-999' } as any;
+    aggregateComponent.filtersChanged.emit(mockAggregateUpdate);
+
+    expect(component.panelForm.value.aggregate.fascicolo).toBe('FAS-999');
   });
 });

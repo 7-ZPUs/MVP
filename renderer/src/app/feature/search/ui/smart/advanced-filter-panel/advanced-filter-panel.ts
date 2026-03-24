@@ -17,11 +17,18 @@ import {
 
 import { CommonFiltersComponent } from '../../dumb/common-filters.component/common-filters.component';
 import { DiDaiFiltersComponent } from '../../dumb/di-dai-filters.component/di-dai-filters.component';
+import { AggregateFiltersComponent } from '../../dumb/aggregate-filters.component/aggregate-filters.component';
 
 @Component({
   selector: 'app-advanced-filter-panel',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, CommonFiltersComponent, DiDaiFiltersComponent],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    CommonFiltersComponent,
+    DiDaiFiltersComponent,
+    AggregateFiltersComponent,
+  ],
   templateUrl: './advanced-filter-panel.html',
 })
 export class AdvancedFilterPanelComponent implements OnInit {

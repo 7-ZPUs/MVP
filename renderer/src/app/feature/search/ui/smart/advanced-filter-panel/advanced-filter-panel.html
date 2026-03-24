@@ -30,6 +30,16 @@
         </app-di-dai-filters>
       </div>
 
+      <div class="filter-section">
+        <h4>Dati di Aggregazione</h4>
+        <app-aggregate-filters
+          [filters]="$any(filters.aggregate || {})"
+          [validationResult]="currentValidationResult"
+          (filtersChanged)="onAggregateFiltersChanged($event)"
+        >
+        </app-aggregate-filters>
+      </div>
+
       <div class="form-actions">
         <button type="button" (click)="onReset()">Svuota Filtri</button>
         <button type="submit" [disabled]="currentValidationResult?.isValid === false">
