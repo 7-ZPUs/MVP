@@ -1,0 +1,50 @@
+<fieldset class="filter-fieldset" [formGroup]="form">
+  <legend>Filtri Comuni</legend>
+
+  <div class="form-row">
+    <div class="form-group">
+      <label for="chiaveDescrittiva">Chiave Descrittiva</label>
+      <input
+        type="text"
+        id="chiaveDescrittiva"
+        formControlName="chiaveDescrittiva"
+        [attr.aria-invalid]="!!getError('chiaveDescrittiva')"
+        [attr.aria-describedby]="getError('chiaveDescrittiva') ? 'err-chiave' : null"
+      />
+      <div
+        *ngIf="getError('chiaveDescrittiva') as err"
+        id="err-chiave"
+        class="validation-error"
+        aria-live="polite"
+      >
+        {{ err.message }}
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="classificazione">Classificazione</label>
+      <input
+        type="text"
+        id="classificazione"
+        formControlName="classificazione"
+        [attr.aria-invalid]="!!getError('classificazione')"
+        [attr.aria-describedby]="getError('classificazione') ? 'err-class' : null"
+      />
+      <div
+        *ngIf="getError('classificazione') as err"
+        id="err-class"
+        class="validation-error"
+        aria-live="polite"
+      >
+        {{ err.message }}
+      </div>
+    </div>
+  </div>
+
+  <div class="form-row">
+    <div class="form-group">
+      <label for="tipo">Tipo Documento</label>
+      <input type="text" id="tipo" formControlName="tipo" />
+    </div>
+  </div>
+</fieldset>
