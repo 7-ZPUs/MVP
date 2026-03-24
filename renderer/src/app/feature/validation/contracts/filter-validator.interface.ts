@@ -1,4 +1,8 @@
-import { PartialSearchFilters, ValidationError, ValidationResult } from '../../search/domain';
+import {
+  PartialSearchFilters,
+  ValidationError,
+  ValidationResult,
+} from '../../../shared/domain/metadata';
 
 export interface IFilterValidationStrategy {
   validate(filters: PartialSearchFilters): Map<string, ValidationError[]>;

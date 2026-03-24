@@ -1,6 +1,6 @@
 import { IFilterValidationStrategy } from '../contracts/filter-validator.interface';
-import { PartialSearchFilters, ValidationError } from '../../search/domain';
-import { DIDAIFormation } from '../../search/domain/search.enum';
+import { PartialSearchFilters, ValidationError } from '../../../shared/domain/metadata';
+import { DIDAIFormation } from '../../../shared/domain/metadata/search.enum';
 
 export class FormationModeContradictionStrategy implements IFilterValidationStrategy {
   public validate(filters: PartialSearchFilters): Map<string, ValidationError[]> {

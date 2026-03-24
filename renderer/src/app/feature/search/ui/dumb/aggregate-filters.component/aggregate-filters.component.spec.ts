@@ -4,7 +4,11 @@ import { By } from '@angular/platform-browser';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 import { AggregateFiltersComponent } from './aggregate-filters.component';
-import { AggregateFilterValues, ValidationResult, ValidationError } from '../../../domain';
+import {
+  AggregateFilterValues,
+  ValidationResult,
+  ValidationError,
+} from '../../../../../shared/domain/metadata';
 
 describe('AggregateFiltersComponent', () => {
   let component: AggregateFiltersComponent;

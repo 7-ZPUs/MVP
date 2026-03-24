@@ -7,8 +7,8 @@ import {
 } from '../../feature/validation/strategies';
 
 // Modelli ed Enum
-import { PartialSearchFilters } from '../../feature/search/domain';
-import { RegisterType, DIDAIFormation } from '../../feature/search/domain/search.enum';
+import { PartialSearchFilters } from '../../shared/domain/metadata';
+import { RegisterType, DIDAIFormation } from '../../shared/domain/metadata/search.enum';
 
 describe('FilterValidatorService - Integration Test', () => {
   let validatorService: FilterValidatorService;

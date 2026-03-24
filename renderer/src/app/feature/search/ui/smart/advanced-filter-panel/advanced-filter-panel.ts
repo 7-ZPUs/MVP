@@ -13,12 +13,14 @@ import {
   SubjectCriteria,
   ValidationError,
   PartialSearchFilters,
-} from '../../../domain';
+} from '../../../../../shared/domain/metadata';
 
 import { CommonFiltersComponent } from '../../dumb/common-filters.component/common-filters.component';
 import { DiDaiFiltersComponent } from '../../dumb/di-dai-filters.component/di-dai-filters.component';
 import { AggregateFiltersComponent } from '../../dumb/aggregate-filters.component/aggregate-filters.component';
 import { CustomMetaFiltersComponent } from '../../dumb/custom-meta-filters.component/custom-meta-filters.component';
+import { Subject } from 'rxjs';
+import { SubjectFiltersComponent } from '../../dumb/subject-filters.component/subject-filters.component';
 
 @Component({
   selector: 'app-advanced-filter-panel',
@@ -30,6 +32,7 @@ import { CustomMetaFiltersComponent } from '../../dumb/custom-meta-filters.compo
     DiDaiFiltersComponent,
     AggregateFiltersComponent,
     CustomMetaFiltersComponent,
+    SubjectFiltersComponent,
   ],
   templateUrl: './advanced-filter-panel.html',
 })
@@ -59,6 +62,7 @@ export class AdvancedFilterPanelComponent implements OnInit {
       diDai: [this.filters?.diDai || {}],
       aggregate: [this.filters?.aggregate || {}],
       customMeta: [this.filters?.customMeta || null],
+      subject: [this.filters?.subject || null],
     });
 
     this.panelForm.valueChanges.subscribe((values) => {

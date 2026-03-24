@@ -7,8 +7,8 @@ import {
   ValidationError,
   PartialSearchFilters,
   SearchResult,
-} from '../domain';
-import { SearchQueryType } from '../domain/search.enum';
+} from '../../../shared/domain/metadata';
+import { SearchQueryType } from '../../../shared/domain/metadata/search.enum';
 import { IErrorHandler, ITelemetry, ILiveAnnouncer } from '../../../shared/contracts';
 import { debounceTime } from 'rxjs/internal/operators/debounceTime';
 import { ISemanticIndexStatus } from '../contracts/semantic-index.interface';

@@ -11,7 +11,11 @@ import {
   IElectronContextBridge,
   ELECTRON_CONTEXT_BRIDGE_TOKEN,
 } from '../../../shared/contracts';
-import { SearchQuery, SearchFilters, SearchResult } from '../domain/search.models';
+import {
+  SearchQuery,
+  SearchFilters,
+  SearchResult,
+} from '../../../shared/domain/metadata/search.models';
 
 @Injectable({ providedIn: 'root' })
 export class SearchIpcGateway implements ISearchChannel {

@@ -8,8 +8,8 @@ import {
   FormationModeContradictionStrategy,
   SearchRangeValidationStrategy,
 } from '../../feature/validation/strategies';
-import { SearchFilters } from '../../feature/search/domain';
-import { RegisterType, DIDAIFormation } from '../../feature/search/domain/search.enum';
+import { SearchFilters } from '../../shared/domain/metadata';
+import { RegisterType, DIDAIFormation } from '../../shared/domain/metadata/search.enum';
 import { FilterValidatorService } from '../../feature/validation/services/filter-validator.service';
 
 describe('Search Domain Integration (Facade + Validator + Strategies)', () => {

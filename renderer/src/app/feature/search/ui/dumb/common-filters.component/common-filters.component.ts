@@ -11,7 +11,11 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
 
-import { CommonFilterValues, ValidationResult, ValidationError } from '../../../domain';
+import {
+  CommonFilterValues,
+  ValidationResult,
+  ValidationError,
+} from '../../../../../shared/domain/metadata';
 
 @Component({
   selector: 'app-common-filters',

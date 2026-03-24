@@ -2,7 +2,12 @@ import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { signal, WritableSignal } from '@angular/core';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { SearchPageComponent } from './search-page.component';
-import { SearchFilters, SearchQuery, SearchQueryType, SearchResult } from '../../../domain';
+import {
+  SearchFilters,
+  SearchQuery,
+  SearchQueryType,
+  SearchResult,
+} from '../../../../../shared/domain/metadata';
 
 describe('SearchPageComponent', () => {
   let component: SearchPageComponent;

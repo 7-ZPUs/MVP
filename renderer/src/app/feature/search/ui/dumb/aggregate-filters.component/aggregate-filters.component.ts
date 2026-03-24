@@ -11,7 +11,11 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
 
-import { AggregateFilterValues, ValidationResult, ValidationError } from '../../../domain';
+import {
+  AggregateFilterValues,
+  ValidationResult,
+  ValidationError,
+} from '../../../../../shared/domain/metadata';
 
 @Component({
   selector: 'app-aggregate-filters',

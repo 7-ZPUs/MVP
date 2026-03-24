@@ -2,7 +2,7 @@ import { signal } from '@angular/core';
 import { SearchFacade } from './search-facade';
 import { TestBed } from '@angular/core/testing';
 import { of, Subject, throwError, Observable } from 'rxjs';
-import { SearchQueryType } from '../domain/search.enum';
+import { SearchQueryType } from '../../../shared/domain/metadata/search.enum';
 
 describe('SearchFacade', () => {
   let facade: SearchFacade;

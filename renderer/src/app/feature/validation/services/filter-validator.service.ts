@@ -3,7 +3,11 @@ import {
   IFilterValidator,
   IFilterValidationStrategy,
 } from '../contracts/filter-validator.interface';
-import { PartialSearchFilters, ValidationResult, ValidationError } from '../../search/domain';
+import {
+  PartialSearchFilters,
+  ValidationResult,
+  ValidationError,
+} from '../../../shared/domain/metadata';
 
 import { RegistryContradictionValidationStrategy } from '../strategies/registry-contradiction-validation.strategy';
 import { FormationModeContradictionStrategy } from '../strategies/formation-mode-contradiction.strategy';

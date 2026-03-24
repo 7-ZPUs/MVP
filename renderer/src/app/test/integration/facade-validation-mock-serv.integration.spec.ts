@@ -5,7 +5,7 @@ import { of, throwError } from 'rxjs';
 
 import { SearchFacade } from '../../feature/search/services/search-facade';
 import { FilterValidatorService } from '../../feature/validation/services/filter-validator.service';
-import { SearchFilters, SearchResult } from '../../feature/search/domain';
+import { SearchFilters, SearchResult } from '../../shared/domain/metadata';
 import { TelemetryEvent } from '../../shared/domain/';
 
 // Strategie Reali

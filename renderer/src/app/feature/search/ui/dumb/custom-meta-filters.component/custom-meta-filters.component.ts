@@ -11,7 +11,11 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormArray, ReactiveFormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
 
-import { CustomFilterValues, ValidationResult, ValidationError } from '../../../domain';
+import {
+  CustomFilterValues,
+  ValidationResult,
+  ValidationError,
+} from '../../../../../shared/domain/metadata';
 
 @Component({
   selector: 'app-custom-meta-filters',

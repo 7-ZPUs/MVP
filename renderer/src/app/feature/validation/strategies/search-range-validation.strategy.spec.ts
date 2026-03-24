@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { SearchRangeValidationStrategy } from './search-range-validation.strategy';
-import { PartialSearchFilters } from '../../search/domain';
+import { PartialSearchFilters } from '../../../shared/domain/metadata';
 
 describe('SearchRangeValidationStrategy', () => {
   let strategy: SearchRangeValidationStrategy;

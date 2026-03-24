@@ -4,7 +4,11 @@ import { By } from '@angular/platform-browser';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 import { CommonFiltersComponent } from './common-filters.component';
-import { CommonFilterValues, ValidationResult, ValidationError } from '../../../domain';
+import {
+  CommonFilterValues,
+  ValidationResult,
+  ValidationError,
+} from '../../../../../shared/domain/metadata';
 
 describe('CommonFiltersComponent', () => {
   let component: CommonFiltersComponent;

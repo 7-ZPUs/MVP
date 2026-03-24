@@ -12,9 +12,9 @@ import {
   SearchFilters,
   ValidationResult,
   FilterValidatorFn,
-} from '../../../domain';
+} from '../../../../../shared/domain/metadata';
 import { AppError } from '../../../../../shared/domain';
-import { SemanticIndexState } from '../../../domain/semantic-filter-models';
+import { SemanticIndexState } from '../../../../../shared/domain/metadata/semantic-filter-models';
 
 @Component({
   selector: 'app-search-page',

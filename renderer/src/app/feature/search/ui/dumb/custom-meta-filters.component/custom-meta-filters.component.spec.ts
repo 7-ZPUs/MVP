@@ -4,7 +4,7 @@ import { By } from '@angular/platform-browser';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 import { CustomMetaFiltersComponent } from './custom-meta-filters.component';
-import { ValidationResult, ValidationError } from '../../../domain';
+import { ValidationResult, ValidationError } from '../../../../../shared/domain/metadata';
 
 describe('CustomMetaFiltersComponent', () => {
   let component: CustomMetaFiltersComponent;
@@ -53,18 +53,17 @@ describe('CustomMetaFiltersComponent', () => {
   });
 
   it('ngOnChanges() dovrebbe gestire in sicurezza input nulli o non array', () => {
-    component.addEntry(); // Partiamo con un elemento
+    component.addEntry();
 
     component.ngOnChanges({
-      filters: new SimpleChange(null, null, true), // Passiamo null
+      filters: new SimpleChange(null, null, true),
     });
 
-    // Deve svuotare l'array in modo sicuro
     expect(component.entries.length).toBe(0);
   });
 
   it("dovrebbe mostrare i messaggi di errore HTML dinamici basati sull'indice", () => {
-    component.addEntry(); // Aggiungiamo l'indice 0
+    component.addEntry();
 
     const mockError: ValidationError = {
       field: 'customMeta[0].name',
@@ -92,5 +91,47 @@ describe('CustomMetaFiltersComponent', () => {
 
     expect(nextSpy).toHaveBeenCalled();
     expect(completeSpy).toHaveBeenCalled();
+  });
+
+  it("dovrebbe mostrare i messaggi di errore HTML dinamici per 'name' e 'value'", () => {
+    component.addEntry();
+
+    const mockErrorName: ValidationError = {
+      field: 'customMeta[0].name',
+      message: 'Chiave non valida',
+      code: 'E1',
+    };
+    const mockErrorValue: ValidationError = {
+      field: 'customMeta[0].value',
+      message: 'Valore non valido',
+      code: 'E2',
+    };
+
+    const mockValidationResult: ValidationResult = {
+      isValid: false,
+      errors: new Map([
+        ['customMeta[0].name', [mockErrorName]],
+        ['customMeta[0].value', [mockErrorValue]],
+      ]),
+    };
+
+    fixture.componentRef.setInput('validationResult', mockValidationResult);
+    fixture.detectChanges();
+
+    const errEls = fixture.debugElement.queryAll(By.css('.validation-error'));
+
+    expect(errEls.length).toBe(2);
+    expect(errEls[0].nativeElement.textContent.trim()).toBe('Chiave non valida');
+    expect(errEls[1].nativeElement.textContent.trim()).toBe('Valore non valido');
+  });
+
+  it('ngOnChanges() dovrebbe usare stringhe vuote come fallback se name o value sono assenti nelle entry (copertura riga 81)', () => {
+    const incomingFilters = [{}] as any;
+
+    component.ngOnChanges({
+      filters: new SimpleChange(null, incomingFilters, true),
+    });
+
+    expect(component.entries.at(0).value).toEqual({ name: '', value: '' });
   });
 });

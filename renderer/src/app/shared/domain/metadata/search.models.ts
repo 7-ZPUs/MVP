@@ -3,7 +3,7 @@ import { DiDaiFilterValues } from './search-diDai-filters-models';
 import { AggregateFilterValues } from './search-aggregate-filters-models';
 import { SubjectCriteria } from './search-subject-filters-models';
 import { SearchQueryType } from './search.enum';
-import { AppError } from '../../../shared/domain/error.models';
+import { AppError } from '../error.models';
 import { CustomFilterValues } from './search-custom-filters-models';
 import { PartialSearchFilters } from './partial-filters-models';
 

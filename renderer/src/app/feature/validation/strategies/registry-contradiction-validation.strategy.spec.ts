@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { RegistryContradictionValidationStrategy } from './registry-contradiction-validation.strategy';
-import { PartialSearchFilters } from '../../search/domain';
-import { RegisterType } from '../../search/domain/search.enum';
+import { PartialSearchFilters } from '../../../shared/domain/metadata';
+import { RegisterType } from '../../../shared/domain/metadata/search.enum';
 
 describe('RegistryContradictionValidationStrategy', () => {
   let strategy: RegistryContradictionValidationStrategy;

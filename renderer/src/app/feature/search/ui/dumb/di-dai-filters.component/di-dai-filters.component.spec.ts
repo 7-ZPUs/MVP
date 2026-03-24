@@ -4,7 +4,11 @@ import { By } from '@angular/platform-browser';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 import { DiDaiFiltersComponent } from './di-dai-filters.component';
-import { DiDaiFilterValues, ValidationResult, ValidationError } from '../../../domain';
+import {
+  DiDaiFilterValues,
+  ValidationResult,
+  ValidationError,
+} from '../../../../../shared/domain/metadata';
 
 describe('DiDaiFiltersComponent', () => {
   let component: DiDaiFiltersComponent;

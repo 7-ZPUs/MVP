@@ -49,6 +49,16 @@
         </app-custom-meta-filters>
       </div>
 
+      <div class="filter-section">
+        <h4>Soggetto</h4>
+        <app-subject-filters
+          [filters]="$any(filters.subject || null)"
+          [validationResult]="currentValidationResult"
+          (filtersChanged)="onSubjectChanged($event)"
+        >
+        </app-subject-filters>
+      </div>
+
       <div class="form-actions">
         <button type="button" (click)="onReset()">Svuota Filtri</button>
         <button type="submit" [disabled]="currentValidationResult?.isValid === false">

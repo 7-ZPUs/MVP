@@ -8,6 +8,7 @@ import { CommonFiltersComponent } from '../../feature/search/ui/dumb/common-filt
 import { DiDaiFiltersComponent } from '../../feature/search/ui/dumb/di-dai-filters.component/di-dai-filters.component';
 import { AggregateFiltersComponent } from '../../feature/search/ui/dumb/aggregate-filters.component/aggregate-filters.component';
 import { CustomMetaFiltersComponent } from '../../feature/search/ui/dumb/custom-meta-filters.component/custom-meta-filters.component';
+import { SubjectFiltersComponent } from '../../feature/search/ui/dumb/subject-filters.component/subject-filters.component';
 
 describe('AdvancedFilterPanelComponent - Test di Integrazione', () => {
   let component: AdvancedFilterPanelComponent;
@@ -15,13 +16,14 @@ describe('AdvancedFilterPanelComponent - Test di Integrazione', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      // Importiamo i componenti VERI per testare il cablaggio reale, senza mock
       imports: [
         ReactiveFormsModule,
         AdvancedFilterPanelComponent,
         CommonFiltersComponent,
         DiDaiFiltersComponent,
         AggregateFiltersComponent,
+        CustomMetaFiltersComponent,
+        SubjectFiltersComponent,
       ],
     }).compileComponents();
 
@@ -100,5 +102,19 @@ describe('AdvancedFilterPanelComponent - Test di Integrazione', () => {
 
     expect(emitSpy).toHaveBeenCalledTimes(1);
     expect(emitSpy).toHaveBeenCalledWith(expect.objectContaining({ customMeta: mockEntries }));
+  });
+
+  it('dovrebbe ricevere gli eventi dal figlio SubjectFilters ed emettere i filtri aggiornati', () => {
+    const subjectDebug = fixture.debugElement.query(By.directive(SubjectFiltersComponent));
+    expect(subjectDebug).toBeTruthy();
+
+    const subjectComponent = subjectDebug.componentInstance as SubjectFiltersComponent;
+    const emitSpy = vi.spyOn(component.filtersChanged, 'emit');
+
+    const mockSubject = { role: 'DESTINATARIO', type: 'PA', identifier: '01234567890' } as any;
+    subjectComponent.filtersChanged.emit(mockSubject);
+
+    expect(emitSpy).toHaveBeenCalledTimes(1);
+    expect(emitSpy).toHaveBeenCalledWith(expect.objectContaining({ subject: mockSubject }));
   });
 });
