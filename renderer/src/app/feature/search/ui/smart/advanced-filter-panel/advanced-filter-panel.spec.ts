@@ -140,7 +140,12 @@ describe('AdvancedFilterPanelComponent', () => {
     rawComponent.filters = null as any;
     rawComponent.ngOnInit();
 
-    expect(rawComponent.panelForm.value).toEqual({ common: {}, diDai: {}, aggregate: {} });
+    expect(rawComponent.panelForm.value).toEqual({
+      common: {},
+      diDai: {},
+      aggregate: {},
+      customMeta: null,
+    });
   });
 
   it('validateAndEmit() NON dovrebbe eseguire la validazione se il validator è assente (copertura ramo falso)', () => {
