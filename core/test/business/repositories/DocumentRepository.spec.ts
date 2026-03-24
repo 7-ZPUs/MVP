@@ -3,6 +3,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { DocumentRepository } from "../../../src/repo/impl/DocumentRepository";
 import { IntegrityStatusEnum } from "../../../src/value-objects/IntegrityStatusEnum";
 import { DatabaseProvider } from "../../../src/repo/impl/DatabaseProvider";
+import { Document } from "../../../src/entity/Document";
+import { Metadata } from "../../../src/value-objects/Metadata";
 
 describe("DocumentRepository", () => {
     const makeDb = () => ({
@@ -38,14 +40,14 @@ describe("DocumentRepository", () => {
             .mockReturnValueOnce({ get: getDoc })
             .mockReturnValueOnce({ all: loadMetadataAll });
 
-        const saved = repo.save({
-            processId: 7,
-            uuid: "doc-1",
-            metadata: [
-                { name: "titolo", value: "Documento A", type: "string" },
-                { name: "anno", value: "2026", type: "number" },
-            ],
-        });
+        const metadata = [
+            new Metadata("titolo", "Documento A", "string"),
+            new Metadata("anno", "2026", "number"),
+        ];
+
+        const document = new Document("doc-1", metadata, 7);
+
+        const saved = repo.save(document);
         const found = repo.getById(saved.toDTO().id);
 
         expect(found).not.toBeNull();

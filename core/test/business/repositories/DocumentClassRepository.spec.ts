@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { DocumentClassRepository } from "../../../src/repo/impl/DocumentClassRepository";
 import { IntegrityStatusEnum } from "../../../src/value-objects/IntegrityStatusEnum";
 import { DatabaseProvider } from "../../../src/repo/impl/DatabaseProvider";
+import { DocumentClass } from "../../../src/entity/DocumentClass";
 
 describe("DocumentClassRepository", () => {
     const makeDb = () => ({
@@ -32,13 +33,10 @@ describe("DocumentClassRepository", () => {
                 }),
             });
 
-        repo.save({
-            dipId: 10,
-            uuid: "dc-1",
-            name: "Contratti",
-            timestamp: "2024-01-01T00:00:00Z",
-            integrityStatus: IntegrityStatusEnum.INVALID,
-        });
+        const dc = new DocumentClass(10, "dc-1", "Contratti", "2024-01-01T00:00:00Z");
+        dc.setIntegrityStatus(IntegrityStatusEnum.INVALID);
+
+        repo.save(dc);
         const found = repo.getById(21);
 
         expect(found?.getProcessId()).toBe(10);

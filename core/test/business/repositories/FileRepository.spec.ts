@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { FileRepository } from "../../../src/repo/impl/FileRepository";
 import { IntegrityStatusEnum } from "../../../src/value-objects/IntegrityStatusEnum";
 import { DatabaseProvider } from "../../../src/repo/impl/DatabaseProvider";
+import { File } from "../../../src/entity/File";
 
 describe("FileRepository", () => {
     const makeDb = () => ({
@@ -32,12 +33,9 @@ describe("FileRepository", () => {
                 }),
             });
 
-        repo.save({
-            documentId: 3,
-            filename: "main.xml",
-            path: "/pkg/main.xml",
-            isMain: true,
-        });
+        const file = new File("main.xml", "/pkg/main.xml", "hash-main", true, 3);
+
+        repo.save(file);
 
         const found = repo.getById(71);
 

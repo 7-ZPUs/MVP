@@ -3,6 +3,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ProcessRepository } from "../../../src/repo/impl/ProcessRepository";
 import { IntegrityStatusEnum } from "../../../src/value-objects/IntegrityStatusEnum";
 import { DatabaseProvider } from "../../../src/repo/impl/DatabaseProvider";
+import { Process } from "../../../src/entity/Process";
+import { Metadata } from "../../../src/value-objects/Metadata";
 
 describe("ProcessRepository", () => {
     const makeDb = () => ({
@@ -38,14 +40,14 @@ describe("ProcessRepository", () => {
             .mockReturnValueOnce({ get: getProcess })
             .mockReturnValueOnce({ all: loadMetadataAll });
 
-        const saved = repo.save({
-            documentClassId: 11,
-            uuid: "proc-1",
-            metadata: [
-                { name: "fase", value: "A", type: "string" },
-                { name: "ordine", value: "1", type: "number" },
-            ],
-        });
+        const metadata = [
+            new Metadata("fase", "A", "string"),
+            new Metadata("ordine", "1", "number"),
+        ];
+
+        const process = new Process(11, "proc-1", metadata);
+
+        const saved = repo.save(process);
         const found = repo.getById(saved.toDTO().id);
 
         expect(found).not.toBeNull();
