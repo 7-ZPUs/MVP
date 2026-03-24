@@ -8,9 +8,12 @@ export default defineConfig({
     exclude: ["node_modules", "dist", "renderer/**"],
     environment: "node",
     globals: true,
+    setupFiles: ["./core/test/setupTests.ts"],
     coverage: {
       provider: "v8",
       reporter: ["text", "lcov"],
+      include: ["core/**/impl/**/*.ts"],
+      exclude: ["**/*.d.ts"],
       reportsDirectory: "./coverage/core",
     },
   },

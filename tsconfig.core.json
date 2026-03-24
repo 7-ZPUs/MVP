@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "core/src",
+    "outDir": "dist/core"
+  },
+  "include": ["core/src/**/*"],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "core/test/**/*",
+    "**/*.spec.ts",
+    "**/*.test.ts"
+  ]
+}
