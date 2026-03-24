@@ -1,0 +1,50 @@
+<fieldset class="filter-fieldset" [formGroup]="form">
+  <legend>Dati Documento (DiDai)</legend>
+
+  <div class="form-row">
+    <div class="form-group">
+      <label for="tipologiaRegistro">Tipologia Registro</label>
+      <input
+        type="text"
+        id="tipologiaRegistro"
+        formControlName="tipologiaRegistro"
+        [attr.aria-invalid]="!!getError('tipologiaRegistro')"
+        [attr.aria-describedby]="getError('tipologiaRegistro') ? 'err-tipo-reg' : null"
+      />
+      <div
+        *ngIf="getError('tipologiaRegistro') as err"
+        id="err-tipo-reg"
+        class="validation-error"
+        aria-live="polite"
+      >
+        {{ err.message }}
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="numeroRegistro">Numero Registro</label>
+      <input
+        type="text"
+        id="numeroRegistro"
+        formControlName="numeroRegistro"
+        [attr.aria-invalid]="!!getError('numeroRegistro')"
+        [attr.aria-describedby]="getError('numeroRegistro') ? 'err-num-reg' : null"
+      />
+      <div
+        *ngIf="getError('numeroRegistro') as err"
+        id="err-num-reg"
+        class="validation-error"
+        aria-live="polite"
+      >
+        {{ err.message }}
+      </div>
+    </div>
+  </div>
+
+  <div class="form-row">
+    <div class="form-group">
+      <label for="modalitaFormazione">Modalità Formazione</label>
+      <input type="text" id="modalitaFormazione" formControlName="modalitaFormazione" />
+    </div>
+  </div>
+</fieldset>
