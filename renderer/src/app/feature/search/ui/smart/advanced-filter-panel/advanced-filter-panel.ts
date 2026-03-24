@@ -18,6 +18,7 @@ import {
 import { CommonFiltersComponent } from '../../dumb/common-filters.component/common-filters.component';
 import { DiDaiFiltersComponent } from '../../dumb/di-dai-filters.component/di-dai-filters.component';
 import { AggregateFiltersComponent } from '../../dumb/aggregate-filters.component/aggregate-filters.component';
+import { CustomMetaFiltersComponent } from '../../dumb/custom-meta-filters.component/custom-meta-filters.component';
 
 @Component({
   selector: 'app-advanced-filter-panel',
@@ -28,6 +29,7 @@ import { AggregateFiltersComponent } from '../../dumb/aggregate-filters.componen
     CommonFiltersComponent,
     DiDaiFiltersComponent,
     AggregateFiltersComponent,
+    CustomMetaFiltersComponent,
   ],
   templateUrl: './advanced-filter-panel.html',
 })
@@ -56,6 +58,7 @@ export class AdvancedFilterPanelComponent implements OnInit {
       common: [this.filters?.common || {}],
       diDai: [this.filters?.diDai || {}],
       aggregate: [this.filters?.aggregate || {}],
+      customMeta: [this.filters?.customMeta || null],
     });
 
     this.panelForm.valueChanges.subscribe((values) => {

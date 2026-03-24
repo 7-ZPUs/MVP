@@ -40,6 +40,15 @@
         </app-aggregate-filters>
       </div>
 
+      <div class="filter-section">
+        <app-custom-meta-filters
+          [filters]="$any(filters.customMeta || [])"
+          [validationResult]="currentValidationResult"
+          (filtersChanged)="onEntriesChanged($event)"
+        >
+        </app-custom-meta-filters>
+      </div>
+
       <div class="form-actions">
         <button type="button" (click)="onReset()">Svuota Filtri</button>
         <button type="submit" [disabled]="currentValidationResult?.isValid === false">

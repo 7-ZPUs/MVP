@@ -7,6 +7,7 @@ import { AdvancedFilterPanelComponent } from '../../feature/search/ui/smart/adva
 import { CommonFiltersComponent } from '../../feature/search/ui/dumb/common-filters.component/common-filters.component';
 import { DiDaiFiltersComponent } from '../../feature/search/ui/dumb/di-dai-filters.component/di-dai-filters.component';
 import { AggregateFiltersComponent } from '../../feature/search/ui/dumb/aggregate-filters.component/aggregate-filters.component';
+import { CustomMetaFiltersComponent } from '../../feature/search/ui/dumb/custom-meta-filters.component/custom-meta-filters.component';
 
 describe('AdvancedFilterPanelComponent - Test di Integrazione', () => {
   let component: AdvancedFilterPanelComponent;
@@ -85,5 +86,19 @@ describe('AdvancedFilterPanelComponent - Test di Integrazione', () => {
     aggregateComponent.filtersChanged.emit(mockAggregateUpdate);
 
     expect(component.panelForm.value.aggregate.fascicolo).toBe('FAS-999');
+  });
+
+  it('dovrebbe ricevere gli eventi dal figlio CustomMetaFilters ed emettere i filtri aggiornati', () => {
+    const customMetaDebug = fixture.debugElement.query(By.directive(CustomMetaFiltersComponent));
+    expect(customMetaDebug).toBeTruthy();
+
+    const customMetaComponent = customMetaDebug.componentInstance as CustomMetaFiltersComponent;
+    const emitSpy = vi.spyOn(component.filtersChanged, 'emit');
+
+    const mockEntries = [{ name: 'Fornitore', value: 'Acme Corp' }] as any;
+    customMetaComponent.filtersChanged.emit(mockEntries);
+
+    expect(emitSpy).toHaveBeenCalledTimes(1);
+    expect(emitSpy).toHaveBeenCalledWith(expect.objectContaining({ customMeta: mockEntries }));
   });
 });
