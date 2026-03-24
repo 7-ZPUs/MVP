@@ -5,6 +5,7 @@ export interface CreateFileDTO {
     filename: string;
     path: string;
     isMain: boolean;
+    hash: string;
 }
 
 export interface FileDTO {
@@ -13,6 +14,7 @@ export interface FileDTO {
     documentId: number;
     filename: string;
     path: string;
+    hash: string;
     integrityStatus: IntegrityStatusEnum;
     isMain: boolean;
 }

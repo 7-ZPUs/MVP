@@ -3,4 +3,5 @@ export const ProcessUC = {
     GET_BY_DOCUMENT_CLASS: Symbol('IGetProcessByDocumentClassUC'),
     GET_BY_STATUS: Symbol('IGetProcessByStatusUC'),
     CREATE: Symbol('ICreateProcessUC'),
+    CHECK_INTEGRITY_STATUS: Symbol('ICheckProcessIntegrityStatusUC'),
 } as const;

@@ -10,7 +10,6 @@
 import { IpcMain } from 'electron';
 import { container } from 'tsyringe';
 
-import { IpcChannels } from '../../../shared/ipc-channels';
 import { IntegrityStatusEnum } from '../value-objects/IntegrityStatusEnum';
 
 import type { IGetDocumentByIdUC } from '../use-case/document/IGetDocumentByIdUC';
@@ -33,6 +32,7 @@ import { DocumentClassUC } from '../use-case/classe-documentale/tokens';
 import { IGetDipByIdUC } from '../use-case/dip/IGetDipByIdUC';
 import { IGetDipByStatusUC } from '../use-case/dip/IGetDipByStatusUC';
 import { DipUC } from '../use-case/dip/token';
+import { IpcChannels } from '../../../shared/ipc-channels';
 
 export class BrowsingIpcAdapter {
     static register(ipcMain: IpcMain): void {

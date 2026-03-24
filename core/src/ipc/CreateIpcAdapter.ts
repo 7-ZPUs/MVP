@@ -7,23 +7,22 @@
 import { IpcMain } from 'electron';
 import { container } from 'tsyringe';
 
-import { IpcChannels } from '../../../shared/ipc-channels';
-
 import { CreateDocumentDTO } from '../dto/DocumentDTO';
 import { CreateFileDTO } from '../dto/FileDTO';
 import { CreateProcessDTO } from '../dto/ProcessDTO';
-import type { ICreateDocumentUC } from '../use-case/document/ICreateDocumentUC';
+import type { CreateDocumentInput, ICreateDocumentUC } from '../use-case/document/ICreateDocumentUC';
 import { DocumentoUC } from '../use-case/document/tokens';
-import type { ICreateFileUC } from '../use-case/file/ICreateFileUC';
+import type { CreateFileInput, ICreateFileUC } from '../use-case/file/ICreateFileUC';
 import { FileUC } from '../use-case/file/tokens';
-import type { ICreateProcessUC } from '../use-case/process/ICreateProcessUC';
+import type { CreateProcessInput, ICreateProcessUC } from '../use-case/process/ICreateProcessUC';
 import { ProcessUC } from '../use-case/process/token';
-import { ICreateDocumentClassUC } from '../use-case/classe-documentale/ICreateDocumentClassUC';
+import type { CreateDocumentClassInput, ICreateDocumentClassUC } from '../use-case/classe-documentale/ICreateDocumentClassUC';
 import { DocumentClassUC } from '../use-case/classe-documentale/tokens';
 import { CreateDocumentClassDTO } from '../dto/DocumentClassDTO';
-import { ICreateDipUC } from '../use-case/dip/ICreateDipUC';
+import type { CreateDipInput, ICreateDipUC } from '../use-case/dip/ICreateDipUC';
 import { DipUC } from '../use-case/dip/token';
 import { CreateDipDTO } from '../dto/DipDTO';
+import { IpcChannels } from '../../../shared/ipc-channels';
 
 export class CreateIpcAdapter {
     static register(ipcMain: IpcMain): void {
@@ -32,25 +31,56 @@ export class CreateIpcAdapter {
         const createProcessUC = container.resolve<ICreateProcessUC>(ProcessUC.CREATE);
         const createDocumentClassUC = container.resolve<ICreateDocumentClassUC>(DocumentClassUC.CREATE);
         const createDipUC = container.resolve<ICreateDipUC>(DipUC.CREATE);
-        
+
         ipcMain.handle(IpcChannels.CREATE_DOCUMENT, (_event, dto: CreateDocumentDTO) => {
-            return createDocumentUC.execute(dto).toDTO();
+            const input: CreateDocumentInput = {
+                processId: dto.processId,
+                uuid: dto.uuid,
+                metadata: dto.metadata,
+            };
+
+            return createDocumentUC.execute(input).toDTO();
         });
 
         ipcMain.handle(IpcChannels.CREATE_FILE, (_event, dto: CreateFileDTO) => {
-            return createFileUC.execute(dto).toDTO();
+            const input: CreateFileInput = {
+                documentId: dto.documentId,
+                filename: dto.filename,
+                path: dto.path,
+                isMain: dto.isMain,
+                hash: dto.hash,
+            };
+
+            return createFileUC.execute(input).toDTO();
         });
 
         ipcMain.handle(IpcChannels.CREATE_PROCESS, (_event, dto: CreateProcessDTO) => {
-            return createProcessUC.execute(dto).toDTO();
+            const input: CreateProcessInput = {
+                documentClassId: dto.documentClassId,
+                uuid: dto.uuid,
+                metadata: dto.metadata,
+            };
+
+            return createProcessUC.execute(input).toDTO();
         });
 
         ipcMain.handle(IpcChannels.CREATE_DOCUMENT_CLASS, (_event, dto: CreateDocumentClassDTO) => {
-            return createDocumentClassUC.execute(dto).toDTO();
+            const input: CreateDocumentClassInput = {
+                dipId: dto.dipId,
+                uuid: dto.uuid,
+                name: dto.name,
+                timestamp: dto.timestamp,
+            };
+
+            return createDocumentClassUC.execute(input).toDTO();
         });
 
         ipcMain.handle(IpcChannels.CREATE_DIP, (_event, dto: CreateDipDTO) => {
-            return createDipUC.execute(dto).toDTO();
+            const input: CreateDipInput = {
+                uuid: dto.uuid,
+            };
+
+            return createDipUC.execute(input).toDTO();
         });
     }
 }

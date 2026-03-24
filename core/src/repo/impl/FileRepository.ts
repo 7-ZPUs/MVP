@@ -14,7 +14,6 @@ import { File, FileRow } from '../../entity/File';
 import { IntegrityStatusEnum } from '../../value-objects/IntegrityStatusEnum';
 import type { IFileRepository } from '../IFileRepository';
 import { DatabaseProvider, DATABASE_PROVIDER_TOKEN } from './DatabaseProvider';
-import { CreateFileDTO } from '../../dto/FileDTO';
 
 @injectable()
 export class FileRepository implements IFileRepository {
@@ -34,10 +33,20 @@ export class FileRepository implements IFileRepository {
                 id               INTEGER PRIMARY KEY AUTOINCREMENT,
                 filename         TEXT    NOT NULL,
                 path             TEXT    NOT NULL,
+                hash             TEXT    NOT NULL,
                 integrity_status TEXT    NOT NULL DEFAULT 'UNKNOWN',
                 is_main          INTEGER NOT NULL DEFAULT 0,
-                document_id      INTEGER NOT NULL REFERENCES documento(id) ON DELETE CASCADE
+                document_id      INTEGER NOT NULL REFERENCES document(id) ON DELETE CASCADE
             );
+
+            CREATE INDEX IF NOT EXISTS idx_file_document_id
+                ON file (document_id);
+
+            CREATE INDEX IF NOT EXISTS idx_file_integrity_status
+                ON file (integrity_status);
+
+            CREATE INDEX IF NOT EXISTS idx_file_document_id_is_main_id
+                ON file (document_id, is_main DESC, id);
         `);
     }
 
@@ -48,8 +57,8 @@ export class FileRepository implements IFileRepository {
     getById(id: number): File | null {
         const row = this.db
             .prepare<[number], FileRow>(
-                `SELECT id, filename, path, integrity_status as integrityStatus,
-                        is_main as isMain, document_id as documentId
+                `SELECT id, filename, path, hash, integrity_status as integrityStatus,
+                    is_main as isMain, document_id as documentId
                  FROM file WHERE id = ?`
             )
             .get(id);
@@ -59,8 +68,8 @@ export class FileRepository implements IFileRepository {
     getByDocumentId(documentId: number): File[] {
         const rows = this.db
             .prepare<[number], FileRow>(
-                `SELECT id, filename, path, integrity_status as integrityStatus,
-                        is_main as isMain, document_id as documentId
+                `SELECT id, filename, path, hash, integrity_status as integrityStatus,
+                    is_main as isMain, document_id as documentId
                  FROM file WHERE document_id = ? ORDER BY is_main DESC, id`
             )
             .all(documentId);
@@ -70,35 +79,37 @@ export class FileRepository implements IFileRepository {
     getByStatus(status: IntegrityStatusEnum): File[] {
         const rows = this.db
             .prepare<[string], FileRow>(
-                `SELECT id, filename, path, integrity_status as integrityStatus,
-                        is_main as isMain, document_id as documentId
+                `SELECT id, filename, path, hash, integrity_status as integrityStatus,
+                    is_main as isMain, document_id as documentId
                  FROM file WHERE integrity_status = ? ORDER BY id`
             )
             .all(status);
         return rows.map((r) => File.fromDB(r));
     }
 
-    save(dto: CreateFileDTO): File {
+    save(file: File): File {
         const result = this.db
             .prepare(
-                `INSERT INTO file (filename, path, integrity_status, is_main, document_id)
-                 VALUES (?, ?, ?, ?, ?)`
+                `INSERT INTO file (filename, path, hash, integrity_status, is_main, document_id)
+                 VALUES (?, ?, ?, ?, ?, ?)`
             )
             .run(
-                dto.filename,
-                dto.path,
+                file.getFilename(),
+                file.getPath(),
+                file.getHash(),
                 IntegrityStatusEnum.UNKNOWN,
-                dto.isMain ? 1 : 0,
-                dto.documentId
+                file.getIsMain() ? 1 : 0,
+                file.getDocumentId()
             );
 
         return File.fromDB({
             id: result.lastInsertRowid as number,
-            filename: dto.filename,
-            path: dto.path,
+            filename: file.getFilename(),
+            path: file.getPath(),
+            hash: file.getHash(),
             integrityStatus: IntegrityStatusEnum.UNKNOWN,
-            isMain: dto.isMain ? 1 : 0,
-            documentId: dto.documentId,
+            isMain: file.getIsMain() ? 1 : 0,
+            documentId: file.getDocumentId(),
         });
     }
 
@@ -106,5 +117,36 @@ export class FileRepository implements IFileRepository {
         this.db
             .prepare('UPDATE file SET integrity_status = ? WHERE id = ?')
             .run(status, id);
+    }
+
+    getAggregatedIntegrityStatusByDocumentId(documentId: number): IntegrityStatusEnum {
+        const row = this.db
+            .prepare<[number], { total: number; invalidCount: number; unknownCount: number }>(
+                `SELECT
+                    COUNT(*) AS total,
+                    SUM(CASE WHEN integrity_status = 'INVALID' THEN 1 ELSE 0 END) AS invalidCount,
+                    SUM(CASE WHEN integrity_status = 'UNKNOWN' THEN 1 ELSE 0 END) AS unknownCount
+                 FROM file
+                 WHERE document_id = ?`
+            )
+            .get(documentId);
+
+        const total = row?.total ?? 0;
+        const invalidCount = row?.invalidCount ?? 0;
+        const unknownCount = row?.unknownCount ?? 0;
+
+        if (!total) {
+            return IntegrityStatusEnum.UNKNOWN;
+        }
+
+        if (invalidCount) {
+            return IntegrityStatusEnum.INVALID;
+        }
+
+        if (unknownCount) {
+            return IntegrityStatusEnum.UNKNOWN;
+        }
+
+        return IntegrityStatusEnum.VALID;
     }
 }

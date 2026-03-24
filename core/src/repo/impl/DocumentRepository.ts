@@ -16,8 +16,6 @@ import { IntegrityStatusEnum } from '../../value-objects/IntegrityStatusEnum';
 import type { IDocumentRepository } from '../IDocumentRepository';
 import { DatabaseProvider, DATABASE_PROVIDER_TOKEN } from './DatabaseProvider';
 import { loadMetadata, saveMetadata } from './MetadataHelper';
-import { CreateDocumentDTO } from '../../dto/DocumentDTO';
-import { Metadata } from '../../value-objects/Metadata';
 
 const METADATA_TABLE = 'document_metadata';
 const METADATA_FK = 'document_id';
@@ -40,7 +38,7 @@ export class DocumentRepository implements IDocumentRepository {
                 id               INTEGER PRIMARY KEY AUTOINCREMENT,
                 uuid             TEXT    NOT NULL UNIQUE,
                 integrity_status TEXT    NOT NULL DEFAULT 'UNKNOWN',
-                process_id       INTEGER
+                process_id       INTEGER NOT NULL REFERENCES process(id) ON DELETE CASCADE
             );
 
             CREATE TABLE IF NOT EXISTS document_metadata (
@@ -50,6 +48,15 @@ export class DocumentRepository implements IDocumentRepository {
                 value       TEXT    NOT NULL,
                 type        TEXT    NOT NULL DEFAULT 'string'
             );
+
+            CREATE INDEX IF NOT EXISTS idx_document_process_id
+                ON document (process_id);
+
+            CREATE INDEX IF NOT EXISTS idx_document_integrity_status
+                ON document (integrity_status);
+
+            CREATE INDEX IF NOT EXISTS idx_document_metadata_document_id
+                ON document_metadata (document_id);
         `);
     }
 
@@ -97,12 +104,12 @@ export class DocumentRepository implements IDocumentRepository {
         return rows.map((r) => this.rowToEntity(r));
     }
 
-    save(dto: CreateDocumentDTO): Document {
-        const metadata = dto.metadata.map((m) => new Metadata(m.name, m.value, m.type));
+    save(document: Document): Document {
+        const metadata = document.getMetadata();
 
         const result = this.db
             .prepare('INSERT INTO document (uuid, integrity_status, process_id) VALUES (?, ?, ?)')
-            .run(dto.uuid, IntegrityStatusEnum.UNKNOWN, dto.processId);
+            .run(document.getUuid(), IntegrityStatusEnum.UNKNOWN, document.getProcessId());
 
         const id = result.lastInsertRowid as number;
         saveMetadata(this.db, METADATA_TABLE, METADATA_FK, id, metadata);
@@ -110,9 +117,9 @@ export class DocumentRepository implements IDocumentRepository {
         return Document.fromDB(
             {
                 id,
-                uuid: dto.uuid,
+                uuid: document.getUuid(),
                 integrityStatus: IntegrityStatusEnum.UNKNOWN,
-                processId: dto.processId,
+                processId: document.getProcessId(),
             },
             metadata
         );
@@ -122,5 +129,36 @@ export class DocumentRepository implements IDocumentRepository {
         this.db
             .prepare('UPDATE document SET integrity_status = ? WHERE id = ?')
             .run(status, id);
+    }
+
+    getAggregatedIntegrityStatusByProcessId(processId: number): IntegrityStatusEnum {
+        const row = this.db
+            .prepare<[number], { total: number; invalidCount: number; unknownCount: number }>(
+                `SELECT
+                    COUNT(*) AS total,
+                    SUM(CASE WHEN integrity_status = 'INVALID' THEN 1 ELSE 0 END) AS invalidCount,
+                    SUM(CASE WHEN integrity_status = 'UNKNOWN' THEN 1 ELSE 0 END) AS unknownCount
+                 FROM document
+                 WHERE process_id = ?`
+            )
+            .get(processId);
+
+        const total = row?.total ?? 0;
+        const invalidCount = row?.invalidCount ?? 0;
+        const unknownCount = row?.unknownCount ?? 0;
+
+        if (!total) {
+            return IntegrityStatusEnum.UNKNOWN;
+        }
+
+        if (invalidCount) {
+            return IntegrityStatusEnum.INVALID;
+        }
+
+        if (unknownCount) {
+            return IntegrityStatusEnum.UNKNOWN;
+        }
+
+        return IntegrityStatusEnum.VALID;
     }
 }
