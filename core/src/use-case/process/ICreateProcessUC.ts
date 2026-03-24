@@ -1,4 +1,5 @@
 import type { Process } from '../../entity/Process';
+import { MetadataType } from '../../value-objects/Metadata';
 
 export interface CreateProcessInput {
     documentClassId: number;
@@ -6,7 +7,7 @@ export interface CreateProcessInput {
     metadata: {
         name: string;
         value: string;
-        type: string;
+        type: MetadataType;
     }[];
 }
 

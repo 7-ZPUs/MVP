@@ -1,4 +1,5 @@
 import type { Document } from '../../entity/Document';
+import { MetadataType } from '../../value-objects/Metadata';
 
 export interface CreateDocumentInput {
     processId: number;
@@ -6,7 +7,7 @@ export interface CreateDocumentInput {
     metadata: {
         name: string;
         value: string;
-        type: string;
+        type: MetadataType;
     }[];
 }
 

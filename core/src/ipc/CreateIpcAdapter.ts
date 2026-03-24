@@ -7,8 +7,6 @@
 import { IpcMain } from 'electron';
 import { container } from 'tsyringe';
 
-import { IpcChannels } from '../../../shared/ipc-channels';
-
 import { CreateDocumentDTO } from '../dto/DocumentDTO';
 import { CreateFileDTO } from '../dto/FileDTO';
 import { CreateProcessDTO } from '../dto/ProcessDTO';
@@ -24,6 +22,7 @@ import { CreateDocumentClassDTO } from '../dto/DocumentClassDTO';
 import type { CreateDipInput, ICreateDipUC } from '../use-case/dip/ICreateDipUC';
 import { DipUC } from '../use-case/dip/token';
 import { CreateDipDTO } from '../dto/DipDTO';
+import { IpcChannels } from '../../../shared/ipc-channels';
 
 export class CreateIpcAdapter {
     static register(ipcMain: IpcMain): void {
