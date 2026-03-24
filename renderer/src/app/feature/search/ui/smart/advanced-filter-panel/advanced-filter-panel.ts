@@ -15,10 +15,13 @@ import {
   PartialSearchFilters,
 } from '../../../domain';
 
+import { CommonFiltersComponent } from '../../dumb/common-filters.component/common-filters.component';
+import { DiDaiFiltersComponent } from '../../dumb/di-dai-filters.component/di-dai-filters.component';
+
 @Component({
   selector: 'app-advanced-filter-panel',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, CommonFiltersComponent, DiDaiFiltersComponent],
   templateUrl: './advanced-filter-panel.html',
 })
 export class AdvancedFilterPanelComponent implements OnInit {

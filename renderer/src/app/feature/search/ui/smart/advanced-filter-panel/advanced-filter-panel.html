@@ -12,12 +12,22 @@
     <form [formGroup]="panelForm" (ngSubmit)="onSubmit()">
       <div class="filter-section">
         <h4>Comuni</h4>
-        <p><em>(Segnaposto: Common Filters)</em></p>
+        <app-common-filters
+          [filters]="$any(filters.common || {})"
+          [validationResult]="currentValidationResult"
+          (filtersChanged)="onCommonFiltersChanged($event)"
+        >
+        </app-common-filters>
       </div>
 
       <div class="filter-section">
         <h4>Dati Documento (DiDai)</h4>
-        <p><em>(Segnaposto: DiDai Filters)</em></p>
+        <app-di-dai-filters
+          [filters]="$any(filters.diDai || {})"
+          [validationResult]="currentValidationResult"
+          (filtersChanged)="onDiDaiFiltersChanged($event)"
+        >
+        </app-di-dai-filters>
       </div>
 
       <div class="form-actions">
