@@ -17,6 +17,9 @@ import { CommonModule } from '@angular/common';
         <span class="zoom-level">{{ zoomLevel() * 100 | number: '1.0-0' }}%</span>
         <button (click)="zoomIn.emit()" title="Aumenta Zoom">+</button>
         <button (click)="resetZoom.emit()" title="Ripristina Zoom">Reset</button>
+        <button class="close-button" (click)="closePreview.emit()" title="Chiudi anteprima">
+          Chiudi anteprima
+        </button>
       </div>
     </div>
   `,
@@ -64,6 +67,14 @@ import { CommonModule } from '@angular/common';
       button:hover {
         background: #e0e0e0;
       }
+      .close-button {
+        border-color: #c62828;
+        color: #c62828;
+        background: #ffffff;
+      }
+      .close-button:hover {
+        background: #ffebee;
+      }
       .zoom-level {
         min-width: 3rem;
         text-align: center;
@@ -82,4 +93,5 @@ export class DocumentToolbarComponent {
   zoomIn = output<void>();
   zoomOut = output<void>();
   resetZoom = output<void>();
+  closePreview = output<void>();
 }

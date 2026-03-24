@@ -20,24 +20,32 @@ import { MetadataPanelComponent } from '../../dumb/metadata-panel/metadata-panel
       }
 
       @if (facade.document(); as doc) {
-        <app-document-toolbar
-          [titolo]="doc.titolo"
-          [formato]="doc.formato"
-          [zoomLevel]="zoomLevel()"
-          (zoomIn)="handleZoomIn()"
-          (zoomOut)="handleZoomOut()"
-          (resetZoom)="handleResetZoom()"
-        >
-        </app-document-toolbar>
-
-        <div class="split-view">
-          <div class="preview-section">
-            <app-preview-panel [fileData]="doc.fileData" [zoomLevel]="zoomLevel()">
-            </app-preview-panel>
-          </div>
-
+        <div class="detail-view">
           <div class="metadata-section">
-            <app-metadata-panel [metadata]="doc.metadata"></app-metadata-panel>
+            <app-metadata-panel
+              [metadata]="doc.DocumentoInformatico"
+              (previewRequested)="openPreview()"
+            ></app-metadata-panel>
+
+            @if (isPreviewOpen()) {
+              <div class="preview-overlay">
+                <app-document-toolbar
+                  [titolo]="doc.DocumentoInformatico.NomeDelDocumento"
+                  [formato]="doc.DocumentoInformatico.IdentificativoDelFormato.Formato"
+                  [zoomLevel]="zoomLevel()"
+                  (zoomIn)="handleZoomIn()"
+                  (zoomOut)="handleZoomOut()"
+                  (resetZoom)="handleResetZoom()"
+                  (closePreview)="closePreview()"
+                >
+                </app-document-toolbar>
+
+                <div class="preview-section">
+                  <app-preview-panel [fileData]="doc.fileData" [zoomLevel]="zoomLevel()">
+                  </app-preview-panel>
+                </div>
+              </div>
+            }
           </div>
         </div>
       }
@@ -51,19 +59,31 @@ import { MetadataPanelComponent } from '../../dumb/metadata-panel/metadata-panel
         height: 100vh;
         background: #f5f5f5;
       }
-      .split-view {
-        display: flex;
+      .detail-view {
+        position: relative;
         flex: 1;
         overflow: hidden;
       }
-      .preview-section {
-        flex: 7;
-        background: #525659;
-      } /* 70% di spazio al PDF */
       .metadata-section {
-        flex: 3;
+        position: relative;
+        height: 100%;
+      }
+      .preview-overlay {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 10;
+        display: flex;
+        flex-direction: column;
+        background: #ffffff;
+      }
+      .preview-section {
+        flex: 1;
+        background: #525659;
         overflow: hidden;
-      } /* 30% di spazio ai Metadati */
+      }
       .loading-overlay {
         padding: 1rem;
         background: #e3f2fd;
@@ -85,7 +105,8 @@ export class DocumentDetailPageComponent implements OnInit {
   documentId = input<string>();
 
   // Stato locale UI gestito tramite Signal
-  zoomLevel = signal<number>(1.0);
+  zoomLevel = signal<number>(1);
+  isPreviewOpen = signal<boolean>(false);
   private readonly ZOOM_STEP = 0.2;
 
   ngOnInit() {
@@ -95,8 +116,16 @@ export class DocumentDetailPageComponent implements OnInit {
 
   // --- LOGICA DI CONTROLLO UI ---
 
+  openPreview() {
+    this.isPreviewOpen.set(true);
+  }
+
+  closePreview() {
+    this.isPreviewOpen.set(false);
+  }
+
   handleZoomIn() {
-    this.zoomLevel.update((z) => Math.min(z + this.ZOOM_STEP, 3.0)); // Max 300%
+    this.zoomLevel.update((z) => Math.min(z + this.ZOOM_STEP, 3)); // Max 300%
   }
 
   handleZoomOut() {
@@ -104,6 +133,6 @@ export class DocumentDetailPageComponent implements OnInit {
   }
 
   handleResetZoom() {
-    this.zoomLevel.set(1.0); // Reset a 100%
+    this.zoomLevel.set(1); // Reset a 100%
   }
 }
