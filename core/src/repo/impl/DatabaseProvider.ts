@@ -1,0 +1,30 @@
+/**
+ 
+DatabaseProvider — Singleton SQLite connection.*
+Tutte le repository condividono la stessa connessione per garantire
+la consistenza dei foreign key e del WAL mode.*/
+import { injectable } from "tsyringe";
+import Database from "better-sqlite3";
+import * as path from "node:path";
+import * as os from "node:os";
+import * as fs from "node:fs";
+
+export const DATABASE_PROVIDER_TOKEN = Symbol("DatabaseProvider");
+
+@injectable()
+export class DatabaseProvider {
+  private _db: Database.Database | null = null;
+
+  public get db(): Database.Database {
+    if (!this._db) {
+      const dir = path.join(os.homedir(), ".dip-viewer");
+      fs.mkdirSync(dir, { recursive: true });
+      const dbPath = path.join(dir, "dip-viewer.db");
+
+      this._db = new Database(dbPath);
+      this._db.pragma("journal_mode = WAL");
+      this._db.pragma("foreign_keys = ON");
+    }
+    return this._db;
+  }
+}

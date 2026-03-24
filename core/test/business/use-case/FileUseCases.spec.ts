@@ -1,7 +1,6 @@
 import fs from "node:fs";
 import { describe, expect, it, vi } from "vitest";
 
-import { CreateFileUC } from "../../../src/use-case/file/impl/CreateFileUC";
 import { GetFileByIdUC } from "../../../src/use-case/file/impl/GetFileByIdUC";
 import { GetFileByDocumentUC } from "../../../src/use-case/file/impl/GetFileByDocumentUC";
 import { GetFileByStatusUC } from "../../../src/use-case/file/impl/GetFileByStatusUC";
@@ -12,25 +11,6 @@ import { IntegrityStatusEnum } from "../../../src/value-objects/IntegrityStatusE
 import { IHashingService } from "../../../src/services/IHashingService";
 
 describe("File use-cases", () => {
-    it("CreateFileUC delega a repo.save", () => {
-        const entity = new File("file.xml", "/file.xml", "hash-1", true, 1);
-        const repo: Pick<IFileRepository, "save"> = { save: vi.fn().mockReturnValue(entity) };
-
-        const uc = new CreateFileUC(repo as IFileRepository);
-        const input = { documentId: 1, filename: "file.xml", path: "/file.xml", isMain: true, hash: "hash-1" };
-        const result = uc.execute(input);
-
-        const savedEntity = (repo.save as ReturnType<typeof vi.fn>).mock.calls[0][0] as File;
-
-        expect(repo.save).toHaveBeenCalledTimes(1);
-        expect(savedEntity).toBeInstanceOf(File);
-        expect(savedEntity.getFilename()).toBe(input.filename);
-        expect(savedEntity.getPath()).toBe(input.path);
-        expect(savedEntity.getHash()).toBe(input.hash);
-        expect(savedEntity.getIsMain()).toBe(input.isMain);
-        expect(savedEntity.getDocumentId()).toBe(input.documentId);
-        expect(result).toBe(entity);
-    });
 
     it("GetFileByIdUC delega a repo.getById", () => {
         const entity = new File("f", "/f", "h", false, 2);

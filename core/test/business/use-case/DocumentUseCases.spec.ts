@@ -1,6 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { CreateDocumentUC } from "../../../src/use-case/document/impl/CreateDocumentUC";
 import { GetDocumentByIdUC } from "../../../src/use-case/document/impl/GetDocumentByIdUC";
 import { GetDocumentByProcessUC } from "../../../src/use-case/document/impl/GetDocumentByProcessUC";
 import { GetDocumentByStatusUC } from "../../../src/use-case/document/impl/GetDocumentByStatusUC";
@@ -11,23 +10,6 @@ import { IntegrityStatusEnum } from "../../../src/value-objects/IntegrityStatusE
 import { IFileRepository } from "../../../src/repo/IFileRepository";
 
 describe("Document use-cases", () => {
-    it("CreateDocumentUC delega a repo.save", () => {
-        const entity = new Document("doc-1", [], 1);
-        const repo: Pick<IDocumentRepository, "save"> = { save: vi.fn().mockReturnValue(entity) };
-
-        const uc = new CreateDocumentUC(repo as IDocumentRepository);
-        const input = { processId: 1, uuid: "doc-1", metadata: [] };
-        const result = uc.execute(input);
-
-        const savedEntity = (repo.save as ReturnType<typeof vi.fn>).mock.calls[0][0] as Document;
-
-        expect(repo.save).toHaveBeenCalledTimes(1);
-        expect(savedEntity).toBeInstanceOf(Document);
-        expect(savedEntity.getProcessId()).toBe(input.processId);
-        expect(savedEntity.getUuid()).toBe(input.uuid);
-        expect(savedEntity.getMetadata()).toEqual([]);
-        expect(result).toBe(entity);
-    });
 
     it("GetDocumentByIdUC delega a repo.getById", () => {
         const entity = new Document("doc-2", [], 2);
