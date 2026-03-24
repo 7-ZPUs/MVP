@@ -26,7 +26,7 @@ export class SearchFacade implements ISearchFacade {
       common: {} as any,
       diDai: {} as any,
       aggregate: {} as any,
-      custom: [] as any,
+      customMeta: {} as any,
       subject: null,
     },
     results: [],

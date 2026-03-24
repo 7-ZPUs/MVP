@@ -1,0 +1,31 @@
+<div class="filter-panel" [class.collapsed]="!isExpanded">
+  <div class="panel-header" (click)="togglePanel()">
+    <h3>Filtri Avanzati</h3>
+    <button type="button">{{ isExpanded ? 'Comprimi' : 'Espandi' }}</button>
+  </div>
+
+  <div class="panel-body" *ngIf="isExpanded">
+    <div class="error-banner" *ngIf="externalValidation && !externalValidation.isValid">
+      Attenzione: i filtri contengono errori. Ricontrolla i campi evidenziati.
+    </div>
+
+    <form [formGroup]="panelForm" (ngSubmit)="onSubmit()">
+      <div class="filter-section">
+        <h4>Comuni</h4>
+        <p><em>(Segnaposto: Common Filters)</em></p>
+      </div>
+
+      <div class="filter-section">
+        <h4>Dati Documento (DiDai)</h4>
+        <p><em>(Segnaposto: DiDai Filters)</em></p>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" (click)="onReset()">Svuota Filtri</button>
+        <button type="submit" [disabled]="currentValidationResult?.isValid === false">
+          Applica e Cerca
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

@@ -18,7 +18,7 @@ export interface SearchFilters {
   diDai: DiDaiFilterValues;
   aggregate: AggregateFilterValues;
   subject: SubjectCriteria | null;
-  custom: CustomFilterValues | null;
+  customMeta: CustomFilterValues | null;
 }
 
 export interface SearchResult {

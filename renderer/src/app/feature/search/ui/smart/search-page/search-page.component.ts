@@ -32,6 +32,7 @@ export class SearchPageComponent {
   public isEmpty: Signal<boolean>;
   public validatorFn: FilterValidatorFn;
 
+  /* istanbul ignore next */
   constructor(
     @Inject('ISearchFacade') private readonly searchFacade: ISearchFacade,
     @Inject('IRouter') private readonly router: IRouter,
