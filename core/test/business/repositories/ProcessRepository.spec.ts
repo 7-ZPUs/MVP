@@ -23,6 +23,7 @@ describe("ProcessRepository", () => {
   it("save persiste processo e metadata", () => {
     const insertProcessRun = vi.fn().mockReturnValue({ lastInsertRowid: 81 });
     const insertMetadataRun = vi.fn();
+    const deleteMetadataRun = vi.fn();
     const getProcess = vi.fn().mockReturnValue({
       id: 81,
       documentClassId: 11,
@@ -36,6 +37,7 @@ describe("ProcessRepository", () => {
 
     db.prepare
       .mockReturnValueOnce({ run: insertProcessRun })
+      .mockReturnValueOnce({ run: deleteMetadataRun })
       .mockReturnValueOnce({ run: insertMetadataRun })
       .mockReturnValueOnce({ get: getProcess })
       .mockReturnValueOnce({ all: loadMetadataAll });

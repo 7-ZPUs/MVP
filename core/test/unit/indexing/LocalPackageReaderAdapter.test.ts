@@ -329,6 +329,24 @@ describe("DipIndexMapperTests", () => {
     expect(files[4].documentUuid).toBe("doc-3");
     expect(files[4].isMain).toBe(true);
   });
+
+  it("mapFile() should correctly map file with given parameters", () => {
+    const mapper = new DipIndexMapper({} as DipIndexXml);
+    const mappedFile = mapper["mapFile"](
+      { "@_uuid": "file-1", "#text": "file.pdf" },
+      "doc-1",
+      "./base/path",
+      true,
+    );
+
+    expect(mappedFile).toEqual({
+      uuid: "file-1",
+      documentUuid: "doc-1",
+      filename: "file.pdf",
+      path: "./base/path/file.pdf",
+      isMain: true,
+    });
+  });
 });
 
 describe("ensureArrayTest", () => {
@@ -448,7 +466,7 @@ describe("LocalPackageReaderAdapter", () => {
       "dummy/path/DiPIndex.123e4567-e89b-12d3-a456-426614174000.xml",
     );
     expect(readTextFile).toHaveBeenCalledWith(
-      "dummy/path/docs/doc-1/metadata.xml",
+      "dummy/path/dc-1/proc-1/docs/doc-1/metadata.xml",
     );
   });
 

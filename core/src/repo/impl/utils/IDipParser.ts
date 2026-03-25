@@ -1,6 +1,6 @@
 import { Metadata } from "../../../value-objects/Metadata";
 
-export const DIP_INDEX_PARSER_TOKEN = Symbol("IDiPIndexParser");
+export const DIP_PARSER_TOKEN = Symbol("IDiPIndexParser");
 
 export interface ParsedDocumentClass {
   uuid: string;

@@ -50,6 +50,7 @@ describe("IndexDip", () => {
       getByStatus: vi.fn(),
       save: vi.fn(),
       updateIntegrityStatus: vi.fn(),
+      getAggregatedIntegrityStatusByDipId: vi.fn(),
     };
 
     processRepository = {
@@ -58,6 +59,7 @@ describe("IndexDip", () => {
       getByStatus: vi.fn(),
       save: vi.fn(),
       updateIntegrityStatus: vi.fn(),
+      getAggregatedIntegrityStatusByDocumentClassId: vi.fn(),
     };
 
     documentRepository = {
@@ -66,6 +68,7 @@ describe("IndexDip", () => {
       getByStatus: vi.fn(),
       save: vi.fn(),
       updateIntegrityStatus: vi.fn(),
+      getAggregatedIntegrityStatusByProcessId: vi.fn(),
     };
 
     fileRepository = {
@@ -74,6 +77,7 @@ describe("IndexDip", () => {
       getByStatus: vi.fn(),
       save: vi.fn(),
       updateIntegrityStatus: vi.fn(),
+      getAggregatedIntegrityStatusByDocumentId: vi.fn(),
     };
   });
 

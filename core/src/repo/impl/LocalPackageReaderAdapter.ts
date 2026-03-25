@@ -1,23 +1,31 @@
 import * as path from "node:path";
 import { IPackageReaderPort } from "../IPackageReaderPort";
-import { IDipParser } from "./utils/IDipParser";
+import { DIP_PARSER_TOKEN, IDipParser } from "./utils/IDipParser";
 import { Dip } from "../../entity/Dip";
 import { DocumentClass } from "../../entity/DocumentClass";
 import { Process } from "../../entity/Process";
 import { Document } from "../../entity/Document";
 import { File } from "../../entity/File";
-import type { IFileSystemProvider } from "./utils/IFileSystemProvider";
+import { Metadata } from "../../value-objects/Metadata";
+import {
+  FILE_SYSTEM_PROVIDER_TOKEN,
+  type IFileSystemProvider,
+} from "./utils/IFileSystemProvider";
 import type { ParsedDipIndex } from "./utils/IDipParser";
+import { inject, injectable } from "tsyringe";
 
 const DIP_INDEX_FILENAME_REGEX = /^DiPIndex\..+\.xml$/;
 
+@injectable()
 export class LocalPackageReaderAdapter implements IPackageReaderPort {
   private currentDipPath?: string;
 
   private currentParsedIndex?: ParsedDipIndex;
 
   constructor(
+    @inject(DIP_PARSER_TOKEN)
     private readonly parser: IDipParser,
+    @inject(FILE_SYSTEM_PROVIDER_TOKEN)
     private readonly fileSystemProvider: IFileSystemProvider,
   ) {}
 
@@ -76,23 +84,50 @@ export class LocalPackageReaderAdapter implements IPackageReaderPort {
 
   public async *readDocuments(dipPath: string): AsyncGenerator<Document> {
     const parsedIndex = await this.getParsedIndex(dipPath);
+    const processAipRootByUuid = new Map(
+      parsedIndex.processes.map((process) => [process.uuid, process.aipRoot]),
+    );
     for (const doc of parsedIndex.documents) {
-      const metadataPath = path.join(
-        dipPath,
+      const aipRoot = processAipRootByUuid.get(doc.processUuid) ?? "";
+      let metadataPath = path.join(
+        aipRoot,
         doc.documentPath,
         doc.metadataFilename,
       );
-      const metadata = this.parser.parseDocumentMetadata(
-        await this.fileSystemProvider.readTextFile(metadataPath),
-      );
+      if (aipRoot && doc.documentPath.startsWith(aipRoot)) {
+        metadataPath = path.join(doc.documentPath, doc.metadataFilename);
+      }
+      metadataPath = path.join(dipPath, metadataPath);
+      let metadata: Metadata[] = [];
+      try {
+        metadata = this.parser.parseDocumentMetadata(
+          await this.fileSystemProvider.readTextFile(metadataPath),
+        );
+      } catch {
+        metadata = [];
+      }
       yield new Document(doc.uuid, metadata, 0);
     }
   }
 
   public async *readFiles(dipPath: string): AsyncGenerator<File> {
     const parsedIndex = await this.getParsedIndex(dipPath);
+    const processAipRootByUuid = new Map(
+      parsedIndex.processes.map((process) => [process.uuid, process.aipRoot]),
+    );
+    const documentAipRootByUuid = new Map(
+      parsedIndex.documents.map((document) => [
+        document.uuid,
+        processAipRootByUuid.get(document.processUuid) ?? "",
+      ]),
+    );
     for (const file of parsedIndex.files) {
-      yield new File(file.filename, file.path, "", file.isMain, 0);
+      const aipRoot = documentAipRootByUuid.get(file.documentUuid) ?? "";
+      let fullPath = file.path;
+      if (aipRoot && !file.path.startsWith(aipRoot)) {
+        fullPath = path.join(aipRoot, file.path);
+      }
+      yield new File(file.filename, fullPath, "", file.isMain, 0);
     }
   }
 

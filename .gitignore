@@ -149,3 +149,6 @@ coverage/
 #vscode
 
 .vscode/
+
+# real dip test resources
+core/test/resources/real_dip/

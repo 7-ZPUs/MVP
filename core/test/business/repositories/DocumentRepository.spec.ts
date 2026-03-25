@@ -23,6 +23,7 @@ describe("DocumentRepository", () => {
   it("save persiste documento e metadata", () => {
     const insertDocRun = vi.fn().mockReturnValue({ lastInsertRowid: 51 });
     const insertMetadataRun = vi.fn();
+    const deleteMetadataRun = vi.fn();
     const getDoc = vi.fn().mockReturnValue({
       id: 51,
       uuid: "doc-1",
@@ -42,6 +43,7 @@ describe("DocumentRepository", () => {
 
     db.prepare
       .mockReturnValueOnce({ run: insertDocRun })
+      .mockReturnValueOnce({ run: deleteMetadataRun })
       .mockReturnValueOnce({ run: insertMetadataRun })
       .mockReturnValueOnce({ get: getDoc })
       .mockReturnValueOnce({ all: loadMetadataAll });
