@@ -1,0 +1,169 @@
+import { Injectable, inject, signal, computed } from '@angular/core';
+import { IntegrityIpcGateway } from '../infrastructure/integrity-ipc.gateway';
+import { IpcErrorHandlerService } from '../../../core/services/ipc-error-handler.service';
+import { DocumentClassDTO } from '../../../shared/domain/dto/indexDTO';
+import { IntegrityStatusEnum } from '../../../shared/domain/value-objects/IntegrityStatusEnum';
+import { IntegrityNodeVM, IntegrityOverviewStats } from '../domain/integrity.view-models';
+
+@Injectable({ providedIn: 'root' })
+export class IntegrityFacade {
+  private readonly gateway = inject(IntegrityIpcGateway);
+  private readonly errorHandler = inject(IpcErrorHandlerService);
+
+  private readonly _isVerifying = signal<boolean>(false);
+  private readonly _error = signal<string | null>(null);
+
+  private readonly _currentDipStatus = signal<IntegrityStatusEnum | null>(null);
+  private readonly _dipClasses = signal<DocumentClassDTO[]>([]);
+
+  public readonly isVerifying = computed(() => this._isVerifying());
+  public readonly error = computed(() => this._error());
+  public readonly currentDipStatus = computed(() => this._currentDipStatus());
+  public readonly dipClasses = computed(() => this._dipClasses());
+
+  private readonly _overviewStats = signal<IntegrityOverviewStats>({
+    validProcesses: 0,
+    invalidProcesses: 0,
+    unverifiedProcesses: 0,
+  });
+  private readonly _corruptedNodes = signal<IntegrityNodeVM[]>([]);
+  private readonly _validRolledUpNodes = signal<IntegrityNodeVM[]>([]);
+
+  public readonly overviewStats = computed(() => this._overviewStats());
+  public readonly corruptedNodes = computed(() => this._corruptedNodes());
+  public readonly validRolledUpNodes = computed(() => this._validRolledUpNodes());
+
+  /**
+   * Carica la fotografia attuale del DIP navigando l'albero via IPC.
+   */
+  async loadOverview(dipId: number): Promise<void> {
+    this._isVerifying.set(true);
+
+    try {
+      const classes = await this.gateway.getClassesByDipId(dipId);
+
+      const stats = { validProcesses: 0, invalidProcesses: 0, unverifiedProcesses: 0 };
+      const corrupted: IntegrityNodeVM[] = [];
+      const valid: IntegrityNodeVM[] = [];
+
+      for (const cls of classes) {
+        const processes = await this.gateway.getProcessesByClassId(cls.id);
+
+        // 1. Calcolo Statistiche sui Processi
+        for (const p of processes) {
+          if (p.integrityStatus === IntegrityStatusEnum.VALID) stats.validProcesses++;
+          else if (p.integrityStatus === IntegrityStatusEnum.INVALID) stats.invalidProcesses++;
+          else stats.unverifiedProcesses++;
+        }
+
+        // 2. Logica di Roll-up (Elementi Validi)
+        if (cls.integrityStatus === IntegrityStatusEnum.VALID) {
+          // Se tutta la classe è valida, mostriamo solo lei!
+          valid.push({ id: cls.id, type: 'CLASS', name: cls.name, status: cls.integrityStatus });
+        } else {
+          // Se la classe ha problemi o è da verificare, analizziamo i figli
+          for (const p of processes) {
+            if (p.integrityStatus === IntegrityStatusEnum.VALID) {
+              // Se il processo è valido, mostriamo lui
+              valid.push({
+                id: p.id,
+                type: 'PROCESS',
+                name: `Processo ${p.uuid}`,
+                status: p.integrityStatus,
+                contextPath: cls.name,
+              });
+            } else {
+              // Se il processo è corrotto o non verificato, scendiamo ai documenti
+              const docs = await this.gateway.getDocumentsByProcessId(p.id);
+              for (const d of docs) {
+                if (d.integrityStatus === IntegrityStatusEnum.VALID) {
+                  valid.push({
+                    id: d.id,
+                    type: 'DOCUMENT',
+                    name: `Doc ${d.uuid}`,
+                    status: d.integrityStatus,
+                    contextPath: `${cls.name} > ${p.uuid}`,
+                  });
+                }
+                // 3. Logica di Drill-down (Elementi Corrotti)
+                else if (d.integrityStatus === IntegrityStatusEnum.INVALID) {
+                  // Mettiamo in evidenza il documento esatto che ha fallito
+                  corrupted.push({
+                    id: d.id,
+                    type: 'DOCUMENT',
+                    name: `Documento ${d.uuid}`,
+                    status: d.integrityStatus,
+                    contextPath: `Classe: ${cls.name} | Processo: ${p.uuid}`,
+                  });
+                }
+              }
+            }
+          }
+        }
+      }
+
+      this._overviewStats.set(stats);
+      this._validRolledUpNodes.set(valid);
+      this._corruptedNodes.set(corrupted);
+    } catch (rawError) {
+      // 3. ARRICCHIMENTO DELL'ERRORE
+      // Assicuriamoci che rawError sia un oggetto per potergli iniettare source e context
+      // così che il tuo metodo handle() possa estrarli.
+      const enrichedError =
+        typeof rawError === 'object' && rawError !== null ? rawError : new Error(String(rawError));
+
+      (enrichedError as any).source = 'IntegrityFacade.verifyDip';
+      (enrichedError as any).context = { dipId, action: 'CHECK_DIP_INTEGRITY_STATUS' };
+
+      // 4. GESTIONE CON IL TUO HANDLER
+      const appError = this.errorHandler.handle(enrichedError);
+
+      // 5. AGGIORNAMENTO UI
+      this._error.set(appError.message);
+    } finally {
+      this._isVerifying.set(false);
+    }
+  }
+
+  async verifyDip(dipId: number): Promise<void> {
+    if (this._isVerifying()) return;
+
+    this._isVerifying.set(true);
+    this._error.set(null);
+
+    try {
+      // 1. Comando di verifica (Command)
+      const status = await this.gateway.checkDipIntegrity(dipId);
+      this._currentDipStatus.set(status);
+
+      // 2. Query per ricaricare l'albero UI
+      const classes = await this.gateway.getClassesByDipId(dipId);
+      this._dipClasses.set(classes);
+    } catch (rawError: unknown) {
+      // 3. ARRICCHIMENTO DELL'ERRORE
+      // Assicuriamoci che rawError sia un oggetto per potergli iniettare source e context
+      // così che il tuo metodo handle() possa estrarli.
+      const enrichedError =
+        typeof rawError === 'object' && rawError !== null ? rawError : new Error(String(rawError));
+
+      (enrichedError as any).source = 'IntegrityFacade.verifyDip';
+      (enrichedError as any).context = { dipId, action: 'CHECK_DIP_INTEGRITY_STATUS' };
+
+      // 4. GESTIONE CON IL TUO HANDLER
+      const appError = this.errorHandler.handle(enrichedError);
+
+      // 5. AGGIORNAMENTO UI
+      this._error.set(appError.message);
+    } finally {
+      this._isVerifying.set(false);
+    }
+  }
+
+  clearResults(): void {
+    if (!this._isVerifying()) {
+      this._currentDipStatus.set(null);
+      this._dipClasses.set([]);
+      this._error.set(null);
+    }
+  }
+}
