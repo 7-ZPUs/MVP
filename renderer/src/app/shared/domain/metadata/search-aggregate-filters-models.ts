@@ -1,4 +1,4 @@
-import { IsoDateString } from '../../../shared/domain/shared-types';
+import { IsoDateString } from '../../shared-types';
 import { ASDetails } from './search-subject-filters-models';
 import {
   AggregationType,

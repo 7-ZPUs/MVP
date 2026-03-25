@@ -1,4 +1,4 @@
-import { IsoDateString, IsoTimestampString } from '../../../shared/domain/shared-types';
+import { IsoDateString, IsoTimestampString } from "../../shared-types";
 import {
   AGIDFormats,
   DIDAIFormation,
