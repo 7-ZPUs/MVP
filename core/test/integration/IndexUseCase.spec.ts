@@ -114,10 +114,7 @@ async function setupRealisticDip(baseDir: string): Promise<string> {
 
   // Index file
   await fs.writeFile(
-    path.join(
-      dipPath,
-      "DiPIndex.28a27fd3-6787-47ad-8ef5-c14b300309c4.xml",
-    ),
+    path.join(dipPath, "DiPIndex.28a27fd3-6787-47ad-8ef5-c14b300309c4.xml"),
     REALISTIC_INDEX_XML,
   );
 
@@ -154,9 +151,7 @@ describe("Index use-case integration tests", () => {
   let fileRepository: FileRepository;
 
   beforeAll(async () => {
-    testHomeDir = await fs.mkdtemp(
-      path.join(os.tmpdir(), "dip-index-it-"),
-    );
+    testHomeDir = await fs.mkdtemp(path.join(os.tmpdir(), "dip-index-it-"));
     const mockDipPath = await setupRealisticDip(testHomeDir);
     const dbPath = path.join(testHomeDir, ".dip-viewer", "dip-viewer.db");
     await fs.mkdir(path.dirname(dbPath), { recursive: true });
@@ -198,9 +193,7 @@ describe("Index use-case integration tests", () => {
   // -----------------------------------------------------------------------
 
   it("should persist the DIP with the correct UUID", () => {
-    const dip = dipRepository.getByUuid(
-      "28a27fd3-6787-47ad-8ef5-c14b300309c4",
-    );
+    const dip = dipRepository.getByUuid("28a27fd3-6787-47ad-8ef5-c14b300309c4");
     expect(dip).not.toBeNull();
     expect(dip?.getIntegrityStatus()).toBe(IntegrityStatusEnum.UNKNOWN);
   });
@@ -287,10 +280,10 @@ describe("Index use-case integration tests", () => {
       return doc!.getMetadata();
     }
 
-    it("should parse nested XML objects as STRING metadata (IdDoc, DatiDiRegistrazione, Soggetti, etc.)", () => {
+    it("should parse nested XML objects as COMPOSITE metadata (IdDoc, DatiDiRegistrazione, Soggetti, etc.)", () => {
       const metadata = getDocumentMetadata();
 
-      // Nested objects are flattened to their string representation by the parser
+      // Nested objects are parsed into arrays
       const nestedFields = [
         "IdDoc",
         "DatiDiRegistrazione",
@@ -302,28 +295,27 @@ describe("Index use-case integration tests", () => {
 
       for (const field of nestedFields) {
         const meta = metadata.find((m) => m.name === field);
-        expect(meta, `Expected metadata field '${field}' to exist`).toBeDefined();
-        expect(meta?.type).toBe(MetadataType.STRING);
-        // Nested objects are stringified — value is non-empty
-        expect(meta?.value.length).toBeGreaterThan(0);
+        expect(
+          meta,
+          `Expected metadata field '${field}' to exist`,
+        ).toBeDefined();
+        expect(meta?.type).toBe(MetadataType.COMPOSITE);
+        // Nested objects are arrays
+        expect(Array.isArray(meta?.value)).toBe(true);
       }
     });
 
     it("should parse plain string values as STRING metadata", () => {
       const metadata = getDocumentMetadata();
 
-      const modalita = metadata.find(
-        (m) => m.name === "ModalitaDiFormazione",
-      );
+      const modalita = metadata.find((m) => m.name === "ModalitaDiFormazione");
       expect(modalita).toBeDefined();
       expect(modalita?.type).toBe(MetadataType.STRING);
       expect(modalita?.value).toBe(
         "creazione tramite utilizzo di strumenti software",
       );
 
-      const tipologia = metadata.find(
-        (m) => m.name === "TipologiaDocumentale",
-      );
+      const tipologia = metadata.find((m) => m.name === "TipologiaDocumentale");
       expect(tipologia).toBeDefined();
       expect(tipologia?.type).toBe(MetadataType.STRING);
       expect(tipologia?.value).toBe("Note Spese");
@@ -342,9 +334,7 @@ describe("Index use-case integration tests", () => {
       expect(allegati?.type).toBe(MetadataType.NUMBER);
       expect(allegati?.value).toBe("0");
 
-      const versione = metadata.find(
-        (m) => m.name === "VersioneDelDocumento",
-      );
+      const versione = metadata.find((m) => m.name === "VersioneDelDocumento");
       expect(versione).toBeDefined();
       expect(versione?.type).toBe(MetadataType.NUMBER);
       expect(versione?.value).toBe("1");
@@ -382,9 +372,12 @@ describe("Index use-case integration tests", () => {
       for (const m of metadata) {
         expect(m.name.length).toBeGreaterThan(0);
         expect(
-          [MetadataType.STRING, MetadataType.NUMBER, MetadataType.BOOLEAN].includes(
-            m.type,
-          ),
+          [
+            MetadataType.STRING,
+            MetadataType.NUMBER,
+            MetadataType.BOOLEAN,
+            MetadataType.COMPOSITE,
+          ].includes(m.type),
         ).toBe(true);
       }
     });

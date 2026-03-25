@@ -21,8 +21,7 @@ describe("DocumentRepository", () => {
   });
 
   it("save persiste documento e metadata", () => {
-    const insertDocRun = vi.fn().mockReturnValue({ lastInsertRowid: 51 });
-    const insertMetadataRun = vi.fn();
+    const insertMetadataRun = vi.fn().mockReturnValue({ lastInsertRowid: 1 });
     const deleteMetadataRun = vi.fn();
     const getDoc = vi.fn().mockReturnValue({
       id: 51,
@@ -34,11 +33,19 @@ describe("DocumentRepository", () => {
       {
         id: 1,
         document_id: 51,
+        parent_id: null,
         name: "titolo",
         value: "Documento A",
         type: "string",
       },
-      { id: 2, document_id: 51, name: "anno", value: "2026", type: "number" },
+      {
+        id: 2,
+        document_id: 51,
+        parent_id: null,
+        name: "anno",
+        value: "2026",
+        type: "number",
+      },
     ]);
 
     db.prepare.mockImplementation((query: string) => {
@@ -46,13 +53,19 @@ describe("DocumentRepository", () => {
       const isDeleteMeta = query.includes("DELETE FROM document_metadata");
       const isInsertMeta = query.includes("INSERT INTO document_metadata");
       const isSelectEntity = query.includes("FROM document WHERE id = ?");
-      const isSelectMeta = query.includes("FROM document_metadata WHERE document_id = ?");
+      const isSelectMeta = query.includes(
+        "FROM document_metadata WHERE document_id = ?",
+      );
 
       return {
-        run: isInsertMeta ? insertMetadataRun : (isDeleteMeta ? deleteMetadataRun : vi.fn().mockImplementation(() => {
-          if (isInsertEntity) return { lastInsertRowid: 51 };
-          return {};
-        })),
+        run: isInsertMeta
+          ? insertMetadataRun
+          : isDeleteMeta
+            ? deleteMetadataRun
+            : vi.fn().mockImplementation(() => {
+                if (isInsertEntity) return { lastInsertRowid: 51 };
+                return {};
+              }),
         get: vi.fn().mockImplementation(() => {
           if (isSelectEntity) return getDoc();
           return null;
@@ -60,7 +73,7 @@ describe("DocumentRepository", () => {
         all: vi.fn().mockImplementation(() => {
           if (isSelectMeta) return loadMetadataAll();
           return [];
-        })
+        }),
       };
     });
 

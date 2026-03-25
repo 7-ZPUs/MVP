@@ -27,7 +27,7 @@ export class LocalPackageReaderAdapter implements IPackageReaderPort {
     private readonly parser: IDipParser,
     @inject(FILE_SYSTEM_PROVIDER_TOKEN)
     private readonly fileSystemProvider: IFileSystemProvider,
-  ) { }
+  ) {}
 
   private async resolveDipIndexFilename(dipPath: string): Promise<string> {
     const files = await this.fileSystemProvider.listFiles(dipPath);
@@ -71,14 +71,33 @@ export class LocalPackageReaderAdapter implements IPackageReaderPort {
   ): AsyncGenerator<DocumentClass> {
     const parsedIndex = await this.getParsedIndex(dipPath);
     for (const dc of parsedIndex.documentClasses) {
-      yield new DocumentClass(parsedIndex.dipUuid, dc.uuid, dc.name, dc.timestamp as string);
+      yield new DocumentClass(
+        parsedIndex.dipUuid,
+        dc.uuid,
+        dc.name,
+        dc.timestamp as string,
+      );
     }
   }
 
   public async *readProcesses(dipPath: string): AsyncGenerator<Process> {
     const parsedIndex = await this.getParsedIndex(dipPath);
     for (const proc of parsedIndex.processes) {
-      yield new Process(proc.documentClassUuid, proc.uuid, proc.metadata);
+      const aipInfoPath = path.join(
+        dipPath,
+        proc.aipRoot,
+        `AiPInfo.${proc.uuid}.xml`,
+      );
+      let metadata: Metadata[] = [];
+      try {
+        metadata = this.parser.parseProcessMetadata(
+          await this.fileSystemProvider.readTextFile(aipInfoPath),
+        );
+      } catch {
+        // Fallback to possible metadata from DiPIndex parsing if AiPInfo fails or is missing
+        metadata = proc.metadata || [];
+      }
+      yield new Process(proc.documentClassUuid, proc.uuid, metadata);
     }
   }
 
@@ -127,7 +146,13 @@ export class LocalPackageReaderAdapter implements IPackageReaderPort {
       if (aipRoot && !file.path.startsWith(aipRoot)) {
         fullPath = path.join(aipRoot, file.path);
       }
-      yield new File(file.filename, fullPath, "", file.isMain, file.documentUuid);
+      yield new File(
+        file.filename,
+        fullPath,
+        "",
+        file.isMain,
+        file.documentUuid,
+      );
     }
   }
 

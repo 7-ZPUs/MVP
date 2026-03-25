@@ -22,7 +22,7 @@ describe("ProcessRepository", () => {
 
   it("save persiste processo e metadata", () => {
     const insertProcessRun = vi.fn().mockReturnValue({ lastInsertRowid: 81 });
-    const insertMetadataRun = vi.fn();
+    const insertMetadataRun = vi.fn().mockReturnValue({ lastInsertRowid: 1 });
     const deleteMetadataRun = vi.fn();
     const getProcess = vi.fn().mockReturnValue({
       id: 81,
@@ -31,8 +31,22 @@ describe("ProcessRepository", () => {
       integrityStatus: IntegrityStatusEnum.UNKNOWN,
     });
     const loadMetadataAll = vi.fn().mockReturnValue([
-      { id: 1, process_id: 81, name: "fase", value: "A", type: "string" },
-      { id: 2, process_id: 81, name: "ordine", value: "1", type: "number" },
+      {
+        id: 1,
+        process_id: 81,
+        parent_id: null,
+        name: "fase",
+        value: "A",
+        type: "string",
+      },
+      {
+        id: 2,
+        process_id: 81,
+        parent_id: null,
+        name: "ordine",
+        value: "1",
+        type: "number",
+      },
     ]);
 
     db.prepare.mockImplementation((query: string) => {
@@ -40,13 +54,19 @@ describe("ProcessRepository", () => {
       const isDeleteMeta = query.includes("DELETE FROM process_metadata");
       const isInsertMeta = query.includes("INSERT INTO process_metadata");
       const isSelectEntity = query.includes("FROM process WHERE id = ?");
-      const isSelectMeta = query.includes("FROM process_metadata WHERE process_id = ?");
+      const isSelectMeta = query.includes(
+        "FROM process_metadata WHERE process_id = ?",
+      );
 
       return {
-        run: isInsertMeta ? insertMetadataRun : (isDeleteMeta ? deleteMetadataRun : vi.fn().mockImplementation(() => {
-          if (isInsertEntity) return { lastInsertRowid: 81 };
-          return {};
-        })),
+        run: isInsertMeta
+          ? insertMetadataRun
+          : isDeleteMeta
+            ? deleteMetadataRun
+            : vi.fn().mockImplementation(() => {
+                if (isInsertEntity) return { lastInsertRowid: 81 };
+                return {};
+              }),
         get: vi.fn().mockImplementation(() => {
           if (isSelectEntity) return getProcess();
           return null;
@@ -54,10 +74,9 @@ describe("ProcessRepository", () => {
         all: vi.fn().mockImplementation(() => {
           if (isSelectMeta) return loadMetadataAll();
           return [];
-        })
+        }),
       };
     });
-
 
     const metadata = [
       new Metadata("fase", "A", MetadataType.STRING),

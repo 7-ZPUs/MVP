@@ -44,6 +44,7 @@ export class DocumentRepository implements IDocumentRepository {
             CREATE TABLE IF NOT EXISTS document_metadata (
                 id          INTEGER PRIMARY KEY AUTOINCREMENT,
                 document_id INTEGER NOT NULL REFERENCES document(id) ON DELETE CASCADE,
+                parent_id   INTEGER REFERENCES document_metadata(id) ON DELETE CASCADE,
                 name        TEXT    NOT NULL,
                 value       TEXT    NOT NULL,
                 type        TEXT    NOT NULL DEFAULT 'string'

@@ -33,7 +33,7 @@ describe("IndexDip use-case performance", () => {
     if (!dipPathExists) {
       console.info(
         `[PERF] Skipped: real DiP path not found at '${realDipPath}'. ` +
-        "Set REAL_DIP_PATH to run this performance test.",
+          "Set REAL_DIP_PATH to run this performance test.",
       );
       expect(true).toBe(true);
       return;
@@ -97,5 +97,5 @@ describe("IndexDip use-case performance", () => {
     );
 
     expect(durationsMs).toHaveLength(runs);
-  });
+  }, 5000);
 });

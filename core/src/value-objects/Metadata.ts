@@ -10,7 +10,7 @@ export enum MetadataType {
 export class Metadata {
   constructor(
     public readonly name: string,
-    public readonly value: string,
+    public readonly value: string | Metadata[],
     public readonly type: MetadataType = MetadataType.STRING,
   ) {}
 

@@ -157,8 +157,8 @@ describe("LocalPackageReaderAdapter integration tests", () => {
     expect(metadata).toHaveLength(5);
 
     expect(metadata[0].name).toBe("IdDoc");
-    expect(metadata[0].value).toBe("[object Object]");
-    expect(metadata[0].type).toBe(MetadataType.STRING);
+    expect(Array.isArray(metadata[0].value)).toBe(true);
+    expect(metadata[0].type).toBe(MetadataType.COMPOSITE);
 
     expect(metadata[1].name).toBe("Riservato");
     expect(metadata[1].value).toBe("true");
@@ -169,8 +169,8 @@ describe("LocalPackageReaderAdapter integration tests", () => {
     expect(metadata[2].type).toBe(MetadataType.NUMBER);
 
     expect(metadata[3].name).toBe("Soggetti");
-    expect(metadata[3].value).toBe("[object Object]");
-    expect(metadata[3].type).toBe(MetadataType.STRING);
+    expect(Array.isArray(metadata[3].value)).toBe(true);
+    expect(metadata[3].type).toBe(MetadataType.COMPOSITE);
 
     expect(metadata[4].name).toBe("Titolo");
     expect(metadata[4].value).toBe("Documento di test");

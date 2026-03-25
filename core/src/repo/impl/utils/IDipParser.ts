@@ -47,4 +47,5 @@ export interface ParsedDipIndex {
 export interface IDipParser {
   parseDipIndex(rawContent: string): ParsedDipIndex;
   parseDocumentMetadata(rawContent: string): Metadata[];
+  parseProcessMetadata(rawContent: string): Metadata[];
 }

@@ -32,6 +32,7 @@ export class ProcessRepository implements IProcessRepository {
             CREATE TABLE IF NOT EXISTS process_metadata (
                 id          INTEGER PRIMARY KEY AUTOINCREMENT,
                 process_id   INTEGER NOT NULL REFERENCES process(id) ON DELETE CASCADE,
+                parent_id   INTEGER REFERENCES process_metadata(id) ON DELETE CASCADE,
                 name        TEXT    NOT NULL,
                 value       TEXT    NOT NULL,
                 type        TEXT    NOT NULL DEFAULT 'string'
