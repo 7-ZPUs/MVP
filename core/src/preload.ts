@@ -1,16 +1,11 @@
-/**
- * Preload script — eseguito nel contesto del renderer ma con accesso a Node.js.
- *
- * Espone via contextBridge un oggetto `window.electronAPI` con i metodi
- * tipizzati per ogni canale IPC. Il renderer usa SOLO questa interfaccia:
- * non ha mai accesso diretto a ipcRenderer.
- *
- * NOTA: I nomi dei canali sono inlineati (non importati da shared/) per
- * rendere il preload completamente autonomo — il require() di un modulo
- * relativo fallisce silenziosamente nel contesto preload di Electron.
- */
-import { contextBridge } from 'electron';
+import { contextBridge, ipcRenderer } from "electron";
 
-contextBridge.exposeInMainWorld('electronAPI', {
-  
+// Expose a safe API to the renderer process
+contextBridge.exposeInMainWorld("electronAPI", {
+  send: (channel: string, data: any) => {
+    ipcRenderer.send(channel, data);
+  },
+  receive: (channel: string, func: (...args: any[]) => void) => {
+    ipcRenderer.on(channel, (event, ...args) => func(...args));
+  },
 });
