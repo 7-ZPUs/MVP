@@ -5,21 +5,21 @@ import { IntegrityStatusEnum } from "../../../src/value-objects/IntegrityStatusE
 describe("DocumentClass entity", () => {
 
     describe("constructor", () => {
-        it("assegna dipId, uuid, name e timestamp", () => {
-            const dc = new DocumentClass(1, "dc-uuid", "Contratti", "2024-01-01T00:00:00Z");
-            expect(dc.getProcessId()).toBe(1);
+        it("assegna dipUuid, uuid, name e timestamp", () => {
+            const dc = new DocumentClass("dip-uuid", "dc-uuid", "Contratti", "2024-01-01T00:00:00Z");
+            expect(dc.getDipUuid()).toBe("dip-uuid");
             expect(dc.getUuid()).toBe("dc-uuid");
             expect(dc.getName()).toBe("Contratti");
             expect(dc.getTimestamp()).toBe("2024-01-01T00:00:00Z");
         });
 
         it("imposta integrityStatus a UNKNOWN di default", () => {
-            const dc = new DocumentClass(1, "dc-uuid", "Fatture", "2024-01-01T00:00:00Z");
+            const dc = new DocumentClass("dip-uuid", "dc-uuid", "Fatture", "2024-01-01T00:00:00Z");
             expect(dc.getIntegrityStatus()).toBe(IntegrityStatusEnum.UNKNOWN);
         });
 
         it("id è null finché non viene persistito", () => {
-            const dc = new DocumentClass(1, "dc-uuid", "Fatture", "2024-01-01T00:00:00Z");
+            const dc = new DocumentClass("dip-uuid", "dc-uuid", "Fatture", "2024-01-01T00:00:00Z");
             expect(dc.getId()).toBeNull();
         });
     });
@@ -37,7 +37,7 @@ describe("DocumentClass entity", () => {
             const dc = DocumentClass.fromDB(row);
 
             expect(dc.getId()).toBe(99);
-            expect(dc.getProcessId()).toBe(3);
+            expect(dc.getDipId()).toBe(3);
             expect(dc.getUuid()).toBe("dc-xyz");
             expect(dc.getName()).toBe("Verbali");
             expect(dc.getTimestamp()).toBe("2024-06-15T10:00:00Z");
@@ -55,7 +55,7 @@ describe("DocumentClass entity", () => {
 
     describe("setIntegrityStatus", () => {
         it("aggiorna lo stato di integrità", () => {
-            const dc = new DocumentClass(1, "uuid", "Nome", "2024-01-01T00:00:00Z");
+            const dc = new DocumentClass("dip-uuid", "uuid", "Nome", "2024-01-01T00:00:00Z");
             dc.setIntegrityStatus(IntegrityStatusEnum.INVALID);
             expect(dc.getIntegrityStatus()).toBe(IntegrityStatusEnum.INVALID);
         });
@@ -63,7 +63,7 @@ describe("DocumentClass entity", () => {
 
     describe("toDTO", () => {
         it("lancia un errore se id è null", () => {
-            const dc = new DocumentClass(1, "uuid", "Nome", "2024-01-01T00:00:00Z");
+            const dc = new DocumentClass("dip-uuid", "uuid", "Nome", "2024-01-01T00:00:00Z");
             expect(() => dc.toDTO()).toThrow("Cannot convert to DTO: DocumentClass entity is not yet persisted and has no ID.");
         });
 

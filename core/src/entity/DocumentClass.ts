@@ -12,14 +12,15 @@ export interface DocumentClassRow {
 
 export class DocumentClass {
     private id: number | null = null;
-    private readonly dipId: number;
+    private dipId: number | null = null;
+    private readonly dipUuid: string;
     private readonly uuid: string;
     private integrityStatus: IntegrityStatusEnum;
     private readonly name: string;
     private readonly timestamp: string;
 
-    constructor(dipId: number, uuid: string, name: string, timestamp: string) {
-        this.dipId = dipId;
+    constructor(dipUuid: string, uuid: string, name: string, timestamp: string) {
+        this.dipUuid = dipUuid;
         this.uuid = uuid;
         this.name = name;
         this.timestamp = timestamp;
@@ -27,8 +28,9 @@ export class DocumentClass {
     }
 
     static fromDB(row: DocumentClassRow): DocumentClass {
-        const docClass = new DocumentClass(row.dipId, row.uuid, row.name, row.timestamp);
+        const docClass = new DocumentClass("", row.uuid, row.name, row.timestamp);
         docClass.id = row.id;
+        docClass.dipId = row.dipId;
         docClass.integrityStatus = (row.integrityStatus as IntegrityStatusEnum) ?? IntegrityStatusEnum.UNKNOWN;
         return docClass;
     }
@@ -37,8 +39,12 @@ export class DocumentClass {
         return this.id;
     }
 
-    public getProcessId(): number {
+    public getDipId(): number | null {
         return this.dipId;
+    }
+
+    public getDipUuid(): string {
+        return this.dipUuid;
     }
 
     public getUuid(): string {
@@ -62,7 +68,7 @@ export class DocumentClass {
     }
 
     public toDTO(): DocumentClassDTO {
-        if (this.id === null) {
+        if (this.id === null || this.dipId === null) {
             throw new Error("Cannot convert to DTO: DocumentClass entity is not yet persisted and has no ID.");
         }
         return {

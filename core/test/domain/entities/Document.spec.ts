@@ -10,20 +10,20 @@ const meta = [
 
 describe("Document entity", () => {
   describe("constructor", () => {
-    it("assegna uuid, metadata e processId", () => {
-      const doc = new Document("doc-uuid", meta, 7);
+    it("assegna uuid, metadata e processUuid", () => {
+      const doc = new Document("doc-uuid", meta, "process-uuid");
       expect(doc.getUuid()).toBe("doc-uuid");
       expect(doc.getMetadata()).toBe(meta);
-      expect(doc.getProcessId()).toBe(7);
+      expect(doc.getProcessUuid()).toBe("process-uuid");
     });
 
     it("imposta integrityStatus a UNKNOWN di default", () => {
-      const doc = new Document("doc-uuid", [], 1);
+      const doc = new Document("doc-uuid", [], "process-uuid");
       expect(doc.getIntegrityStatus()).toBe(IntegrityStatusEnum.UNKNOWN);
     });
 
     it("id è null finché non viene persistito", () => {
-      const doc = new Document("doc-uuid", [], 1);
+      const doc = new Document("doc-uuid", [], "process-uuid");
       expect(doc.getId()).toBeNull();
     });
   });
@@ -54,7 +54,7 @@ describe("Document entity", () => {
 
   describe("setIntegrityStatus", () => {
     it("aggiorna lo stato di integrità", () => {
-      const doc = new Document("uuid", [], 1);
+      const doc = new Document("uuid", [], "process-uuid");
       doc.setIntegrityStatus(IntegrityStatusEnum.INVALID);
       expect(doc.getIntegrityStatus()).toBe(IntegrityStatusEnum.INVALID);
     });
@@ -62,7 +62,7 @@ describe("Document entity", () => {
 
   describe("toDTO", () => {
     it("lancia un errore se id è null", () => {
-      const doc = new Document("uuid", [], 1);
+      const doc = new Document("uuid", [], "process-uuid");
       expect(() => doc.toDTO()).toThrow(
         "Cannot convert to DTO: Document entity is not yet persisted and has no ID.",
       );

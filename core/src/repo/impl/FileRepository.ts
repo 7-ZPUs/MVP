@@ -91,8 +91,13 @@ export class FileRepository implements IFileRepository {
   save(file: File): File {
     const result = this.db
       .prepare(
-        `REPLACE INTO file (filename, path, hash, integrity_status, is_main, document_id)
-                 VALUES (?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO file (filename, path, hash, integrity_status, is_main, document_id)
+                 VALUES (?, ?, ?, ?, ?, (SELECT id FROM document WHERE uuid = ?))
+                 ON CONFLICT(document_id, path) DO UPDATE SET
+                    filename = excluded.filename,
+                    hash = excluded.hash,
+                    integrity_status = excluded.integrity_status,
+                    is_main = excluded.is_main`,
       )
       .run(
         file.getFilename(),
@@ -100,26 +105,23 @@ export class FileRepository implements IFileRepository {
         file.getHash(),
         IntegrityStatusEnum.UNKNOWN,
         file.getIsMain() ? 1 : 0,
-        file.getDocumentId(),
+        file.getDocumentUuid(),
       );
 
     let id = result.lastInsertRowid as number;
     if (!id) {
-      const row = this.db
-        .prepare("SELECT id FROM file WHERE document_id = ? AND path = ?")
-        .get(file.getDocumentId(), file.getPath()) as { id: number };
-      if (row) id = row.id;
+      const docIdRow = this.db
+        .prepare("SELECT id FROM document WHERE uuid = ?")
+        .get(file.getDocumentUuid()) as { id: number } | undefined;
+      if (docIdRow) {
+        const row = this.db
+          .prepare("SELECT id FROM file WHERE document_id = ? AND path = ?")
+          .get(docIdRow.id, file.getPath()) as { id: number };
+        if (row) id = row.id;
+      }
     }
 
-    return File.fromDB({
-      id: id,
-      filename: file.getFilename(),
-      path: file.getPath(),
-      hash: file.getHash(),
-      integrityStatus: IntegrityStatusEnum.UNKNOWN,
-      isMain: file.getIsMain() ? 1 : 0,
-      documentId: file.getDocumentId(),
-    });
+    return this.getById(id)!;
   }
 
   updateIntegrityStatus(id: number, status: IntegrityStatusEnum): void {

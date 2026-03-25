@@ -75,7 +75,7 @@ export class DocumentClassRepository implements IDocumentClassRepository {
       .prepare(
         `
                 INSERT INTO document_class (dip_id, uuid, name, timestamp) 
-                VALUES (?, ?, ?, ?)
+                VALUES ((SELECT id FROM dip WHERE uuid = ?), ?, ?, ?)
                 ON CONFLICT(uuid) DO UPDATE SET 
                     dip_id = excluded.dip_id,
                     name = excluded.name,
@@ -83,7 +83,7 @@ export class DocumentClassRepository implements IDocumentClassRepository {
             `,
       )
       .run(
-        documentClass.getProcessId(),
+        documentClass.getDipUuid(),
         documentClass.getUuid(),
         documentClass.getName(),
         documentClass.getTimestamp(),
@@ -91,8 +91,6 @@ export class DocumentClassRepository implements IDocumentClassRepository {
 
     let id = result.lastInsertRowid as number;
 
-    // In case of update where nothing changed or lastInsertRowid is not available (older sqlite versions),
-    // we might not get a reliable ID back.
     if (!id) {
       const row = this.db
         .prepare("SELECT id FROM document_class WHERE uuid = ?")
@@ -102,14 +100,11 @@ export class DocumentClassRepository implements IDocumentClassRepository {
       }
     }
 
-    return DocumentClass.fromDB({
-      id: id,
-      dipId: documentClass.getProcessId(),
-      uuid: documentClass.getUuid(),
-      integrityStatus: IntegrityStatusEnum.UNKNOWN,
-      name: documentClass.getName(),
-      timestamp: documentClass.getTimestamp(),
-    });
+    const saved = this.getById(id);
+    if (!saved) {
+      throw new Error(`Failed to save DocumentClass with uuid=${documentClass.getUuid()}`);
+    }
+    return saved;
   }
 
   search(query: string): DocumentClass[] | null {

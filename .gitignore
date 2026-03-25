@@ -152,3 +152,4 @@ coverage/
 
 # real dip test resources
 core/test/resources/real_dip/
+core/test/resources/real_dip_heavy/

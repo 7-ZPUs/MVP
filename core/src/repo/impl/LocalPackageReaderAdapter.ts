@@ -27,7 +27,7 @@ export class LocalPackageReaderAdapter implements IPackageReaderPort {
     private readonly parser: IDipParser,
     @inject(FILE_SYSTEM_PROVIDER_TOKEN)
     private readonly fileSystemProvider: IFileSystemProvider,
-  ) {}
+  ) { }
 
   private async resolveDipIndexFilename(dipPath: string): Promise<string> {
     const files = await this.fileSystemProvider.listFiles(dipPath);
@@ -71,14 +71,14 @@ export class LocalPackageReaderAdapter implements IPackageReaderPort {
   ): AsyncGenerator<DocumentClass> {
     const parsedIndex = await this.getParsedIndex(dipPath);
     for (const dc of parsedIndex.documentClasses) {
-      yield new DocumentClass(0, dc.uuid, dc.name, dc.timestamp as string);
+      yield new DocumentClass(parsedIndex.dipUuid, dc.uuid, dc.name, dc.timestamp as string);
     }
   }
 
   public async *readProcesses(dipPath: string): AsyncGenerator<Process> {
     const parsedIndex = await this.getParsedIndex(dipPath);
     for (const proc of parsedIndex.processes) {
-      yield new Process(0, proc.uuid, proc.metadata);
+      yield new Process(proc.documentClassUuid, proc.uuid, proc.metadata);
     }
   }
 
@@ -106,7 +106,7 @@ export class LocalPackageReaderAdapter implements IPackageReaderPort {
       } catch {
         metadata = [];
       }
-      yield new Document(doc.uuid, metadata, 0);
+      yield new Document(doc.uuid, metadata, doc.processUuid);
     }
   }
 
@@ -127,11 +127,11 @@ export class LocalPackageReaderAdapter implements IPackageReaderPort {
       if (aipRoot && !file.path.startsWith(aipRoot)) {
         fullPath = path.join(aipRoot, file.path);
       }
-      yield new File(file.filename, fullPath, "", file.isMain, 0);
+      yield new File(file.filename, fullPath, "", file.isMain, file.documentUuid);
     }
   }
 
-  public async readFileBytes(filePath: string): Promise<ReadableStream> {
+  public async readFileBytes(filePath: string): Promise<NodeJS.ReadableStream> {
     return this.fileSystemProvider.openReadStream(filePath);
   }
 }

@@ -35,19 +35,36 @@ describe("ProcessRepository", () => {
       { id: 2, process_id: 81, name: "ordine", value: "1", type: "number" },
     ]);
 
-    db.prepare
-      .mockReturnValueOnce({ run: insertProcessRun })
-      .mockReturnValueOnce({ run: deleteMetadataRun })
-      .mockReturnValueOnce({ run: insertMetadataRun })
-      .mockReturnValueOnce({ get: getProcess })
-      .mockReturnValueOnce({ all: loadMetadataAll });
+    db.prepare.mockImplementation((query: string) => {
+      const isInsertEntity = query.includes("INSERT INTO process");
+      const isDeleteMeta = query.includes("DELETE FROM process_metadata");
+      const isInsertMeta = query.includes("INSERT INTO process_metadata");
+      const isSelectEntity = query.includes("FROM process WHERE id = ?");
+      const isSelectMeta = query.includes("FROM process_metadata WHERE process_id = ?");
+
+      return {
+        run: isInsertMeta ? insertMetadataRun : (isDeleteMeta ? deleteMetadataRun : vi.fn().mockImplementation(() => {
+          if (isInsertEntity) return { lastInsertRowid: 81 };
+          return {};
+        })),
+        get: vi.fn().mockImplementation(() => {
+          if (isSelectEntity) return getProcess();
+          return null;
+        }),
+        all: vi.fn().mockImplementation(() => {
+          if (isSelectMeta) return loadMetadataAll();
+          return [];
+        })
+      };
+    });
+
 
     const metadata = [
       new Metadata("fase", "A", MetadataType.STRING),
       new Metadata("ordine", "1", MetadataType.NUMBER),
     ];
 
-    const process = new Process(11, "proc-1", metadata);
+    const process = new Process("dc-uuid", "proc-1", metadata);
 
     const saved = repo.save(process);
     const found = repo.getById(saved.toDTO().id);

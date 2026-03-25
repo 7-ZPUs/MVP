@@ -100,7 +100,8 @@ describe("LocalPackageReaderAdapter integration tests", () => {
     expect(documentClasses).toHaveLength(2);
 
     expect(documentClasses[0].getId()).toBeNull();
-    expect(documentClasses[0].getProcessId()).toBe(0);
+    expect(documentClasses[0].getDipId()).toBeNull();
+    expect(documentClasses[0].getDipUuid()).toBe("test-dip-uuid-1234");
     expect(documentClasses[0].getUuid()).toBe("class-1");
     expect(documentClasses[0].getName()).toBe("Class1");
     expect(documentClasses[0].getTimestamp()).toBeUndefined();
@@ -109,7 +110,8 @@ describe("LocalPackageReaderAdapter integration tests", () => {
     );
 
     expect(documentClasses[1].getId()).toBeNull();
-    expect(documentClasses[1].getProcessId()).toBe(0);
+    expect(documentClasses[1].getDipId()).toBeNull();
+    expect(documentClasses[1].getDipUuid()).toBe("test-dip-uuid-1234");
     expect(documentClasses[1].getUuid()).toBe("class-2");
     expect(documentClasses[1].getName()).toBe("Class2");
     expect(documentClasses[1].getTimestamp()).toBeUndefined();
@@ -127,7 +129,8 @@ describe("LocalPackageReaderAdapter integration tests", () => {
     expect(processes).toHaveLength(3);
 
     expect(processes[0].getId()).toBeNull();
-    expect(processes[0].getDocumentClassId()).toBe(0);
+    expect(processes[0].getDocumentClassId()).toBeNull();
+    expect(processes[0].getDocumentClassUuid()).toBe("class-1");
     expect(processes[0].getUuid()).toBe("aip-1");
     expect(processes[0].getMetadata()).toEqual([]);
     expect(processes[0].getIntegrityStatus()).toBe(IntegrityStatusEnum.UNKNOWN);
@@ -146,7 +149,8 @@ describe("LocalPackageReaderAdapter integration tests", () => {
 
     expect(documents[0].getId()).toBeNull();
     expect(documents[0].getUuid()).toBe("doc-1");
-    expect(documents[0].getProcessId()).toBe(0);
+    expect(documents[0].getProcessId()).toBeNull();
+    expect(documents[0].getProcessUuid()).toBe("aip-1");
     expect(documents[0].getIntegrityStatus()).toBe(IntegrityStatusEnum.UNKNOWN);
 
     const metadata = documents[0].getMetadata();
@@ -189,7 +193,8 @@ describe("LocalPackageReaderAdapter integration tests", () => {
     expect(files[0].getPath()).toBe("./class-1/aip-1/doc-1/./primary.pdf");
     expect(files[0].getHash()).toBe("");
     expect(files[0].getIsMain()).toBe(true);
-    expect(files[0].getDocumentId()).toBe(0);
+    expect(files[0].getDocumentId()).toBeNull();
+    expect(files[0].getDocumentUuid()).toBe("doc-1");
     expect(files[0].getIntegrityStatus()).toBe(IntegrityStatusEnum.UNKNOWN);
 
     expect(files[1].getFilename()).toBe("./primary2.pdf");

@@ -89,13 +89,13 @@ export class ProcessRepository implements IProcessRepository {
     const result = this.db
       .prepare(
         `INSERT INTO process (document_class_id, uuid, integrity_status) 
-         VALUES (?, ?, ?)
+         VALUES ((SELECT id FROM document_class WHERE uuid = ?), ?, ?)
          ON CONFLICT(uuid) DO UPDATE SET
             document_class_id = excluded.document_class_id,
             integrity_status = excluded.integrity_status`,
       )
       .run(
-        process.getDocumentClassId(),
+        process.getDocumentClassUuid(),
         process.getUuid(),
         IntegrityStatusEnum.UNKNOWN,
       );
@@ -110,23 +110,14 @@ export class ProcessRepository implements IProcessRepository {
       }
     }
 
-    // Pulisce i metadati esistenti per evitare duplicati
+    // Clean up existing metadata to avoid duplicates
     this.db
       .prepare(`DELETE FROM ${METADATA_TABLE} WHERE ${METADATA_FK} = ?`)
       .run(id);
 
     saveMetadata(this.db, METADATA_TABLE, METADATA_FK, id as number, metadata);
 
-    // Ritorna l'oggetto aggiornato con l'ID corretto
-    return Process.fromDB(
-      {
-        id: id as number,
-        documentClassId: process.getDocumentClassId(),
-        uuid: process.getUuid(),
-        integrityStatus: IntegrityStatusEnum.UNKNOWN,
-      },
-      metadata,
-    );
+    return this.getById(id as number)!;
   }
 
   updateIntegrityStatus(id: number, status: IntegrityStatusEnum): void {

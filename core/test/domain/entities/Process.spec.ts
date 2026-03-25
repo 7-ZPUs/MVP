@@ -1,27 +1,27 @@
 import { describe, expect, it } from "vitest";
 import { Process, ProcessRow } from "../../../src/entity/Process";
 import { IntegrityStatusEnum } from "../../../src/value-objects/IntegrityStatusEnum";
-import { Metadata } from "../../../src/value-objects/Metadata";
+import { Metadata, MetadataType } from "../../../src/value-objects/Metadata";
 
-const meta = [new Metadata("tipo", "verbale"), new Metadata("anno", "2025", "number")];
+const meta = [new Metadata("tipo", "verbale"), new Metadata("anno", "2025", MetadataType.NUMBER)];
 
 describe("Process entity", () => {
 
     describe("constructor", () => {
-        it("assegna documentClassId, uuid e metadata", () => {
-            const proc = new Process(5, "proc-uuid", meta);
-            expect(proc.getDocumentClassId()).toBe(5);
+        it("assegna documentClassUuid, uuid e metadata", () => {
+            const proc = new Process("dc-uuid", "proc-uuid", meta);
+            expect(proc.getDocumentClassUuid()).toBe("dc-uuid");
             expect(proc.getUuid()).toBe("proc-uuid");
             expect(proc.getMetadata()).toBe(meta);
         });
 
         it("imposta integrityStatus a UNKNOWN di default", () => {
-            const proc = new Process(1, "uuid", []);
+            const proc = new Process("dc-uuid", "uuid", []);
             expect(proc.getIntegrityStatus()).toBe(IntegrityStatusEnum.UNKNOWN);
         });
 
         it("id è null finché non viene persistito", () => {
-            const proc = new Process(1, "uuid", []);
+            const proc = new Process("dc-uuid", "uuid", []);
             expect(proc.getId()).toBeNull();
         });
     });
@@ -52,7 +52,7 @@ describe("Process entity", () => {
 
     describe("setIntegrityStatus", () => {
         it("aggiorna lo stato di integrità", () => {
-            const proc = new Process(1, "uuid", []);
+            const proc = new Process("dc-uuid", "uuid", []);
             proc.setIntegrityStatus(IntegrityStatusEnum.INVALID);
             expect(proc.getIntegrityStatus()).toBe(IntegrityStatusEnum.INVALID);
         });
@@ -60,7 +60,7 @@ describe("Process entity", () => {
 
     describe("toDTO", () => {
         it("lancia un errore se id è null", () => {
-            const proc = new Process(1, "uuid", []);
+            const proc = new Process("dc-uuid", "uuid", []);
             expect(() => proc.toDTO()).toThrow("Cannot convert to DTO: Process entity is not yet persisted and has no ID.");
         });
 

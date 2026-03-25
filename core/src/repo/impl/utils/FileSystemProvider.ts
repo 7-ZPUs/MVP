@@ -1,6 +1,5 @@
 import * as fs from "node:fs";
 import { readFile } from "node:fs/promises";
-import { Readable } from "node:stream";
 import type { IFileSystemProvider } from "./IFileSystemProvider";
 
 export class FileSystemProvider implements IFileSystemProvider {
@@ -9,7 +8,9 @@ export class FileSystemProvider implements IFileSystemProvider {
     return new Uint8Array(file);
   }
 
-  public async openReadStream(filePath: string): Promise<Readable> {
+  public async openReadStream(
+    filePath: string,
+  ): Promise<NodeJS.ReadableStream> {
     const nodeStream = fs.createReadStream(filePath);
     return nodeStream;
   }

@@ -20,22 +20,30 @@ describe("FileRepository", () => {
   });
 
   it("save e getById funzionano", () => {
-    db.prepare
-      .mockReturnValueOnce({
-        run: vi.fn().mockReturnValue({ lastInsertRowid: 71 }),
-      })
-      .mockReturnValueOnce({
-        get: vi.fn().mockReturnValue({
-          id: 71,
-          filename: "main.xml",
-          path: "/pkg/main.xml",
-          integrityStatus: IntegrityStatusEnum.UNKNOWN,
-          isMain: 1,
-          documentId: 3,
-        }),
-      });
+    db.prepare.mockImplementation((query: string) => {
+      const isInsert = query.includes("INSERT INTO file");
+      const isSelect = query.includes("FROM file WHERE id = ?");
 
-    const file = new File("main.xml", "/pkg/main.xml", "hash-main", true, 3);
+      return {
+        run: vi.fn().mockImplementation(() => {
+          if (isInsert) return { lastInsertRowid: 71 };
+          return {};
+        }),
+        get: vi.fn().mockImplementation(() => {
+          if (isSelect) return {
+            id: 71,
+            filename: "main.xml",
+            path: "/pkg/main.xml",
+            integrityStatus: IntegrityStatusEnum.UNKNOWN,
+            isMain: 1,
+            documentId: 3,
+          };
+          return null;
+        })
+      };
+    });
+
+    const file = new File("main.xml", "/pkg/main.xml", "hash-main", true, "doc-uuid");
 
     repo.save(file);
 

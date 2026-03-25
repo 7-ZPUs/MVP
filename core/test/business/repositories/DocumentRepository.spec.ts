@@ -41,19 +41,35 @@ describe("DocumentRepository", () => {
       { id: 2, document_id: 51, name: "anno", value: "2026", type: "number" },
     ]);
 
-    db.prepare
-      .mockReturnValueOnce({ run: insertDocRun })
-      .mockReturnValueOnce({ run: deleteMetadataRun })
-      .mockReturnValueOnce({ run: insertMetadataRun })
-      .mockReturnValueOnce({ get: getDoc })
-      .mockReturnValueOnce({ all: loadMetadataAll });
+    db.prepare.mockImplementation((query: string) => {
+      const isInsertEntity = query.includes("INSERT INTO document");
+      const isDeleteMeta = query.includes("DELETE FROM document_metadata");
+      const isInsertMeta = query.includes("INSERT INTO document_metadata");
+      const isSelectEntity = query.includes("FROM document WHERE id = ?");
+      const isSelectMeta = query.includes("FROM document_metadata WHERE document_id = ?");
+
+      return {
+        run: isInsertMeta ? insertMetadataRun : (isDeleteMeta ? deleteMetadataRun : vi.fn().mockImplementation(() => {
+          if (isInsertEntity) return { lastInsertRowid: 51 };
+          return {};
+        })),
+        get: vi.fn().mockImplementation(() => {
+          if (isSelectEntity) return getDoc();
+          return null;
+        }),
+        all: vi.fn().mockImplementation(() => {
+          if (isSelectMeta) return loadMetadataAll();
+          return [];
+        })
+      };
+    });
 
     const metadata = [
       new Metadata("titolo", "Documento A", MetadataType.STRING),
       new Metadata("anno", "2026", MetadataType.NUMBER),
     ];
 
-    const document = new Document("doc-1", metadata, 7);
+    const document = new Document("doc-1", metadata, "process-uuid");
 
     const saved = repo.save(document);
     const found = repo.getById(saved.toDTO().id);

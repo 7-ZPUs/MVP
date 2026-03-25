@@ -23,19 +23,20 @@ export class File {
     private readonly hash: string;
     private integrityStatus: IntegrityStatusEnum;
     private readonly isMain: boolean;
-    /** Chiave esterna verso Documento — sempre obbligatoria. */
-    private readonly documentId: number;
+    /** Chiave esterna verso Documento — populated by DB only. */
+    private documentId: number | null = null;
+    private readonly documentUuid: string;
 
     /**
      * Costruttore usato per creare un nuovo file non ancora persistito.
      * L'id viene omesso: il DB lo assegnerà all'INSERT.
      */
-    constructor(filename: string, path: string, hash: string, isMain: boolean, documentId: number) {
+    constructor(filename: string, path: string, hash: string, isMain: boolean, documentUuid: string) {
         this.filename = filename;
         this.path = path;
         this.hash = hash;
         this.isMain = isMain;
-        this.documentId = documentId;
+        this.documentUuid = documentUuid;
         this.integrityStatus = IntegrityStatusEnum.UNKNOWN;
     }
 
@@ -49,9 +50,10 @@ export class File {
             row.path,
             row.hash,
             row.isMain === 1,
-            row.documentId
+            ""
         );
         file.id = row.id;
+        file.documentId = row.documentId;
         file.integrityStatus = row.integrityStatus as IntegrityStatusEnum;
         return file;
     }
@@ -84,8 +86,12 @@ export class File {
         return this.isMain;
     }
 
-    public getDocumentId(): number {
+    public getDocumentId(): number | null {
         return this.documentId;
+    }
+
+    public getDocumentUuid(): string {
+        return this.documentUuid;
     }
 
     /**
@@ -93,7 +99,7 @@ export class File {
      * Da chiamare SOLO nell'IPC adapter, mai nel dominio o nel repository.
      */
     public toDTO(): FileDTO {
-        if (this.id === null) {
+        if (this.id === null || this.documentId === null) {
             throw new Error("Cannot convert to DTO: File entity is not yet persisted and has no ID.");
         }
         return {
@@ -107,5 +113,3 @@ export class File {
         };
     }
 }
-
-

@@ -11,7 +11,7 @@ import { IDocumentRepository } from "../../../src/repo/IDocumentRepository";
 
 describe("Process use-cases", () => {
   it("GetProcessByIdUC delega a repo.getById", () => {
-    const entity = new Process(2, "proc-2", []);
+    const entity = new Process("dc-uuid", "proc-2", []);
     const repo: Pick<IProcessRepository, "getById"> = {
       getById: vi.fn().mockReturnValue(entity),
     };
@@ -24,7 +24,7 @@ describe("Process use-cases", () => {
   });
 
   it("GetProcessByDocumentClassUC delega a repo.getByDocumentClassId", () => {
-    const list = [new Process(3, "proc-3", [])];
+    const list = [new Process("dc-uuid", "proc-3", [])];
     const repo: Pick<IProcessRepository, "getByDocumentClassId"> = {
       getByDocumentClassId: vi.fn().mockReturnValue(list),
     };
@@ -37,7 +37,7 @@ describe("Process use-cases", () => {
   });
 
   it("GetProcessByStatusUC delega a repo.getByStatus", () => {
-    const list = [new Process(4, "proc-4", [])];
+    const list = [new Process("dc-uuid", "proc-4", [])];
     const repo: Pick<IProcessRepository, "getByStatus"> = {
       getByStatus: vi.fn().mockReturnValue(list),
     };
@@ -54,7 +54,7 @@ describe("Process use-cases", () => {
       IProcessRepository,
       "getById" | "updateIntegrityStatus"
     > = {
-      getById: vi.fn().mockReturnValue(new Process(1, "proc-1", [])),
+      getById: vi.fn().mockReturnValue(new Process("dc-uuid", "proc-1", [])),
       updateIntegrityStatus: vi.fn(),
     };
     const docRepo: Pick<

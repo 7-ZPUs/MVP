@@ -19,17 +19,18 @@ export class Document {
     private readonly uuid: string;
     private readonly metadata: Metadata[];
     private integrityStatus: IntegrityStatusEnum;
-    private readonly processId: number;
+    private processId: number | null = null;
+    private readonly processUuid: string;
 
     /**
      * Costruttore usato per creare una nuova entità non ancora persistita.
      * L'id viene omesso: il DB lo assegnerà all'INSERT.
      */
-    constructor(uuid: string, metadata: Metadata[], processId: number) {
+    constructor(uuid: string, metadata: Metadata[], processUuid: string) {
         this.uuid = uuid;
         this.metadata = metadata;
         this.integrityStatus = IntegrityStatusEnum.UNKNOWN;
-        this.processId = processId;
+        this.processUuid = processUuid;
     }
 
     /**
@@ -37,8 +38,9 @@ export class Document {
      * Da usare esclusivamente nel repository.
      */
     static fromDB(row: DocumentRow, metadata: Metadata[]): Document {
-        const doc = new Document(row.uuid, metadata, row.processId);
+        const doc = new Document(row.uuid, metadata, "");
         doc.id = row.id;
+        doc.processId = row.processId;
         doc.integrityStatus = (row.integrityStatus as IntegrityStatusEnum) ?? IntegrityStatusEnum.UNKNOWN;
         return doc;
     }
@@ -63,8 +65,12 @@ export class Document {
         this.integrityStatus = status;
     }
 
-    public getProcessId(): number {
+    public getProcessId(): number | null {
         return this.processId;
+    }
+
+    public getProcessUuid(): string {
+        return this.processUuid;
     }
 
     /**
@@ -72,7 +78,7 @@ export class Document {
      * Da chiamare SOLO nell'IPC adapter, mai nel dominio o nel repository.
      */
     public toDTO(): DocumentDTO {
-        if (this.id === null) {
+        if (this.id === null || this.processId === null) {
             throw new Error("Cannot convert to DTO: Document entity is not yet persisted and has no ID.");
         }
         return {
@@ -84,5 +90,3 @@ export class Document {
         };
     }
 }
-
-

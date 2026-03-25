@@ -75,7 +75,6 @@ export class DocumentRepository implements IDocumentRepository {
 
   getById(id: number): Document | null {
     const row = this.db
-      // possiamo anche usare SELECT * a questo punto
       .prepare<[number], DocumentRow>(
         `SELECT id, uuid, integrity_status as integrityStatus, process_id as processId 
                  FROM document WHERE id = ?`,
@@ -111,7 +110,7 @@ export class DocumentRepository implements IDocumentRepository {
       .prepare(
         `
                 INSERT INTO document (uuid, integrity_status, process_id) 
-                VALUES (?, ?, ?)
+                VALUES (?, ?, (SELECT id FROM process WHERE uuid = ?))
                 ON CONFLICT(uuid) DO UPDATE SET 
                     process_id = excluded.process_id,
                     integrity_status = excluded.integrity_status
@@ -120,7 +119,7 @@ export class DocumentRepository implements IDocumentRepository {
       .run(
         document.getUuid(),
         IntegrityStatusEnum.UNKNOWN,
-        document.getProcessId(),
+        document.getProcessUuid(),
       );
 
     let id = result.lastInsertRowid as number;
@@ -140,15 +139,7 @@ export class DocumentRepository implements IDocumentRepository {
 
     saveMetadata(this.db, METADATA_TABLE, METADATA_FK, id, metadata);
 
-    return Document.fromDB(
-      {
-        id,
-        uuid: document.getUuid(),
-        integrityStatus: IntegrityStatusEnum.UNKNOWN,
-        processId: document.getProcessId(),
-      },
-      metadata,
-    );
+    return this.getById(id)!;
   }
 
   updateIntegrityStatus(id: number, status: IntegrityStatusEnum): void {

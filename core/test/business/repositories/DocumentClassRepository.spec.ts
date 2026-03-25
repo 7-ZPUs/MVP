@@ -21,8 +21,11 @@ describe("DocumentClassRepository", () => {
 
     it("save e getById funzionano", () => {
         db.prepare
-            .mockReturnValueOnce({ run: vi.fn().mockReturnValue({ lastInsertRowid: 21 }) })
-            .mockReturnValueOnce({
+            .mockReturnValueOnce({ run: vi.fn().mockReturnValue({ lastInsertRowid: 21 }) }) // INSERT query
+            .mockReturnValueOnce({ // Fallback SELECT id query (called because lastInsertRowid might be considered falsy or just to be safe in the mock chain)
+                get: vi.fn().mockReturnValue({ id: 21 }),
+            })
+            .mockReturnValueOnce({ // getById query
                 get: vi.fn().mockReturnValue({
                     id: 21,
                     dipId: 10,
@@ -33,13 +36,13 @@ describe("DocumentClassRepository", () => {
                 }),
             });
 
-        const dc = new DocumentClass(10, "dc-1", "Contratti", "2024-01-01T00:00:00Z");
+        const dc = new DocumentClass("dip-uuid", "dc-1", "Contratti", "2024-01-01T00:00:00Z");
         dc.setIntegrityStatus(IntegrityStatusEnum.INVALID);
 
         repo.save(dc);
         const found = repo.getById(21);
 
-        expect(found?.getProcessId()).toBe(10);
+        expect(found?.getDipId()).toBe(10);
         expect(found?.getUuid()).toBe("dc-1");
         expect(found?.getName()).toBe("Contratti");
         expect(found?.getIntegrityStatus()).toBe(IntegrityStatusEnum.UNKNOWN);

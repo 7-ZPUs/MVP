@@ -12,7 +12,7 @@ import { IFileRepository } from "../../../src/repo/IFileRepository";
 describe("Document use-cases", () => {
 
     it("GetDocumentByIdUC delega a repo.getById", () => {
-        const entity = new Document("doc-2", [], 2);
+        const entity = new Document("doc-2", [], "process-uuid");
         const repo: Pick<IDocumentRepository, "getById"> = { getById: vi.fn().mockReturnValue(entity) };
 
         const uc = new GetDocumentByIdUC(repo as IDocumentRepository);
@@ -23,7 +23,7 @@ describe("Document use-cases", () => {
     });
 
     it("GetDocumentByProcessUC delega a repo.getByProcessId", () => {
-        const list = [new Document("doc-3", [], 3)];
+        const list = [new Document("doc-3", [], "process-uuid")];
         const repo: Pick<IDocumentRepository, "getByProcessId"> = { getByProcessId: vi.fn().mockReturnValue(list) };
 
         const uc = new GetDocumentByProcessUC(repo as IDocumentRepository);
@@ -34,7 +34,7 @@ describe("Document use-cases", () => {
     });
 
     it("GetDocumentByStatusUC delega a repo.getByStatus", () => {
-        const list = [new Document("doc-4", [], 4)];
+        const list = [new Document("doc-4", [], "process-uuid")];
         const repo: Pick<IDocumentRepository, "getByStatus"> = { getByStatus: vi.fn().mockReturnValue(list) };
 
         const uc = new GetDocumentByStatusUC(repo as IDocumentRepository);
@@ -46,7 +46,7 @@ describe("Document use-cases", () => {
 
     it("CheckDocumentIntegrityStatusUC aggiorna lo status aggregato dai file", () => {
         const docRepo: Pick<IDocumentRepository, "getById" | "updateIntegrityStatus"> = {
-            getById: vi.fn().mockReturnValue(new Document("doc-1", [], 1)),
+            getById: vi.fn().mockReturnValue(new Document("doc-1", [], "process-uuid")),
             updateIntegrityStatus: vi.fn(),
         };
         const fileRepo: Pick<IFileRepository, "getAggregatedIntegrityStatusByDocumentId"> = {

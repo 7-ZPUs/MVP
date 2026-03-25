@@ -5,26 +5,26 @@ import { IntegrityStatusEnum } from "../../../src/value-objects/IntegrityStatusE
 describe("File entity", () => {
 
     describe("constructor", () => {
-        it("assegna filename, path, isMain e documentId", () => {
-            const file = new File("documento.xml", "/dip/subdir/documento.xml", "hash-doc", true, 4);
+        it("assegna filename, path, isMain e documentUuid", () => {
+            const file = new File("documento.xml", "/dip/subdir/documento.xml", "hash-doc", true, "doc-uuid");
             expect(file.getFilename()).toBe("documento.xml");
             expect(file.getPath()).toBe("/dip/subdir/documento.xml");
             expect(file.getIsMain()).toBe(true);
-            expect(file.getDocumentId()).toBe(4);
+            expect(file.getDocumentUuid()).toBe("doc-uuid");
         });
 
         it("imposta integrityStatus a UNKNOWN di default", () => {
-            const file = new File("f.xml", "/f.xml", "hash-default", false, 1);
+            const file = new File("f.xml", "/f.xml", "hash-default", false, "doc-uuid");
             expect(file.getIntegrityStatus()).toBe(IntegrityStatusEnum.UNKNOWN);
         });
 
         it("id è null finché non viene persistito", () => {
-            const file = new File("f.xml", "/f.xml", "hash-default", false, 1);
+            const file = new File("f.xml", "/f.xml", "hash-default", false, "doc-uuid");
             expect(file.getId()).toBeNull();
         });
 
         it("isMain = false viene mantenuto", () => {
-            const file = new File("allegato.pdf", "/allegato.pdf", "hash-allegato", false, 2);
+            const file = new File("allegato.pdf", "/allegato.pdf", "hash-allegato", false, "doc-uuid");
             expect(file.getIsMain()).toBe(false);
         });
     });
@@ -66,7 +66,7 @@ describe("File entity", () => {
 
     describe("setIntegrityStatus", () => {
         it("aggiorna lo stato di integrità", () => {
-            const file = new File("f.xml", "/f.xml", "hash-default", true, 1);
+            const file = new File("f.xml", "/f.xml", "hash-default", true, "doc-uuid");
             file.setIntegrityStatus(IntegrityStatusEnum.INVALID);
             expect(file.getIntegrityStatus()).toBe(IntegrityStatusEnum.INVALID);
         });
@@ -74,7 +74,7 @@ describe("File entity", () => {
 
     describe("toDTO", () => {
         it("lancia un errore se id è null", () => {
-            const file = new File("f.xml", "/f.xml", "hash-default", true, 1);
+            const file = new File("f.xml", "/f.xml", "hash-default", true, "doc-uuid");
             expect(() => file.toDTO()).toThrow("Cannot convert to DTO: File entity is not yet persisted and has no ID.");
         });
 
