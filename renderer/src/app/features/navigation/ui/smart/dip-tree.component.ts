@@ -21,7 +21,7 @@ export class DipTree {
     @Input() rootNodes!: DipTreeNode[];
     @Output() nodeSelected = new EventEmitter<DipTreeNode>();
 
-    private flatNodes: FlatNode[] = [];
+    flatNodes: FlatNode[] = [];
     private readonly loadingNodes: Set<NodeId> = new Set<NodeId>();
     private readonly expandedIds : Set<NodeId> = new Set<NodeId>();
     private readonly dipFacade = inject(DipFacade);
@@ -67,6 +67,7 @@ export class DipTree {
                     depth,
                     hasChildren: node.hasChildren,
                     isLoading: this.loadingNodes.has(nodeId),
+                    isExpanded: false,
                     childrenError: state.nodeChildrenErrors.get(nodeId),
                 });
         

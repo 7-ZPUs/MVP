@@ -1,12 +1,14 @@
 import { Input, Component, Output, EventEmitter} from "@angular/core";
 import { FlatNode } from "../../contracts/flat-node";
 import { DipTreeNode } from "../../contracts/dip-tree-node";
-
+import { CommonModule } from "@angular/common";
+import { InlineErrorComponent } from "./inline-error.component";
 
 @Component({
     selector: 'app-dip-tree-node',
     standalone: true,
     templateUrl: './dip-tree-node.html',  
+    imports: [CommonModule, InlineErrorComponent],
 })
 export class DipTreeNodeComponent {
     @Input() flatNode!: FlatNode;

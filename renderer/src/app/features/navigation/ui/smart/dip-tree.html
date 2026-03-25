@@ -8,7 +8,7 @@
       <app-inline-error
           *ngIf="flat.childrenError"
           [error]="flat.childrenError"
-          (retry)="loadChildren(flat.node.id)">
+          (retry)="toggleNode(flat.node.id)">
       </app-inline-error>
 
   </app-dip-tree-node>

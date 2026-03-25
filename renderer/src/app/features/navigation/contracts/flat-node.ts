@@ -6,8 +6,10 @@ export interface FlatNode {
     depth: number;
     hasChildren: boolean;
     isLoading: boolean;
+    isExpanded: boolean;
     parentId?: NodeId;
     childrenError?: AppError;
     timestamp?: string;
     verificationStatus?: string;
+
 }
