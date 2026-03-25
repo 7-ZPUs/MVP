@@ -1,0 +1,42 @@
+<div 
+    (click)="onSelect()"
+    (keydown.enter)="onSelect()"
+    (keydown.space)="onSelect()">
+
+    <!-- Icona espansione/collasso solo se ha figli -->
+    <button
+        *ngIf="flatNode.hasChildren" 
+        class="toggle-icon" 
+        (click)="onToggle($event)">
+        {{ flatNode.node.isExpanded ? '▼' : '▶' }}
+    </button>
+
+    <!-- Spinner inline se nodo in caricamento -->
+    <span *ngIf="flatNode.isLoading" class="spinner">
+        ⏳
+    </span>
+
+    <!-- Titolo del nodo -->
+    <span class="node-label">
+        {{ flatNode.node.label }}
+    </span>
+
+    <!-- Badge di verifica (UC-4) -->
+    <app-verification-badge 
+        *ngIf="flatNode.node.verificationStatus" 
+        [status]="flatNode.node.verificationStatus">
+    </app-verification-badge>
+
+    <!-- Timestamp (UC-5) -->
+    <app-timestamp-label 
+        *ngIf="flatNode.node.timestamp" 
+        [timestamp]="flatNode.node.timestamp">
+    </app-timestamp-label>
+
+    <!-- InlineError se c'è un errore (DIP_CHILDREN_LOAD_ERROR) -->
+    <app-inline-error 
+        *ngIf="flatNode.childrenError" 
+        [error]="flatNode.childrenError">
+    </app-inline-error>
+
+</div>
