@@ -19,6 +19,20 @@ export const IpcChannels = {
   // ----- Integrity -----
   INTEGRITY_VERIFY: 'integrity:verify',
 
+  // ----- Check Integrity: Documento -----
+  CHECK_DOCUMENT_INTEGRITY_STATUS: 'check-integrity:document',
+  
+  // ----- Check Integrity: File -----
+  CHECK_FILE_INTEGRITY_STATUS: 'check-integrity:file',
+  
+  // ----- Check Integrity: Process -----
+  CHECK_PROCESS_INTEGRITY_STATUS: 'check-integrity:process',
+  
+  // ----- Check Integrity: DocumentClass -----
+  CHECK_DOCUMENT_CLASS_INTEGRITY_STATUS: 'check-integrity:document-class',
+  
+  // ----- Check Integrity: Dip -----
+  CHECK_DIP_INTEGRITY_STATUS: 'check-integrity:dip',
 
   CREATE_DOCUMENT: 'create:create-document',
   CREATE_PROCESS: 'create:create-process',
