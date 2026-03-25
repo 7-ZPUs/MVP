@@ -15,6 +15,7 @@ import { InlineErrorComponent } from "../dumb/inline-error.component";
     ScrollingModule,
     DipTreeNodeComponent,
     InlineErrorComponent],
+    templateUrl: './dip-tree.html',
 })
 export class DipTree {
     @Input() rootNodes!: DipTreeNode[];

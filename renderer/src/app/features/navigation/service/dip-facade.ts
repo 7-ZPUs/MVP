@@ -1,5 +1,5 @@
 import { Injectable, signal, Signal, WritableSignal, inject } from "@angular/core";
-import { IpcGateway } /*aggiungere*/;
+import { IpcGateway } from "./ipc-gateway";
 import { DipTreeNode } from "../contracts/dip-tree-node";
 import { AppError } from "../contracts/app-error";
 

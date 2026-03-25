@@ -4,7 +4,7 @@ import { AppError } from '../../contracts/app-error';
 @Component({
   standalone: true,
   selector: 'app-inline-error',
-  templateUrl: './inline-error.component.html'
+  templateUrl: './inline-error.html'
 })
 export class InlineErrorComponent {
   @Input() error!: AppError;

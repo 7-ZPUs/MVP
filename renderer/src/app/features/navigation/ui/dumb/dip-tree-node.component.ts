@@ -6,7 +6,7 @@ import { DipTreeNode } from "../../contracts/dip-tree-node";
 @Component({
     selector: 'app-dip-tree-node',
     standalone: true,
-    templateUrl: './dip-tree-node.component.html',  
+    templateUrl: './dip-tree-node.html',  
 })
 export class DipTreeNodeComponent {
     @Input() flatNode!: FlatNode;
