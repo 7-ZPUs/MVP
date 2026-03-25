@@ -5,6 +5,7 @@ import { FlatNode } from "../../contracts/flat-node";
 import { CommonModule } from "@angular/common";
 import { DipTreeNodeComponent } from "../dumb/dip-tree-node.component";
 import { CdkVirtualScrollViewport, ScrollingModule } from '@angular/cdk/scrolling';
+import { InlineErrorComponent } from "../dumb/inline-error.component";
 
 @Component ({
     selector: 'app-dip-tree',
@@ -12,7 +13,8 @@ import { CdkVirtualScrollViewport, ScrollingModule } from '@angular/cdk/scrollin
     imports: [CommonModule,
     CdkVirtualScrollViewport,
     ScrollingModule,
-    DipTreeNodeComponent],
+    DipTreeNodeComponent,
+    InlineErrorComponent],
 })
 export class DipTree {
     @Input() rootNodes!: DipTreeNode[];
@@ -64,7 +66,7 @@ export class DipTree {
                     depth,
                     hasChildren: node.hasChildren,
                     isLoading: this.loadingNodes.has(nodeId),
-                    //TODO childrenError: state.nodeChildrenErrors.get(nodeId) ?? null
+                    childrenError: state.nodeChildrenErrors.get(nodeId),
                 });
         
                 if (this.expandedIds.has(nodeId)) {

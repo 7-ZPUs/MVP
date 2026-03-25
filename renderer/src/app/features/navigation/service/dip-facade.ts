@@ -1,11 +1,16 @@
 import { Injectable, signal, Signal, WritableSignal, inject } from "@angular/core";
 import { IpcGateway } /*aggiungere*/;
 import { DipTreeNode } from "../contracts/dip-tree-node";
+import { AppError } from "../contracts/app-error";
 
 export interface DipState {
     phase: 'ready' | 'loading' | 'idle';
     rootNodes: DipTreeNode[];
     nodeCache: Map<NodeId,DipTreeNode[]>;
+    //dividiamo tra gli errori dei sottonodi non bloccanti
+    //e tra gli errori alla radice, che sono bloccanti
+    nodeChildrenErrors: Map<NodeId,AppError>;
+    rootError?: AppError;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -13,7 +18,8 @@ export class DipFacade {
     private readonly state: WritableSignal<DipState> = signal({
         phase: 'idle',
         rootNodes: [],
-        nodeCache: new Map<string, DipTreeNode[]>(),
+        nodeCache: new Map<NodeId, DipTreeNode[]>(),
+        nodeChildrenErrors: new Map<NodeId, AppError>()
     })
 
     ipcGateway = inject(IpcGateway);
@@ -38,7 +44,18 @@ export class DipFacade {
             rootNodes: nodes,
           });
         } catch (error) {
-          /*manca gestione degli errori*/
+            const appError: AppError = {
+                code: 'DIP_FILE_NOT_FOUND', 
+                message: (error as Error).message,
+                recoverable: false,
+                details: null
+            };
+        
+            this.state.set({
+                ...this.state(),
+                phase: 'idle',          // o 'error' se vuoi distinguere
+                rootError: appError     // nuovo campo nel signal
+            });
         }
     }
     
@@ -59,7 +76,20 @@ export class DipFacade {
                 nodeCache: newCache
             });
         } catch (error) {
-                // TODO
+            const appError: AppError = {
+                code: 'DIP_CHILDREN_LOAD_ERROR',
+                message: (error as Error).message,
+                recoverable: true,
+                details: { nodeId }
+            };
+        
+            const newErrors = new Map(this.state().nodeChildrenErrors);
+            newErrors.set(nodeId, appError);
+        
+            this.state.set({
+                ...this.state(),
+                nodeChildrenErrors: newErrors,
+            });
             }
     }
 }
