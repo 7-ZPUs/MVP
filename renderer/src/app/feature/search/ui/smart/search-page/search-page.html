@@ -1,1 +1,128 @@
-<p>search-page works!</p>
+<div
+  class="search-page-layout"
+  style="
+    display: grid;
+    grid-template-columns: 350px 1fr;
+    grid-template-rows: auto 1fr;
+    gap: 1rem;
+    height: 100vh;
+    padding: 1rem;
+  "
+>
+  <header
+    style="
+      grid-column: 1 / -1;
+      background: white;
+      padding: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    "
+  >
+    <app-search-bar
+      [query]="searchState().query"
+      [isSearching]="searchState().isSearching"
+      (queryChanged)="onQueryChanged($event)"
+    >
+    </app-search-bar>
+  </header>
+
+  <aside
+    class="filters-sidebar"
+    style="
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      overflow-y: auto;
+    "
+  >
+    <app-advanced-filter-panel
+      [filters]="searchState().filters"
+      [validator]="validatorFn"
+      [externalValidation]="externalValidationResult()"
+      [strategyRegistry]="strategyRegistry"
+      (filtersChanged)="onFiltersChanged($event)"
+      (filtersSubmit)="onFiltersSubmit($event)"
+      (validationResult)="onValidationResult($event)"
+    >
+    </app-advanced-filter-panel>
+  </aside>
+
+  <main
+    class="results-area"
+    style="
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      padding: 1rem;
+      overflow-y: auto;
+    "
+  >
+    <div
+      *ngIf="searchState().loading"
+      class="global-loader"
+      style="text-align: center; padding: 2rem"
+    >
+      <p>Caricamento in corso...</p>
+    </div>
+
+    <div
+      *ngIf="searchState().error && !searchState().loading"
+      class="global-error"
+      style="color: red; padding: 1rem"
+    >
+      <p>Errore di comunicazione: {{ searchState().error?.message }}</p>
+      <button (click)="onRetrySearch()">Riprova</button>
+    </div>
+
+    <div *ngIf="!searchState().loading && !searchState().error">
+      <app-search-results
+        [results]="searchState().results"
+        emptyMessage="Nessun documento trovato. Prova a modificare i filtri."
+        (resultSelected)="onResultSelected($event)"
+      >
+      </app-search-results>
+    </div>
+  </main>
+
+  <div
+    class="document-viewer-modal"
+    *ngIf="selectedDocumentId()"
+    style="
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 50vw;
+      height: 100vh;
+      background: white;
+      z-index: 1000;
+      box-shadow: -4px 0 15px rgba(0, 0, 0, 0.1);
+    "
+  >
+    <div
+      class="viewer-header"
+      style="
+        padding: 1rem;
+        border-bottom: 1px solid #ccc;
+        display: flex;
+        justify-content: space-between;
+      "
+    >
+      <h3>Documento: {{ selectedDocumentId() }}</h3>
+      <button (click)="selectedDocumentId.set(null)">Chiudi</button>
+    </div>
+
+    <div class="viewer-body" style="padding: 1rem">
+      <div *ngIf="viewerError()" style="color: red">
+        Errore caricamento: {{ viewerError()?.message }}
+        <button (click)="onViewerRetry()">Riprova</button>
+      </div>
+      <div *ngIf="unsupportedMimeType()" style="color: orange">
+        Formato non supportato: {{ unsupportedMimeType() }}
+      </div>
+
+      <p *ngIf="!viewerError() && !unsupportedMimeType()">
+        (Anteprima del documento in costruzione...)
+      </p>
+    </div>
+  </div>
+</div>
