@@ -1,14 +1,25 @@
 import { Routes } from '@angular/router';
-import { DocumentDetailPageComponent } from './features/dip-explorer/document-detail/ui/smart/document-detail-page/document-detail-page.component';
 
 export const routes: Routes = [
   {
     path: '',
+    redirectTo: 'detail/DOCUMENT/1',
     pathMatch: 'full',
-    redirectTo: 'document/demo',
   },
   {
-    path: 'document/:id',
-    component: DocumentDetailPageComponent,
+    path: 'detail',
+    redirectTo: 'detail/DOCUMENT/1',
+    pathMatch: 'full',
+  },
+  {
+    path: 'detail',
+    loadChildren: () =>
+      import('./features/dip-explorer/document-detail/item-detail.routes').then(
+        (m) => m.ITEM_DETAIL_ROUTES,
+      ),
+  },
+  {
+    path: '**',
+    redirectTo: 'detail/DOCUMENT/1',
   },
 ];

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi, Mock } from 'vitest';
 import { ElectronLoggingGateway } from './electron-logging-gateway';
-import { LogEntry, LogLevel } from '../domain';
-import { ELECTRON_CONTEXT_BRIDGE_TOKEN, IElectronContextBridge } from '../contracts';
+import { LogEntry, LogLevel } from '../../shared/domain';
+import { ELECTRON_CONTEXT_BRIDGE_TOKEN, IElectronContextBridge } from '../contracts/index';
 import { TestBed } from '@angular/core/testing';
 
 describe('ElectronLoggingGateway', () => {

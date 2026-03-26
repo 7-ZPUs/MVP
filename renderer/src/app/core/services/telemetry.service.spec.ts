@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi, Mock } from 'vitest';
 import { of, throwError } from 'rxjs';
 import { TelemetryService } from './telemetry.service';
-import { ILoggingChannel, LOGGING_CHANNEL_TOKEN } from '../contracts';
+import { ILoggingChannel, LOGGING_CHANNEL_TOKEN } from '../contracts/index';
 import {
   AppError,
   TelemetryEvent,
@@ -10,7 +10,7 @@ import {
   ErrorCategory,
   ErrorSeverity,
   ErrorCode,
-} from '../domain';
+} from '../../shared/domain';
 import { TestBed } from '@angular/core/testing';
 
 describe('TelemetryService', () => {

@@ -1,6 +1,6 @@
 import { Injectable, Inject } from '@angular/core';
-import { ITelemetry, ILoggingChannel, LOGGING_CHANNEL_TOKEN } from '../contracts';
-import { AppError, TelemetryEvent, TelemetryMetric, LogLevel, LogEntry } from '../domain';
+import { ITelemetry, ILoggingChannel, LOGGING_CHANNEL_TOKEN } from '../contracts/index';
+import { AppError, TelemetryEvent, TelemetryMetric, LogLevel, LogEntry } from '../../shared/domain';
 
 @Injectable({ providedIn: 'root' })
 export class TelemetryService implements ITelemetry {

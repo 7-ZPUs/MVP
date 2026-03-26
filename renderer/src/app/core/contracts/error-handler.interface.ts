@@ -1,6 +1,6 @@
 import { InjectionToken } from '@angular/core';
-import { ErrorCode } from '../domain/error.enum';
-import { AppError } from '../domain/error.models';
+import { ErrorCode } from '../../shared/domain/error.enum';
+import { AppError } from '../../shared/domain/error.models';
 
 export interface IErrorHandler {
   handle(raw: unknown): AppError;

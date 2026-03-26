@@ -1,11 +1,11 @@
 import { Injectable, Inject } from '@angular/core';
 import { Observable, Observer } from 'rxjs';
-import { LogEntry } from '../domain';
+import { LogEntry } from '../../shared/domain';
 import {
   ILoggingChannel,
   IElectronContextBridge,
   ELECTRON_CONTEXT_BRIDGE_TOKEN,
-} from '../contracts';
+} from '../contracts/index';
 
 @Injectable({ providedIn: 'root' })
 export class ElectronLoggingGateway implements ILoggingChannel {

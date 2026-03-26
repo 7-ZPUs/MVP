@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { IpcErrorHandlerService } from './ipc-error-handler.service';
-import { ErrorCode, ErrorCategory, ErrorSeverity } from '../domain';
+import { ErrorCode, ErrorCategory, ErrorSeverity } from '../../shared/domain';
 import { TestBed } from '@angular/core/testing';
 
 describe('IpcErrorHandlerService', () => {

@@ -1,5 +1,5 @@
 import { Observable } from 'rxjs';
-import { LogEntry } from '../domain/log.enum';
+import { LogEntry } from '../../shared/domain/log.enum';
 import { InjectionToken } from '@angular/core';
 
 export interface ILoggingChannel {

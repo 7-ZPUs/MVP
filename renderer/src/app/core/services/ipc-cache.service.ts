@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { ICacheService, CacheEntry } from '../contracts';
+import { ICacheService, CacheEntry } from '../contracts/index';
 
 @Injectable({ providedIn: 'root' })
 export class IpcCacheService implements ICacheService {

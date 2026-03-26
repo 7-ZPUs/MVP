@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { IErrorHandler } from '../contracts/error-handler.interface';
-import { AppError, ErrorCode, ErrorCategory, ErrorSeverity } from '../domain';
+import { AppError, ErrorCode, ErrorCategory, ErrorSeverity } from '../../shared/domain';
 
 @Injectable({ providedIn: 'root' })
 export class IpcErrorHandlerService implements IErrorHandler {
@@ -44,6 +44,11 @@ export class IpcErrorHandlerService implements IErrorHandler {
       recoverable: false,
     },
     [ErrorCode.DIP_INDEX_ERROR]: {
+      category: ErrorCategory.DOMAIN,
+      severity: ErrorSeverity.ERROR,
+      recoverable: true,
+    },
+    [ErrorCode.INTEGRITY_VERIFY_ERROR]: {
       category: ErrorCategory.DOMAIN,
       severity: ErrorSeverity.ERROR,
       recoverable: true,
