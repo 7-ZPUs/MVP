@@ -1,14 +1,14 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ReactiveFormsModule } from '@angular/forms';
 import { SimpleChange } from '@angular/core';
 import { By } from '@angular/platform-browser';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 import { AggregateFiltersComponent } from './aggregate-filters.component';
 import {
-  AggregateFilterValues,
-  ValidationResult,
-  ValidationError,
-} from '../../../../../shared/domain/metadata';
+  AggregationType,
+  ProcedimentoFaseType,
+} from '../../../../../shared/domain/metadata/search.enum';
 
 describe('AggregateFiltersComponent', () => {
   let component: AggregateFiltersComponent;
@@ -16,7 +16,7 @@ describe('AggregateFiltersComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AggregateFiltersComponent],
+      imports: [AggregateFiltersComponent, ReactiveFormsModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(AggregateFiltersComponent);
@@ -24,55 +24,105 @@ describe('AggregateFiltersComponent', () => {
     fixture.detectChanges();
   });
 
-  it('dovrebbe istanziare il form correttamente', () => {
-    expect(component.form).toBeDefined();
-    expect(component.form.value).toEqual({
-      fascicolo: null,
-      volume: null,
-      serie: null,
-    });
+  it('dovrebbe istanziarsi con la struttura gerarchica corretta e array vuoto', () => {
+    expect(component).toBeTruthy();
+    expect(component.form.contains('procedimento')).toBe(true);
+    expect(component.form.contains('assegnazione')).toBe(true);
+    expect(component.fasiFormArray.length).toBe(0);
   });
 
-  it('ngOnChanges() dovrebbe aggiornare il form senza emettere eventi', () => {
-    const emitSpy = vi.spyOn(component.filtersChanged, 'emit');
-    const incomingFilters = {
-      fascicolo: 'FAS-123',
-      volume: 'VOL-1',
-    } as unknown as AggregateFilterValues;
-
-    component.ngOnChanges({
-      filters: new SimpleChange(null, incomingFilters, true),
-    });
-
-    expect(component.form.value.fascicolo).toBe('FAS-123');
-    expect(component.form.value.volume).toBe('VOL-1');
-    expect(emitSpy).not.toHaveBeenCalled();
-  });
-
-  // --- COPERTURA TS: 39-40 ---
-  it('dovrebbe emettere i nuovi valori quando il form cambia (copertura valueChanges)', () => {
+  it('dovrebbe emettere filtersChanged quando il form cambia', async () => {
     const emitSpy = vi.spyOn(component.filtersChanged, 'emit');
 
-    component.form.patchValue({ fascicolo: 'NUOVO-FASCICOLO' });
+    // Modifichiamo un campo base
+    component.form.patchValue({ idAggregazione: 'AGG-001' });
 
-    expect(emitSpy).toHaveBeenCalledWith(expect.objectContaining({ fascicolo: 'NUOVO-FASCICOLO' }));
+    expect(emitSpy).toHaveBeenCalled();
+    const emitted = emitSpy.mock.lastCall?.[0];
+    expect(emitted?.idAggregazione).toBe('AGG-001');
   });
 
-  it("ngOnChanges() non dovrebbe fare nulla se non ci sono cambiamenti nell'input filters (copertura ramo falso)", () => {
-    const patchSpy = vi.spyOn(component.form, 'patchValue');
+  describe('Gestione Fasi (FormArray)', () => {
+    it('dovrebbe aggiungere e rimuovere fasi correttamente', () => {
+      component.addFase();
+      expect(component.fasiFormArray.length).toBe(1);
+      expect(component.fasiFormArray.at(0).get('tipoFase')).toBeDefined();
 
-    component.ngOnChanges({
-      validationResult: new SimpleChange(null, { isValid: true, errors: new Map() }, true),
+      component.removeFase(0);
+      expect(component.fasiFormArray.length).toBe(0);
     });
 
-    component.ngOnChanges({
-      filters: new SimpleChange(null, null, false),
-    });
+    it('dovrebbe innescare add/remove tramite i bottoni HTML per la copertura', async () => {
+      // 1. Click su Aggiungi
+      const addBtn = fixture.debugElement.query(By.css('button[type="button"]'));
+      addBtn.triggerEventHandler('click', null);
+      fixture.detectChanges();
 
-    expect(patchSpy).not.toHaveBeenCalled();
+      expect(component.fasiFormArray.length).toBe(1);
+
+      const removeBtn = fixture.debugElement.query(By.css('button[style*="color: #dc2626"]'));
+      removeBtn.triggerEventHandler('click', null);
+      fixture.detectChanges();
+
+      expect(component.fasiFormArray.length).toBe(0);
+    });
   });
 
-  it('ngOnDestroy() dovrebbe emettere sul subject destroy$ per evitare memory leak', () => {
+  describe('ngOnChanges (Integrazione Dati)', () => {
+    it('dovrebbe aggiornare i campi annidati e ricostruire le fasi', () => {
+      const mockFilters = {
+        tipoAggregazione: AggregationType.FASCICOLO,
+        procedimento: {
+          materia: 'Ambiente',
+          fasi: [{ tipoFase: ProcedimentoFaseType.ISTRUTTORIA, dataInizioFase: '2026-01-01' }],
+        },
+      } as any;
+
+      component.ngOnChanges({
+        filters: new SimpleChange(null, mockFilters, true),
+      });
+
+      expect(component.form.get('tipoAggregazione')?.value).toBe(AggregationType.FASCICOLO);
+      expect(component.form.get('procedimento.materia')?.value).toBe('Ambiente');
+      expect(component.fasiFormArray.length).toBe(1);
+    });
+
+    it('dovrebbe ignorare cambiamenti se filters non è presente o nullo', () => {
+      const patchSpy = vi.spyOn(component.form, 'patchValue');
+      component.ngOnChanges({});
+      expect(patchSpy).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('getError & Visualizzazione Errori', () => {
+    it("dovrebbe restituire l'errore corretto per un path annidato", () => {
+      component.validationResult = {
+        isValid: false,
+        errors: new Map([
+          [
+            'aggregate.procedimento.URICatalogo',
+            [{ message: 'URI non valido', code: 'E1', field: '' }],
+          ],
+        ]),
+      };
+
+      const error = component.getError('procedimento.URICatalogo');
+      expect(error?.message).toBe('URI non valido');
+    });
+
+    it('non dovrebbe causare ExpressionChangedAfterItHasBeenCheckedError usando setInput', async () => {
+      fixture.componentRef.setInput('validationResult', {
+        isValid: false,
+        errors: new Map([
+          ['aggregate.idAggregazione', [{ message: 'Campo obbligatorio', code: 'REQ', field: '' }]],
+        ]),
+      });
+
+      expect(() => fixture.detectChanges()).not.toThrow();
+    });
+  });
+
+  it('ngOnDestroy() deve pulire le sottoscrizioni', () => {
     const nextSpy = vi.spyOn((component as any).destroy$, 'next');
     const completeSpy = vi.spyOn((component as any).destroy$, 'complete');
 
@@ -80,69 +130,5 @@ describe('AggregateFiltersComponent', () => {
 
     expect(nextSpy).toHaveBeenCalled();
     expect(completeSpy).toHaveBeenCalled();
-  });
-
-  it('dovrebbe mostrare i messaggi di errore nel template HTML (copertura rami *ngIf)', () => {
-    const mockErrorFascicolo: ValidationError = {
-      field: 'aggregate.fascicolo',
-      message: 'Errore fascicolo',
-      code: 'E1',
-    };
-
-    const mockValidationResult: ValidationResult = {
-      isValid: false,
-      errors: new Map([['aggregate.fascicolo', [mockErrorFascicolo]]]),
-    };
-
-    fixture.componentRef.setInput('validationResult', mockValidationResult);
-    fixture.detectChanges();
-
-    const errFascicoloEl = fixture.debugElement.query(By.css('#err-fascicolo'));
-
-    expect(errFascicoloEl).toBeTruthy();
-    expect(errFascicoloEl.nativeElement.textContent.trim()).toBe('Errore fascicolo');
-  });
-
-  it('dovrebbe mostrare i messaggi di errore nel template HTML (copertura rami *ngIf e aria-describedby)', () => {
-    const mockErrorFascicolo: ValidationError = {
-      field: 'aggregate.fascicolo',
-      message: 'Errore fascicolo',
-      code: 'E1',
-    };
-    const mockErrorVolume: ValidationError = {
-      field: 'aggregate.volume',
-      message: 'Errore volume',
-      code: 'E2',
-    };
-    const mockErrorSerie: ValidationError = {
-      field: 'aggregate.serie',
-      message: 'Errore serie',
-      code: 'E3',
-    };
-
-    const mockValidationResult: ValidationResult = {
-      isValid: false,
-      errors: new Map([
-        ['aggregate.fascicolo', [mockErrorFascicolo]],
-        ['aggregate.volume', [mockErrorVolume]],
-        ['aggregate.serie', [mockErrorSerie]],
-      ]),
-    };
-
-    fixture.componentRef.setInput('validationResult', mockValidationResult);
-    fixture.detectChanges();
-
-    const errFascicoloEl = fixture.debugElement.query(By.css('#err-fascicolo'));
-    const errVolumeEl = fixture.debugElement.query(By.css('#err-volume'));
-    const errSerieEl = fixture.debugElement.query(By.css('#err-serie'));
-
-    expect(errFascicoloEl).toBeTruthy();
-    expect(errFascicoloEl.nativeElement.textContent.trim()).toBe('Errore fascicolo');
-
-    expect(errVolumeEl).toBeTruthy();
-    expect(errVolumeEl.nativeElement.textContent.trim()).toBe('Errore volume');
-
-    expect(errSerieEl).toBeTruthy();
-    expect(errSerieEl.nativeElement.textContent.trim()).toBe('Errore serie');
   });
 });

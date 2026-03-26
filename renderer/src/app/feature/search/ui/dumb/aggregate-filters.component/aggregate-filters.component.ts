@@ -8,7 +8,7 @@ import {
   OnDestroy,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, FormArray } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
 
 import {
@@ -16,6 +16,12 @@ import {
   ValidationResult,
   ValidationError,
 } from '../../../../../shared/domain/metadata';
+import {
+  AggregationType,
+  FascicoloType,
+  ProcedimentoFaseType,
+  AssegnazioneType,
+} from '../../../../../shared/domain/metadata/search.enum';
 
 @Component({
   selector: 'app-aggregate-filters',
@@ -32,11 +38,31 @@ export class AggregateFiltersComponent implements OnChanges, OnDestroy {
   public form: FormGroup;
   private readonly destroy$ = new Subject<void>();
 
+  // Enum per i template
+  public aggregationTypes = Object.values(AggregationType);
+  public fascicoloTypes = Object.values(FascicoloType);
+  public faseTypes = Object.values(ProcedimentoFaseType);
+  public assegnazioneTypes = Object.values(AssegnazioneType);
+
   constructor(private readonly fb: FormBuilder) {
     this.form = this.fb.group({
-      fascicolo: [null],
-      volume: [null],
-      serie: [null],
+      tipoAggregazione: [null],
+      idAggregazione: [null],
+      tipoFascicolo: [null],
+      dataApertura: [null],
+      dataChiusura: [null],
+      procedimento: this.fb.group({
+        materia: [null],
+        denominazioneProcedimento: [null],
+        URICatalogo: [null],
+        fasi: this.fb.array([]), // Array dinamico di fasi
+      }),
+      assegnazione: this.fb.group({
+        tipoAssegnazione: [null],
+        soggettoAssegn: [null], // Gestibile come ID o oggetto in base alla UI
+        dataInizioAssegn: [null],
+        dataFineAssegn: [null],
+      }),
     });
 
     this.form.valueChanges.pipe(takeUntil(this.destroy$)).subscribe((value) => {
@@ -44,9 +70,33 @@ export class AggregateFiltersComponent implements OnChanges, OnDestroy {
     });
   }
 
+  public get fasiFormArray(): FormArray {
+    return this.form.get('procedimento.fasi') as FormArray;
+  }
+
+  public addFase(emitEvent: boolean = true): void {
+    const faseGroup = this.fb.group({
+      tipoFase: [null],
+      dataInizioFase: [null],
+      dataFineFase: [null],
+    });
+    this.fasiFormArray.push(faseGroup, { emitEvent });
+  }
+
+  public removeFase(index: number): void {
+    this.fasiFormArray.removeAt(index);
+  }
+
   public ngOnChanges(changes: SimpleChanges): void {
     if (changes['filters']?.currentValue) {
-      this.form.patchValue(changes['filters'].currentValue, { emitEvent: false });
+      const newValues = changes['filters'].currentValue as AggregateFilterValues;
+
+      this.fasiFormArray.clear({ emitEvent: false });
+      if (newValues.procedimento?.fasi) {
+        newValues.procedimento.fasi.forEach(() => this.addFase(false));
+      }
+
+      this.form.patchValue(newValues, { emitEvent: false });
     }
   }
 
@@ -55,7 +105,7 @@ export class AggregateFiltersComponent implements OnChanges, OnDestroy {
     this.destroy$.complete();
   }
 
-  public getError(field: string): ValidationError | undefined {
-    return this.validationResult?.errors.get(`aggregate.${field}`)?.[0];
+  public getError(fieldPath: string): ValidationError | undefined {
+    return this.validationResult?.errors.get(`aggregate.${fieldPath}`)?.[0];
   }
 }
