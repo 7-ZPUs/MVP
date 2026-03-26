@@ -79,6 +79,7 @@ export interface SubjectFieldDefinition {
   label: string;
   type: FilterFieldType;
   required: boolean;
+  options?: { label: string; value: any }[]; // Solo per ENUM
 }
 
 export interface ISubjectDetailStrategy {

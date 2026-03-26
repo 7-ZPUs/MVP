@@ -115,23 +115,23 @@ _Visual elements. Not started._
 
 | Component                 | Status | Est. Time | Description               |
 | :------------------------ | :----: | :-------: | :------------------------ |
-| `SearchPageComponent`     |   🔴   |    6h     | Main orchestrator         |
+| `SearchPageComponent`     |   ✅   |    6h     | Main orchestrator         |
 | `DocumentViewerComponent` |   🔴   |    6h     | Document viewer container |
 
 ### Dumb Components (Presentational)
 
 | Component                      | Status | Est. Time | Description         |
 | :----------------------------- | :----: | :-------: | :------------------ |
-| `SearchBarComponent`           |   🔴   |    1h     | Query input         |
+| `SearchBarComponent`           |   ✅   |    1h     | Query input         |
 | `AdvancedFilterPanelComponent` |   ✅   |    4h     | Filter coordination |
-| `SubjectFilterComponent`       |   🔴   |    4h     | Wizard logic        |
+| `SubjectFilterComponent`       |   ✅   |    4h     | Wizard logic        |
 | `CommonFiltersComponent`       |   ✅   |    2h     | ROI Form            |
 | `DiDaiFiltersComponent`        |   ✅   |    2h     | Form                |
 | `AggregateFiltersComponent`    |   ✅   |    2h     | Form                |
-| `CustomMetaFilterComponent`    |   🔴   |    3h     | Single entrance     |
-| `SubjectDetailFormComponent`   |   🔴   |    4h     | Strategy renderer   |
-| `FilterValueInputComponent`    |   🔴   |    2h     | Generic input       |
-| `SearchResultsComponent`       |   🔴   |    4h     | Grid/List view      |
+| `CustomMetaFilterComponent`    |   ✅   |    3h     | Single entrance     |
+| `SubjectDetailFormComponent`   |   ✅   |    4h     | Strategy renderer   |
+| `FilterValueInputComponent`    |   ✅   |    2h     | Generic input       |
+| `SearchResultsComponent`       |   ✅   |    4h     | Grid/List view      |
 | `SemanticIndexStatusComponent` |   🔴   |    1h     | Status pill         |
 | `PreviewPanelComponent`        |   🔴   |    3h     | Metadata view       |
 
@@ -142,4 +142,4 @@ _Visual elements. Not started._
 | `AsyncStateWrapperComponent` |   🔴   |    2h     | Loading/Error states |
 | `InlineErrorComponent`       |   🔴   |    1h     | Error display        |
 | `FieldErrorComponent`        |   🔴   |    1h     | Validation msg       |
-| `EmptyStateComponent`        |   🔴   |    1h     | No results msg       |
+| `EmptyStateComponent`        |   ✅   |    1h     | No results msg       |

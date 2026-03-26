@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { EmptyStateComponent } from '../empty-state.component/empty-state.component';
+import { EmptyStateComponent } from '../../../../../shared/ui/dumb/empty-state.component/empty-state.component';
 import { SearchResult } from '../../../../../shared/domain/metadata';
 
 @Component({
