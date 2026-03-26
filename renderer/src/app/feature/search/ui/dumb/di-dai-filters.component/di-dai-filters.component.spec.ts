@@ -1,14 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { SimpleChange } from '@angular/core';
 import { By } from '@angular/platform-browser';
+import { ReactiveFormsModule } from '@angular/forms';
+import { SimpleChange } from '@angular/core';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 import { DiDaiFiltersComponent } from './di-dai-filters.component';
-import {
-  DiDaiFilterValues,
-  ValidationResult,
-  ValidationError,
-} from '../../../../../shared/domain/metadata';
+import { RegisterType, ModificationType } from '../../../../../shared/domain/metadata/search.enum';
 
 describe('DiDaiFiltersComponent', () => {
   let component: DiDaiFiltersComponent;
@@ -16,7 +13,7 @@ describe('DiDaiFiltersComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [DiDaiFiltersComponent],
+      imports: [DiDaiFiltersComponent, ReactiveFormsModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(DiDaiFiltersComponent);
@@ -24,82 +21,145 @@ describe('DiDaiFiltersComponent', () => {
     fixture.detectChanges();
   });
 
-  it('dovrebbe istanziare il form correttamente', () => {
-    expect(component.form).toBeDefined();
+  it('dovrebbe istanziarsi correttamente con la struttura base', () => {
+    expect(component).toBeTruthy();
+    expect(component.form.contains('registrazione')).toBe(true);
+    expect(component.form.contains('identificativoFormato')).toBe(true);
+    expect(component.form.contains('verifica')).toBe(true);
+    expect(component.tracciatureFormArray.length).toBe(0);
   });
 
-  it('ngOnChanges() dovrebbe aggiornare il form senza emettere eventi', () => {
+  it('dovrebbe emettere filtersChanged quando un valore del form cambia', async () => {
     const emitSpy = vi.spyOn(component.filtersChanged, 'emit');
-    // Usiamo unknown per aggirare i controlli TypeScript sui mock parziali
-    const incomingFilters = {
-      tipologiaRegistro: 'PROTOCOLLO',
-      numeroRegistro: '123',
-    } as unknown as DiDaiFilterValues;
 
-    component.ngOnChanges({
-      filters: new SimpleChange(null, incomingFilters, true),
-    });
+    // Modifichiamo un campo base
+    component.form.patchValue({ tipologia: 'Test Tipo' });
 
-    expect(component.form.value.tipologiaRegistro).toBe('PROTOCOLLO');
-    expect(component.form.value.numeroRegistro).toBe('123');
-    expect(emitSpy).not.toHaveBeenCalled();
+    // Verifichiamo che l'evento sia stato emesso con l'oggetto aggiornato
+    expect(emitSpy).toHaveBeenCalled();
+    const emittedValue = emitSpy.mock.lastCall?.[0];
+    expect(emittedValue?.tipologia).toBe('Test Tipo');
   });
 
-  it("ngOnChanges() non dovrebbe fare nulla se non ci sono cambiamenti nell'input filters (copertura ramo falso)", () => {
-    const patchSpy = vi.spyOn(component.form, 'patchValue');
+  describe('Gestione FormArray Tracciature', () => {
+    it('dovrebbe aggiungere una nuova tracciatura vuota', () => {
+      expect(component.tracciatureFormArray.length).toBe(0);
 
-    component.ngOnChanges({
-      validationResult: new SimpleChange(null, { isValid: true, errors: new Map() }, true),
+      component.addTracciatura();
+
+      expect(component.tracciatureFormArray.length).toBe(1);
+      expect(component.tracciatureFormArray.at(0).value).toEqual({
+        tipoModifica: null,
+        dataModifica: null,
+        oraModifica: null,
+        idVersionePrec: null,
+      });
     });
 
-    component.ngOnChanges({
-      filters: new SimpleChange(null, null, false),
+    it('dovrebbe rimuovere una tracciatura esistente', () => {
+      component.addTracciatura();
+      component.addTracciatura();
+      expect(component.tracciatureFormArray.length).toBe(2);
+
+      component.removeTracciatura(0);
+
+      expect(component.tracciatureFormArray.length).toBe(1);
+    });
+  });
+
+  describe('ngOnChanges (Patching dei dati esterni)', () => {
+    it("dovrebbe aggiornare i campi statici e ricostruire l'array tracciature", () => {
+      const mockFilters = {
+        tipologia: 'Bando',
+        registrazione: { tipologiaRegistro: RegisterType.PROTOCOLLO },
+        tracciatureModifiche: [
+          { tipoModifica: ModificationType.INTEGRAZIONE, dataModifica: '2026-03-26' },
+          { tipoModifica: ModificationType.ANNULLAMENTO, dataModifica: '2026-03-27' },
+        ],
+      } as any;
+
+      component.ngOnChanges({
+        filters: new SimpleChange(null, mockFilters, true),
+      });
+
+      // Verifica campi statici
+      expect(component.form.get('tipologia')?.value).toBe('Bando');
+      expect(component.form.get('registrazione.tipologiaRegistro')?.value).toBe(
+        RegisterType.PROTOCOLLO,
+      );
+
+      // Verifica campi dinamici
+      expect(component.tracciatureFormArray.length).toBe(2);
+      expect(component.tracciatureFormArray.at(0).get('tipoModifica')?.value).toBe(
+        ModificationType.INTEGRAZIONE,
+      );
+      expect(component.tracciatureFormArray.at(1).get('tipoModifica')?.value).toBe(
+        ModificationType.ANNULLAMENTO,
+      );
     });
 
-    expect(patchSpy).not.toHaveBeenCalled();
+    it('non dovrebbe fallire se ngOnChanges non riceve il parametro filters', () => {
+      expect(() => component.ngOnChanges({})).not.toThrow();
+    });
+
+    it("dovrebbe svuotare l'array se i nuovi filtri non hanno tracciatureModifiche", () => {
+      component.addTracciatura();
+      expect(component.tracciatureFormArray.length).toBe(1);
+
+      component.ngOnChanges({
+        filters: new SimpleChange(null, { tipologia: 'Test' }, false),
+      });
+
+      expect(component.tracciatureFormArray.length).toBe(0);
+    });
   });
 
-  it('ngOnDestroy() dovrebbe emettere sul subject destroy$ per evitare memory leak', () => {
-    const nextSpy = vi.spyOn((component as any).destroy$, 'next');
-    const completeSpy = vi.spyOn((component as any).destroy$, 'complete');
+  describe('getError (Gestione Errori di Validazione)', () => {
+    it("dovrebbe restituire l'errore corretto navigando il path", () => {
+      component.validationResult = {
+        isValid: false,
+        errors: new Map([
+          [
+            'diDai.registrazione.numeroRegistrazione',
+            [{ message: 'Numero invalido', code: 'ERR_1', field: '' }],
+          ],
+        ]),
+      };
 
-    component.ngOnDestroy();
+      const error = component.getError('registrazione.numeroRegistrazione');
+      expect(error).toBeTruthy();
+      expect(error?.message).toBe('Numero invalido');
+    });
 
-    expect(nextSpy).toHaveBeenCalled();
-    expect(completeSpy).toHaveBeenCalled();
+    it("dovrebbe restituire undefined se l'errore non esiste o validationResult è null", () => {
+      component.validationResult = null;
+      expect(component.getError('campoInesistente')).toBeUndefined();
+
+      component.validationResult = { isValid: true, errors: new Map() };
+      expect(component.getError('registrazione.tipologiaFlusso')).toBeUndefined();
+    });
   });
 
-  it('dovrebbe mostrare i messaggi di errore nel template HTML (copertura rami *ngIf)', () => {
-    const mockErrorTipo: ValidationError = {
-      field: 'diDai.tipologiaRegistro',
-      message: 'Errore tipologia',
-      code: 'E1',
-    };
-    const mockErrorNum: ValidationError = {
-      field: 'diDai.numeroRegistro',
-      message: 'Errore numero',
-      code: 'E2',
-    };
+  it('dovrebbe innescare i metodi di tracciatura cliccando fisicamente i bottoni nel template HTML', async () => {
+    const buttons = fixture.debugElement.queryAll(By.css('button'));
+    const addBtn = buttons.find((b) => b.nativeElement.textContent.includes('+ Aggiungi'));
 
-    const mockValidationResult: ValidationResult = {
-      isValid: false,
-      errors: new Map([
-        ['diDai.tipologiaRegistro', [mockErrorTipo]],
-        ['diDai.numeroRegistro', [mockErrorNum]],
-      ]),
-    };
+    expect(addBtn).toBeTruthy();
+    addBtn?.triggerEventHandler('click', null);
 
-    // SetInput aggira NG0100
-    fixture.componentRef.setInput('validationResult', mockValidationResult);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(component.tracciatureFormArray.length).toBe(1);
+
+    const updatedButtons = fixture.debugElement.queryAll(By.css('button'));
+    const removeBtn = updatedButtons.find((b) => b.nativeElement.textContent.includes('✕ Rimuovi'));
+
+    expect(removeBtn).toBeTruthy();
+    removeBtn?.triggerEventHandler('click', null);
+
     fixture.detectChanges();
 
-    const errTipoEl = fixture.debugElement.query(By.css('#err-tipo-reg'));
-    const errNumEl = fixture.debugElement.query(By.css('#err-num-reg'));
-
-    expect(errTipoEl).toBeTruthy();
-    expect(errTipoEl.nativeElement.textContent.trim()).toBe('Errore tipologia');
-
-    expect(errNumEl).toBeTruthy();
-    expect(errNumEl.nativeElement.textContent.trim()).toBe('Errore numero');
+    expect(component.tracciatureFormArray.length).toBe(0);
   });
 });

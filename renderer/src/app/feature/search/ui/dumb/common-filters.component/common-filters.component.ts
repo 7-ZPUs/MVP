@@ -16,6 +16,8 @@ import {
   ValidationResult,
   ValidationError,
 } from '../../../../../shared/domain/metadata';
+// Assicurati che il percorso dell'enum sia corretto
+import { DocumentType } from '../../../../../shared/domain/metadata/search.enum';
 
 @Component({
   selector: 'app-common-filters',
@@ -28,18 +30,27 @@ export class CommonFiltersComponent implements OnChanges, OnDestroy {
   @Input() validationResult: ValidationResult | null = null;
 
   @Output() filtersChanged = new EventEmitter<CommonFilterValues>();
-  @Output() validationError = new EventEmitter<{ field: string; error: ValidationError | null }>();
 
   public form: FormGroup;
   private readonly destroy$ = new Subject<void>();
 
+  public documentTypes = Object.values(DocumentType);
+
   constructor(private readonly fb: FormBuilder) {
     this.form = this.fb.group({
-      chiaveDescrittiva: [null],
-      classificazione: [null],
-      conservazione: [null],
+      chiaveDescrittiva: this.fb.group({
+        oggetto: [null],
+        paroleChiave: [null],
+      }),
+      classificazione: this.fb.group({
+        codice: [null],
+        descrizione: [null],
+      }),
+      conservazione: this.fb.group({
+        valore: [null],
+      }),
       note: [null],
-      tipo: [null],
+      tipoDocumento: [null],
     });
 
     this.form.valueChanges.pipe(takeUntil(this.destroy$)).subscribe((value) => {
@@ -58,8 +69,8 @@ export class CommonFiltersComponent implements OnChanges, OnDestroy {
     this.destroy$.complete();
   }
 
-  public getError(field: string): ValidationError | undefined {
-    const errors = this.validationResult?.errors.get(`common.${field}`);
+  public getError(fieldPath: string): ValidationError | undefined {
+    const errors = this.validationResult?.errors.get(`common.${fieldPath}`);
     return errors ? errors[0] : undefined;
   }
 }
