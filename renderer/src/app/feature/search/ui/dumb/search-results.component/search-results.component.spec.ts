@@ -3,7 +3,6 @@ import { By } from '@angular/platform-browser';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 import { SearchResultsComponent } from './search-results.component';
-import { EmptyStateComponent } from '../empty-state.component/empty-state.component';
 import { SearchResult } from '../../../../../shared/domain/metadata';
 
 describe('SearchResultsComponent', () => {

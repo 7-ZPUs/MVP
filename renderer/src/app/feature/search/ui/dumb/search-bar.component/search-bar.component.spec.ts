@@ -1,10 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { SimpleChange } from '@angular/core';
 import { By } from '@angular/platform-browser';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 import { SearchBarComponent } from './search-bar.component';
-import { SearchQuery, SearchQueryType } from '../../../../../shared/domain/metadata';
 
 enum MockQueryType {
   FREE = 'FREE',
