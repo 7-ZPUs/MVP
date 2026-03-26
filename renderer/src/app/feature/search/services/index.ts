@@ -1,2 +1,2 @@
 export type { SemanticIndexFacade } from './semantic-index-facade';
-export type { SearchFacade } from './search-facade';
+export { SearchFacade } from './search-facade';

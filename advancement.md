@@ -132,14 +132,14 @@ _Visual elements. Not started._
 | `SubjectDetailFormComponent`   |   ✅   |    4h     | Strategy renderer   |
 | `FilterValueInputComponent`    |   ✅   |    2h     | Generic input       |
 | `SearchResultsComponent`       |   ✅   |    4h     | Grid/List view      |
-| `SemanticIndexStatusComponent` |   🔴   |    1h     | Status pill         |
+| `SemanticIndexStatusComponent` |   ✅   |    1h     | Status pill         |
 | `PreviewPanelComponent`        |   🔴   |    3h     | Metadata view       |
 
 ### Shared Components
 
 | Component                    | Status | Est. Time | Description          |
 | :--------------------------- | :----: | :-------: | :------------------- |
-| `AsyncStateWrapperComponent` |   🔴   |    2h     | Loading/Error states |
-| `InlineErrorComponent`       |   🔴   |    1h     | Error display        |
-| `FieldErrorComponent`        |   🔴   |    1h     | Validation msg       |
+| `AsyncStateWrapperComponent` |   ✅   |    2h     | Loading/Error states |
+| `InlineErrorComponent`       |   ✅   |    1h     | Error display        |
+| `FieldErrorComponent`        |   ✅   |    1h     | Validation msg       |
 | `EmptyStateComponent`        |   ✅   |    1h     | No results msg       |
