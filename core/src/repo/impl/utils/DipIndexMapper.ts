@@ -3,35 +3,16 @@ import {
   DocumentClassXml,
   FileXml,
 } from "../../xml-types/DipIndexXml";
-import { Metadata } from "../../../value-objects/Metadata";
-
-export interface MappedProcess {
-  uuid: string;
-  documentClassUuid: string;
-  aipRoot: string;
-  metadata: Metadata[];
-}
-
-export interface MappedDocument {
-  uuid: string;
-  processUuid: string;
-  documentPath: string;
-  metadataFilename: string;
-}
-
-export interface MappedFile {
-  uuid: string;
-  documentUuid: string;
-  filename: string;
-  path: string;
-  isMain: boolean;
-}
+import { ParsedProcess, ParsedDocument, ParsedFile } from "./IDipParser";
 
 /**
  * Maps parsed DiPIndex XML into domain-relevant data structures.
  * The actual entity construction (with DB-assigned IDs) happens
  * in LocalPackageReaderAdapter. This class extracts the structural
  * information from the XML index.
+ *
+ * Hashes are not available here — they are read from the metadata XML
+ * by LocalPackageReaderAdapter and populated separately.
  */
 export class DipIndexMapper {
   private readonly index: DipIndexXml;
@@ -48,8 +29,8 @@ export class DipIndexMapper {
     return this.index.PackageContent.DiPDocuments.DocumentClass;
   }
 
-  public extractProcesses(): MappedProcess[] {
-    const result: MappedProcess[] = [];
+  public extractProcesses(): ParsedProcess[] {
+    const result: ParsedProcess[] = [];
     for (const dc of this.extractDocumentClasses()) {
       for (const aip of dc.AiP) {
         result.push({
@@ -63,8 +44,8 @@ export class DipIndexMapper {
     return result;
   }
 
-  public extractDocuments(): MappedDocument[] {
-    const result: MappedDocument[] = [];
+  public extractDocuments(): ParsedDocument[] {
+    const result: ParsedDocument[] = [];
     for (const dc of this.extractDocumentClasses()) {
       for (const aip of dc.AiP) {
         for (const doc of aip.Document) {
@@ -80,8 +61,8 @@ export class DipIndexMapper {
     return result;
   }
 
-  public extractFiles(): MappedFile[] {
-    const result: MappedFile[] = [];
+  public extractFiles(): ParsedFile[] {
+    const result: ParsedFile[] = [];
     for (const dc of this.extractDocumentClasses()) {
       for (const aip of dc.AiP) {
         for (const doc of aip.Document) {
@@ -108,7 +89,7 @@ export class DipIndexMapper {
     documentUuid: string,
     basePath: string,
     isMain: boolean,
-  ): MappedFile {
+  ): ParsedFile {
     const filename = fileXml["#text"];
     return {
       uuid: fileXml["@_uuid"],

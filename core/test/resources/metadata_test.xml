@@ -2,6 +2,10 @@
 <Document>
     <DocumentoInformatico>
         <IdDoc>
+            <ImprontaCrittograficaDelDocumento>
+                <Impronta>abc123hashValue=</Impronta>
+                <Algoritmo>SHA-256</Algoritmo>
+            </ImprontaCrittograficaDelDocumento>
             <Identificativo>12345</Identificativo>
         </IdDoc>
         <Riservato>true</Riservato>

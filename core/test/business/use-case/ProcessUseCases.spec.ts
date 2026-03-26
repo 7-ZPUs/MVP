@@ -10,7 +10,7 @@ import { IntegrityStatusEnum } from "../../../src/value-objects/IntegrityStatusE
 import { IDocumentRepository } from "../../../src/repo/IDocumentRepository";
 
 describe("Process use-cases", () => {
-  it("GetProcessByIdUC delega a repo.getById", () => {
+  it("TU-F-B-22: GetProcessByIdUC.execute() with valid process id should return the correct process", () => {
     const entity = new Process("dc-uuid", "proc-2", []);
     const repo: Pick<IProcessRepository, "getById"> = {
       getById: vi.fn().mockReturnValue(entity),
@@ -23,7 +23,7 @@ describe("Process use-cases", () => {
     expect(result).toBe(entity);
   });
 
-  it("GetProcessByDocumentClassUC delega a repo.getByDocumentClassId", () => {
+  it("TU-F-B-23: GetProcessByDocumentClassUC.execute() with valid document class id should return list of processes", () => {
     const list = [new Process("dc-uuid", "proc-3", [])];
     const repo: Pick<IProcessRepository, "getByDocumentClassId"> = {
       getByDocumentClassId: vi.fn().mockReturnValue(list),
@@ -36,7 +36,7 @@ describe("Process use-cases", () => {
     expect(result).toBe(list);
   });
 
-  it("GetProcessByStatusUC delega a repo.getByStatus", () => {
+  it("TU-F-B-24: GetProcessByStatusUC.execute() with matching status should return list of processes", () => {
     const list = [new Process("dc-uuid", "proc-4", [])];
     const repo: Pick<IProcessRepository, "getByStatus"> = {
       getByStatus: vi.fn().mockReturnValue(list),
@@ -49,7 +49,7 @@ describe("Process use-cases", () => {
     expect(result).toBe(list);
   });
 
-  it("CheckProcessIntegrityStatusUC aggiorna lo status aggregato dai document", () => {
+  it("TU-F-B-25: CheckProcessIntegrityStatusUC.execute() with valid process id should update and return aggregated status", () => {
     const processRepo: Pick<
       IProcessRepository,
       "getById" | "updateIntegrityStatus"
@@ -82,7 +82,7 @@ describe("Process use-cases", () => {
     expect(result).toBe(IntegrityStatusEnum.VALID);
   });
 
-  it("CheckProcessIntegrityStatusUC lancia errore se processo inesistente", () => {
+  it("TU-F-B-26: CheckProcessIntegrityStatusUC.execute() with non-existent process id should throw an error", () => {
     const processRepo: Pick<
       IProcessRepository,
       "getById" | "updateIntegrityStatus"

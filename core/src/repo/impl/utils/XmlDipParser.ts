@@ -26,6 +26,7 @@ export class XmlDipParser implements IDipParser {
           "MoreData",
           "RappresentationInformationUUID",
           "RepresentationInformation",
+          "IndiceAllegati",
         ]);
         return alwaysArray.has(name);
       },
@@ -78,7 +79,9 @@ export class XmlDipParser implements IDipParser {
                 const nested = extractMetadata(item);
                 return [new Metadata(key, nested, MetadataType.COMPOSITE)];
               }
-              return [new Metadata(key, String(item), this.getMetadataType(item))];
+              return [
+                new Metadata(key, String(item), this.getMetadataType(item)),
+              ];
             });
           }
 
@@ -88,7 +91,9 @@ export class XmlDipParser implements IDipParser {
             return [new Metadata(key, nested, MetadataType.COMPOSITE)];
           }
 
-          return [new Metadata(key, String(value), this.getMetadataType(value))];
+          return [
+            new Metadata(key, String(value), this.getMetadataType(value)),
+          ];
         });
     };
 
@@ -113,7 +118,9 @@ export class XmlDipParser implements IDipParser {
             if (typeof item === "object" && item !== null) {
               return extractMetadata(item);
             }
-            return [new Metadata(key, String(item), this.getMetadataType(item))];
+            return [
+              new Metadata(key, String(item), this.getMetadataType(item)),
+            ];
           });
           return [new Metadata(key, nestedList, MetadataType.COMPOSITE)];
         }
@@ -138,8 +145,8 @@ export class XmlDipParser implements IDipParser {
   }
 
   private getMetadataType(value: any): MetadataType {
-      if (typeof value === "number") return MetadataType.NUMBER;
-      if (typeof value === "boolean") return MetadataType.BOOLEAN;
-      return MetadataType.STRING;
+    if (typeof value === "number") return MetadataType.NUMBER;
+    if (typeof value === "boolean") return MetadataType.BOOLEAN;
+    return MetadataType.STRING;
   }
 }

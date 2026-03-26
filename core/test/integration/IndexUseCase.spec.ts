@@ -157,7 +157,6 @@ describe("Index use-case integration tests", () => {
     await fs.mkdir(path.dirname(dbPath), { recursive: true });
 
     dbProvider = new DatabaseProvider(dbPath);
-    dbProvider.db.pragma("foreign_keys = OFF");
 
     const packageReader = new LocalPackageReaderAdapter(
       new XmlDipParser(),

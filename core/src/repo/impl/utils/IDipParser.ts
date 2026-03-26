@@ -2,12 +2,6 @@ import { Metadata } from "../../../value-objects/Metadata";
 
 export const DIP_PARSER_TOKEN = Symbol("IDiPIndexParser");
 
-export interface ParsedDocumentClass {
-  uuid: string;
-  name: string;
-  timestamp?: string;
-}
-
 export interface ParsedProcess {
   uuid: string;
   documentClassUuid: string;
@@ -32,7 +26,7 @@ export interface ParsedFile {
 
 export interface ParsedDipIndex {
   dipUuid: string;
-  documentClasses: ParsedDocumentClass[];
+  documentClasses: { uuid: string; name: string; timestamp?: string }[];
   processes: ParsedProcess[];
   documents: ParsedDocument[];
   files: ParsedFile[];

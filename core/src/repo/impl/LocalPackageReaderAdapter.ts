@@ -12,6 +12,7 @@ import {
   type IFileSystemProvider,
 } from "./utils/IFileSystemProvider";
 import type { ParsedDipIndex } from "./utils/IDipParser";
+import { DocumentMetadataHashMapper } from "./utils/DocumentMetadataHashMapper";
 import { inject, injectable } from "tsyringe";
 
 const DIP_INDEX_FILENAME_REGEX = /^DiPIndex\..+\.xml$/;
@@ -21,6 +22,15 @@ export class LocalPackageReaderAdapter implements IPackageReaderPort {
   private currentDipPath?: string;
 
   private currentParsedIndex?: ParsedDipIndex;
+
+  private readonly currentDocumentMetadataByDocUuid = new Map<
+    string,
+    Metadata[]
+  >();
+
+  private readonly currentHashByFileUuid = new Map<string, string>();
+
+  private readonly metadataHashMapper = new DocumentMetadataHashMapper();
 
   constructor(
     @inject(DIP_PARSER_TOKEN)
@@ -57,8 +67,54 @@ export class LocalPackageReaderAdapter implements IPackageReaderPort {
 
     this.currentDipPath = dipPath;
     this.currentParsedIndex = parsedIndex;
+    this.currentDocumentMetadataByDocUuid.clear();
+    this.currentHashByFileUuid.clear();
 
     return parsedIndex;
+  }
+
+  private resolveMetadataPath(
+    dipPath: string,
+    aipRoot: string,
+    documentPath: string,
+    metadataFilename: string,
+  ): string {
+    let metadataPath = path.join(aipRoot, documentPath, metadataFilename);
+    if (aipRoot && documentPath.startsWith(aipRoot)) {
+      metadataPath = path.join(documentPath, metadataFilename);
+    }
+    return path.join(dipPath, metadataPath);
+  }
+
+  private async getOrReadDocumentMetadata(
+    dipPath: string,
+    doc: ParsedDipIndex["documents"][number],
+    processAipRootByUuid: Map<string, string>,
+  ): Promise<Metadata[]> {
+    const cached = this.currentDocumentMetadataByDocUuid.get(doc.uuid);
+    if (cached) {
+      return cached;
+    }
+
+    const aipRoot = processAipRootByUuid.get(doc.processUuid) ?? "";
+    const metadataPath = this.resolveMetadataPath(
+      dipPath,
+      aipRoot,
+      doc.documentPath,
+      doc.metadataFilename,
+    );
+
+    let metadata: Metadata[] = [];
+    try {
+      metadata = this.parser.parseDocumentMetadata(
+        await this.fileSystemProvider.readTextFile(metadataPath),
+      );
+    } catch {
+      metadata = [];
+    }
+
+    this.currentDocumentMetadataByDocUuid.set(doc.uuid, metadata);
+    return metadata;
   }
 
   public async readDip(dipPath: string): Promise<Dip> {
@@ -107,24 +163,11 @@ export class LocalPackageReaderAdapter implements IPackageReaderPort {
       parsedIndex.processes.map((process) => [process.uuid, process.aipRoot]),
     );
     for (const doc of parsedIndex.documents) {
-      const aipRoot = processAipRootByUuid.get(doc.processUuid) ?? "";
-      let metadataPath = path.join(
-        aipRoot,
-        doc.documentPath,
-        doc.metadataFilename,
+      const metadata = await this.getOrReadDocumentMetadata(
+        dipPath,
+        doc,
+        processAipRootByUuid,
       );
-      if (aipRoot && doc.documentPath.startsWith(aipRoot)) {
-        metadataPath = path.join(doc.documentPath, doc.metadataFilename);
-      }
-      metadataPath = path.join(dipPath, metadataPath);
-      let metadata: Metadata[] = [];
-      try {
-        metadata = this.parser.parseDocumentMetadata(
-          await this.fileSystemProvider.readTextFile(metadataPath),
-        );
-      } catch {
-        metadata = [];
-      }
       yield new Document(doc.uuid, metadata, doc.processUuid);
     }
   }
@@ -134,22 +177,45 @@ export class LocalPackageReaderAdapter implements IPackageReaderPort {
     const processAipRootByUuid = new Map(
       parsedIndex.processes.map((process) => [process.uuid, process.aipRoot]),
     );
-    const documentAipRootByUuid = new Map(
-      parsedIndex.documents.map((document) => [
-        document.uuid,
-        processAipRootByUuid.get(document.processUuid) ?? "",
-      ]),
+    const documentByUuid = new Map(
+      parsedIndex.documents.map((doc) => [doc.uuid, doc]),
     );
+    const mainFileUuidByDocumentUuid = new Map(
+      parsedIndex.files
+        .filter((file) => file.isMain)
+        .map((file) => [file.documentUuid, file.uuid]),
+    );
+    for (const doc of parsedIndex.documents) {
+      const metadata = await this.getOrReadDocumentMetadata(
+        dipPath,
+        doc,
+        processAipRootByUuid,
+      );
+      const extractedHashes = this.metadataHashMapper.map(
+        metadata,
+        mainFileUuidByDocumentUuid.get(doc.uuid),
+      );
+      for (const [fileUuid, hash] of extractedHashes.entries()) {
+        this.currentHashByFileUuid.set(fileUuid, hash);
+      }
+    }
+
     for (const file of parsedIndex.files) {
-      const aipRoot = documentAipRootByUuid.get(file.documentUuid) ?? "";
+      const doc = documentByUuid.get(file.documentUuid);
+      const aipRoot = doc
+        ? (processAipRootByUuid.get(doc.processUuid) ?? "")
+        : "";
+
       let fullPath = file.path;
       if (aipRoot && !file.path.startsWith(aipRoot)) {
         fullPath = path.join(aipRoot, file.path);
       }
+      const hash = this.currentHashByFileUuid.get(file.uuid) ?? "";
+
       yield new File(
         file.filename,
         fullPath,
-        "",
+        hash,
         file.isMain,
         file.documentUuid,
       );

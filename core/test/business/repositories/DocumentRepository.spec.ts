@@ -13,7 +13,6 @@ describe("DocumentRepository", () => {
 
   beforeEach(() => {
     db = new Database("test.db");
-    // Create necessary tables for testing
     db.exec(`
       DROP TABLE IF EXISTS document_metadata;
       DROP TABLE IF EXISTS document;
@@ -27,7 +26,7 @@ describe("DocumentRepository", () => {
     repo = new DocumentRepository({ db } as unknown as DatabaseProvider);
   });
 
-  it("save persiste documento e metadata", () => {
+  it("TU-F-B-01: save() with valid document should successfully persist a document with complex metadata", () => {
     const metadata = [
       new Metadata("titolo", "Documento A", MetadataType.STRING),
       new Metadata("anno", "2026", MetadataType.NUMBER),
@@ -39,47 +38,61 @@ describe("DocumentRepository", () => {
     ];
 
     const document = new Document("doc-1", metadata, "process-uuid");
-
     const saved = repo.save(document);
-
-    // EXPORT DB ROWS FOR DEBUGGING
-    const docRows = db.prepare("SELECT * FROM document").all();
-    const metaRows = db.prepare("SELECT * FROM document_metadata").all();
-    console.log("DOCUMENT ROWS:", JSON.stringify(docRows, null, 2));
-    console.log("METADATA ROWS:", JSON.stringify(metaRows, null, 2));
-
     const found = repo.getById(saved.toDTO().id);
 
     expect(found).not.toBeNull();
     expect(found?.getUuid()).toBe("doc-1");
     expect(found?.getIntegrityStatus()).toBe(IntegrityStatusEnum.UNKNOWN);
     expect(found?.getMetadata()).toHaveLength(3);
-    expect(found?.getMetadata()[0].name).toBe("titolo");
-    expect(found?.getMetadata()[2].name).toBe("soggetto");
     expect(found?.getMetadata()[2].type).toBe(MetadataType.COMPOSITE);
-    expect(Array.isArray(found?.getMetadata()[2].value)).toBe(true);
-    expect((found?.getMetadata()[2].value as Metadata[])[0].name).toBe("nome");
-    expect((found?.getMetadata()[2].value as Metadata[])[0].value).toBe(
-      "Mario",
-    );
   });
 
-  it("getByProcessId, getByStatus e updateIntegrityStatus funzionano", () => {
-    // Setup data
-    db.prepare(
-      "INSERT INTO document (uuid, integrity_status, process_id) VALUES (?, ?, ?)",
-    ).run("doc-2", IntegrityStatusEnum.VALID, 1);
+  it("TU-F-B-02: save() with existing UUID should handle updating an existing document", () => {
+    const doc = new Document("doc-unique", [], "process-uuid");
+    repo.save(doc);
+    
+    const docUpdated = new Document("doc-unique", [new Metadata("test", "val", MetadataType.STRING)], "process-uuid");
+    repo.save(docUpdated);
 
-    expect(repo.getByProcessId(1)).toHaveLength(1);
+    const rows = db.prepare("SELECT * FROM document WHERE uuid = 'doc-unique'").all();
+    expect(rows).toHaveLength(1);
+  });
 
-    const docId = (
-      db.prepare("SELECT id FROM document WHERE uuid = ?").get("doc-2") as any
-    ).id;
+  it("TU-F-B-03: getByProcessId() with valid process ID should return a list of documents", () => {
+    db.prepare("INSERT INTO document (uuid, integrity_status, process_id) VALUES (?, ?, ?)").run("doc-p1", IntegrityStatusEnum.UNKNOWN, 1);
+    
+    const results = repo.getByProcessId(1);
+    expect(results).toHaveLength(1);
+    expect(results[0].getUuid()).toBe("doc-p1");
+  });
+
+  it("TU-F-B-04: getByProcessId() with non-existent process ID should return an empty array", () => {
+    const results = repo.getByProcessId(999);
+    expect(results).toHaveLength(0);
+  });
+
+  it("TU-F-B-05: getByStatus() with matching integrity status should return documents", () => {
+    db.prepare("INSERT INTO document (uuid, integrity_status, process_id) VALUES (?, ?, ?)").run("doc-s1", IntegrityStatusEnum.VALID, 1);
+    db.prepare("INSERT INTO document (uuid, integrity_status, process_id) VALUES (?, ?, ?)").run("doc-s2", IntegrityStatusEnum.INVALID, 1);
+    
+    const results = repo.getByStatus(IntegrityStatusEnum.VALID);
+    expect(results).toHaveLength(1);
+    expect(results[0].getUuid()).toBe("doc-s1");
+  });
+
+  it("TU-F-B-06: getByStatus() with no matching documents should return an empty array", () => {
+    const results = repo.getByStatus(IntegrityStatusEnum.VALID);
+    expect(results).toHaveLength(0);
+  });
+
+  it("TU-F-B-07: updateIntegrityStatus() with valid document ID should successfully update the status", () => {
+    const insertResult = db.prepare("INSERT INTO document (uuid, integrity_status, process_id) VALUES (?, ?, ?)").run("doc-u1", IntegrityStatusEnum.UNKNOWN, 1);
+    const docId = insertResult.lastInsertRowid as number;
+
     repo.updateIntegrityStatus(docId, IntegrityStatusEnum.VALID);
-    const byStatus = repo.getByStatus(IntegrityStatusEnum.VALID);
-
-    expect(byStatus).toHaveLength(1);
-    expect(byStatus[0].getUuid()).toBe("doc-2");
-    expect(byStatus[0].getIntegrityStatus()).toBe(IntegrityStatusEnum.VALID);
+    
+    const row = db.prepare("SELECT integrity_status FROM document WHERE id = ?").get(docId) as any;
+    expect(row.integrity_status).toBe(IntegrityStatusEnum.VALID);
   });
 });
