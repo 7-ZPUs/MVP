@@ -11,13 +11,12 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
 
+import { SubjectType, FilterFieldType } from '../../../../../shared/domain/metadata/search.enum';
+
 import {
-  SubjectType,
   SubjectDetails,
-  ISubjectDetailStrategy,
   SubjectFieldDefinition,
-  FilterFieldType,
-} from '../../../../../shared/domain/metadata';
+} from '../../../../../shared/domain/metadata/search-subject-filters-models';
 
 @Component({
   selector: 'app-subject-detail-form',
@@ -26,33 +25,29 @@ import {
   templateUrl: './subject-detail-form.component.html',
 })
 export class SubjectDetailFormComponent implements OnChanges, OnDestroy {
-  @Input() strategyRegistry: Map<SubjectType, ISubjectDetailStrategy> | null = null;
   @Input() subjectType: SubjectType | null = null;
   @Input() details: SubjectDetails | null = null;
+  // Teniamo l'Input per non rompere il parent, ma per ora lo ignoriamo
+  @Input() strategyRegistry: any = null;
 
   @Output() detailsChanged = new EventEmitter<SubjectDetails>();
 
   public form: FormGroup;
   public fields: SubjectFieldDefinition[] = [];
-
   public FieldType = FilterFieldType;
   private readonly destroy$ = new Subject<void>();
 
   constructor(private readonly fb: FormBuilder) {
     this.form = this.fb.group({});
-
     this.form.valueChanges.pipe(takeUntil(this.destroy$)).subscribe((value) => {
       this.detailsChanged.emit(value as SubjectDetails);
     });
   }
 
   public ngOnChanges(changes: SimpleChanges): void {
-    const typeChanged = 'subjectType' in changes || 'strategyRegistry' in changes;
-
-    if (typeChanged && this.subjectType && this.strategyRegistry) {
+    if ('subjectType' in changes && this.subjectType) {
       this.rebuildForm(this.subjectType);
     }
-
     if (changes['details']?.currentValue && Object.keys(this.form.controls).length > 0) {
       this.form.patchValue(changes['details'].currentValue, { emitEvent: false });
     }
@@ -64,15 +59,8 @@ export class SubjectDetailFormComponent implements OnChanges, OnDestroy {
   }
 
   private rebuildForm(type: SubjectType): void {
-    const strategy = this.strategyRegistry?.get(type);
-
-    if (!strategy) {
-      this.fields = [];
-      this.form = this.fb.group({});
-      return;
-    }
-
-    this.fields = strategy.getFields();
+    // --- TEMPORANEO: Switch invece della Strategy ---
+    this.fields = this.getTemporaryFieldsForType(type);
 
     const group: any = {};
     this.fields.forEach((field) => {
@@ -81,9 +69,39 @@ export class SubjectDetailFormComponent implements OnChanges, OnDestroy {
     });
 
     this.form = this.fb.group(group);
-
     this.form.valueChanges.pipe(takeUntil(this.destroy$)).subscribe((value) => {
       this.detailsChanged.emit(value as SubjectDetails);
     });
+  }
+
+  // Fallback temporaneo per mappare i tuoi modelli
+  private getTemporaryFieldsForType(type: SubjectType): SubjectFieldDefinition[] {
+    switch (type) {
+      case SubjectType.PAI:
+        return [
+          {
+            key: 'denominazione',
+            label: 'Denominazione',
+            type: FilterFieldType.TEXT,
+            required: false,
+          },
+          { key: 'codiceIPA', label: 'Codice IPA', type: FilterFieldType.TEXT, required: false },
+        ];
+      case SubjectType.PF:
+        return [
+          { key: 'cognomePF', label: 'Cognome', type: FilterFieldType.TEXT, required: true },
+          { key: 'nomePF', label: 'Nome', type: FilterFieldType.TEXT, required: true },
+        ];
+      default:
+        // Campi di fallback generici per gli altri tipi
+        return [
+          {
+            key: 'identificativo',
+            label: 'Identificativo / CF',
+            type: FilterFieldType.TEXT,
+            required: false,
+          },
+        ];
+    }
   }
 }

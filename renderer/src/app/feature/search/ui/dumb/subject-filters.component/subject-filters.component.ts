@@ -10,7 +10,10 @@ import {
 import { CommonModule } from '@angular/common';
 import { SubjectDetailFormComponent } from '../subject-detail-form.component/subject-detail-form.component';
 
-import { SubjectCriteria, ISubjectDetailStrategy } from '../../../../../shared/domain/metadata';
+import {
+  SubjectCriteria,
+  ISubjectDetailStrategy,
+} from '../../../../../shared/domain/metadata/search-subject-filters-models';
 import { SubjectRoleType, SubjectType } from '../../../../../shared/domain/metadata/search.enum';
 
 @Component({

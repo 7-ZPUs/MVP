@@ -51,6 +51,7 @@ export class AdvancedFilterPanelComponent implements OnInit {
 
   public isExpanded: boolean = true;
   public currentValidationResult: ValidationResult | null = null;
+  public subjectResetCounter: number = 0;
 
   public panelForm!: FormGroup;
 
@@ -112,6 +113,7 @@ export class AdvancedFilterPanelComponent implements OnInit {
 
   public onReset(): void {
     this.panelForm.reset();
+    this.subjectResetCounter++;
     this.filtersReset.emit();
   }
 

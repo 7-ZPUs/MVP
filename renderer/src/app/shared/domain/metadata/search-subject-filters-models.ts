@@ -1,4 +1,6 @@
-import { SubjectRoleType, SubjectType } from './search.enum';
+import { FilterFieldType, SubjectRoleType, SubjectType } from './search.enum';
+
+export interface SubjectDetails {}
 
 // UC-13.3.1: UC-13.3.1.1 - UC-13.3.1.4
 export interface PAIDetails {
@@ -12,14 +14,14 @@ export interface PAIDetails {
 }
 
 // UC-13.3.2: UC-13.3.2.1 - UC-13.3.2.2 , UC-13.3.1.4
-export interface PAEDetails {
+export interface PAEDetails extends SubjectDetails {
   denominazioneAmm: string | null;
   denominazioneUfficio: string | null;
   indirizziDigitali: string[] | null;
 }
 
 // UC-13.3.3: UC-13.3.3.1 - UC-13.3.3.3
-export interface ASDetails {
+export interface ASDetails extends SubjectDetails {
   nomeAssegnatario: string | null;
   cognomeAssegnatario: string | null;
   codiceFiscaleAssegnatario: string | null;
@@ -30,7 +32,7 @@ export interface ASDetails {
 }
 
 // UC-13.3.4: UC-13.3.4.1 , UC-13.3.3.3 , UC-13.3.2.2 , UC-13.3.1.4
-export interface PGDetails {
+export interface PGDetails extends SubjectDetails {
   denominazioneOrga: string | null;
   codiceFiscalePG: string | null;
   partitaIvaPG: string | null;
@@ -39,14 +41,14 @@ export interface PGDetails {
 }
 
 // UC-13.3.5: UC-13.3.3.1 , UC-13.3.3.2 , UC-13.3.1.4
-export interface PFDetails {
+export interface PFDetails extends SubjectDetails {
   cognomePF: string | null;
   nomePF: string | null;
   indirizziDigitali: string[] | null;
 }
 
 // UC-13.3.6: UC  UC-13.3.3.1 - UC-13.3.3.3, UC-13.3.1.2 , UC-13.3.1.4
-export interface RUPDetails {
+export interface RUPDetails extends SubjectDetails {
   cognomeRUP: string | null;
   nomeRUP: string | null;
   codiceFiscaleRUP: string | null;
@@ -59,7 +61,7 @@ export interface RUPDetails {
 }
 
 // UC-13.3.7: UC-13.3.7.1
-export interface SWDetails {
+export interface SWDetails extends SubjectDetails {
   denominazioneSistema: string | null;
 }
 
@@ -71,3 +73,14 @@ export type SubjectCriteria =
   | { role: SubjectRoleType; type: SubjectType.PF; details: PFDetails }
   | { role: SubjectRoleType; type: SubjectType.RUP; details: RUPDetails }
   | { role: SubjectRoleType; type: SubjectType.SW; details: SWDetails };
+
+export interface SubjectFieldDefinition {
+  key: string;
+  label: string;
+  type: FilterFieldType;
+  required: boolean;
+}
+
+export interface ISubjectDetailStrategy {
+  getFields(): SubjectFieldDefinition[];
+}

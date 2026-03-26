@@ -111,8 +111,13 @@ describe('AdvancedFilterPanelComponent - Test di Integrazione', () => {
     const subjectComponent = subjectDebug.componentInstance as SubjectFiltersComponent;
     const emitSpy = vi.spyOn(component.filtersChanged, 'emit');
 
-    const mockSubject = { role: 'DESTINATARIO', type: 'PA', identifier: '01234567890' } as any;
-    subjectComponent.filtersChanged.emit(mockSubject);
+    const mockSubject = {
+      role: 'DESTINATARIO',
+      type: 'PAI',
+      details: { codiceIPA: '1234' },
+    } as any;
+
+    subjectComponent.subjectChanged.emit(mockSubject);
 
     expect(emitSpy).toHaveBeenCalledTimes(1);
     expect(emitSpy).toHaveBeenCalledWith(expect.objectContaining({ subject: mockSubject }));

@@ -127,7 +127,7 @@ _Visual elements. Not started._
 | `SubjectFilterComponent`       |   🔴   |    4h     | Wizard logic        |
 | `CommonFiltersComponent`       |   ✅   |    2h     | ROI Form            |
 | `DiDaiFiltersComponent`        |   ✅   |    2h     | Form                |
-| `AggregateFiltersComponent`    |   🔴   |    2h     | Form                |
+| `AggregateFiltersComponent`    |   ✅   |    2h     | Form                |
 | `CustomMetaFilterComponent`    |   🔴   |    3h     | Single entrance     |
 | `SubjectDetailFormComponent`   |   🔴   |    4h     | Strategy renderer   |
 | `FilterValueInputComponent`    |   🔴   |    2h     | Generic input       |
