@@ -1,0 +1,41 @@
+<div class="search-bar-container">
+  <form [formGroup]="form" class="search-form">
+    <div class="search-input-group" style="display: flex; gap: 1rem; align-items: center">
+      <input
+        type="text"
+        formControlName="text"
+        placeholder="Inserisci testo di ricerca..."
+        class="search-input"
+        style="flex: 1; padding: 0.5rem"
+        [attr.aria-busy]="isSearching"
+      />
+      <span *ngIf="isSearching" class="loading-spinner" aria-live="polite">
+        Ricerca in corso...
+      </span>
+    </div>
+
+    <div class="search-options" style="display: flex; gap: 1.5rem; margin-top: 1rem">
+      <label>
+        <input type="radio" formControlName="type" [value]="QueryType.FREE" />
+        Testo Libero
+      </label>
+
+      <label>
+        <input type="radio" formControlName="type" [value]="QueryType.CLASS_NAME" />
+        Nome Classe
+      </label>
+
+      <label>
+        <input type="radio" formControlName="type" [value]="QueryType.PROCESS_ID" />
+        ID Processo
+      </label>
+
+      <div class="divider" style="border-left: 1px solid #ccc; margin: 0 0.5rem"></div>
+
+      <label class="semantic-toggle">
+        <input type="checkbox" formControlName="useSemantic" />
+        Ricerca Semantica
+      </label>
+    </div>
+  </form>
+</div>
