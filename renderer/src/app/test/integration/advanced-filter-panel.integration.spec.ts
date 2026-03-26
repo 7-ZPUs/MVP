@@ -29,8 +29,6 @@ describe('AdvancedFilterPanelComponent - Test di Integrazione', () => {
 
     fixture = TestBed.createComponent(AdvancedFilterPanelComponent);
     component = fixture.componentInstance;
-
-    // Forniamo i dati minimi per far renderizzare il pannello espanso e attivare i figli
     component.filters = {
       common: {} as any,
       diDai: {} as any,
@@ -39,9 +37,7 @@ describe('AdvancedFilterPanelComponent - Test di Integrazione', () => {
       subject: null,
     };
     component.validator = vi.fn().mockReturnValue({ isValid: true, errors: new Map() });
-    component.strategyRegistry = new Map();
 
-    // Inneschiamo il render dell'HTML
     fixture.detectChanges();
   });
 
@@ -49,7 +45,6 @@ describe('AdvancedFilterPanelComponent - Test di Integrazione', () => {
     const commonFiltersDebug = fixture.debugElement.query(By.directive(CommonFiltersComponent));
     const diDaiFiltersDebug = fixture.debugElement.query(By.directive(DiDaiFiltersComponent));
 
-    // Conferma che i tag <app-common-filters> e <app-di-dai-filters> esistono
     expect(commonFiltersDebug).toBeTruthy();
     expect(diDaiFiltersDebug).toBeTruthy();
   });
@@ -58,11 +53,9 @@ describe('AdvancedFilterPanelComponent - Test di Integrazione', () => {
     const commonFiltersDebug = fixture.debugElement.query(By.directive(CommonFiltersComponent));
     const commonComponent = commonFiltersDebug.componentInstance as CommonFiltersComponent;
 
-    // 1. Simuliamo l'emissione di un dato dal figlio
     const mockCommonUpdate = { classificazione: 'RISERVATO' } as any;
     commonComponent.filtersChanged.emit(mockCommonUpdate);
 
-    // 2. Verifichiamo che il dato sia "risalito" al padre aggiornando il FormGroup corretto
     expect(component.panelForm.value.common.classificazione).toBe('RISERVATO');
   });
 

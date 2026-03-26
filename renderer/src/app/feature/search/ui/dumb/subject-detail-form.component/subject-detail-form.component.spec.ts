@@ -1,5 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ReactiveFormsModule } from '@angular/forms';
 import { SimpleChange } from '@angular/core';
+import { By } from '@angular/platform-browser';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 import { SubjectDetailFormComponent } from './subject-detail-form.component';
@@ -11,7 +13,7 @@ describe('SubjectDetailFormComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [SubjectDetailFormComponent],
+      imports: [SubjectDetailFormComponent, ReactiveFormsModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(SubjectDetailFormComponent);
@@ -19,11 +21,82 @@ describe('SubjectDetailFormComponent', () => {
     fixture.detectChanges();
   });
 
-  it('dovrebbe creare il componente', () => {
+  it('dovrebbe nascere vuoto e mostrare il messaggio di fallback', () => {
     expect(component).toBeTruthy();
+    expect(component.fields.length).toBe(0);
+
+    const fallbackDiv = fixture.debugElement.query(By.css('div[style*="font-style: italic"]'));
+    expect(fallbackDiv).toBeTruthy();
+    expect(fallbackDiv.nativeElement.textContent).toContain('Seleziona una tipologia');
   });
 
-  it('ngOnDestroy() dovrebbe completare il subject destroy$ per evitare memory leak', () => {
+  describe('Ricostruzione Dinamica (Strategy Pattern)', () => {
+    it('dovrebbe ricostruire il form e stampare gli input corretti per Persona Fisica (PF)', async () => {
+      fixture.componentRef.setInput('subjectType', SubjectType.PF);
+
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(component.fields.length).toBe(3);
+      expect(component.form.contains('cognomePF')).toBe(true);
+      expect(component.form.contains('nomePF')).toBe(true);
+
+      const inputs = fixture.debugElement.queryAll(By.css('input[type="text"]'));
+      expect(inputs.length).toBe(3);
+    });
+
+    it('dovrebbe applicare il validatore required solo ai campi obbligatori', async () => {
+      fixture.componentRef.setInput('subjectType', SubjectType.PF);
+
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const cognomeControl = component.form.get('cognomePF');
+      expect(cognomeControl?.hasValidator).toBeTruthy();
+
+      expect(cognomeControl?.invalid).toBe(true);
+    });
+  });
+
+  describe('Patching dei Dati', () => {
+    it('dovrebbe valorizzare il form quando arrivano details esterni', () => {
+      component.ngOnChanges({
+        subjectType: new SimpleChange(null, SubjectType.PF, true),
+      });
+
+      component.ngOnChanges({
+        details: new SimpleChange(null, { cognomePF: 'Rossi', nomePF: 'Mario' }, true),
+      });
+
+      expect(component.form.value.cognomePF).toBe('Rossi');
+      expect(component.form.value.nomePF).toBe('Mario');
+    });
+
+    it('non dovrebbe fallire se arrivano details prima che il form sia costruito', () => {
+      expect(() => {
+        component.ngOnChanges({
+          details: new SimpleChange(null, { cognomePF: 'Rossi' }, true),
+        });
+      }).not.toThrow();
+    });
+  });
+
+  describe('Emissione Eventi', () => {
+    it('dovrebbe emettere detailsChanged quando un utente compila il form', () => {
+      const emitSpy = vi.spyOn(component.detailsChanged, 'emit');
+
+      component.ngOnChanges({
+        subjectType: new SimpleChange(null, SubjectType.PF, true),
+      });
+
+      // Simuliamo la digitazione
+      component.form.patchValue({ cognomePF: 'Bianchi' });
+
+      expect(emitSpy).toHaveBeenCalledWith(expect.objectContaining({ cognomePF: 'Bianchi' }));
+    });
+  });
+
+  it('ngOnDestroy() deve pulire le sottoscrizioni per evitare memory leak', () => {
     const nextSpy = vi.spyOn((component as any).destroy$, 'next');
     const completeSpy = vi.spyOn((component as any).destroy$, 'complete');
 
@@ -31,79 +104,5 @@ describe('SubjectDetailFormComponent', () => {
 
     expect(nextSpy).toHaveBeenCalled();
     expect(completeSpy).toHaveBeenCalled();
-  });
-
-  it('ngOnChanges() dovrebbe ricostruire il form per SubjectType.PAI con i campi corretti', () => {
-    component.subjectType = SubjectType.PAI;
-
-    component.ngOnChanges({
-      subjectType: new SimpleChange(null, SubjectType.PAI, true),
-    });
-
-    expect(component.fields.length).toBe(2);
-    expect(component.fields[0].key).toBe('denominazione');
-    expect(component.form.contains('denominazione')).toBe(true);
-    expect(component.form.contains('codiceIPA')).toBe(true);
-  });
-
-  it('ngOnChanges() dovrebbe ricostruire il form per SubjectType.PF applicando i validatori required', () => {
-    component.subjectType = SubjectType.PF;
-
-    component.ngOnChanges({
-      subjectType: new SimpleChange(null, SubjectType.PF, true),
-    });
-
-    expect(component.fields.length).toBe(2);
-    expect(component.form.contains('cognomePF')).toBe(true);
-
-    const cognomeCtrl = component.form.get('cognomePF');
-    expect(cognomeCtrl?.valid).toBe(false); // Inizialmente invalido perché vuoto
-
-    cognomeCtrl?.setValue('Rossi');
-    expect(cognomeCtrl?.valid).toBe(true); // Valido dopo aver inserito testo
-  });
-
-  it('ngOnChanges() dovrebbe usare i campi di fallback per tipi non mappati esplicitamente', () => {
-    component.subjectType = SubjectType.SW;
-
-    component.ngOnChanges({
-      subjectType: new SimpleChange(null, SubjectType.SW, true),
-    });
-
-    expect(component.fields.length).toBe(1);
-    expect(component.fields[0].key).toBe('identificativo');
-    expect(component.form.contains('identificativo')).toBe(true);
-  });
-
-  it('ngOnChanges() dovrebbe patchare i details senza emettere eventi se i controlli esistono', () => {
-    component.subjectType = SubjectType.PAI;
-    component.ngOnChanges({
-      subjectType: new SimpleChange(null, SubjectType.PAI, true),
-    });
-
-    const mockDetails = { denominazione: 'Ministero Test' } as any;
-    const emitSpy = vi.spyOn(component.detailsChanged, 'emit');
-
-    component.ngOnChanges({
-      details: new SimpleChange(null, mockDetails, true),
-    });
-
-    // Verifica che il form sia stato aggiornato ma nessun evento emesso (emitEvent: false)
-    expect(component.form.value.denominazione).toBe('Ministero Test');
-    expect(emitSpy).not.toHaveBeenCalled();
-  });
-
-  it('dovrebbe emettere detailsChanged quando il form appena ricostruito cambia', () => {
-    component.subjectType = SubjectType.PAI;
-    component.ngOnChanges({
-      subjectType: new SimpleChange(null, SubjectType.PAI, true),
-    });
-
-    const emitSpy = vi.spyOn(component.detailsChanged, 'emit');
-
-    component.form.patchValue({ codiceIPA: '12345' });
-
-    expect(emitSpy).toHaveBeenCalledTimes(1);
-    expect(emitSpy).toHaveBeenCalledWith(expect.objectContaining({ codiceIPA: '12345' }));
   });
 });

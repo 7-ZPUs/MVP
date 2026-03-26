@@ -15,6 +15,7 @@ import {
   ISubjectDetailStrategy,
 } from '../../../../../shared/domain/metadata/search-subject-filters-models';
 import { SubjectRoleType, SubjectType } from '../../../../../shared/domain/metadata/search.enum';
+import { ValidationResult } from '../../../../../shared/domain/metadata';
 
 @Component({
   selector: 'app-subject-filters',
@@ -25,7 +26,7 @@ import { SubjectRoleType, SubjectType } from '../../../../../shared/domain/metad
 export class SubjectFiltersComponent implements OnChanges {
   @Input() subject: SubjectCriteria | null = null;
   @Input() resetCounter: number = 0;
-  @Input() strategyRegistry: Map<SubjectType, ISubjectDetailStrategy> | null = null;
+  @Input() validationResult: ValidationResult | null = null;
 
   @Output() subjectChanged = new EventEmitter<SubjectCriteria>();
 

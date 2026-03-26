@@ -19,7 +19,6 @@ import { CommonFiltersComponent } from '../../dumb/common-filters.component/comm
 import { DiDaiFiltersComponent } from '../../dumb/di-dai-filters.component/di-dai-filters.component';
 import { AggregateFiltersComponent } from '../../dumb/aggregate-filters.component/aggregate-filters.component';
 import { CustomMetaFiltersComponent } from '../../dumb/custom-meta-filters.component/custom-meta-filters.component';
-import { Subject } from 'rxjs';
 import { SubjectFiltersComponent } from '../../dumb/subject-filters.component/subject-filters.component';
 
 @Component({
@@ -40,11 +39,11 @@ export class AdvancedFilterPanelComponent implements OnInit {
   @Input() filters!: SearchFilters;
   @Input() validator!: FilterValidatorFn;
   @Input() externalValidation: ValidationResult | null = null;
-  @Input() strategyRegistry!: Map<any, any>; // Sostituisci any con SubjectType e ISubjectDetailStrategy
 
   @Output() filtersChanged = new EventEmitter<SearchFilters>();
   @Output() filtersSubmit = new EventEmitter<SearchFilters>();
   @Output() validationResult = new EventEmitter<ValidationResult>();
+  // filterAdded e filterRemoved sembrano non usati nell'HTML, ma li lasciamo se servono altrove
   @Output() filterAdded = new EventEmitter<CustomFilterValues>();
   @Output() filterRemoved = new EventEmitter<string>();
   @Output() filtersReset = new EventEmitter<void>();
@@ -94,7 +93,7 @@ export class AdvancedFilterPanelComponent implements OnInit {
   }
 
   public onFieldValidationError(field: string, error: ValidationError | null): void {
-    // Gestione errori locali dei singoli campi (es. formato data errato)
+    // Riservato per logiche future
   }
 
   public togglePanel(): void {
@@ -102,7 +101,10 @@ export class AdvancedFilterPanelComponent implements OnInit {
   }
 
   public onSubmit(): void {
-    if (this.currentValidationResult?.isValid !== false) {
+    if (
+      this.currentValidationResult?.isValid !== false &&
+      this.externalValidation?.isValid !== false
+    ) {
       const finalFilters: SearchFilters = {
         ...this.filters,
         ...this.panelForm.value,
@@ -114,6 +116,7 @@ export class AdvancedFilterPanelComponent implements OnInit {
   public onReset(): void {
     this.panelForm.reset();
     this.subjectResetCounter++;
+    this.currentValidationResult = null; // Resetta anche gli errori visivi
     this.filtersReset.emit();
   }
 

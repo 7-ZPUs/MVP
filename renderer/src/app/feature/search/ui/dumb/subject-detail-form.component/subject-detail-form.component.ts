@@ -12,10 +12,10 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { Subject, takeUntil } from 'rxjs';
 
 import { SubjectType, FilterFieldType } from '../../../../../shared/domain/metadata/search.enum';
-
 import {
   SubjectDetails,
   SubjectFieldDefinition,
+  SUBJECT_STRATEGY_REGISTRY, // <-- Aggiunto l'import del registro
 } from '../../../../../shared/domain/metadata/search-subject-filters-models';
 
 @Component({
@@ -27,8 +27,6 @@ import {
 export class SubjectDetailFormComponent implements OnChanges, OnDestroy {
   @Input() subjectType: SubjectType | null = null;
   @Input() details: SubjectDetails | null = null;
-  // Teniamo l'Input per non rompere il parent, ma per ora lo ignoriamo
-  @Input() strategyRegistry: any = null;
 
   @Output() detailsChanged = new EventEmitter<SubjectDetails>();
 
@@ -39,15 +37,13 @@ export class SubjectDetailFormComponent implements OnChanges, OnDestroy {
 
   constructor(private readonly fb: FormBuilder) {
     this.form = this.fb.group({});
-    this.form.valueChanges.pipe(takeUntil(this.destroy$)).subscribe((value) => {
-      this.detailsChanged.emit(value as SubjectDetails);
-    });
   }
 
   public ngOnChanges(changes: SimpleChanges): void {
-    if ('subjectType' in changes && this.subjectType) {
-      this.rebuildForm(this.subjectType);
+    if (changes['subjectType']?.currentValue) {
+      this.rebuildForm(changes['subjectType'].currentValue);
     }
+
     if (changes['details']?.currentValue && Object.keys(this.form.controls).length > 0) {
       this.form.patchValue(changes['details'].currentValue, { emitEvent: false });
     }
@@ -59,49 +55,21 @@ export class SubjectDetailFormComponent implements OnChanges, OnDestroy {
   }
 
   private rebuildForm(type: SubjectType): void {
-    // --- TEMPORANEO: Switch invece della Strategy ---
-    this.fields = this.getTemporaryFieldsForType(type);
+    // 1. Chiediamo al registro la strategia per questo tipo specifico
+    const strategy = SUBJECT_STRATEGY_REGISTRY[type];
+
+    // 2. Se esiste, recuperiamo i campi, altrimenti array vuoto
+    this.fields = strategy ? strategy.getFields() : [];
 
     const group: any = {};
     this.fields.forEach((field) => {
-      const validators = field.required ? [Validators.required] : [];
-      group[field.key] = [null, validators];
+      group[field.key] = [null, field.required ? [Validators.required] : []];
     });
 
     this.form = this.fb.group(group);
+
     this.form.valueChanges.pipe(takeUntil(this.destroy$)).subscribe((value) => {
       this.detailsChanged.emit(value as SubjectDetails);
     });
-  }
-
-  // Fallback temporaneo per mappare i tuoi modelli
-  private getTemporaryFieldsForType(type: SubjectType): SubjectFieldDefinition[] {
-    switch (type) {
-      case SubjectType.PAI:
-        return [
-          {
-            key: 'denominazione',
-            label: 'Denominazione',
-            type: FilterFieldType.TEXT,
-            required: false,
-          },
-          { key: 'codiceIPA', label: 'Codice IPA', type: FilterFieldType.TEXT, required: false },
-        ];
-      case SubjectType.PF:
-        return [
-          { key: 'cognomePF', label: 'Cognome', type: FilterFieldType.TEXT, required: true },
-          { key: 'nomePF', label: 'Nome', type: FilterFieldType.TEXT, required: true },
-        ];
-      default:
-        // Campi di fallback generici per gli altri tipi
-        return [
-          {
-            key: 'identificativo',
-            label: 'Identificativo / CF',
-            type: FilterFieldType.TEXT,
-            required: false,
-          },
-        ];
-    }
   }
 }
