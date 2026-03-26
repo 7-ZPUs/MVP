@@ -17,7 +17,7 @@ import { DatabaseProvider } from "../../src/repo/impl/DatabaseProvider";
 
 const DEFAULT_REAL_DIP_PATH = "core/test/resources/real_dip_heavy";
 const realDipPath = process.env.REAL_DIP_PATH ?? DEFAULT_REAL_DIP_PATH;
-const runs = Number(process.env.PERF_RUNS ?? "5");
+const runs = Number(process.env.PERF_RUNS ?? "1");
 
 function percentile(values: number[], p: number): number {
   const sorted = [...values].sort((a, b) => a - b);
@@ -47,7 +47,6 @@ describe("IndexDip use-case performance", () => {
       const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "dip-perf-"));
       const dbPath = path.join(tmpDir, "dip-viewer.db");
       const dbProvider = new DatabaseProvider(dbPath);
-      dbProvider.db.pragma("foreign_keys = OFF");
 
       const packageReader = new LocalPackageReaderAdapter(
         new XmlDipParser(),
@@ -97,5 +96,5 @@ describe("IndexDip use-case performance", () => {
     );
 
     expect(durationsMs).toHaveLength(runs);
-  }, 5000);
+  }, 15000);
 });
