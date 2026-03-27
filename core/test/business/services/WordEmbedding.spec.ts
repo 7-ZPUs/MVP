@@ -24,6 +24,7 @@ describe('WordEmbedding', () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
+        vi.spyOn(fs, 'existsSync').mockReturnValue(true);
         adapter = new WordEmbedding();
     });
 

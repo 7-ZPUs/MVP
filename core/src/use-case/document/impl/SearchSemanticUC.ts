@@ -16,8 +16,8 @@ export class SearchSemanticUC implements ISearchSemanticUC {
             const metadata = document.getMetadata();
             return {
                 documentId: document.getUuid(),
-                name:  metadata.find(m => m.name === 'name')?.value  ?? '',
-                type:  metadata.find(m => m.name === 'type')?.value  ?? '',
+                name:  metadata.find(m => m.name === 'nome')?.value  ?? '',
+                type:  metadata.find(m => m.name === 'tipoDocumento')?.value  ?? '',
                 score,
             };
         });
