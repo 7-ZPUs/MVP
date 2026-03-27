@@ -1,6 +1,6 @@
-import { SearchFilter } from '../../value-objects/SearchFilter';
-import { SearchResult } from '../../value-objects/SearchResult';
+import { SearchFilters } from '../../../../shared/domain/metadata/search.models';
+import { SearchResult } from '../../../../shared/domain/metadata/search.models';
 
 export interface ISearchDocumentsUC {
-    execute(filters: SearchFilter[]): Promise<SearchResult[]>;
+    execute(filters: SearchFilters): Promise<SearchResult[]>;
 }

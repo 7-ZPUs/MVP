@@ -8,7 +8,7 @@ import { DatabaseProvider, DATABASE_PROVIDER_TOKEN } from './DatabaseProvider';
 import { loadMetadata, saveMetadata } from './MetadataHelper';
 import { CreateDocumentDTO } from '../../dto/DocumentDTO';
 import { Metadata } from '../../value-objects/Metadata';
-import { SearchFilter } from '../../value-objects/SearchFilter';
+import { SearchFilters } from '../../../../shared/domain/metadata/search.models';
 import { IWordEmbedding, WORD_EMBEDDING_PORT_TOKEN } from '../IWordEmbedding';
 
 const METADATA_TABLE = 'document_metadata';
@@ -124,19 +124,92 @@ export class DocumentRepository implements IDocumentRepository {
             .run(status, id);
     }
 
-    searchDocument(filters: SearchFilter[]): Document[] {
-        if (filters.length === 0) return [];
+    /* da vedere assieme a Lorenzo se va bene sta cosa */
+    searchDocument(filters: SearchFilters): Document[] {
+        const conditions: string[] = [];
+        const values: unknown[] = [];
 
-        const conditions = filters.map((f) => `${f.field} = ?`).join(' AND ');
-        const values = filters.map((f) => f.value);
+        const addMeta = (key: string, value: unknown) => {
+            if (value === null || value === undefined) return;
+            conditions.push(`
+                EXISTS (
+                    SELECT 1 FROM document_metadata
+                    WHERE document_id = document.id
+                    AND name = ?
+                    AND value = ?
+                )
+            `);
+            values.push(key, String(value));
+        };
+
+        // --- common ---
+        const c = filters.common;
+        if (c) {
+            addMeta('tipoDocumento',            c.tipoDocumento);
+            addMeta('note',                     c.note);
+            addMeta('oggetto',                  c.chiaveDescrittiva?.oggetto);
+            addMeta('paroleChiave',             c.chiaveDescrittiva?.paroleChiave);
+            addMeta('classificazioneCodice',    c.classificazione?.codice);
+            addMeta('classificazioneDescrizione', c.classificazione?.descrizione);
+            addMeta('conservazione',            c.conservazione?.valore);
+        }
+
+        // --- diDai ---
+        const d = filters.diDai;
+        if (d) {
+            addMeta('nome',                     d.nome);
+            addMeta('versione',                 d.versione);
+            addMeta('idPrimario',               d.idPrimario);
+            addMeta('tipologia',                d.tipologia);
+            addMeta('modalitaFormazione',       d.modalitaFormazione);
+            addMeta('riservatezza',             d.riservatezza);
+            addMeta('formato',                  d.identificativoFormato?.formato);
+            addMeta('nomeProdottoCreazione',    d.identificativoFormato?.nomeProdottoCreazione);
+            addMeta('versioneProdottoCreazione', d.identificativoFormato?.versioneProdottoCreazione);
+            addMeta('produttoreProdottoCreazione', d.identificativoFormato?.produttoreProdottoCreazione);
+            addMeta('formatoDigitalmente',      d.verifica?.formatoDigitalmente);
+            addMeta('sigillatoElettr',          d.verifica?.sigillatoElettr);
+            addMeta('marcaturaTemporale',       d.verifica?.marcaturaTemporale);
+            addMeta('conformitaCopie',          d.verifica?.conformitaCopie);
+            addMeta('tipologiaFlusso',          d.registrazione?.tipologiaFlusso);
+            addMeta('tipologiaRegistro',        d.registrazione?.tipologiaRegistro);
+            addMeta('dataRegistrazione',        d.registrazione?.dataRegistrazione);
+            addMeta('numeroRegistrazione',      d.registrazione?.numeroRegistrazione);
+            addMeta('codiceRegistro',           d.registrazione?.codiceRegistro);
+        }
+
+        // --- aggregate ---
+        const a = filters.aggregate;
+        if (a) {
+            addMeta('tipoAggregazione',         a.tipoAggregazione);
+            addMeta('idAggregazione',           a.idAggregazione);
+            addMeta('tipoFascicolo',            a.tipoFascicolo);
+            addMeta('dataApertura',             a.dataApertura);
+            addMeta('dataChiusura',             a.dataChiusura);
+            addMeta('procedimentoMateria',      a.procedimento?.materia);
+            addMeta('procedimentoDenominazione', a.procedimento?.denominazioneProcedimento);
+            addMeta('tipoAssegnazione',         a.assegnazione?.tipoAssegnazione);
+            addMeta('dataInizioAssegn',         a.assegnazione?.dataInizioAssegn);
+            addMeta('dataFineAssegn',           a.assegnazione?.dataFineAssegn);
+        }
+
+        // --- custom ---
+        if (filters.custom) {
+            addMeta(filters.custom.field, filters.custom.value);
+        }
+
+        if (conditions.length === 0) return [];
+
+        const sql = `
+            SELECT id, uuid,
+                integrity_status as integrityStatus,
+                process_id as processId
+            FROM document
+            WHERE ${conditions.join(' AND ')}
+        `;
+
         const rows = this.db
-            .prepare<unknown[], DocumentRow>(
-                `SELECT id, uuid,
-                        integrity_status as integrityStatus,
-                        process_id as processId
-                FROM document
-                WHERE ${conditions}`
-            )
+            .prepare<unknown[], DocumentRow>(sql)
             .all(...values);
         return rows.map((row) => this.rowToEntity(row));
     }

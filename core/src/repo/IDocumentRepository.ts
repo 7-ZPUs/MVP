@@ -1,7 +1,7 @@
 import { CreateDocumentDTO } from '../dto/DocumentDTO';
 import type { Document } from '../entity/Document';
 import { IntegrityStatusEnum } from '../value-objects/IntegrityStatusEnum';
-import { SearchFilter } from '../value-objects/SearchFilter';
+import { SearchFilters } from '../../../shared/domain/metadata/search.models';
 
 export const DOCUMENTO_REPOSITORY_TOKEN = Symbol('IDocumentRepository');
 
@@ -22,7 +22,7 @@ export interface IDocumentRepository {
     updateIntegrityStatus(id: number, status: IntegrityStatusEnum): void;
 
     /** Ricerca documenti mediante metadati */
-    searchDocument(filters: SearchFilter[]): Document[];
+    searchDocument(filters: SearchFilters): Document[];
 
     /** metodo per indicizzazione e ricerca semantica */
     searchDocumentSemantic(query: string): Promise<Array<{ document: Document; score: number }>>;

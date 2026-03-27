@@ -1,7 +1,7 @@
 import { inject, injectable } from 'tsyringe';
 import { ISearchSemanticUC } from '../ISearchSemanticUC';
 import { IDocumentRepository, DOCUMENTO_REPOSITORY_TOKEN } from '../../../repo/IDocumentRepository';
-import { SearchResult } from '../../../value-objects/SearchResult';
+import { SearchResult } from '../../../../../shared/domain/metadata/search.models';
 
 @injectable()
 export class SearchSemanticUC implements ISearchSemanticUC {

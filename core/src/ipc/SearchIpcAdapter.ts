@@ -2,7 +2,7 @@ import { IpcMain } from 'electron';
 import { container } from 'tsyringe';
 
 import { IpcChannels } from '../../../shared/ipc-channels';
-import { SearchFilter } from '../value-objects/SearchFilter';
+import { SearchFilters } from '../../../shared/domain/metadata/search.models';
 
 import type { ISearchDocumentalClassUC } from '../use-case/classe-documentale/ISearchDocumentalClassUC';
 import type { ISearchProcessUC } from '../use-case/process/ISearchProcessUC';
@@ -34,9 +34,8 @@ export class SearchIpcAdapter {
             return searchProcessiUC.execute(uuid ?? '').map((p) => p.toDTO());
         });
 
-        ipcMain.handle(IpcChannels.SEARCH_DOCUMENTS, (_event, rawFilters: SearchFilter[]) => {
-            const filters = rawFilters.map((f) => new SearchFilter(f.field, f.value));
-            return searchDocumentsUC.execute(filters); 
+        ipcMain.handle(IpcChannels.SEARCH_DOCUMENTS, (_event, filters: SearchFilters) => {
+            return searchDocumentsUC.execute(filters);
         });
 
         ipcMain.handle(IpcChannels.SEARCH_SEMANTIC, async (_event, query: string) => {

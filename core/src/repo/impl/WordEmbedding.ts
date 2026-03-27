@@ -9,8 +9,8 @@ import { IWordEmbedding } from '../IWordEmbedding';
 const isDev = !app.isPackaged;
 
 const modelsPath = isDev
-    ? path.join(__dirname, '..', 'models')
-    : path.join(process.resourcesPath, 'models');
+    ? path.join(__dirname, '..', 'models', 'Xenova')
+    : path.join(process.resourcesPath, 'models', 'Xenova');
 
 env.localModelPath   = modelsPath;
 env.allowLocalModels = true;
