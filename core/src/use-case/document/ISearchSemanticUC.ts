@@ -1,7 +1,4 @@
-export interface SearchResult {
-    id: number; // id del documento
-    score: number; // punteggio similarità
-}
+import { SearchResult } from '../../value-objects/SearchResult';
 
 export interface ISearchSemanticUC {
     execute(query: string): Promise<SearchResult[]>;

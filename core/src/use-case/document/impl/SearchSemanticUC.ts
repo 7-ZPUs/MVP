@@ -1,6 +1,7 @@
 import { inject, injectable } from 'tsyringe';
-import { ISearchSemanticUC, SearchResult } from '../ISearchSemanticUC';
+import { ISearchSemanticUC } from '../ISearchSemanticUC';
 import { IDocumentRepository, DOCUMENTO_REPOSITORY_TOKEN } from '../../../repo/IDocumentRepository';
+import { SearchResult } from '../../../value-objects/SearchResult';
 
 @injectable()
 export class SearchSemanticUC implements ISearchSemanticUC {
@@ -11,10 +12,15 @@ export class SearchSemanticUC implements ISearchSemanticUC {
 
     async execute(query: string): Promise<SearchResult[]> {
         const results = await this.documentRepo.searchDocumentSemantic(query);
-        return results.map(({ document, score }) => ({ // attenzione che ritorna solamente id e score, non tutto il documento !!
-            id: document.getId()!,
-            score,
-        }));
+        return results.map(({ document, score }) => {
+            const metadata = document.getMetadata();
+            return {
+                documentId: document.getUuid(),
+                name:  metadata.find(m => m.name === 'name')?.value  ?? '',
+                type:  metadata.find(m => m.name === 'type')?.value  ?? '',
+                score,
+            };
+        });
     }
 
     /**

@@ -25,6 +25,8 @@ app.disableHardwareAcceleration();
 // ---------------------------------------------------------------------------
 import { BrowsingIpcAdapter } from "./core/src/ipc/BrowsingIpcAdapter";
 import { CreateIpcAdapter } from "./core/src/ipc/CreateIpcAdapter";
+import { SearchIpcAdapter } from "./core/src/ipc/SearchIpcAdapter";
+import { FileViewerIpcAdapter } from "./core/src/ipc/FileViewerIpcAdapter";
 
 // ---------------------------------------------------------------------------
 // Window management
@@ -62,6 +64,8 @@ app.whenReady().then(() => {
   // Register all IPC adapters before creating the window
   BrowsingIpcAdapter.register(ipcMain);
   CreateIpcAdapter.register(ipcMain);
+  SearchIpcAdapter.register(ipcMain);
+  FileViewerIpcAdapter.register(ipcMain);
 
   createWindow();
 

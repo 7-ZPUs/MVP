@@ -35,8 +35,8 @@ export class SearchIpcAdapter {
         });
 
         ipcMain.handle(IpcChannels.SEARCH_DOCUMENTS, (_event, rawFilters: SearchFilter[]) => {
-            const filters = rawFilters.map((f) => new SearchFilter(f.field, f.value)); // da rivedere per quanto riguarda i SearchFilter per adattarli a quello che ha fatto Lore
-            return searchDocumentsUC.execute(filters).map((d) => d.toDTO());
+            const filters = rawFilters.map((f) => new SearchFilter(f.field, f.value));
+            return searchDocumentsUC.execute(filters); 
         });
 
         ipcMain.handle(IpcChannels.SEARCH_SEMANTIC, async (_event, query: string) => {
