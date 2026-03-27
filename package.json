@@ -30,6 +30,7 @@
     "@types/adm-zip": "^0.5.5",
     "@types/better-sqlite3": "^7.6.8",
     "@types/node": "^20.12.7",
+    "@vitest/coverage-v8": "^1.6.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.5",
     "typescript-eslint": "^8.56.1",
