@@ -4,7 +4,7 @@
   "description": "DIP Viewer – Electron desktop application for reading and searching DIP packages",
   "main": "dist/main.js",
   "scripts": {
-    "setup:download-models": "ts-node --project tsconfig.json core/src/scripts/download-models.ts",
+    
     "build:core": "tsc --project tsconfig.core.json",
     "build:renderer": "cd renderer && npx ng build",
     "build:all": "npm run build:renderer && npm run build:core",
