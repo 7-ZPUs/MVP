@@ -12,8 +12,12 @@ import { IHashingService } from "../../../src/services/IHashingService";
 
 describe("File use-cases", () => {
 
+    // identifier: TU-F-B-53
+    // method_name: GetFileByIdUC()
+    // description: GetFileByIdUC delega a repo.getById
+    // expected_value: matches asserted behavior: GetFileByIdUC delega a repo.getById
     it("GetFileByIdUC delega a repo.getById", () => {
-        const entity = new File("f", "/f", "h", false, 2);
+        const entity = new File("f", "/f", "h", false, "2");
         const repo: Pick<IFileRepository, "getById"> = { getById: vi.fn().mockReturnValue(entity) };
 
         const uc = new GetFileByIdUC(repo as IFileRepository);
@@ -23,8 +27,12 @@ describe("File use-cases", () => {
         expect(result).toBe(entity);
     });
 
+    // identifier: TU-F-B-54
+    // method_name: GetFileByDocumentUC()
+    // description: GetFileByDocumentUC delega a repo.getByDocumentId
+    // expected_value: matches asserted behavior: GetFileByDocumentUC delega a repo.getByDocumentId
     it("GetFileByDocumentUC delega a repo.getByDocumentId", () => {
-        const list = [new File("f", "/f", "h", false, 8)];
+        const list = [new File("f", "/f", "h", false, "8")];
         const repo: Pick<IFileRepository, "getByDocumentId"> = { getByDocumentId: vi.fn().mockReturnValue(list) };
 
         const uc = new GetFileByDocumentUC(repo as IFileRepository);
@@ -34,8 +42,12 @@ describe("File use-cases", () => {
         expect(result).toBe(list);
     });
 
+    // identifier: TU-F-B-55
+    // method_name: GetFileByStatusUC()
+    // description: GetFileByStatusUC delega a repo.getByStatus
+    // expected_value: matches asserted behavior: GetFileByStatusUC delega a repo.getByStatus
     it("GetFileByStatusUC delega a repo.getByStatus", () => {
-        const list = [new File("f", "/f", "h", false, 8)];
+        const list = [new File("f", "/f", "h", false, "8")];
         const repo: Pick<IFileRepository, "getByStatus"> = { getByStatus: vi.fn().mockReturnValue(list) };
 
         const uc = new GetFileByStatusUC(repo as IFileRepository);
@@ -45,8 +57,12 @@ describe("File use-cases", () => {
         expect(result).toBe(list);
     });
 
+    // identifier: TU-F-B-56
+    // method_name: CheckFileIntegrityStatusUC()
+    // description: CheckFileIntegrityStatusUC imposta VALID se hash coincide
+    // expected_value: matches asserted behavior: CheckFileIntegrityStatusUC imposta VALID se hash coincide
     it("CheckFileIntegrityStatusUC imposta VALID se hash coincide", async () => {
-        const entity = new File("f", "/f", "expected", false, 8);
+        const entity = new File("f", "/f", "expected", false, "8");
         const repo: Pick<IFileRepository, "getById" | "updateIntegrityStatus"> = {
             getById: vi.fn().mockReturnValue(entity),
             updateIntegrityStatus: vi.fn(),
@@ -64,8 +80,12 @@ describe("File use-cases", () => {
         expect(repo.updateIntegrityStatus).toHaveBeenCalledWith(8, IntegrityStatusEnum.VALID);
     });
 
+    // identifier: TU-F-B-57
+    // method_name: CheckFileIntegrityStatusUC()
+    // description: CheckFileIntegrityStatusUC imposta UNKNOWN se hash atteso manca
+    // expected_value: matches asserted behavior: CheckFileIntegrityStatusUC imposta UNKNOWN se hash atteso manca
     it("CheckFileIntegrityStatusUC imposta UNKNOWN se hash atteso manca", async () => {
-        const entity = new File("f", "/f", "", false, 8);
+        const entity = new File("f", "/f", "", false, "8");
         const repo: Pick<IFileRepository, "getById" | "updateIntegrityStatus"> = {
             getById: vi.fn().mockReturnValue(entity),
             updateIntegrityStatus: vi.fn(),
@@ -82,6 +102,10 @@ describe("File use-cases", () => {
         expect(hashingService.calcolaHash).not.toHaveBeenCalled();
     });
 
+    // identifier: TU-F-B-58
+    // method_name: CheckFileIntegrityStatusUC()
+    // description: CheckFileIntegrityStatusUC lancia errore se file inesistente
+    // expected_value: matches asserted behavior: CheckFileIntegrityStatusUC lancia errore se file inesistente
     it("CheckFileIntegrityStatusUC lancia errore se file inesistente", async () => {
         const repo: Pick<IFileRepository, "getById" | "updateIntegrityStatus"> = {
             getById: vi.fn().mockReturnValue(null),

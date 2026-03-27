@@ -11,6 +11,10 @@ import { IFileRepository } from "../../../src/repo/IFileRepository";
 
 describe("Document use-cases", () => {
 
+    // identifier: TU-F-B-48
+    // method_name: GetDocumentByIdUC()
+    // description: GetDocumentByIdUC delega a repo.getById
+    // expected_value: matches asserted behavior: GetDocumentByIdUC delega a repo.getById
     it("GetDocumentByIdUC delega a repo.getById", () => {
         const entity = new Document("doc-2", [], "process-uuid");
         const repo: Pick<IDocumentRepository, "getById"> = { getById: vi.fn().mockReturnValue(entity) };
@@ -22,6 +26,10 @@ describe("Document use-cases", () => {
         expect(result).toBe(entity);
     });
 
+    // identifier: TU-F-B-49
+    // method_name: GetDocumentByProcessUC()
+    // description: GetDocumentByProcessUC delega a repo.getByProcessId
+    // expected_value: matches asserted behavior: GetDocumentByProcessUC delega a repo.getByProcessId
     it("GetDocumentByProcessUC delega a repo.getByProcessId", () => {
         const list = [new Document("doc-3", [], "process-uuid")];
         const repo: Pick<IDocumentRepository, "getByProcessId"> = { getByProcessId: vi.fn().mockReturnValue(list) };
@@ -33,6 +41,10 @@ describe("Document use-cases", () => {
         expect(result).toBe(list);
     });
 
+    // identifier: TU-F-B-50
+    // method_name: GetDocumentByStatusUC()
+    // description: GetDocumentByStatusUC delega a repo.getByStatus
+    // expected_value: matches asserted behavior: GetDocumentByStatusUC delega a repo.getByStatus
     it("GetDocumentByStatusUC delega a repo.getByStatus", () => {
         const list = [new Document("doc-4", [], "process-uuid")];
         const repo: Pick<IDocumentRepository, "getByStatus"> = { getByStatus: vi.fn().mockReturnValue(list) };
@@ -44,6 +56,10 @@ describe("Document use-cases", () => {
         expect(result).toBe(list);
     });
 
+    // identifier: TU-F-B-51
+    // method_name: CheckDocumentIntegrityStatusUC()
+    // description: CheckDocumentIntegrityStatusUC aggiorna lo status aggregato dai file
+    // expected_value: matches asserted behavior: CheckDocumentIntegrityStatusUC aggiorna lo status aggregato dai file
     it("CheckDocumentIntegrityStatusUC aggiorna lo status aggregato dai file", () => {
         const docRepo: Pick<IDocumentRepository, "getById" | "updateIntegrityStatus"> = {
             getById: vi.fn().mockReturnValue(new Document("doc-1", [], "process-uuid")),
@@ -61,6 +77,10 @@ describe("Document use-cases", () => {
         expect(result).toBe(IntegrityStatusEnum.INVALID);
     });
 
+    // identifier: TU-F-B-52
+    // method_name: CheckDocumentIntegrityStatusUC()
+    // description: CheckDocumentIntegrityStatusUC lancia errore se document inesistente
+    // expected_value: matches asserted behavior: CheckDocumentIntegrityStatusUC lancia errore se document inesistente
     it("CheckDocumentIntegrityStatusUC lancia errore se document inesistente", () => {
         const docRepo: Pick<IDocumentRepository, "getById" | "updateIntegrityStatus"> = {
             getById: vi.fn().mockReturnValue(null),

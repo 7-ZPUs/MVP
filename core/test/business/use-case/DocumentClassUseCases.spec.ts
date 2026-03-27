@@ -10,8 +10,12 @@ import { IntegrityStatusEnum } from "../../../src/value-objects/IntegrityStatusE
 import { IProcessRepository } from "../../../src/repo/IProcessRepository";
 
 describe("DocumentClass use-cases", () => {
+  // identifier: TU-F-B-43
+  // method_name: GetDocumentClassByIdUC()
+  // description: GetDocumentClassByIdUC delega a repo.getById
+  // expected_value: matches asserted behavior: GetDocumentClassByIdUC delega a repo.getById
   it("GetDocumentClassByIdUC delega a repo.getById", () => {
-    const entity = new DocumentClass(1, "dc-1", "Classe", "2026-01-01");
+    const entity = new DocumentClass("1", "dc-1", "Classe", "2026-01-01");
     const repo: Pick<IDocumentClassRepository, "getById"> = {
       getById: vi.fn().mockReturnValue(entity),
     };
@@ -23,8 +27,12 @@ describe("DocumentClass use-cases", () => {
     expect(result).toBe(entity);
   });
 
+  // identifier: TU-F-B-44
+  // method_name: GetDocumentClassByDipIdUC()
+  // description: GetDocumentClassByDipIdUC delega a repo.getByDipId
+  // expected_value: matches asserted behavior: GetDocumentClassByDipIdUC delega a repo.getByDipId
   it("GetDocumentClassByDipIdUC delega a repo.getByDipId", () => {
-    const list = [new DocumentClass(9, "dc-2", "Classe", "2026-01-01")];
+    const list = [new DocumentClass("9", "dc-2", "Classe", "2026-01-01")];
     const repo: Pick<IDocumentClassRepository, "getByDipId"> = {
       getByDipId: vi.fn().mockReturnValue(list),
     };
@@ -36,8 +44,12 @@ describe("DocumentClass use-cases", () => {
     expect(result).toBe(list);
   });
 
+  // identifier: TU-F-B-45
+  // method_name: GetDocumentClassByStatusUC()
+  // description: GetDocumentClassByStatusUC delega a repo.getByStatus
+  // expected_value: matches asserted behavior: GetDocumentClassByStatusUC delega a repo.getByStatus
   it("GetDocumentClassByStatusUC delega a repo.getByStatus", () => {
-    const list = [new DocumentClass(1, "dc-3", "Classe", "2026-01-01")];
+    const list = [new DocumentClass("1", "dc-3", "Classe", "2026-01-01")];
     const repo: Pick<IDocumentClassRepository, "getByStatus"> = {
       getByStatus: vi.fn().mockReturnValue(list),
     };
@@ -49,6 +61,10 @@ describe("DocumentClass use-cases", () => {
     expect(result).toBe(list);
   });
 
+  // identifier: TU-F-B-46
+  // method_name: CheckDocumentClassIntegrityStatusUC()
+  // description: CheckDocumentClassIntegrityStatusUC aggiorna lo status aggregato dai process
+  // expected_value: matches asserted behavior: CheckDocumentClassIntegrityStatusUC aggiorna lo status aggregato dai process
   it("CheckDocumentClassIntegrityStatusUC aggiorna lo status aggregato dai process", () => {
     const docClassRepo: Pick<
       IDocumentClassRepository,
@@ -56,7 +72,7 @@ describe("DocumentClass use-cases", () => {
     > = {
       getById: vi
         .fn()
-        .mockReturnValue(new DocumentClass(1, "dc", "Classe", "2026-01-01")),
+        .mockReturnValue(new DocumentClass("1", "dc", "Classe", "2026-01-01")),
       updateIntegrityStatus: vi.fn(),
     };
     const processRepo: Pick<
@@ -84,6 +100,10 @@ describe("DocumentClass use-cases", () => {
     expect(result).toBe(IntegrityStatusEnum.UNKNOWN);
   });
 
+  // identifier: TU-F-B-47
+  // method_name: CheckDocumentClassIntegrityStatusUC()
+  // description: CheckDocumentClassIntegrityStatusUC lancia errore se classe inesistente
+  // expected_value: matches asserted behavior: CheckDocumentClassIntegrityStatusUC lancia errore se classe inesistente
   it("CheckDocumentClassIntegrityStatusUC lancia errore se classe inesistente", () => {
     const docClassRepo: Pick<
       IDocumentClassRepository,

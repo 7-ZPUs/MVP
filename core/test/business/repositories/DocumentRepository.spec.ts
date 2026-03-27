@@ -26,6 +26,10 @@ describe("DocumentRepository", () => {
     repo = new DocumentRepository({ db } as unknown as DatabaseProvider);
   });
 
+  // identifier: TU-F-B-01
+  // method_name: save()
+  // description: should successfully persist a document with complex metadata
+  // expected_value: matches asserted behavior: successfully persist a document with complex metadata
   it("TU-F-B-01: save() with valid document should successfully persist a document with complex metadata", () => {
     const metadata = [
       new Metadata("titolo", "Documento A", MetadataType.STRING),
@@ -48,51 +52,157 @@ describe("DocumentRepository", () => {
     expect(found?.getMetadata()[2].type).toBe(MetadataType.COMPOSITE);
   });
 
+  // identifier: TU-F-B-02
+  // method_name: save()
+  // description: should handle updating an existing document
+  // expected_value: matches asserted behavior: handle updating an existing document
   it("TU-F-B-02: save() with existing UUID should handle updating an existing document", () => {
     const doc = new Document("doc-unique", [], "process-uuid");
     repo.save(doc);
-    
-    const docUpdated = new Document("doc-unique", [new Metadata("test", "val", MetadataType.STRING)], "process-uuid");
+
+    const docUpdated = new Document(
+      "doc-unique",
+      [new Metadata("test", "val", MetadataType.STRING)],
+      "process-uuid",
+    );
     repo.save(docUpdated);
 
-    const rows = db.prepare("SELECT * FROM document WHERE uuid = 'doc-unique'").all();
+    const rows = db
+      .prepare("SELECT * FROM document WHERE uuid = 'doc-unique'")
+      .all();
     expect(rows).toHaveLength(1);
   });
 
+  // identifier: TU-F-B-03
+  // method_name: getByProcessId()
+  // description: should return a list of documents
+  // expected_value: returns a list of documents
   it("TU-F-B-03: getByProcessId() with valid process ID should return a list of documents", () => {
-    db.prepare("INSERT INTO document (uuid, integrity_status, process_id) VALUES (?, ?, ?)").run("doc-p1", IntegrityStatusEnum.UNKNOWN, 1);
-    
+    db.prepare(
+      "INSERT INTO document (uuid, integrity_status, process_id) VALUES (?, ?, ?)",
+    ).run("doc-p1", IntegrityStatusEnum.UNKNOWN, 1);
+
     const results = repo.getByProcessId(1);
     expect(results).toHaveLength(1);
     expect(results[0].getUuid()).toBe("doc-p1");
   });
 
+  // identifier: TU-F-B-04
+  // method_name: getByProcessId()
+  // description: should return an empty array
+  // expected_value: returns an empty array
   it("TU-F-B-04: getByProcessId() with non-existent process ID should return an empty array", () => {
     const results = repo.getByProcessId(999);
     expect(results).toHaveLength(0);
   });
 
+  // identifier: TU-F-B-05
+  // method_name: getByStatus()
+  // description: should return documents
+  // expected_value: returns documents
   it("TU-F-B-05: getByStatus() with matching integrity status should return documents", () => {
-    db.prepare("INSERT INTO document (uuid, integrity_status, process_id) VALUES (?, ?, ?)").run("doc-s1", IntegrityStatusEnum.VALID, 1);
-    db.prepare("INSERT INTO document (uuid, integrity_status, process_id) VALUES (?, ?, ?)").run("doc-s2", IntegrityStatusEnum.INVALID, 1);
-    
+    db.prepare(
+      "INSERT INTO document (uuid, integrity_status, process_id) VALUES (?, ?, ?)",
+    ).run("doc-s1", IntegrityStatusEnum.VALID, 1);
+    db.prepare(
+      "INSERT INTO document (uuid, integrity_status, process_id) VALUES (?, ?, ?)",
+    ).run("doc-s2", IntegrityStatusEnum.INVALID, 1);
+
     const results = repo.getByStatus(IntegrityStatusEnum.VALID);
     expect(results).toHaveLength(1);
     expect(results[0].getUuid()).toBe("doc-s1");
   });
 
+  // identifier: TU-F-B-06
+  // method_name: getByStatus()
+  // description: should return an empty array
+  // expected_value: returns an empty array
   it("TU-F-B-06: getByStatus() with no matching documents should return an empty array", () => {
     const results = repo.getByStatus(IntegrityStatusEnum.VALID);
     expect(results).toHaveLength(0);
   });
 
+  // identifier: TU-F-B-07
+  // method_name: updateIntegrityStatus()
+  // description: should successfully update the status
+  // expected_value: matches asserted behavior: successfully update the status
   it("TU-F-B-07: updateIntegrityStatus() with valid document ID should successfully update the status", () => {
-    const insertResult = db.prepare("INSERT INTO document (uuid, integrity_status, process_id) VALUES (?, ?, ?)").run("doc-u1", IntegrityStatusEnum.UNKNOWN, 1);
+    const insertResult = db
+      .prepare(
+        "INSERT INTO document (uuid, integrity_status, process_id) VALUES (?, ?, ?)",
+      )
+      .run("doc-u1", IntegrityStatusEnum.UNKNOWN, 1);
     const docId = insertResult.lastInsertRowid as number;
 
     repo.updateIntegrityStatus(docId, IntegrityStatusEnum.VALID);
-    
-    const row = db.prepare("SELECT integrity_status FROM document WHERE id = ?").get(docId) as any;
+
+    const row = db
+      .prepare("SELECT integrity_status FROM document WHERE id = ?")
+      .get(docId) as any;
     expect(row.integrity_status).toBe(IntegrityStatusEnum.VALID);
+  });
+
+  // identifier: TU-F-B-08
+  // method_name: save()
+  // description: should fallback to select
+  // expected_value: matches asserted behavior: fallback to select
+  it("TU-F-B-08: save() with lastInsertRowid 0 should fallback to select", () => {
+    const originalPrepare = db.prepare.bind(db);
+    const prepareSpy = vi
+      .spyOn(db, "prepare")
+      .mockImplementation((query: string) => {
+        if (query.includes("INSERT INTO document")) {
+          const stmt = originalPrepare(query);
+          const originalRun = stmt.run.bind(stmt);
+          stmt.run = (...args: any[]) => {
+            originalRun(...args);
+            return { lastInsertRowid: 0, changes: 0 };
+          };
+          return stmt;
+        }
+        return originalPrepare(query);
+      });
+
+    const doc = new Document("doc-fallback", [], "process-uuid");
+    const saved = repo.save(doc);
+
+    expect(saved.getUuid()).toBe("doc-fallback");
+    expect(saved.toDTO().id).toBeGreaterThan(0);
+    prepareSpy.mockRestore();
+  });
+
+  // identifier: TU-F-B-09
+  // method_name: getAggregatedIntegrityStatusByProcessId()
+  // description: getAggregatedIntegrityStatusByProcessId() returns correctly
+  // expected_value: matches asserted behavior: getAggregatedIntegrityStatusByProcessId() returns correctly
+  it("TU-F-B-09: getAggregatedIntegrityStatusByProcessId() returns correctly", () => {
+    // Initially empty
+    expect(repo.getAggregatedIntegrityStatusByProcessId(1)).toBe(
+      IntegrityStatusEnum.UNKNOWN,
+    );
+
+    // Add a valid doc
+    db.prepare(
+      "INSERT INTO document (uuid, integrity_status, process_id) VALUES (?, ?, ?)",
+    ).run("doc-agg-1", IntegrityStatusEnum.VALID, 1);
+    expect(repo.getAggregatedIntegrityStatusByProcessId(1)).toBe(
+      IntegrityStatusEnum.VALID,
+    );
+
+    // Add an unknown doc
+    db.prepare(
+      "INSERT INTO document (uuid, integrity_status, process_id) VALUES (?, ?, ?)",
+    ).run("doc-agg-2", IntegrityStatusEnum.UNKNOWN, 1);
+    expect(repo.getAggregatedIntegrityStatusByProcessId(1)).toBe(
+      IntegrityStatusEnum.UNKNOWN,
+    );
+
+    // Add an invalid doc
+    db.prepare(
+      "INSERT INTO document (uuid, integrity_status, process_id) VALUES (?, ?, ?)",
+    ).run("doc-agg-3", IntegrityStatusEnum.INVALID, 1);
+    expect(repo.getAggregatedIntegrityStatusByProcessId(1)).toBe(
+      IntegrityStatusEnum.INVALID,
+    );
   });
 });

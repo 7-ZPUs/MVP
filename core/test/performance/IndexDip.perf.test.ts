@@ -1,3 +1,4 @@
+import { DataMapper } from "../../src/repo/impl/utils/DataMapper";
 import * as path from "node:path";
 import * as fs from "node:fs";
 import * as os from "node:os";
@@ -26,6 +27,10 @@ function percentile(values: number[], p: number): number {
 }
 
 describe("IndexDip use-case performance", () => {
+  // identifier: TU-F-I-47
+  // method_name: measures()
+  // description: measures end-to-end indexing performance on a real DiP
+  // expected_value: matches asserted behavior: measures end-to-end indexing performance on a real DiP
   it("measures end-to-end indexing performance on a real DiP", async () => {
     const fsProvider = new FileSystemProvider();
     const dipPathExists = await fsProvider.fileExists(realDipPath);
@@ -51,6 +56,7 @@ describe("IndexDip use-case performance", () => {
       const packageReader = new LocalPackageReaderAdapter(
         new XmlDipParser(),
         new FileSystemProvider(),
+        new DataMapper()
       );
       const dipRepository = new DipRepository(dbProvider);
       const documentClassRepository = new DocumentClassRepository(dbProvider);

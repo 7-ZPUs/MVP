@@ -1,3 +1,4 @@
+import { DataMapper } from "../../src/repo/impl/utils/DataMapper";
 import * as os from "node:os";
 import * as path from "node:path";
 import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
@@ -73,6 +74,7 @@ describe("LocalPackageReaderAdapter integration tests", () => {
     adapter = new LocalPackageReaderAdapter(
       new XmlDipParser(),
       new FileSystemProvider(),
+      new DataMapper(),
     );
   });
 
@@ -82,6 +84,10 @@ describe("LocalPackageReaderAdapter integration tests", () => {
     }
   });
 
+  // identifier: TU-F-I-41
+  // method_name: should()
+  // description: should read and parse a DiP package correctly
+  // expected_value: matches asserted behavior: read and parse a DiP package correctly
   it("should read and parse a DiP package correctly", async () => {
     const dip = await adapter.readDip(dipPackagePath);
 
@@ -91,6 +97,10 @@ describe("LocalPackageReaderAdapter integration tests", () => {
     expect(dip.getIntegrityStatus()).toBe(IntegrityStatusEnum.UNKNOWN);
   });
 
+  // identifier: TU-F-I-42
+  // method_name: should()
+  // description: should read and parse document classes from a DiP package
+  // expected_value: matches asserted behavior: read and parse document classes from a DiP package
   it("should read and parse document classes from a DiP package", async () => {
     const documentClasses = [];
     for await (const dc of adapter.readDocumentClasses(dipPackagePath)) {
@@ -120,6 +130,10 @@ describe("LocalPackageReaderAdapter integration tests", () => {
     );
   });
 
+  // identifier: TU-F-I-43
+  // method_name: should()
+  // description: should read and parse processes from a DiP package
+  // expected_value: matches asserted behavior: read and parse processes from a DiP package
   it("should read and parse processes from a DiP package", async () => {
     const processes = [];
     for await (const process of adapter.readProcesses(dipPackagePath)) {
@@ -139,6 +153,10 @@ describe("LocalPackageReaderAdapter integration tests", () => {
     expect(processes[2].getUuid()).toBe("aip-3");
   });
 
+  // identifier: TU-F-I-44
+  // method_name: should()
+  // description: should read and parse documents from a DiP package
+  // expected_value: matches asserted behavior: read and parse documents from a DiP package
   it("should read and parse documents from a DiP package", async () => {
     const documents = [];
     for await (const document of adapter.readDocuments(dipPackagePath)) {
@@ -180,6 +198,10 @@ describe("LocalPackageReaderAdapter integration tests", () => {
     expect(documents[2].getUuid()).toBe("doc-3");
   });
 
+  // identifier: TU-F-I-45
+  // method_name: should()
+  // description: should read and parse files from a DiP package
+  // expected_value: matches asserted behavior: read and parse files from a DiP package
   it("should read and parse files from a DiP package", async () => {
     const files = [];
     for await (const file of adapter.readFiles(dipPackagePath)) {
@@ -210,6 +232,10 @@ describe("LocalPackageReaderAdapter integration tests", () => {
     expect(files[4].getIsMain()).toBe(true);
   });
 
+  // identifier: TU-F-I-46
+  // method_name: should()
+  // description: should read file bytes from the package
+  // expected_value: matches asserted behavior: read file bytes from the package
   it("should read file bytes from the package", async () => {
     const filePath = path.join(
       dipPackagePath,

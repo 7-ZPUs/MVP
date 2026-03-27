@@ -1,3 +1,4 @@
+import { DataMapper } from "../../../src/repo/impl/utils/DataMapper";
 import Database from "better-sqlite3";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
@@ -36,7 +37,11 @@ describe("IndexDip", () => {
       listFiles: vi.fn(),
     };
 
-    const packageReader = new LocalPackageReaderAdapter(parser, fileSystemProvider);
+    const packageReader = new LocalPackageReaderAdapter(
+      parser,
+      fileSystemProvider,
+      new DataMapper(),
+    );
 
     useCase = new IndexDip(
       packageReader,
@@ -48,6 +53,10 @@ describe("IndexDip", () => {
     );
   });
 
+  // identifier: TU-F-I-28
+  // method_name: execute()
+  // description: should orchestrate reader and repository writes parsing real XML
+  // expected_value: returns { success: true } and persists dip, document class, process, document, metadata and file records
   it("TU-F-I-28: execute() should orchestrate reader and repository writes parsing real XML", async () => {
     const dipPath = "/dip/path";
 
@@ -55,9 +64,10 @@ describe("IndexDip", () => {
       "DiPIndex.test-dip-uuid-1234.xml",
     ]);
 
-    vi.mocked(fileSystemProvider.readTextFile).mockImplementation(async (filePath) => {
-      if (filePath.includes("DiPIndex")) {
-        return `<?xml version="1.0" encoding="UTF-8"?>
+    vi.mocked(fileSystemProvider.readTextFile).mockImplementation(
+      async (filePath) => {
+        if (filePath.includes("DiPIndex")) {
+          return `<?xml version="1.0" encoding="UTF-8"?>
           <DiPIndex>
             <PackageInfo>
               <ProcessUUID>dip-uuid-1</ProcessUUID>
@@ -79,15 +89,16 @@ describe("IndexDip", () => {
               </DiPDocuments>
             </PackageContent>
           </DiPIndex>`;
-      }
-      if (filePath.includes("AiPInfo.xml")) {
-        return `<AiPInfo><ProcessData><SessionId>session-123</SessionId></ProcessData></AiPInfo>`;
-      }
-      if (filePath.includes("meta.xml")) {
-        return `<Document><DocumentoInformatico><IdDoc><ImprontaCrittograficaDelDocumento><Impronta>testHash=</Impronta><Algoritmo>SHA-256</Algoritmo></ImprontaCrittograficaDelDocumento><Identificativo>prim-1</Identificativo></IdDoc><Titolo>Test Titolo</Titolo></DocumentoInformatico></Document>`;
-      }
-      return "";
-    });
+        }
+        if (filePath.includes("AiPInfo.xml")) {
+          return `<AiPInfo><ProcessData><SessionId>session-123</SessionId></ProcessData></AiPInfo>`;
+        }
+        if (filePath.includes("meta.xml")) {
+          return `<Document><DocumentoInformatico><IdDoc><ImprontaCrittograficaDelDocumento><Impronta>testHash=</Impronta><Algoritmo>SHA-256</Algoritmo></ImprontaCrittograficaDelDocumento><Identificativo>prim-1</Identificativo></IdDoc><Titolo>Test Titolo</Titolo></DocumentoInformatico></Document>`;
+        }
+        return "";
+      },
+    );
 
     const result = await useCase.execute(dipPath);
     expect(result).toEqual({ success: true });
@@ -108,9 +119,13 @@ describe("IndexDip", () => {
     expect(documents).toHaveLength(1);
     expect((documents[0] as any).uuid).toBe("doc-1");
 
-    const documentMetadata = db.prepare("SELECT * FROM document_metadata").all();
+    const documentMetadata = db
+      .prepare("SELECT * FROM document_metadata")
+      .all();
     expect(documentMetadata.length).toBeGreaterThan(0);
-    const titoloRow = (documentMetadata as any[]).find((m) => m.name === "Titolo");
+    const titoloRow = (documentMetadata as any[]).find(
+      (m) => m.name === "Titolo",
+    );
     expect(titoloRow?.value).toBe("Test Titolo");
 
     const files = db.prepare("SELECT * FROM file").all();
@@ -118,6 +133,10 @@ describe("IndexDip", () => {
     expect((files[0] as any).filename).toBe("./primary.pdf");
   });
 
+  // identifier: TU-F-I-29
+  // method_name: execute()
+  // description: should throw on structurally invalid empty files and avoid persistence
+  // expected_value: throws an error and keeps dip and document_class tables empty
   it("TU-F-I-29: execute() should throw error and not persist entities on structurally invalid empty files", async () => {
     const dipPath = "empty/dip/path";
 
@@ -125,7 +144,8 @@ describe("IndexDip", () => {
       "DiPIndex.empty.xml",
     ]);
 
-    vi.mocked(fileSystemProvider.readTextFile).mockResolvedValue(`<?xml version="1.0" encoding="UTF-8"?>
+    vi.mocked(fileSystemProvider.readTextFile)
+      .mockResolvedValue(`<?xml version="1.0" encoding="UTF-8"?>
       <DiPIndex>
         <PackageInfo>
           <ProcessUUID>dip-empty</ProcessUUID>
@@ -137,7 +157,7 @@ describe("IndexDip", () => {
       </DiPIndex>`);
 
     await expect(useCase.execute(dipPath)).rejects.toThrow();
-    
+
     // Verify nothing got saved because it threw at the parser level
     const dips = db.prepare("SELECT * FROM dip").all();
     expect(dips).toHaveLength(0);

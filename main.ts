@@ -14,7 +14,7 @@
 import "./core/src/container";
 
 import { app, BrowserWindow, ipcMain } from "electron";
-import * as path from "path";
+import * as path from "node:path";
 
 // Disable GPU acceleration — required in headless/container environments
 // where no real GPU is available (dev containers, CI, Codespaces, etc.).
@@ -24,7 +24,6 @@ app.disableHardwareAcceleration();
 // IPC adapter registration
 // ---------------------------------------------------------------------------
 import { BrowsingIpcAdapter } from "./core/src/ipc/BrowsingIpcAdapter";
-import { CreateIpcAdapter } from "./core/src/ipc/CreateIpcAdapter";
 
 // ---------------------------------------------------------------------------
 // Window management
@@ -58,10 +57,11 @@ function createWindow(): BrowserWindow {
 // App lifecycle
 // ---------------------------------------------------------------------------
 
-app.whenReady().then(() => {
+(async () => {
+  await app.whenReady();
+
   // Register all IPC adapters before creating the window
   BrowsingIpcAdapter.register(ipcMain);
-  CreateIpcAdapter.register(ipcMain);
 
   createWindow();
 
@@ -70,10 +70,10 @@ app.whenReady().then(() => {
       createWindow();
     }
   });
-});
 
-app.on("window-all-closed", () => {
-  if (process.platform !== "darwin") {
-    app.quit();
-  }
-});
+  app.on("window-all-closed", () => {
+    if (process.platform !== "darwin") {
+      app.quit();
+    }
+  });
+})();

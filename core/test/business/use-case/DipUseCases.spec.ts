@@ -9,6 +9,10 @@ import { IntegrityStatusEnum } from "../../../src/value-objects/IntegrityStatusE
 import { IDocumentClassRepository } from "../../../src/repo/IDocumentClassRepository";
 
 describe("Dip use-cases", () => {
+  // identifier: TU-F-B-16
+  // method_name: GetDipByIdUC.execute()
+  // description: should return the correct dip
+  // expected_value: returns the correct dip
   it("TU-F-B-16: GetDipByIdUC.execute() with a valid ID should return the correct dip", () => {
     const dip = new Dip("dip-id");
     const repo: Pick<IDipRepository, "getById"> = {
@@ -22,6 +26,10 @@ describe("Dip use-cases", () => {
     expect(result).toBe(dip);
   });
 
+  // identifier: TU-F-B-17
+  // method_name: GetDipByIdUC.execute()
+  // description: should return null
+  // expected_value: returns null
   it("TU-F-B-17: GetDipByIdUC.execute() with a non-existent ID should return null", () => {
     const repo: Pick<IDipRepository, "getById"> = {
       getById: vi.fn().mockReturnValue(null),
@@ -34,6 +42,10 @@ describe("Dip use-cases", () => {
     expect(result).toBeNull();
   });
 
+  // identifier: TU-F-B-18
+  // method_name: GetDipByStatusUC.execute()
+  // description: should return an array of dips
+  // expected_value: returns an array of dips
   it("TU-F-B-18: GetDipByStatusUC.execute() with a matching status should return an array of dips", () => {
     const list = [new Dip("a"), new Dip("b")];
     const repo: Pick<IDipRepository, "getByStatus"> = {
@@ -47,6 +59,10 @@ describe("Dip use-cases", () => {
     expect(result).toBe(list);
   });
 
+  // identifier: TU-F-B-19
+  // method_name: GetDipByStatusUC.execute()
+  // description: should return an empty array
+  // expected_value: returns an empty array
   it("TU-F-B-19: GetDipByStatusUC.execute() with no matching status should return an empty array", () => {
     const repo: Pick<IDipRepository, "getByStatus"> = {
       getByStatus: vi.fn().mockReturnValue([]),
@@ -59,6 +75,10 @@ describe("Dip use-cases", () => {
     expect(result).toEqual([]);
   });
 
+  // identifier: TU-F-B-20
+  // method_name: CheckDipIntegrityStatusUC.execute()
+  // description: should successfully update and return the newly aggregated status
+  // expected_value: matches asserted behavior: successfully update and return the newly aggregated status
   it("TU-F-B-20: CheckDipIntegrityStatusUC.execute() with valid ID should successfully update and return the newly aggregated status", () => {
     const dipRepo: Pick<IDipRepository, "getById" | "updateIntegrityStatus"> = {
       getById: vi.fn().mockReturnValue(new Dip("dip-1")),
@@ -79,6 +99,10 @@ describe("Dip use-cases", () => {
     expect(result).toBe(IntegrityStatusEnum.VALID);
   });
 
+  // identifier: TU-F-B-21
+  // method_name: CheckDipIntegrityStatusUC.execute()
+  // description: should throw an error
+  // expected_value: throws an error
   it("TU-F-B-21: CheckDipIntegrityStatusUC.execute() with non-existent dip ID should throw an error", () => {
     const dipRepo: Pick<IDipRepository, "getById" | "updateIntegrityStatus"> = {
       getById: vi.fn().mockReturnValue(null),

@@ -10,6 +10,10 @@ import { IntegrityStatusEnum } from "../../../src/value-objects/IntegrityStatusE
 import { IDocumentRepository } from "../../../src/repo/IDocumentRepository";
 
 describe("Process use-cases", () => {
+  // identifier: TU-F-B-22
+  // method_name: GetProcessByIdUC.execute()
+  // description: should return the correct process
+  // expected_value: returns the correct process
   it("TU-F-B-22: GetProcessByIdUC.execute() with valid process id should return the correct process", () => {
     const entity = new Process("dc-uuid", "proc-2", []);
     const repo: Pick<IProcessRepository, "getById"> = {
@@ -23,6 +27,10 @@ describe("Process use-cases", () => {
     expect(result).toBe(entity);
   });
 
+  // identifier: TU-F-B-23
+  // method_name: GetProcessByDocumentClassUC.execute()
+  // description: should return list of processes
+  // expected_value: returns list of processes
   it("TU-F-B-23: GetProcessByDocumentClassUC.execute() with valid document class id should return list of processes", () => {
     const list = [new Process("dc-uuid", "proc-3", [])];
     const repo: Pick<IProcessRepository, "getByDocumentClassId"> = {
@@ -36,6 +44,10 @@ describe("Process use-cases", () => {
     expect(result).toBe(list);
   });
 
+  // identifier: TU-F-B-24
+  // method_name: GetProcessByStatusUC.execute()
+  // description: should return list of processes
+  // expected_value: returns list of processes
   it("TU-F-B-24: GetProcessByStatusUC.execute() with matching status should return list of processes", () => {
     const list = [new Process("dc-uuid", "proc-4", [])];
     const repo: Pick<IProcessRepository, "getByStatus"> = {
@@ -49,6 +61,10 @@ describe("Process use-cases", () => {
     expect(result).toBe(list);
   });
 
+  // identifier: TU-F-B-25
+  // method_name: CheckProcessIntegrityStatusUC.execute()
+  // description: should update and return aggregated status
+  // expected_value: updates state as asserted: update and return aggregated status
   it("TU-F-B-25: CheckProcessIntegrityStatusUC.execute() with valid process id should update and return aggregated status", () => {
     const processRepo: Pick<
       IProcessRepository,
@@ -82,6 +98,10 @@ describe("Process use-cases", () => {
     expect(result).toBe(IntegrityStatusEnum.VALID);
   });
 
+  // identifier: TU-F-B-26
+  // method_name: CheckProcessIntegrityStatusUC.execute()
+  // description: should throw an error
+  // expected_value: throws an error
   it("TU-F-B-26: CheckProcessIntegrityStatusUC.execute() with non-existent process id should throw an error", () => {
     const processRepo: Pick<
       IProcessRepository,

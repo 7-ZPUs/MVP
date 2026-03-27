@@ -75,7 +75,7 @@ export class DipRepository implements IDipRepository {
     let id = result.lastInsertRowid as number;
     if (!id) {
       const existing = this.getByUuid(dip.getUuid());
-      if (existing && existing.getId()) {
+      if (existing?.getId()) {
         id = existing.getId()!;
       }
     }

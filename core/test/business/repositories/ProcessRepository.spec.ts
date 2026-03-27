@@ -20,8 +20,11 @@ describe("ProcessRepository", () => {
     repo = new ProcessRepository({ db } as unknown as DatabaseProvider);
   });
 
+  // identifier: TU-F-B-41
+  // method_name: save()
+  // description: save persiste processo e metadata
+  // expected_value: matches asserted behavior: save persiste processo e metadata
   it("save persiste processo e metadata", () => {
-    const insertProcessRun = vi.fn().mockReturnValue({ lastInsertRowid: 81 });
     const insertMetadataRun = vi.fn().mockReturnValue({ lastInsertRowid: 1 });
     const deleteMetadataRun = vi.fn();
     const getProcess = vi.fn().mockReturnValue({
@@ -58,15 +61,17 @@ describe("ProcessRepository", () => {
         "FROM process_metadata WHERE process_id = ?",
       );
 
+      const createRunMock = () => {
+        if (isInsertMeta) return insertMetadataRun;
+        if (isDeleteMeta) return deleteMetadataRun;
+        return vi.fn().mockImplementation(() => {
+          if (isInsertEntity) return { lastInsertRowid: 81 };
+          return {};
+        });
+      };
+
       return {
-        run: isInsertMeta
-          ? insertMetadataRun
-          : isDeleteMeta
-            ? deleteMetadataRun
-            : vi.fn().mockImplementation(() => {
-                if (isInsertEntity) return { lastInsertRowid: 81 };
-                return {};
-              }),
+        run: createRunMock(),
         get: vi.fn().mockImplementation(() => {
           if (isSelectEntity) return getProcess();
           return null;
@@ -97,6 +102,10 @@ describe("ProcessRepository", () => {
     expect(insertMetadataRun).toHaveBeenCalledTimes(2);
   });
 
+  // identifier: TU-F-B-42
+  // method_name: getByDocumentClassId()
+  // description: getByDocumentClassId, getByStatus e updateIntegrityStatus funzionano
+  // expected_value: matches asserted behavior: getByDocumentClassId, getByStatus e updateIntegrityStatus funzionano
   it("getByDocumentClassId, getByStatus e updateIntegrityStatus funzionano", () => {
     const run = vi.fn();
     const row = {

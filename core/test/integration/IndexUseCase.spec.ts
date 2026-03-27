@@ -1,3 +1,4 @@
+import { DataMapper } from "../../src/repo/impl/utils/DataMapper";
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import * as fs from "node:fs/promises";
 import * as os from "node:os";
@@ -161,6 +162,7 @@ describe("Index use-case integration tests", () => {
     const packageReader = new LocalPackageReaderAdapter(
       new XmlDipParser(),
       new FileSystemProvider(),
+      new DataMapper(),
     );
 
     dipRepository = new DipRepository(dbProvider);
@@ -191,12 +193,20 @@ describe("Index use-case integration tests", () => {
   // Structural indexing
   // -----------------------------------------------------------------------
 
+  // identifier: TU-F-I-30
+  // method_name: should()
+  // description: should persist the DIP with the correct UUID
+  // expected_value: matches asserted behavior: persist the DIP with the correct UUID
   it("should persist the DIP with the correct UUID", () => {
     const dip = dipRepository.getByUuid("28a27fd3-6787-47ad-8ef5-c14b300309c4");
     expect(dip).not.toBeNull();
     expect(dip?.getIntegrityStatus()).toBe(IntegrityStatusEnum.UNKNOWN);
   });
 
+  // identifier: TU-F-I-31
+  // method_name: should()
+  // description: should persist the DocumentClass with name and timestamp
+  // expected_value: matches asserted behavior: persist the DocumentClass with name and timestamp
   it("should persist the DocumentClass with name and timestamp", () => {
     const docClasses = documentClassRepository.getByStatus(
       IntegrityStatusEnum.UNKNOWN,
@@ -209,6 +219,10 @@ describe("Index use-case integration tests", () => {
     expect(dc.getTimestamp()).toBe("2025-09-24T22:00:00Z");
   });
 
+  // identifier: TU-F-I-32
+  // method_name: should()
+  // description: should persist the Process linked to the DocumentClass
+  // expected_value: matches asserted behavior: persist the Process linked to the DocumentClass
   it("should persist the Process linked to the DocumentClass", () => {
     const processes = processRepository.getByStatus(
       IntegrityStatusEnum.UNKNOWN,
@@ -217,6 +231,10 @@ describe("Index use-case integration tests", () => {
     expect(processes[0].getUuid()).toBe("proc-001");
   });
 
+  // identifier: TU-F-I-33
+  // method_name: should()
+  // description: should persist both documents (with and without metadata)
+  // expected_value: matches asserted behavior: persist both documents (with and without metadata)
   it("should persist both documents (with and without metadata)", () => {
     const documents = documentRepository.getByStatus(
       IntegrityStatusEnum.UNKNOWN,
@@ -230,6 +248,10 @@ describe("Index use-case integration tests", () => {
     expect(documents.some((d) => d.getUuid() === "doc-no-meta")).toBe(true);
   });
 
+  // identifier: TU-F-I-34
+  // method_name: should()
+  // description: should persist all files with correct paths and primary flag
+  // expected_value: matches asserted behavior: persist all files with correct paths and primary flag
   it("should persist all files with correct paths and primary flag", () => {
     const files = fileRepository.getByStatus(IntegrityStatusEnum.UNKNOWN);
     expect(files).toHaveLength(3);
@@ -254,6 +276,10 @@ describe("Index use-case integration tests", () => {
   // Metadata: graceful handling of missing file
   // -----------------------------------------------------------------------
 
+  // identifier: TU-F-I-35
+  // method_name: should()
+  // description: should store empty metadata when the metadata file is missing
+  // expected_value: matches asserted behavior: store empty metadata when the metadata file is missing
   it("should store empty metadata when the metadata file is missing", () => {
     const documents = documentRepository.getByStatus(
       IntegrityStatusEnum.UNKNOWN,
@@ -267,18 +293,22 @@ describe("Index use-case integration tests", () => {
   // Metadata: comprehensive type coverage
   // -----------------------------------------------------------------------
 
-  describe("metadata type parsing and DB persistence", () => {
-    function getDocumentMetadata() {
-      const documents = documentRepository.getByStatus(
-        IntegrityStatusEnum.UNKNOWN,
-      );
-      const doc = documents.find(
-        (d) => d.getUuid() === "39e0cf29-10d2-40c1-af00-ec098cb8c98a",
-      );
-      expect(doc).toBeDefined();
-      return doc!.getMetadata();
-    }
+  function getDocumentMetadata() {
+    const documents = documentRepository.getByStatus(
+      IntegrityStatusEnum.UNKNOWN,
+    );
+    const doc = documents.find(
+      (d) => d.getUuid() === "39e0cf29-10d2-40c1-af00-ec098cb8c98a",
+    );
+    expect(doc).toBeDefined();
+    return doc!.getMetadata();
+  }
 
+  describe("metadata type parsing and DB persistence", () => {
+    // identifier: TU-F-I-36
+    // method_name: should()
+    // description: should parse nested XML objects as COMPOSITE metadata (IdDoc, DatiDiRegistrazione, Soggetti, etc.)
+    // expected_value: matches asserted behavior: parse nested XML objects as COMPOSITE metadata (IdDoc, DatiDiRegistrazione, Soggetti, etc.)
     it("should parse nested XML objects as COMPOSITE metadata (IdDoc, DatiDiRegistrazione, Soggetti, etc.)", () => {
       const metadata = getDocumentMetadata();
 
@@ -304,6 +334,10 @@ describe("Index use-case integration tests", () => {
       }
     });
 
+    // identifier: TU-F-I-37
+    // method_name: should()
+    // description: should parse plain string values as STRING metadata
+    // expected_value: matches asserted behavior: parse plain string values as STRING metadata
     it("should parse plain string values as STRING metadata", () => {
       const metadata = getDocumentMetadata();
 
@@ -325,6 +359,10 @@ describe("Index use-case integration tests", () => {
       expect(nome?.value).toBe("Nota Spesa A");
     });
 
+    // identifier: TU-F-I-38
+    // method_name: should()
+    // description: should parse numeric values as NUMBER metadata
+    // expected_value: matches asserted behavior: parse numeric values as NUMBER metadata
     it("should parse numeric values as NUMBER metadata", () => {
       const metadata = getDocumentMetadata();
 
@@ -346,6 +384,10 @@ describe("Index use-case integration tests", () => {
       expect(conservazione?.value).toBe("5");
     });
 
+    // identifier: TU-F-I-39
+    // method_name: should()
+    // description: should parse boolean values as BOOLEAN metadata
+    // expected_value: matches asserted behavior: parse boolean values as BOOLEAN metadata
     it("should parse boolean values as BOOLEAN metadata", () => {
       const metadata = getDocumentMetadata();
 
@@ -355,6 +397,10 @@ describe("Index use-case integration tests", () => {
       expect(riservato?.value).toBe("false");
     });
 
+    // identifier: TU-F-I-40
+    // method_name: should()
+    // description: should persist metadata to the database and load it back correctly
+    // expected_value: matches asserted behavior: persist metadata to the database and load it back correctly
     it("should persist metadata to the database and load it back correctly", () => {
       const metadata = getDocumentMetadata();
 
