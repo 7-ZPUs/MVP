@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi, Mock } from 'vitest';
 import { IndexingIpcGateway } from './indexing-ipc-gateway';
-import { SemanticIndexState } from '../../../shared/domain/metadata/semantic-filter-models';
-import { IndexingStatus } from '../../../shared/domain/metadata/search.enum';
+import { SemanticIndexState } from '../../../../../../shared/metadata/semantic-filter-models';
+import { IndexingStatus } from '../../../../../../shared/metadata/search.enum';
 import {
   IErrorHandler,
   IElectronContextBridge,

@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { EmptyStateComponent } from '../../../../../shared/ui/dumb/empty-state.component/empty-state.component';
-import { SearchResult } from '../../../../../shared/domain/metadata';
+import { SearchResult } from '../../../../../../../../shared/metadata';
 
 @Component({
   selector: 'app-search-results',

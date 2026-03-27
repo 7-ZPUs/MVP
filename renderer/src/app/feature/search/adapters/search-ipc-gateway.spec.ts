@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi, Mock } from 'vitest';
 import { SearchIpcGateway } from './search-ipc-gateway';
-import { SearchQuery, SearchQueryType } from '../../../shared/domain/metadata';
+import { SearchQuery, SearchQueryType } from '../../../../../../shared/metadata';
 import {
   ICacheService,
   IErrorHandler,

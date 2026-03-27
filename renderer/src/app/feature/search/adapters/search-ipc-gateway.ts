@@ -15,7 +15,7 @@ import {
   SearchQuery,
   SearchFilters,
   SearchResult,
-} from '../../../shared/domain/metadata/search.models';
+} from '../../../../../../shared/metadata/search.models';
 
 @Injectable({ providedIn: 'root' })
 export class SearchIpcGateway implements ISearchChannel {

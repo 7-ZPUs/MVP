@@ -1,11 +1,11 @@
-import { IsoDateString } from '../shared-types';
-import { ASDetails } from './search-subject-filters-models';
+import { IsoDateString } from "../../renderer/src/app/shared/domain/shared-types";
+import { ASDetails } from "./search-subject-filters-models";
 import {
   AggregationType,
   FascicoloType,
   ProcedimentoFaseType,
   AssegnazioneType,
-} from './search.enum';
+} from "./search.enum";
 
 // UC-12.2.2.8.1 - UC-12.2.2.8.4
 export interface ProcedimentoFilter {

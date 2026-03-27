@@ -2,7 +2,7 @@ import {
   PartialSearchFilters,
   ValidationError,
   ValidationResult,
-} from '../../../shared/domain/metadata';
+} from '../../../../../../shared/metadata';
 
 export interface IFilterValidationStrategy {
   validate(filters: PartialSearchFilters): Map<string, ValidationError[]>;

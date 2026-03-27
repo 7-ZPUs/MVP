@@ -13,7 +13,7 @@ import {
   SubjectCriteria,
   ValidationError,
   PartialSearchFilters,
-} from '../../../../../shared/domain/metadata';
+} from '../../../../../../../../shared/metadata';
 
 import { CommonFiltersComponent } from '../../dumb/common-filters.component/common-filters.component';
 import { DiDaiFiltersComponent } from '../../dumb/di-dai-filters.component/di-dai-filters.component';

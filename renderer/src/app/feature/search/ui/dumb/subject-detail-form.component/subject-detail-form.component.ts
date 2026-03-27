@@ -11,12 +11,12 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
 
-import { SubjectType, FilterFieldType } from '../../../../../shared/domain/metadata/search.enum';
+import { SubjectType, FilterFieldType } from '../../../../../../../../shared/metadata/search.enum';
 import {
   SubjectDetails,
   SubjectFieldDefinition,
   SUBJECT_STRATEGY_REGISTRY, // <-- Aggiunto l'import del registro
-} from '../../../../../shared/domain/metadata/search-subject-filters-models';
+} from '../../../../../../../../shared/metadata/search-subject-filters-models';
 
 @Component({
   selector: 'app-subject-detail-form',

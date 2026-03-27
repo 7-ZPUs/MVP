@@ -1,11 +1,14 @@
-import { IsoDateString, IsoTimestampString } from '../shared-types';
+import {
+  IsoDateString,
+  IsoTimestampString,
+} from "../../renderer/src/app/shared/domain/shared-types";
 import {
   AGIDFormats,
   DIDAIFormation,
   FlowType,
   RegisterType,
   ModificationType,
-} from './search.enum';
+} from "./search.enum";
 
 // UC-12.2.1.2.1 - UC-12.2.1.2.5
 export interface RegistrazioneFilter {

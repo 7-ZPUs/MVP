@@ -1,11 +1,11 @@
-import { CommonFilterValues } from './search-common-filters-models';
-import { DiDaiFilterValues } from './search-diDai-filters-models';
-import { AggregateFilterValues } from './search-aggregate-filters-models';
-import { SubjectCriteria } from './search-subject-filters-models';
-import { SearchQueryType } from './search.enum';
-import { AppError } from '../error.models';
-import { CustomFilterValues } from './search-custom-filters-models';
-import { PartialSearchFilters } from './partial-filters-models';
+import { CommonFilterValues } from "./search-common-filters-models";
+import { DiDaiFilterValues } from "./search-diDai-filters-models";
+import { AggregateFilterValues } from "./search-aggregate-filters-models";
+import { SubjectCriteria } from "./search-subject-filters-models";
+import { SearchQueryType } from "./search.enum";
+import { AppError } from "../../renderer/src/app/shared/domain/error.models";
+import { CustomFilterValues } from "./search-custom-filters-models";
+import { PartialSearchFilters } from "./partial-filters-models";
 
 export interface SearchQuery {
   text: string;
@@ -49,4 +49,6 @@ export interface SearchState {
   validationErrors: Map<string, ValidationError>;
 }
 
-export type FilterValidatorFn = (filters: PartialSearchFilters) => ValidationResult;
+export type FilterValidatorFn = (
+  filters: PartialSearchFilters,
+) => ValidationResult;

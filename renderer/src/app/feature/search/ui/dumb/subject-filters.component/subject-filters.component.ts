@@ -13,9 +13,9 @@ import { SubjectDetailFormComponent } from '../subject-detail-form.component/sub
 import {
   SubjectCriteria,
   ISubjectDetailStrategy,
-} from '../../../../../shared/domain/metadata/search-subject-filters-models';
-import { SubjectRoleType, SubjectType } from '../../../../../shared/domain/metadata/search.enum';
-import { ValidationResult } from '../../../../../shared/domain/metadata';
+} from '../../../../../../../../shared/metadata/search-subject-filters-models';
+import { SubjectRoleType, SubjectType } from '../../../../../../../../shared/metadata/search.enum';
+import { ValidationResult } from '../../../../../../../../shared/metadata';
 
 @Component({
   selector: 'app-subject-filters',

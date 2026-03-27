@@ -15,7 +15,7 @@ import {
   CustomFilterValues,
   ValidationResult,
   ValidationError,
-} from '../../../../../shared/domain/metadata';
+} from '../../../../../../../../shared/metadata';
 
 @Component({
   selector: 'app-custom-meta-filters',

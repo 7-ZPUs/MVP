@@ -1,6 +1,6 @@
 import { IFilterValidationStrategy } from '../contracts/filter-validator.interface';
-import { PartialSearchFilters, ValidationError } from '../../../shared/domain/metadata';
-import { RegisterType } from '../../../shared/domain/metadata/search.enum';
+import { PartialSearchFilters, ValidationError } from '../../../../../../shared/metadata';
+import { RegisterType } from '../../../../../../shared/metadata/search.enum';
 
 export class RegistryContradictionValidationStrategy implements IFilterValidationStrategy {
   public validate(filters: PartialSearchFilters): Map<string, ValidationError[]> {

@@ -5,7 +5,7 @@ import { By } from '@angular/platform-browser';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 import { CommonFiltersComponent } from './common-filters.component';
-import { DocumentType } from '../../../../../shared/domain/metadata/search.enum';
+import { DocumentType } from '../../../../../../../../shared/metadata/search.enum';
 
 describe('CommonFiltersComponent', () => {
   let component: CommonFiltersComponent;

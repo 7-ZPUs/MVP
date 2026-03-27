@@ -5,7 +5,7 @@ import { By } from '@angular/platform-browser';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 import { SubjectDetailFormComponent } from './subject-detail-form.component';
-import { SubjectType } from '../../../../../shared/domain/metadata/search.enum';
+import { SubjectType } from '../../../../../../../../shared/metadata/search.enum';
 
 describe('SubjectDetailFormComponent', () => {
   let component: SubjectDetailFormComponent;

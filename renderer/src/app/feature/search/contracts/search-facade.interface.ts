@@ -3,7 +3,7 @@ import {
   SearchFilters,
   SearchQuery,
   SearchState,
-} from '../../../shared/domain/metadata/search.models';
+} from '../../../../../../shared/metadata/search.models';
 
 export interface ISearchFacade {
   getState(): Signal<SearchState>;

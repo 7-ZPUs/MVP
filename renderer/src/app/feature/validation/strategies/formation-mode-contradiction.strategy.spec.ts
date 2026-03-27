@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { FormationModeContradictionStrategy } from './formation-mode-contradiction.strategy';
-import { PartialSearchFilters } from '../../../shared/domain/metadata';
-import { DIDAIFormation } from '../../../shared/domain/metadata/search.enum';
+import { PartialSearchFilters } from '../../../../../../shared/metadata';
+import { DIDAIFormation } from '../../../../../../shared/metadata/search.enum';
 
 describe('FormationModeContradictionStrategy', () => {
   let strategy: FormationModeContradictionStrategy;

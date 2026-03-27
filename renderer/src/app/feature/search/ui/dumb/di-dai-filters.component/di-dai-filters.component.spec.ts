@@ -5,7 +5,10 @@ import { SimpleChange } from '@angular/core';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 import { DiDaiFiltersComponent } from './di-dai-filters.component';
-import { RegisterType, ModificationType } from '../../../../../shared/domain/metadata/search.enum';
+import {
+  RegisterType,
+  ModificationType,
+} from '../../../../../../../../shared/metadata/search.enum';
 
 describe('DiDaiFiltersComponent', () => {
   let component: DiDaiFiltersComponent;
