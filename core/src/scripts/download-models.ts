@@ -121,6 +121,8 @@ function ensureDirectories() {
   return baseDir;
 }
 
+export { downloadFile, ensureDirectories };
+
 /**
  * Main: esegui il download dei modelli
  */
@@ -157,4 +159,6 @@ async function main(): Promise<void> {
   }
 }
 
-main();
+if (require.main === module) {
+    main();
+}

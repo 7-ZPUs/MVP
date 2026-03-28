@@ -15,5 +15,6 @@ export default defineConfig({
       exclude: ["**/*.d.ts"],
       reportsDirectory: "./coverage/core",
     },
+    testTimeout: 30_000, // per i test di integrazione con il modello
   },
 });

@@ -124,7 +124,6 @@ export class DocumentRepository implements IDocumentRepository {
             .run(status, id);
     }
 
-    /* da vedere assieme a Lorenzo se va bene sta cosa */
     searchDocument(filters: SearchFilters): Document[] {
         const conditions: string[] = [];
         const values: unknown[] = [];
@@ -132,65 +131,65 @@ export class DocumentRepository implements IDocumentRepository {
         const addMeta = (key: string, value: unknown) => {
             if (value === null || value === undefined) return;
             conditions.push(`
-                EXISTS (
-                    SELECT 1 FROM document_metadata
-                    WHERE document_id = document.id
-                    AND name = ?
-                    AND value = ?
-                )
-            `);
+            EXISTS (
+                SELECT 1 FROM document_metadata
+                WHERE document_id = document.id
+                AND name = ?
+                AND value = ?
+            )
+        `);
             values.push(key, String(value));
         };
 
         // --- common ---
         const c = filters.common;
         if (c) {
-            addMeta('tipoDocumento',            c.tipoDocumento);
-            addMeta('note',                     c.note);
-            addMeta('oggetto',                  c.chiaveDescrittiva?.oggetto);
-            addMeta('paroleChiave',             c.chiaveDescrittiva?.paroleChiave);
-            addMeta('classificazioneCodice',    c.classificazione?.codice);
-            addMeta('classificazioneDescrizione', c.classificazione?.descrizione);
-            addMeta('conservazione',            c.conservazione?.valore);
+            addMeta('TipologiaDocumentale', c.tipoDocumento);
+            addMeta('Note', c.note);
+            addMeta('ChiaveDescrittiva', c.chiaveDescrittiva?.oggetto);
+            addMeta('ParoleChiave', c.chiaveDescrittiva?.paroleChiave);
+            addMeta('IndiceDiClassificazione', c.classificazione?.codice);
+            addMeta('Descrizione', c.classificazione?.descrizione);
+            addMeta('TempoDiConservazione', c.conservazione?.valore);
         }
 
         // --- diDai ---
         const d = filters.diDai;
         if (d) {
-            addMeta('nome',                     d.nome);
-            addMeta('versione',                 d.versione);
-            addMeta('idPrimario',               d.idPrimario);
-            addMeta('tipologia',                d.tipologia);
-            addMeta('modalitaFormazione',       d.modalitaFormazione);
-            addMeta('riservatezza',             d.riservatezza);
-            addMeta('formato',                  d.identificativoFormato?.formato);
-            addMeta('nomeProdottoCreazione',    d.identificativoFormato?.nomeProdottoCreazione);
-            addMeta('versioneProdottoCreazione', d.identificativoFormato?.versioneProdottoCreazione);
-            addMeta('produttoreProdottoCreazione', d.identificativoFormato?.produttoreProdottoCreazione);
-            addMeta('formatoDigitalmente',      d.verifica?.formatoDigitalmente);
-            addMeta('sigillatoElettr',          d.verifica?.sigillatoElettr);
-            addMeta('marcaturaTemporale',       d.verifica?.marcaturaTemporale);
-            addMeta('conformitaCopie',          d.verifica?.conformitaCopie);
-            addMeta('tipologiaFlusso',          d.registrazione?.tipologiaFlusso);
-            addMeta('tipologiaRegistro',        d.registrazione?.tipologiaRegistro);
-            addMeta('dataRegistrazione',        d.registrazione?.dataRegistrazione);
-            addMeta('numeroRegistrazione',      d.registrazione?.numeroRegistrazione);
-            addMeta('codiceRegistro',           d.registrazione?.codiceRegistro);
+            addMeta('NomeDelDocumento', d.nome);
+            addMeta('VersioneDelDocumento', d.versione);
+            addMeta('IdIdentificativoDocumentoPrimario', d.idPrimario);
+            addMeta('TipologiaDocumentale', d.tipologia);
+            addMeta('ModalitaDiFormazione', d.modalitaFormazione);
+            addMeta('Riservato', d.riservatezza);
+            addMeta('Formato', d.identificativoFormato?.formato);
+            addMeta('NomeProdotto', d.identificativoFormato?.nomeProdottoCreazione);
+            addMeta('VersioneProdotto', d.identificativoFormato?.versioneProdottoCreazione);
+            addMeta('Produttore', d.identificativoFormato?.produttoreProdottoCreazione);
+            addMeta('FirmatoDigitalmente', d.verifica?.formatoDigitalmente);
+            addMeta('SigillatoElettronicamente', d.verifica?.sigillatoElettr);
+            addMeta('MarcaturaTemporale', d.verifica?.marcaturaTemporale);
+            addMeta('ConformitaCopieImmagineSuSupportoInformatico', d.verifica?.conformitaCopie);
+            addMeta('TipologiaDiFlusso', d.registrazione?.tipologiaFlusso);
+            addMeta('TipoRegistro', d.registrazione?.tipologiaRegistro);
+            addMeta('DataRegistrazioneDocumento', d.registrazione?.dataRegistrazione);
+            addMeta('NumeroRegistrazioneDocumento', d.registrazione?.numeroRegistrazione);
+            addMeta('CodiceRegistro', d.registrazione?.codiceRegistro);
         }
 
         // --- aggregate ---
         const a = filters.aggregate;
         if (a) {
-            addMeta('tipoAggregazione',         a.tipoAggregazione);
-            addMeta('idAggregazione',           a.idAggregazione);
-            addMeta('tipoFascicolo',            a.tipoFascicolo);
-            addMeta('dataApertura',             a.dataApertura);
-            addMeta('dataChiusura',             a.dataChiusura);
-            addMeta('procedimentoMateria',      a.procedimento?.materia);
-            addMeta('procedimentoDenominazione', a.procedimento?.denominazioneProcedimento);
-            addMeta('tipoAssegnazione',         a.assegnazione?.tipoAssegnazione);
-            addMeta('dataInizioAssegn',         a.assegnazione?.dataInizioAssegn);
-            addMeta('dataFineAssegn',           a.assegnazione?.dataFineAssegn);
+            addMeta('TipoAggregazione', a.tipoAggregazione);
+            addMeta('IdAggregazione', a.idAggregazione);
+            addMeta('TipoAgg', a.tipoFascicolo);
+            addMeta('DataDocumento', a.dataApertura); // da controllare con lore se giusto
+            addMeta('DataRegistrazioneDocumento', a.dataChiusura); // da controllare con lore se giusto
+            addMeta('Oggetto', a.procedimento?.materia);
+            addMeta('Denominazione', a.procedimento?.denominazioneProcedimento);
+            addMeta('TipoRuolo', a.assegnazione?.tipoAssegnazione);
+            addMeta('DataProtocollazioneDocumento', a.assegnazione?.dataInizioAssegn); // da controllare con lore se giusto
+            addMeta('OraProtocollazioneDocumento', a.assegnazione?.dataFineAssegn); // da controllare con lore se giusto
         }
 
         // --- custom ---
@@ -214,7 +213,7 @@ export class DocumentRepository implements IDocumentRepository {
         return rows.map((row) => this.rowToEntity(row));
     }
 
-    async searchDocumentSemantic( query: string ): Promise<Array<{ document: Document; score: number }>> {
+    async searchDocumentSemantic(query: string): Promise<Array<{ document: Document; score: number }>> {
         const queryVector = await this.aiAdapter.generateEmbedding(query); // genera vettore 
 
         const rows = this.db // interroga la tabella virtuale usando vss_search per trovare i documenti più simili al vettore di query
