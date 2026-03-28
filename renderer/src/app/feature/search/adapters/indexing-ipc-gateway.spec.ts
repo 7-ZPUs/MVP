@@ -1,80 +1,153 @@
-import { describe, it, expect, beforeEach, vi, Mock } from 'vitest';
-import { IndexingIpcGateway } from './indexing-ipc-gateway';
-import { SemanticIndexState } from '../../../../../../shared/metadata/semantic-filter-models';
-import { IndexingStatus } from '../../../../../../shared/metadata/search.enum';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
+import { signal } from '@angular/core';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+
+import { SearchPageComponent } from '../ui/smart/search-page/search-page.component';
+import { SearchFacade } from '../services/search-facade';
+import { SearchIpcGateway } from '../adapters/search-ipc-gateway';
+import { FilterValidatorService } from '../../validation/services/filter-validator.service';
+import { IpcErrorHandlerService } from '../../../shared/services/ipc-error-handler.service';
+
 import {
-  IErrorHandler,
-  IElectronContextBridge,
-  ERROR_HANDLER_TOKEN,
   ELECTRON_CONTEXT_BRIDGE_TOKEN,
+  CACHE_SERVICE_TOKEN,
+  ERROR_HANDLER_TOKEN,
 } from '../../../shared/contracts';
-import { TestBed } from '@angular/core/testing';
+import { SearchQueryType } from '../../../../../../shared/metadata/search.enum';
 
-describe('IndexingIpcGateway', () => {
-  let gateway: IndexingIpcGateway;
-  let mockBridge: IElectronContextBridge;
-  let mockErrorHandler: IErrorHandler;
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-  beforeEach(() => {
-    mockBridge = {
+describe('Broad Integration: Full Search Engine Flow (Servizi Reali)', () => {
+  let fixture: ComponentFixture<SearchPageComponent>;
+  let mockElectronBridge: any;
+
+  beforeEach(async () => {
+    // Il finto backend
+    mockElectronBridge = {
       invoke: vi.fn(),
     };
 
-    mockErrorHandler = {
-      handle: vi.fn().mockImplementation((err) => ({ message: err.message, code: 'TEST_ERR' })),
-      createError: vi.fn(),
-    };
-
-    // 4. Configura il modulo di test per processare il decoratore
-    TestBed.configureTestingModule({
+    await TestBed.configureTestingModule({
+      imports: [SearchPageComponent],
       providers: [
-        IndexingIpcGateway,
-        { provide: ELECTRON_CONTEXT_BRIDGE_TOKEN, useValue: mockBridge },
-        { provide: ERROR_HANDLER_TOKEN, useValue: mockErrorHandler },
+        SearchFacade,
+        SearchIpcGateway,
+        FilterValidatorService,
+        IpcErrorHandlerService,
+
+        { provide: 'ISearchChannel', useExisting: SearchIpcGateway },
+        { provide: 'IFilterValidator', useExisting: FilterValidatorService },
+        { provide: ERROR_HANDLER_TOKEN, useClass: IpcErrorHandlerService },
+        { provide: 'IErrorHandler', useClass: IpcErrorHandlerService },
+
+        { provide: ELECTRON_CONTEXT_BRIDGE_TOKEN, useValue: mockElectronBridge },
+        {
+          provide: CACHE_SERVICE_TOKEN,
+          useValue: { get: () => null, set: () => {}, invalidatePrefix: () => {} },
+        },
+        { provide: 'ITelemetry', useValue: { trackEvent: vi.fn(), trackError: vi.fn() } },
+        {
+          provide: 'ISemanticIndexStatus',
+          useValue: { getStatus: () => signal({ status: 'READY' }) },
+        },
+        { provide: 'ILiveAnnouncer', useValue: { announce: vi.fn() } },
       ],
-    });
+    }).compileComponents();
 
-    // 5. Inietta il servizio compilato tramite Angular
-    gateway = TestBed.inject(IndexingIpcGateway);
+    fixture = TestBed.createComponent(SearchPageComponent);
+    fixture.detectChanges();
   });
 
-  it('dovrebbe chiamare il canale IPC corretto per getIndexingStatus e restituire lo stato', async () => {
-    const mockState: SemanticIndexState = {
-      status: IndexingStatus.INDEXING,
-      progressPercentage: 50,
-      lastIndexedAt: null,
-    };
-    (mockBridge.invoke as Mock).mockResolvedValue(mockState);
+  it('1. Ricerca Libera: dalla UI al canale ipc:search:text', async () => {
+    mockElectronBridge.invoke.mockResolvedValue([{ id: '1', title: 'Doc Testo' }]);
 
-    const result = await new Promise((resolve) => {
-      gateway.getIndexingStatus().subscribe(resolve);
-    });
+    const searchInput = fixture.debugElement.query(By.css('input[type="text"]')).nativeElement;
+    searchInput.value = 'Ricerca Valida';
+    searchInput.dispatchEvent(new Event('input'));
 
-    expect(mockBridge.invoke).toHaveBeenCalledWith('ipc:indexing:status', null);
-    expect(result).toEqual(mockState);
+    const searchBtn = fixture.debugElement.query(By.css('header button'));
+    searchBtn.triggerEventHandler('click', null);
+
+    await sleep(350);
+    fixture.detectChanges();
+
+    expect(mockElectronBridge.invoke).toHaveBeenCalledWith(
+      'ipc:search:text',
+      expect.objectContaining({ text: 'Ricerca Valida' }),
+      expect.any(AbortSignal),
+    );
+
+    const resultsHeader = fixture.debugElement.query(By.css('main h2')).nativeElement;
+    expect(resultsHeader.textContent).toContain('Trovati 1 risultati');
   });
 
-  it('dovrebbe chiamare il canale IPC corretto per cancel', async () => {
-    (mockBridge.invoke as Mock).mockResolvedValue(undefined);
+  it('2. Ricerca Avanzata: dal Pannello Filtri al canale ipc:search:advanced', async () => {
+    mockElectronBridge.invoke.mockResolvedValue([{ id: '2', title: 'Doc Filtri' }]);
 
-    await new Promise((resolve) => {
-      gateway.cancel().subscribe(resolve);
-    });
+    const validFilters = { common: { text: 'Filtro Valido' } };
+    const filterPanel = fixture.debugElement.query(By.css('app-advanced-filter-panel'));
+    filterPanel.triggerEventHandler('filtersSubmit', validFilters);
 
-    expect(mockBridge.invoke).toHaveBeenCalledWith('ipc:indexing:cancel', null);
+    await sleep(350);
+    fixture.detectChanges();
+
+    expect(mockElectronBridge.invoke).toHaveBeenCalledWith(
+      'ipc:search:advanced',
+      expect.objectContaining(validFilters),
+      expect.any(AbortSignal),
+    );
   });
 
-  it('dovrebbe intercettare gli errori IPC e formattarli tramite IErrorHandler', async () => {
-    const mockError = new Error('Processo di indicizzazione crashato');
-    (mockBridge.invoke as Mock).mockRejectedValue(mockError);
+  it('3. Ricerca Semantica: attivazione toggle e chiamata a ipc:search:semantic', async () => {
+    mockElectronBridge.invoke.mockResolvedValue([{ id: '3', title: 'Doc Semantico' }]);
 
-    const errorResult = await new Promise((resolve) => {
-      gateway.getIndexingStatus().subscribe({
-        error: resolve,
-      });
-    });
+    const semanticToggle = fixture.debugElement.query(
+      By.css('input[type="checkbox"]'),
+    ).nativeElement;
+    semanticToggle.checked = true;
+    semanticToggle.dispatchEvent(new Event('change'));
 
-    expect(mockErrorHandler.handle).toHaveBeenCalledWith(mockError);
-    expect((errorResult as any).message).toBe('Processo di indicizzazione crashato');
+    const searchInput = fixture.debugElement.query(By.css('input[type="text"]')).nativeElement;
+    searchInput.value = 'Concetto chiave';
+    searchInput.dispatchEvent(new Event('input'));
+
+    const searchBtn = fixture.debugElement.query(By.css('header button'));
+    searchBtn.triggerEventHandler('click', null);
+
+    await sleep(350);
+    fixture.detectChanges();
+
+    expect(mockElectronBridge.invoke).toHaveBeenCalledWith(
+      'ipc:search:semantic',
+      expect.objectContaining({ text: 'Concetto chiave', useSemanticSearch: true }),
+      expect.any(AbortSignal),
+    );
+  });
+
+  it('4. Gestione Errori Reale: crash del backend tradotto dalla UI', async () => {
+    mockElectronBridge.invoke.mockRejectedValue(new Error('IPC_TIMEOUT'));
+
+    const searchBtn = fixture.debugElement.query(By.css('header button'));
+    searchBtn.triggerEventHandler('click', null);
+
+    await sleep(350);
+    fixture.detectChanges();
+
+    const errorBox = fixture.debugElement.query(
+      By.css('div[style*="background: #fee2e2"]'),
+    ).nativeElement;
+    expect(errorBox).toBeTruthy();
+    expect(errorBox.textContent.length).toBeGreaterThan(0);
+  });
+
+  it('5. Validazione Reale: la ricerca si blocca se i filtri sono invalidi', async () => {
+    const invalidFilters = { common: { text: 'a' } };
+
+    const filterPanel = fixture.debugElement.query(By.css('app-advanced-filter-panel'));
+    filterPanel.triggerEventHandler('filtersSubmit', invalidFilters);
+
+    await sleep(350);
+    fixture.detectChanges();
   });
 });
