@@ -19,10 +19,8 @@ import {
 
 @Injectable({ providedIn: 'root' })
 export class SearchIpcGateway implements ISearchChannel {
-  // TTL per la cache impostato a 5 minuti (300.000 ms)
   private readonly CACHE_TTL_MS = 300_000;
 
-  //searchProcesses, search
   constructor(
     @Inject(ELECTRON_CONTEXT_BRIDGE_TOKEN) private readonly contextBridge: IElectronContextBridge,
     @Inject(CACHE_SERVICE_TOKEN) private readonly cache: ICacheService,
@@ -38,7 +36,6 @@ export class SearchIpcGateway implements ISearchChannel {
       return of(cached);
     }
 
-    // 2. Chiamata IPC e aggiornamento della cache in caso di successo
     return this.invoke<SearchResult[]>('ipc:search:text', q, s, 'search:text').pipe(
       tap((results) => this.cache.set(cacheKey, results, this.CACHE_TTL_MS)),
     );
@@ -72,7 +69,6 @@ export class SearchIpcGateway implements ISearchChannel {
   }
 
   private cancelAndInvalidate(cacheKeyPrefix: string): void {
-    // Rimuove i dati parziali o obsoleti dalla cache quando la chiamata viene interrotta
     this.cache.invalidatePrefix(cacheKeyPrefix);
   }
 
@@ -86,14 +82,14 @@ export class SearchIpcGateway implements ISearchChannel {
       // Se il segnale è già stato interrotto prima ancora di iniziare
       if (signal.aborted) {
         this.cancelAndInvalidate(cachePrefix);
-        observer.error(this.errorHandler.handle(new Error('AbortError')));
+        observer.complete();
         return;
       }
 
       // Handler per l'interruzione in volo
       const onAbort = () => {
         this.cancelAndInvalidate(cachePrefix);
-        observer.error(this.errorHandler.handle(new Error('AbortError')));
+        observer.complete();
       };
 
       signal.addEventListener('abort', onAbort);

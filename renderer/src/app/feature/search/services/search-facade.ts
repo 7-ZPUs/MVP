@@ -12,9 +12,8 @@ import { SearchQueryType } from '../../../../../../shared/metadata/search.enum';
 import { IErrorHandler, ITelemetry, ILiveAnnouncer } from '../../../shared/contracts';
 import { debounceTime } from 'rxjs/internal/operators/debounceTime';
 import { ISemanticIndexStatus } from '../contracts/semantic-index.interface';
-import { Subject } from 'rxjs/internal/Subject';
 import { IFilterValidator } from '../../validation/contracts/filter-validator.interface';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, Subject } from 'rxjs';
 import { ISearchChannel } from '../contracts/search-channel.interface';
 import { TelemetryEvent } from '../../../shared/domain/';
 
@@ -74,9 +73,9 @@ export class SearchFacade implements ISearchFacade {
     const validation = this.filterValidator.validate(filters as unknown as PartialSearchFilters);
 
     if (!validation.isValid) {
-      const validationErrors = new Map<string, ValidationError>();
+      const validationErrors = new Map<string, ValidationError[]>();
       validation.errors.forEach((errors: ValidationError[], key: string) => {
-        validationErrors.set(key, errors[0]);
+        validationErrors.set(key, errors);
       });
       this.state.update((s) => ({ ...s, validationErrors }));
       return;

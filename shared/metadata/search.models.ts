@@ -46,7 +46,7 @@ export interface SearchState {
   loading: boolean;
   isSearching: boolean;
   error: AppError | null;
-  validationErrors: Map<string, ValidationError>;
+  validationErrors: Map<string, ValidationError[]>;
 }
 
 export type FilterValidatorFn = (

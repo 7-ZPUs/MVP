@@ -33,7 +33,7 @@ export class SearchBarComponent implements OnChanges, OnDestroy {
     this.form = this.fb.group({
       text: [''],
       type: [SearchQueryType.FREE],
-      useSemantic: [false],
+      useSemanticSearch: [false],
     });
 
     this.form.valueChanges.pipe(takeUntil(this.destroy$)).subscribe((value) => {
