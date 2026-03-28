@@ -100,7 +100,7 @@ describe('SearchFacade', () => {
       await sleep(0);
 
       const state = facade.getState()();
-      expect(state.validationErrors.get('dataDa')).toEqual(validationError);
+      expect(state.validationErrors.get('dataDa')).toEqual([validationError]);
       expect(mockSearchChannel.searchAdvanced).not.toHaveBeenCalled();
     });
   });

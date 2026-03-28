@@ -1,43 +1,31 @@
 <fieldset class="filter-fieldset" [formGroup]="form">
-  <legend>Metadati Custom</legend>
+  <legend>Metadato Custom</legend>
 
-  <div formArrayName="entries">
-    <div
-      *ngFor="let entry of entries.controls; let i = index"
-      [formGroupName]="i"
-      class="form-row custom-meta-row"
-    >
-      <div class="form-group">
-        <label [for]="'meta-name-' + i">Chiave</label>
-        <input
-          type="text"
-          [id]="'meta-name-' + i"
-          formControlName="name"
-          [attr.aria-invalid]="!!getError(i, 'name')"
-        />
-        <div *ngIf="getError(i, 'name') as err" class="validation-error">
-          {{ err.message }}
-        </div>
+  <div class="form-row custom-meta-row">
+    <div class="form-group">
+      <label for="meta-field">Chiave</label>
+      <input
+        type="text"
+        id="meta-field"
+        formControlName="field"
+        [attr.aria-invalid]="!!getError('field')"
+      />
+      <div *ngIf="getError('field') as err" class="validation-error">
+        {{ err.message }}
       </div>
+    </div>
 
-      <div class="form-group">
-        <label [for]="'meta-value-' + i">Valore</label>
-        <input
-          type="text"
-          [id]="'meta-value-' + i"
-          formControlName="value"
-          [attr.aria-invalid]="!!getError(i, 'value')"
-        />
-        <div *ngIf="getError(i, 'value') as err" class="validation-error">
-          {{ err.message }}
-        </div>
-      </div>
-
-      <div class="form-actions-inline" style="align-self: flex-end; margin-bottom: 1rem">
-        <button type="button" (click)="removeEntry(i)" class="btn-remove">Rimuovi</button>
+    <div class="form-group">
+      <label for="meta-value">Valore</label>
+      <input
+        type="text"
+        id="meta-value"
+        formControlName="value"
+        [attr.aria-invalid]="!!getError('value')"
+      />
+      <div *ngIf="getError('value') as err" class="validation-error">
+        {{ err.message }}
       </div>
     </div>
   </div>
-
-  <button type="button" (click)="addEntry()" class="btn-add">+ Aggiungi Metadato</button>
 </fieldset>

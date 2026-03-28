@@ -47,7 +47,7 @@ describe('AdvancedFilterPanelComponent', () => {
     it('dovrebbe intercettare onEntriesChanged da app-custom-meta-filters (HTML righe 39-40)', () => {
       const emitSpy = vi.spyOn(component.filtersChanged, 'emit');
       const child = fixture.debugElement.query(By.css('app-custom-meta-filters'));
-      const mockEntries = [{ key: 'campo', value: 'valore' }] as any;
+      const mockEntries = { key: 'campo', value: 'valore' } as any;
 
       child.triggerEventHandler('filtersChanged', mockEntries);
 
@@ -75,34 +75,28 @@ describe('AdvancedFilterPanelComponent', () => {
     });
 
     it('dovrebbe disabilitare il bottone Applica se currentValidationResult è invalido (HTML riga 104)', () => {
-      // 1. Disconnettiamo il componente dal motore globale per bloccare il "fuoco amico" dei figli
       const cdr = fixture.debugElement.injector.get(ChangeDetectorRef);
       cdr.detach();
 
-      // 2. Impostiamo la variabile in totale sicurezza
       component.currentValidationResult = { isValid: false, errors: new Map() };
-
-      // 3. Forziamo il disegno locale solo per questo componente
       cdr.detectChanges();
 
-      // 4. Verifichiamo il bottone
       const submitBtn = fixture.debugElement.query(By.css('button[type="submit"]')).nativeElement;
       expect(submitBtn.disabled).toBe(true);
 
-      // 5. Riattacchiamo per pulizia
       cdr.reattach();
     });
 
     it('dovrebbe emettere filtersSubmit se non ci sono errori e si preme Applica (TS riga 100)', () => {
       const cdr = fixture.debugElement.injector.get(ChangeDetectorRef);
-      cdr.detach(); // Isoliamo il componente
+      cdr.detach();
 
       const emitSubmitSpy = vi.spyOn(component.filtersSubmit, 'emit');
 
       component.currentValidationResult = { isValid: true, errors: new Map() };
       component.externalValidation = null;
 
-      cdr.detectChanges(); // Disegno locale
+      cdr.detectChanges();
 
       const form = fixture.debugElement.query(By.css('form'));
       form.triggerEventHandler('ngSubmit', null);

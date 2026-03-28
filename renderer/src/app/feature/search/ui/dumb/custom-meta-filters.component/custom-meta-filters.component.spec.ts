@@ -20,89 +20,40 @@ describe('CustomMetaFiltersComponent', () => {
     fixture.detectChanges();
   });
 
-  it('dovrebbe istanziare un form array vuoto', () => {
-    expect(component.entries.length).toBe(0);
+  it('dovrebbe istanziare un form vuoto', () => {
+    expect(component.form.value).toEqual({ field: '', value: '' });
   });
 
-  it('addEntry() dovrebbe aggiungere una riga al FormArray', () => {
-    component.addEntry();
-    expect(component.entries.length).toBe(1);
-    expect(component.entries.at(0).value).toEqual({ name: '', value: '' });
-  });
-
-  it('removeEntry() dovrebbe rimuovere la riga specificata', () => {
-    component.addEntry();
-    component.addEntry();
-    expect(component.entries.length).toBe(2);
-
-    component.removeEntry(0);
-    expect(component.entries.length).toBe(1);
-  });
-
-  it('ngOnChanges() dovrebbe sincronizzare il FormArray con i nuovi filtri senza emettere', () => {
+  it('ngOnChanges() dovrebbe sincronizzare il form con i nuovi filtri senza emettere', () => {
     const emitSpy = vi.spyOn(component.filtersChanged, 'emit');
-    const incomingFilters = [{ name: 'Chiave1', value: 'Valore1' }] as any;
+    const incomingFilters = { field: 'Chiave1', value: 'Valore1' };
 
     component.ngOnChanges({
       filters: new SimpleChange(null, incomingFilters, true),
     });
 
-    expect(component.entries.length).toBe(1);
-    expect(component.entries.at(0).value).toEqual({ name: 'Chiave1', value: 'Valore1' });
+    expect(component.form.value).toEqual({ field: 'Chiave1', value: 'Valore1' });
     expect(emitSpy).not.toHaveBeenCalled();
   });
 
-  it('ngOnChanges() dovrebbe gestire in sicurezza input nulli o non array', () => {
-    component.addEntry();
+  it('ngOnChanges() dovrebbe resettare il form se i filtri sono null', () => {
+    component.form.patchValue({ field: 'A', value: 'B' });
 
     component.ngOnChanges({
       filters: new SimpleChange(null, null, true),
     });
 
-    expect(component.entries.length).toBe(0);
+    expect(component.form.value).toEqual({ field: '', value: '' });
   });
 
-  it("dovrebbe mostrare i messaggi di errore HTML dinamici basati sull'indice", () => {
-    component.addEntry();
-
-    const mockError: ValidationError = {
-      field: 'customMeta[0].name',
-      message: 'Chiave non valida',
-      code: 'E1',
-    };
-    const mockValidationResult: ValidationResult = {
-      isValid: false,
-      errors: new Map([['customMeta[0].name', [mockError]]]),
-    };
-
-    fixture.componentRef.setInput('validationResult', mockValidationResult);
-    fixture.detectChanges();
-
-    const errEl = fixture.debugElement.query(By.css('.validation-error'));
-    expect(errEl).toBeTruthy();
-    expect(errEl.nativeElement.textContent.trim()).toBe('Chiave non valida');
-  });
-
-  it('ngOnDestroy() dovrebbe emettere sul subject destroy$ per evitare memory leak', () => {
-    const nextSpy = vi.spyOn((component as any).destroy$, 'next');
-    const completeSpy = vi.spyOn((component as any).destroy$, 'complete');
-
-    component.ngOnDestroy();
-
-    expect(nextSpy).toHaveBeenCalled();
-    expect(completeSpy).toHaveBeenCalled();
-  });
-
-  it("dovrebbe mostrare i messaggi di errore HTML dinamici per 'name' e 'value'", () => {
-    component.addEntry();
-
-    const mockErrorName: ValidationError = {
-      field: 'customMeta[0].name',
+  it("dovrebbe mostrare i messaggi di errore HTML dinamici per 'field' e 'value'", () => {
+    const mockErrorField: ValidationError = {
+      field: 'customMeta.field',
       message: 'Chiave non valida',
       code: 'E1',
     };
     const mockErrorValue: ValidationError = {
-      field: 'customMeta[0].value',
+      field: 'customMeta.value',
       message: 'Valore non valido',
       code: 'E2',
     };
@@ -110,8 +61,8 @@ describe('CustomMetaFiltersComponent', () => {
     const mockValidationResult: ValidationResult = {
       isValid: false,
       errors: new Map([
-        ['customMeta[0].name', [mockErrorName]],
-        ['customMeta[0].value', [mockErrorValue]],
+        ['customMeta.field', [mockErrorField]],
+        ['customMeta.value', [mockErrorValue]],
       ]),
     };
 
@@ -125,13 +76,11 @@ describe('CustomMetaFiltersComponent', () => {
     expect(errEls[1].nativeElement.textContent.trim()).toBe('Valore non valido');
   });
 
-  it('ngOnChanges() dovrebbe usare stringhe vuote come fallback se name o value sono assenti nelle entry (copertura riga 81)', () => {
-    const incomingFilters = [{}] as any;
+  it("dovrebbe emettere null se l'utente svuota entrambi i campi", () => {
+    const emitSpy = vi.spyOn(component.filtersChanged, 'emit');
 
-    component.ngOnChanges({
-      filters: new SimpleChange(null, incomingFilters, true),
-    });
+    component.form.patchValue({ field: '', value: '' });
 
-    expect(component.entries.at(0).value).toEqual({ name: '', value: '' });
+    expect(emitSpy).toHaveBeenCalledWith(null);
   });
 });

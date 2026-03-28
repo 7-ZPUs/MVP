@@ -37,7 +37,7 @@ import { SubjectFiltersComponent } from '../../dumb/subject-filters.component/su
 })
 export class AdvancedFilterPanelComponent implements OnInit {
   @Input() filters!: SearchFilters;
-  @Input() validator!: FilterValidatorFn;
+  @Input() validator?: FilterValidatorFn;
   @Input() externalValidation: ValidationResult | null = null;
 
   @Output() filtersChanged = new EventEmitter<SearchFilters>();
@@ -82,9 +82,8 @@ export class AdvancedFilterPanelComponent implements OnInit {
     this.panelForm.patchValue({ aggregate: values }, { emitEvent: true });
   }
 
-  public onEntriesChanged(entries: CustomFilterValues): void {
-    const updatedFilters = { ...this.filters, customMeta: entries };
-    this.filtersChanged.emit(updatedFilters);
+  public onEntriesChanged(entries: CustomFilterValues | null): void {
+    this.panelForm.patchValue({ customMeta: entries }, { emitEvent: true });
   }
 
   public onSubjectChanged(subject: SubjectCriteria): void {
@@ -125,7 +124,7 @@ export class AdvancedFilterPanelComponent implements OnInit {
       common: formValues.common,
       diDai: formValues.diDai,
       aggregate: formValues.aggregate,
-      customMeta: this.filters?.customMeta || null,
+      customMeta: formValues.customMeta,
     };
 
     if (this.validator) {

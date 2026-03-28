@@ -71,8 +71,9 @@
       </div>
 
       <div class="filter-section" style="margin-bottom: 1.5rem">
+        <h4 style="margin-bottom: 0.5rem; color: #334155">Metadati Personalizzati</h4>
         <app-custom-meta-filters
-          [filters]="$any(filters.customMeta || [])"
+          [filters]="filters.customMeta || null"
           [validationResult]="currentValidationResult || externalValidation"
           (filtersChanged)="onEntriesChanged($event)"
         >

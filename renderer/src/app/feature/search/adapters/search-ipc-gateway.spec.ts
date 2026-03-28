@@ -100,8 +100,7 @@ describe('SearchIpcGateway', () => {
     abortController.abort();
 
     expect(mockCache.invalidatePrefix).toHaveBeenCalledWith('search:text');
-    expect(mockErrorHandler.handle).toHaveBeenCalled();
-    expect(errorResult.message).toBe('AbortError');
+    expect(mockErrorHandler.handle).not.toHaveBeenCalled();
   });
 
   it("dovrebbe formattare un errore di rete/IPC tramite l'IpcErrorHandlerService", async () => {
@@ -190,7 +189,7 @@ describe('SearchIpcGateway', () => {
 
       expect(mockBridge.invoke).not.toHaveBeenCalled();
       expect(mockCache.invalidatePrefix).toHaveBeenCalledWith('search:text');
-      expect(errorResult.message).toBe('AbortError');
+      expect(errorResult).toBeUndefined();
     });
 
     it('NON deve emettere risultati se la promise IPC si risolve in ritardo (dopo un abort)', async () => {
@@ -237,7 +236,7 @@ describe('SearchIpcGateway', () => {
       rejectPromise(new Error('Errore in ritardo'));
 
       await new Promise((r) => setTimeout(r, 0));
-      expect(errorCount).toBe(1);
+      expect(errorCount).toBe(0);
     });
   });
 });

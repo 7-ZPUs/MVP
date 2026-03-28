@@ -8,7 +8,7 @@ import {
   OnDestroy,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, FormArray, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
 
 import {
@@ -24,32 +24,37 @@ import {
   templateUrl: './custom-meta-filters.component.html',
 })
 export class CustomMetaFiltersComponent implements OnChanges, OnDestroy {
-  @Input() filters: CustomFilterValues | null = null; // Assumendo che sia un array di {name, value}
+  @Input() filters: CustomFilterValues | null = null;
   @Input() validationResult: ValidationResult | null = null;
 
-  @Output() filtersChanged = new EventEmitter<CustomFilterValues>();
+  @Output() filtersChanged = new EventEmitter<CustomFilterValues | null>();
 
   public form: FormGroup;
   private readonly destroy$ = new Subject<void>();
 
   constructor(private readonly fb: FormBuilder) {
     this.form = this.fb.group({
-      entries: this.fb.array([]),
+      field: [''],
+      value: [''],
     });
 
-    this.form.valueChanges.pipe(takeUntil(this.destroy$)).subscribe((value) => {
-      // Emettiamo solo l'array delle entries
-      this.filtersChanged.emit(value.entries as CustomFilterValues);
+    this.form.valueChanges.pipe(takeUntil(this.destroy$)).subscribe((val) => {
+      if (!val.field && !val.value) {
+        this.filtersChanged.emit(null);
+      } else {
+        this.filtersChanged.emit(val as CustomFilterValues);
+      }
     });
-  }
-
-  get entries(): FormArray {
-    return this.form.get('entries') as FormArray;
   }
 
   public ngOnChanges(changes: SimpleChanges): void {
     if ('filters' in changes) {
-      this.syncFormArray(changes['filters'].currentValue);
+      const newFilters = changes['filters'].currentValue;
+      if (newFilters) {
+        this.form.patchValue(newFilters, { emitEvent: false });
+      } else {
+        this.form.reset({ field: '', value: '' }, { emitEvent: false });
+      }
     }
   }
 
@@ -58,33 +63,7 @@ export class CustomMetaFiltersComponent implements OnChanges, OnDestroy {
     this.destroy$.complete();
   }
 
-  public addEntry(): void {
-    this.entries.push(this.createEntryGroup('', ''));
-  }
-
-  public removeEntry(index: number): void {
-    this.entries.removeAt(index);
-  }
-
-  public getError(index: number, field: string): ValidationError | undefined {
-    return this.validationResult?.errors.get(`customMeta[${index}].${field}`)?.[0];
-  }
-
-  private createEntryGroup(name: string, value: string): FormGroup {
-    return this.fb.group({
-      name: [name],
-      value: [value],
-    });
-  }
-
-  private syncFormArray(newFilters: any[]): void {
-    this.entries.clear({ emitEvent: false });
-
-    const filtersArray = Array.isArray(newFilters) ? newFilters : [];
-    filtersArray.forEach((entry) => {
-      this.entries.push(this.createEntryGroup(entry.name || '', entry.value || ''), {
-        emitEvent: false,
-      });
-    });
+  public getError(controlName: string): ValidationError | undefined {
+    return this.validationResult?.errors.get(`customMeta.${controlName}`)?.[0];
   }
 }
