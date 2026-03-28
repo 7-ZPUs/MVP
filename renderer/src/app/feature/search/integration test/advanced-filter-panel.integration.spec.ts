@@ -3,12 +3,12 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { By } from '@angular/platform-browser';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
-import { AdvancedFilterPanelComponent } from '../../feature/search/ui/smart/advanced-filter-panel/advanced-filter-panel';
-import { CommonFiltersComponent } from '../../feature/search/ui/dumb/common-filters.component/common-filters.component';
-import { DiDaiFiltersComponent } from '../../feature/search/ui/dumb/di-dai-filters.component/di-dai-filters.component';
-import { AggregateFiltersComponent } from '../../feature/search/ui/dumb/aggregate-filters.component/aggregate-filters.component';
-import { CustomMetaFiltersComponent } from '../../feature/search/ui/dumb/custom-meta-filters.component/custom-meta-filters.component';
-import { SubjectFiltersComponent } from '../../feature/search/ui/dumb/subject-filters.component/subject-filters.component';
+import { AdvancedFilterPanelComponent } from '../ui/smart/advanced-filter-panel/advanced-filter-panel';
+import { CommonFiltersComponent } from '../ui/dumb/common-filters.component/common-filters.component';
+import { DiDaiFiltersComponent } from '../ui/dumb/di-dai-filters.component/di-dai-filters.component';
+import { AggregateFiltersComponent } from '../ui/dumb/aggregate-filters.component/aggregate-filters.component';
+import { CustomMetaFiltersComponent } from '../ui/dumb/custom-meta-filters.component/custom-meta-filters.component';
+import { SubjectFiltersComponent } from '../ui/dumb/subject-filters.component/subject-filters.component';
 
 describe('AdvancedFilterPanelComponent - Test di Integrazione', () => {
   let component: AdvancedFilterPanelComponent;

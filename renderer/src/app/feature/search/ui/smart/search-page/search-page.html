@@ -76,7 +76,7 @@
         [filters]="state().filters"
         [externalValidation]="externalValidation"
         (filtersChanged)="onFiltersChanged($event)"
-        (filtersSubmit)="onSearchRequested()"
+        (filtersSubmit)="onAdvancedSearchRequested($event)"
         (filtersReset)="onFiltersReset()"
       >
       </app-advanced-filter-panel>

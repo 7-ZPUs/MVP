@@ -42,11 +42,16 @@ export class SearchPageComponent implements OnInit {
   }
 
   public onSearchRequested(): void {
-    if (this.state().query.useSemanticSearch) {
-      this.searchFacade.searchSemantic(this.state().query);
+    const currentState = this.state();
+    if (currentState.query.useSemanticSearch) {
+      this.searchFacade.searchSemantic(currentState.query);
     } else {
-      this.searchFacade.searchAdvanced(this.state().filters);
+      this.searchFacade.search();
     }
+  }
+
+  public onAdvancedSearchRequested(filters: SearchFilters): void {
+    this.searchFacade.searchAdvanced(filters);
   }
 
   public onFiltersReset(): void {

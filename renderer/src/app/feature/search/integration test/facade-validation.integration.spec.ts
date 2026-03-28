@@ -2,15 +2,15 @@ import { TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { of } from 'rxjs';
-import { SearchFacade } from '../../feature/search/services/search-facade';
+import { SearchFacade } from '../services/search-facade';
 import {
   RegistryContradictionValidationStrategy,
   FormationModeContradictionStrategy,
   SearchRangeValidationStrategy,
-} from '../../feature/validation/strategies';
-import { SearchFilters } from '../../../../../shared/metadata';
-import { RegisterType, DIDAIFormation } from '../../../../../shared/metadata/search.enum';
-import { FilterValidatorService } from '../../feature/validation/services/filter-validator.service';
+} from '../../validation/strategies';
+import { SearchFilters } from '../../../../../../shared/metadata';
+import { RegisterType, DIDAIFormation } from '../../../../../../shared/metadata/search.enum';
+import { FilterValidatorService } from '../../validation/services/filter-validator.service';
 
 describe('Search Domain Integration (Facade + Validator + Strategies)', () => {
   let facade: SearchFacade;

@@ -29,6 +29,7 @@ describe('SearchPageComponent', () => {
       getState: vi.fn().mockReturnValue(mockStateSignal),
       setQuery: vi.fn(),
       setFilters: vi.fn(),
+      search: vi.fn(),
       searchAdvanced: vi.fn(),
       searchSemantic: vi.fn(),
       cancelSearch: vi.fn(),
@@ -81,13 +82,15 @@ describe('SearchPageComponent', () => {
     it("dovrebbe lanciare la ricerca alla pressione di invio sull'input", () => {
       const searchInput = fixture.debugElement.query(By.css('input[type="text"]'));
       searchInput.triggerEventHandler('keyup.enter', null);
-      expect(mockFacade.searchAdvanced).toHaveBeenCalled();
+
+      expect(mockFacade.search).toHaveBeenCalled();
     });
 
     it('dovrebbe lanciare la ricerca al click sul bottone Cerca', () => {
       const searchBtn = fixture.debugElement.query(By.css('header button'));
       searchBtn.triggerEventHandler('click', null);
-      expect(mockFacade.searchAdvanced).toHaveBeenCalled();
+
+      expect(mockFacade.search).toHaveBeenCalled();
     });
   });
 
@@ -99,16 +102,17 @@ describe('SearchPageComponent', () => {
       }));
       component.onSearchRequested();
       expect(mockFacade.searchSemantic).toHaveBeenCalled();
-      expect(mockFacade.searchAdvanced).not.toHaveBeenCalled();
+      expect(mockFacade.search).not.toHaveBeenCalled();
     });
 
-    it('dovrebbe chiamare searchAdvanced se useSemanticSearch è false', () => {
+    it('dovrebbe chiamare search se useSemanticSearch è false', () => {
       mockStateSignal.update((s: SearchState) => ({
         ...s,
         query: { ...s.query, useSemanticSearch: false },
       }));
       component.onSearchRequested();
-      expect(mockFacade.searchAdvanced).toHaveBeenCalled();
+
+      expect(mockFacade.search).toHaveBeenCalled();
       expect(mockFacade.searchSemantic).not.toHaveBeenCalled();
     });
   });
@@ -137,12 +141,14 @@ describe('SearchPageComponent', () => {
       });
     });
 
-    it('dovrebbe intercettare (filtersSubmit) dal figlio ed eseguire la ricerca', () => {
+    it('dovrebbe intercettare (filtersSubmit) dal figlio ed eseguire la ricerca avanzata', () => {
+      const mockFilters = { common: { text: 'test filtri' } } as any;
       const filterPanel = fixture.debugElement.query(By.css('app-advanced-filter-panel'));
 
-      filterPanel.triggerEventHandler('filtersSubmit', null);
+      filterPanel.triggerEventHandler('filtersSubmit', mockFilters);
 
-      expect(mockFacade.searchAdvanced).toHaveBeenCalled();
+      expect(mockFacade.searchAdvanced).toHaveBeenCalledWith(mockFilters);
+      expect(mockFacade.search).not.toHaveBeenCalled();
     });
   });
 

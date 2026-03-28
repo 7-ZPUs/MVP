@@ -1,14 +1,14 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { FilterValidatorService } from '../../feature/validation/services/filter-validator.service';
+import { FilterValidatorService } from '../../validation/services/filter-validator.service';
 import {
   RegistryContradictionValidationStrategy,
   FormationModeContradictionStrategy,
   SearchRangeValidationStrategy,
-} from '../../feature/validation/strategies';
+} from '../../validation/strategies';
 
 // Modelli ed Enum
-import { PartialSearchFilters } from '../../../../../shared/metadata';
-import { RegisterType, DIDAIFormation } from '../../../../../shared/metadata/search.enum';
+import { PartialSearchFilters } from '../../../../../../shared/metadata';
+import { RegisterType, DIDAIFormation } from '../../../../../../shared/metadata/search.enum';
 
 describe('FilterValidatorService - Integration Test', () => {
   let validatorService: FilterValidatorService;
