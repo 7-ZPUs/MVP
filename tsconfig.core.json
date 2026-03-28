@@ -1,10 +1,10 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "rootDir": "core/src",
+    "rootDir": ".",
     "outDir": "dist/core"
   },
-  "include": ["core/src/**/*"],
+  "include": ["core/src/**/*","shared/**/*"], // questo è per includere anche i DTO condivisi
   "exclude": [
     "node_modules",
     "dist",
