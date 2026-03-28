@@ -11,7 +11,6 @@ import {
   CACHE_SERVICE_TOKEN,
   ERROR_HANDLER_TOKEN,
 } from '../../../shared/contracts';
-import { SearchQueryType } from '../../../../../../shared/metadata/search.enum';
 import { SearchFacade } from '../services';
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -53,8 +52,8 @@ describe('Integration: Search Flow (UI -> Facade -> IPC Gateway)', () => {
         { provide: ELECTRON_CONTEXT_BRIDGE_TOKEN, useValue: mockElectronBridge },
 
         { provide: CACHE_SERVICE_TOKEN, useValue: mockCache },
-        { provide: ERROR_HANDLER_TOKEN, useValue: mockErrorHandler }, // Per il Gateway
-        { provide: 'IErrorHandler', useValue: mockErrorHandler }, // Per la Facade
+        { provide: ERROR_HANDLER_TOKEN, useValue: mockErrorHandler },
+        { provide: 'IErrorHandler', useValue: mockErrorHandler },
 
         { provide: 'IFilterValidator', useValue: mockValidator },
         { provide: 'ITelemetry', useValue: mockTelemetry },
@@ -67,8 +66,6 @@ describe('Integration: Search Flow (UI -> Facade -> IPC Gateway)', () => {
     fixture = TestBed.createComponent(SearchPageComponent);
     fixture.detectChanges();
   });
-
-  // ... (import e setup invariati)
 
   it('Flusso Completo: dalla digitazione in UI, al bridge IPC, al rendering dei risultati', async () => {
     const mockBackendResults = [
