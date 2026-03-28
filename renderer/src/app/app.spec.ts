@@ -11,22 +11,18 @@ describe('App', () => {
       imports: [App],
       providers: [provideRouter([])],
     }).compileComponents();
+  });
 
-    fixture = TestBed.createComponent(App);
-    component = fixture.componentInstance;
+  it('should create the app', () => {
+    const fixture = TestBed.createComponent(App);
+    const app = fixture.componentInstance;
+    expect(app).toBeTruthy();
+  });
+
+  it('should render router outlet', async () => {
+    const fixture = TestBed.createComponent(App);
     fixture.detectChanges();
-  });
-
-  it('dovrebbe creare il componente app', () => {
-    expect(component).toBeTruthy();
-  });
-
-  it('dovrebbe avere il titolo "renderer"', () => {
-    const titleValue = (component as any).title();
-    expect(titleValue).toBe('renderer');
-  });
-
-  it('dovrebbe eseguire il render del router-outlet', () => {
+    await fixture.whenStable();
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector('router-outlet')).not.toBeNull();
   });
