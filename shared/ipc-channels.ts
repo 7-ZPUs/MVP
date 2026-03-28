@@ -13,11 +13,11 @@ export const IpcChannels = {
   PACKAGE_CLOSE: 'package:close',
 
   // ----- Search -----
-  SEARCH_FULLTEXT: 'search:fulltext',
-  SEARCH_SEMANTIC: 'search:semantic',
-  SEARCH_CLASSES:    'search:classes',
-  SEARCH_PROCESSES:  'search:processes',
-  SEARCH_DOCUMENTS:  'search:documents',
+  SEARCH_FULLTEXT:     'ipc:search:text',
+  SEARCH_SEMANTIC:     'ipc:search:semantic',
+  SEARCH_CLASSES:      'search:classes',
+  SEARCH_PROCESSES:    'search:processes',
+  SEARCH_DOCUMENTS:    'ipc:search:advanced',
   SEARCH_GET_AI_STATE: 'search:ai-state',
 
   // ----- Integrity -----

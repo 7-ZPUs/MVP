@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { SearchFilters } from '../../../../shared/domain/metadata/search.models';
 
 // Mock di electron e tsyringe prima degli import
 vi.mock('electron', () => ({
@@ -90,6 +91,7 @@ describe('SearchIpcAdapter', () => {
         expect(registeredChannels).toContain(IpcChannels.SEARCH_DOCUMENTS);
         expect(registeredChannels).toContain(IpcChannels.SEARCH_SEMANTIC);
         expect(registeredChannels).toContain(IpcChannels.SEARCH_GET_AI_STATE);
+        expect(registeredChannels).toContain(IpcChannels.SEARCH_FULLTEXT);
     });
 
     // ─── SEARCH_CLASSES ───────────────────────────────────────────────────────
@@ -187,11 +189,14 @@ describe('SearchIpcAdapter', () => {
 
     // ─── SEARCH_SEMANTIC ──────────────────────────────────────────────────────
 
+    // SEARCH_SEMANTIC chiama execute con la query e ritorna SearchResult[]
     it('SEARCH_SEMANTIC chiama execute con la query e ritorna SearchResult[]', async () => {
         const expectedResults = [{ documentId: 'uuid-s1', name: 'sem.pdf', type: 'DOCUMENTO INFORMATICO', score: 0.91 }];
         searchSemanticUC.execute.mockResolvedValue(expectedResults);
 
-        const result = await ipcMain.invoke(IpcChannels.SEARCH_SEMANTIC, 'ricerca semantica');
+        // Il frontend manda un SearchQuery, non una stringa
+        const query = { text: 'ricerca semantica', type: 'FREE', useSemanticSearch: true };
+        const result = await ipcMain.invoke(IpcChannels.SEARCH_SEMANTIC, query);
 
         expect(searchSemanticUC.execute).toHaveBeenCalledWith('ricerca semantica');
         expect(result).toEqual(expectedResults);
@@ -199,14 +204,18 @@ describe('SearchIpcAdapter', () => {
 
     it('SEARCH_SEMANTIC ritorna array vuoto se nessun documento simile trovato', async () => {
         searchSemanticUC.execute.mockResolvedValue([]);
-        const result = await ipcMain.invoke(IpcChannels.SEARCH_SEMANTIC, 'query senza match');
+
+        const query = { text: 'query senza match', type: 'FREE', useSemanticSearch: true };
+        const result = await ipcMain.invoke(IpcChannels.SEARCH_SEMANTIC, query);
+
         expect(result).toEqual([]);
     });
 
     it('SEARCH_SEMANTIC passa stringa vuota quando la query è vuota', async () => {
         searchSemanticUC.execute.mockResolvedValue([]);
 
-        await ipcMain.invoke(IpcChannels.SEARCH_SEMANTIC, '');
+        const query = { text: '', type: 'FREE', useSemanticSearch: true };
+        await ipcMain.invoke(IpcChannels.SEARCH_SEMANTIC, query);
 
         expect(searchSemanticUC.execute).toHaveBeenCalledWith('');
     });
@@ -256,5 +265,36 @@ describe('SearchIpcAdapter', () => {
         await expect(
             ipcMain.invoke(IpcChannels.SEARCH_GET_AI_STATE)
         ).rejects.toThrow('ai state unavailable');
+    });
+
+    // ─── SEARCH_FULLTEXT ──────────────────────────────────────────────────────────
+
+    it('SEARCH_FULLTEXT chiama searchDocumentsUC con filtro sul nome', async () => {
+        searchDocumentsUC.execute.mockResolvedValue([]);
+
+        const query = { text: 'fattura.pdf', type: 'FREE', useSemanticSearch: false };
+        await ipcMain.invoke(IpcChannels.SEARCH_FULLTEXT, query);
+
+        const calledFilters = searchDocumentsUC.execute.mock.calls[0][0] as SearchFilters;
+        expect(calledFilters.diDai?.nome).toBe('fattura.pdf');
+    });
+
+    it('SEARCH_FULLTEXT ritorna SearchResult[] dal searchDocumentsUC', async () => {
+        const expectedResults = [{ documentId: 'uuid-1', name: 'fattura.pdf', type: 'DOCUMENTO INFORMATICO', score: null }];
+        searchDocumentsUC.execute.mockResolvedValue(expectedResults);
+
+        const query = { text: 'fattura.pdf', type: 'FREE', useSemanticSearch: false };
+        const result = await ipcMain.invoke(IpcChannels.SEARCH_FULLTEXT, query);
+
+        expect(result).toEqual(expectedResults);
+    });
+
+    it('SEARCH_FULLTEXT ritorna array vuoto se nessun documento trovato', async () => {
+        searchDocumentsUC.execute.mockResolvedValue([]);
+
+        const query = { text: 'inesistente', type: 'FREE', useSemanticSearch: false };
+        const result = await ipcMain.invoke(IpcChannels.SEARCH_FULLTEXT, query);
+
+        expect(result).toEqual([]);
     });
 });
