@@ -12,7 +12,8 @@
     "start:renderer": "cd renderer && ng serve --host 0.0.0.0",
     "test": "npm run test:core",
     "test:core": "vitest run",
-    "test:renderer": "cd renderer && ng test"
+    "test:renderer": "cd renderer && ng test",
+    "test:coverage": "npm run test:core -- --coverage"
   },
   "dependencies": {
     "@angular/router": "^21.2.6",
