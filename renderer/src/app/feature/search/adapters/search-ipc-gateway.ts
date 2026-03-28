@@ -22,6 +22,7 @@ export class SearchIpcGateway implements ISearchChannel {
   // TTL per la cache impostato a 5 minuti (300.000 ms)
   private readonly CACHE_TTL_MS = 300_000;
 
+  //searchProcesses, search
   constructor(
     @Inject(ELECTRON_CONTEXT_BRIDGE_TOKEN) private readonly contextBridge: IElectronContextBridge,
     @Inject(CACHE_SERVICE_TOKEN) private readonly cache: ICacheService,
@@ -44,6 +45,7 @@ export class SearchIpcGateway implements ISearchChannel {
   }
 
   public searchAdvanced(f: SearchFilters, s: AbortSignal): Observable<SearchResult[]> {
+    //Zaka's searchFilters
     const cacheKey = `search:advanced:${JSON.stringify(f)}`;
 
     const cached = this.cache.get<SearchResult[]>(cacheKey);
