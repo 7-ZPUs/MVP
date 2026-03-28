@@ -1,41 +1,42 @@
 import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { signal } from '@angular/core';
+import { signal, WritableSignal } from '@angular/core';
 
 import { ItemDetailPageComponent } from './item-detail-page.component';
-
-// Importiamo i token che causano l'errore
 import { AGGREGATE_FACADE_TOKEN } from '../../../../aggregate/contracts/IAggregateFacade';
 import { DOCUMENT_FACADE_TOKEN } from '../../../../document/contracts/IDocumentFacade';
+import { AggregateState } from '../../../../aggregate/domain/aggregate.models';
+import { DocumentState } from '../../../../document/domain/document.models';
+import { AppError, ErrorCode, ErrorCategory, ErrorSeverity } from '../../../../../shared/domain';
 
 describe('ItemDetailPageComponent', () => {
   let component: ItemDetailPageComponent;
   let fixture: ComponentFixture<ItemDetailPageComponent>;
 
-  // 1. Creiamo le "controfigure" (Mock) dei nostri Facade
-  // Usiamo 'any' per bypassare i controlli rigidi di TypeScript nei test
+  // Signal scrivibili per simulare dinamicamente i cambi di stato dei Facade
+  let mockAggregateState: WritableSignal<AggregateState>;
+  let mockDocumentState: WritableSignal<DocumentState>;
+
   let mockAggregateFacade: any;
   let mockDocumentFacade: any;
 
   beforeEach(async () => {
-    // 2. Istruiamo le controfigure su cosa devono rispondere
+    // Inizializziamo gli stati di base vuoti
+    mockAggregateState = signal({ detail: null, loading: false, error: null });
+    mockDocumentState = signal({ detail: null, loading: false, error: null });
+
     mockAggregateFacade = {
-      // Il componente si aspetta un signal da getState()
-      getState: vi.fn().mockReturnValue(signal({ detail: null, loading: false, error: null })),
+      getState: vi.fn().mockReturnValue(mockAggregateState),
       loadAggregate: vi.fn(),
     };
 
     mockDocumentFacade = {
-      getState: vi.fn().mockReturnValue(signal({ detail: null, loading: false, error: null })),
+      getState: vi.fn().mockReturnValue(mockDocumentState),
       loadDocument: vi.fn(),
     };
 
     await TestBed.configureTestingModule({
-      // Importiamo il componente standalone
       imports: [ItemDetailPageComponent],
-
-      // 3. LA SOLUZIONE ALL'ERRORE DI INJECTION:
-      // Diciamo al TestBed: "Quando il componente chiede questo Token, passagli il mock!"
       providers: [
         { provide: AGGREGATE_FACADE_TOKEN, useValue: mockAggregateFacade },
         { provide: DOCUMENT_FACADE_TOKEN, useValue: mockDocumentFacade },
@@ -44,23 +45,113 @@ describe('ItemDetailPageComponent', () => {
 
     fixture = TestBed.createComponent(ItemDetailPageComponent);
     component = fixture.componentInstance;
+  });
 
-    // 4. In Angular 17+, i Signal Input (input.required) vanno valorizzati
-    // PRIMA di chiamare detectChanges(), altrimenti Angular va in crash!
+  // --- TEST 1: FLUSSO FASCICOLO (AGGREGATE) ---
+  it('dovrebbe inizializzare e caricare i dati per un AGGREGATE', () => {
     fixture.componentRef.setInput('itemId', '123');
     fixture.componentRef.setInput('itemType', 'AGGREGATE');
 
+    // Aggiorniamo il mock per simulare l'arrivo dei dati
+    mockAggregateState.set({
+      loading: false,
+      error: null,
+      detail: { aggregateId: '123', metadata: { progressivo: '001/2023' } } as any,
+    });
+
     fixture.detectChanges();
-  });
 
-  it('dovrebbe crearsi correttamente senza errori di Injection', () => {
-    expect(component).toBeTruthy();
-  });
-
-  it('dovrebbe chiamare loadAggregate se itemType è AGGREGATE', () => {
-    // Abbiamo impostato itemType = 'AGGREGATE' nel beforeEach,
-    // quindi l'effect nel constructor dovrebbe aver chiamato questo metodo
     expect(mockAggregateFacade.loadAggregate).toHaveBeenCalledWith('123');
     expect(mockDocumentFacade.loadDocument).not.toHaveBeenCalled();
+    expect(component.pageTitle()).toBe('Fascicolo 001/2023'); // Testa il branch del computed
+    expect(component.isLoading()).toBe(false);
+  });
+
+  // --- TEST 2: FLUSSO DOCUMENTO (DOCUMENT) ---
+  it('dovrebbe inizializzare e caricare i dati per un DOCUMENT', () => {
+    fixture.componentRef.setInput('itemId', '456');
+    fixture.componentRef.setInput('itemType', 'DOCUMENT');
+
+    // Simulo i dati del documento
+    mockDocumentState.set({
+      loading: false,
+      error: null,
+      detail: {
+        documentId: '456',
+        fileName: 'delibera.pdf',
+        // Aggiungiamo il blocco che fa crashare il test se manca!
+        registration: {
+          tipoRegistro: 'Protocollo',
+          flusso: 'E',
+          data: '2023-01-01',
+          numero: '123',
+        },
+      } as any,
+    });
+
+    fixture.detectChanges();
+
+    expect(mockDocumentFacade.loadDocument).toHaveBeenCalledWith('456');
+    expect(mockAggregateFacade.loadAggregate).not.toHaveBeenCalled();
+    expect(component.pageTitle()).toBe('delibera.pdf'); // Testa l'altro branch del computed
+  });
+
+  // --- TEST 3: STATO DI CARICAMENTO ---
+  it('dovrebbe mostrare lo spinner se lo stato è in loading', () => {
+    fixture.componentRef.setInput('itemId', '789');
+    fixture.componentRef.setInput('itemType', 'DOCUMENT');
+
+    // Simulo il caricamento in corso
+    mockDocumentState.set({ detail: null, loading: true, error: null });
+    fixture.detectChanges();
+
+    expect(component.isLoading()).toBe(true);
+
+    // Verifica visiva nel DOM: cerca l'elemento con classe spinner-overlay
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.querySelector('.spinner-overlay')).toBeTruthy();
+  });
+
+  // --- TEST 4: GESTIONE ERRORE E RETRY ---
+  it('dovrebbe mostrare un errore e permettere il retryLoad', () => {
+    fixture.componentRef.setInput('itemId', 'ERR-1');
+    fixture.componentRef.setInput('itemType', 'AGGREGATE');
+
+    const fintoErrore: AppError = {
+      code: ErrorCode.IPC_ERROR,
+      message: 'Timeout',
+      source: 'Test',
+      category: ErrorCategory.IPC,
+      severity: ErrorSeverity.ERROR,
+      recoverable: true,
+      context: null,
+      detail: null,
+    };
+
+    // Simulo l'errore nel Facade
+    mockAggregateState.set({ detail: null, loading: false, error: fintoErrore });
+    fixture.detectChanges();
+
+    expect(component.currentError()).toEqual(fintoErrore);
+
+    // Nel DOM ci dovrebbe essere l'app-error-dialog
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.querySelector('app-error-dialog')).toBeTruthy();
+
+    // Puliamo i contatori dei mock e testiamo la funzione di retry!
+    vi.clearAllMocks();
+    component.retryLoad();
+
+    // Siccome itemType è AGGREGATE, retryLoad deve aver richiamato loadAggregate
+    expect(mockAggregateFacade.loadAggregate).toHaveBeenCalledWith('ERR-1');
+  });
+
+  // --- TEST 5: TITOLO DI DEFAULT ---
+  it('dovrebbe restituire una stringa vuota per il pageTitle se non ci sono dettagli', () => {
+    fixture.componentRef.setInput('itemId', '123');
+    fixture.componentRef.setInput('itemType', 'AGGREGATE'); // Ma lo state è vuoto (detail: null)
+    fixture.detectChanges();
+
+    expect(component.pageTitle()).toBe('');
   });
 });
