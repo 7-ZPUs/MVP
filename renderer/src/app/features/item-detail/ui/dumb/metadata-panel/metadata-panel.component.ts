@@ -1,0 +1,93 @@
+import { Component, input } from '@angular/core';
+import { CommonModule } from '@angular/common';
+
+import { AggregateDetail } from '../../../../aggregate/domain/aggregate.models';
+import { DocumentDetail } from '../../../../document/domain/document.models';
+
+// Importiamo i Dumb Component di Epica 1
+import { AdminProcedureComponent } from '../../../../aggregate/components/admin-procedure/admin-procedure.component';
+import { AggregateMetadataComponent } from '../../../../aggregate/components/aggregate-metadata/aggregate-metadata.component';
+import { RegistrationDataComponent } from '../../../../document/components/registration-data/registration-data.component';
+import { OptionalFieldAbsentComponent } from '../../../../../shared/components/optional-field-absent/optional-field-absent.component';
+// (Importa qui gli altri componenti come FormatInfo, VerificationInfo ecc.)
+import { AipInfoComponent } from '../../../../document/components/aip-info/aip-info.component';
+import { AttachmentsComponent } from '../../../../document/components/attachments/attachments.component';
+import { ChangeTrackingComponent } from '../../../../document/components/change-tracking/change-tracking.component';
+import { ClassificationInfoComponent } from '../../../../document/components/classification-info/classification-info.component';
+import { ConservationProcessComponent } from '../../../../document/components/conservation-process/conservation-process.component';
+import { CustomMetadataComponent } from '../../../../document/components/custom-metadata/custom-metadata.component';
+import { DocumentMetadataComponent } from '../../../../document/components/document-metadata/document-metadata.component';
+import { FormatInfoComponent } from '../../../../document/components/format-info/format-info.component';
+import { SubjectListComponent } from '../../../../document/components/subject-list/subject-list.component';
+import { VerificationInfoComponent } from '../../../../document/components/verification-info/verification-info.component';
+
+@Component({
+  selector: 'app-metadata-panel',
+  standalone: true,
+  imports: [
+    CommonModule,
+    AdminProcedureComponent,
+    RegistrationDataComponent,
+    OptionalFieldAbsentComponent,
+    AipInfoComponent,
+    AttachmentsComponent,
+    ChangeTrackingComponent,
+    ClassificationInfoComponent,
+    ConservationProcessComponent,
+    CustomMetadataComponent,
+    DocumentMetadataComponent,
+    FormatInfoComponent,
+    SubjectListComponent,
+    VerificationInfoComponent,
+  ],
+  template: `
+    <div class="metadata-container">
+      @switch (itemType()) {
+        @case ('AGGREGATE') {
+          @if (aggregateData(); as agg) {
+            <h2 class="section-title">Dettaglio Fascicolo</h2>
+
+            @if (agg.adminProcedure) {
+              <app-admin-procedure [data]="agg.adminProcedure"></app-admin-procedure>
+            } @else {
+              <app-optional-field-absent
+                message="Nessun procedimento amministrativo associato"
+              ></app-optional-field-absent>
+            }
+          }
+        }
+
+        @case ('DOCUMENT') {
+          @if (documentData(); as doc) {
+            <h2 class="section-title">Dettaglio Documento</h2>
+
+            <app-registration-data [data]="doc.registration"></app-registration-data>
+          }
+        }
+      }
+    </div>
+  `,
+  styles: [
+    `
+      .metadata-container {
+        padding: 1.5rem;
+        height: 100%;
+        overflow-y: auto;
+        background: #ffffff;
+        border-right: 1px solid #e2e8f0;
+      }
+      .section-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #0f172a;
+        margin-top: 0;
+        margin-bottom: 1.5rem;
+      }
+    `,
+  ],
+})
+export class MetadataPanelComponent {
+  itemType = input.required<'AGGREGATE' | 'DOCUMENT'>();
+  aggregateData = input<AggregateDetail | null>(null);
+  documentData = input<DocumentDetail | null>(null);
+}

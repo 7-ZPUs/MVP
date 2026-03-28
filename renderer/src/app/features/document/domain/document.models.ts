@@ -1,0 +1,121 @@
+import { AppError } from '../../../shared/domain';
+
+export enum MimeType {
+  PDF = 'PDF',
+  IMAGE = 'IMAGE',
+  TEXT = 'TEXT',
+  UNSUPPORTED = 'UNSUPPORTED',
+}
+
+export enum SubjectType {
+  PF = 'PERSONA_FISICA',
+  PG = 'PERSONA_GIURIDICA',
+  AS = 'ASSEGNATARIO',
+  PAI = 'AMMINISTRAZIONI_PUBBLICHE_ITALIANE',
+  PAE = 'AMMINISTRAZIONI_PUBBLICHE_ESTERE',
+  SW = 'SOFTWARE',
+}
+
+export interface DocumentMetadata {
+  nome: string;
+  descrizione: string;
+  note?: string;
+  tipoDocumentale: string;
+  modalitaFormazione: string;
+  riservatezza: string;
+  versione: string;
+  conservazioneEreditata?: string;
+}
+
+export interface RegistrationData {
+  flusso: string;
+  tipoRegistro: string;
+  data: string;
+  numero: string;
+  codice: string;
+}
+
+export interface DocumentDetail {
+  documentId: string;
+  fileName: string;
+  mimeType: MimeType;
+  metadata: DocumentMetadata;
+  registration: RegistrationData;
+  classification: ClassificationInfo;
+  format: FormatInfo;
+  verification: VerificationInfo;
+  subjects?: Subject[];
+  attachments: AttachmentData;
+  changeTracking: ChangeTrackingData;
+  customMetadata?: CustomMetadataEntry[];
+  aipInfo: AipInfo;
+  conservationProcess: ConservationProcessData;
+}
+
+export interface ClassificationInfo {
+  indice: string;
+  descrizione: string;
+  uriPiano: string;
+}
+
+export interface FormatInfo {
+  tipo: string;
+  prodotto: string;
+  versione: string;
+  produttore: string;
+}
+
+export interface VerificationInfo {
+  firmaDigitale: string;
+  sigillo: string;
+  marcaturaTemporale: string;
+  conformitaCopie: string;
+}
+
+export interface Subject {
+  ruolo: string;
+  tipo: SubjectType;
+  campiSpecifici: Record<string, string>;
+}
+
+export interface AttachmentEntry {
+  id: string;
+  descrizione: string;
+}
+
+export interface AttachmentData {
+  numero: number;
+  allegati?: AttachmentEntry[];
+}
+
+export interface ChangeTrackingData {
+  tipo: string;
+  soggetto: string;
+  data: string;
+  idVersionePrecedente: string;
+}
+
+export interface CustomMetadataEntry {
+  nome: string;
+  valore: string;
+}
+
+export interface AipInfo {
+  classeDocumentale: string;
+  uuid: string;
+}
+
+export interface ConservationProcessData {
+  processo: string;
+  sessione: string;
+  dataInizio: string;
+  dataFine?: string;
+  uuidTerminatore?: string;
+  canaleTerminazione?: string;
+}
+
+export interface DocumentState {
+  detail: DocumentDetail | null;
+  loading: boolean;
+  error: AppError | null;
+}

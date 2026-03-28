@@ -14,9 +14,7 @@ export const routes: Routes = [
   {
     path: 'detail',
     loadChildren: () =>
-      import('./features/dip-explorer/document-detail/item-detail.routes').then(
-        (m) => m.ITEM_DETAIL_ROUTES,
-      ),
+      import('./features/item-detail/item-detail.routes').then((m) => m.itemDetailRoutes),
   },
   {
     path: '**',
