@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { SearchFilters } from '../../../../shared/domain/metadata/search.models';
 
-// Mock di electron e tsyringe prima degli import
 vi.mock('electron', () => ({
     app: { isPackaged: false },
 }));
@@ -19,14 +18,12 @@ import { DocumentClass } from '../../../src/entity/DocumentClass';
 import { Process } from '../../../src/entity/Process';
 import { Document } from '../../../src/entity/Document';
 
-// Costruisce un ipcMain mock con handle registrabile e invocabile
 const makeIpcMain = () => {
     const handlers = new Map<string, Function>();
     return {
         handle: vi.fn((channel: string, handler: Function) => {
             handlers.set(channel, handler);
         }),
-        // Helper per invocare un handler registrato simulando una chiamata IPC
         invoke: async (channel: string, ...args: unknown[]) => {
             const handler = handlers.get(channel);
             if (!handler) throw new Error(`Handler non registrato: ${channel}`);
@@ -35,15 +32,12 @@ const makeIpcMain = () => {
     };
 };
 
-// Costruisce una DocumentClass già persistita
 const makeDocumentClass = (id: number, name: string) =>
     DocumentClass.fromDB({ id, dipId: 1, uuid: `uuid-dc-${id}`, name, timestamp: '2026-01-01', integrityStatus: 'UNKNOWN' });
 
-// Costruisce un Process già persistito
 const makeProcess = (id: number, uuid: string) =>
     Process.fromDB({ id, documentClassId: 1, uuid, integrityStatus: 'UNKNOWN' }, []);
 
-// Costruisce un Document già persistito con metadati
 const makeDocument = (uuid: string, metadata: { name: string; value: string }[] = []) => {
     const meta = metadata.map(m => ({ name: m.name, value: m.value, type: 'string' as const, toDTO: () => m }));
     return Document.fromDB({ id: 1, uuid, integrityStatus: 'UNKNOWN', processId: 1 }, meta as any);
@@ -68,7 +62,6 @@ describe('SearchIpcAdapter', () => {
         aiAdapter         = { isInitialized: vi.fn().mockReturnValue(false) };
         documentRepo      = { getIndexedDocumentsCount: vi.fn().mockReturnValue(0) };
 
-        // container.resolve ritorna il mock corretto in base all'ordine di chiamata
         (container.resolve as ReturnType<typeof vi.fn>)
             .mockReturnValueOnce(searchClassesUC)
             .mockReturnValueOnce(searchProcessiUC)
@@ -90,8 +83,8 @@ describe('SearchIpcAdapter', () => {
         expect(registeredChannels).toContain(IpcChannels.SEARCH_PROCESSES);
         expect(registeredChannels).toContain(IpcChannels.SEARCH_DOCUMENTS);
         expect(registeredChannels).toContain(IpcChannels.SEARCH_SEMANTIC);
-        expect(registeredChannels).toContain(IpcChannels.SEARCH_GET_AI_STATE);
         expect(registeredChannels).toContain(IpcChannels.SEARCH_FULLTEXT);
+        expect(registeredChannels).toContain(IpcChannels.SEARCH_GET_AI_STATE);
     });
 
     // ─── SEARCH_CLASSES ───────────────────────────────────────────────────────
@@ -118,13 +111,8 @@ describe('SearchIpcAdapter', () => {
     });
 
     it('SEARCH_CLASSES propaga eccezioni della use-case', async () => {
-        searchClassesUC.execute.mockImplementation(() => {
-            throw new Error('classes failed');
-        });
-
-        await expect(
-            ipcMain.invoke(IpcChannels.SEARCH_CLASSES, 'Contratti')
-        ).rejects.toThrow('classes failed');
+        searchClassesUC.execute.mockImplementation(() => { throw new Error('classes failed'); });
+        await expect(ipcMain.invoke(IpcChannels.SEARCH_CLASSES, 'Contratti')).rejects.toThrow('classes failed');
     });
 
     // ─── SEARCH_PROCESSES ─────────────────────────────────────────────────────
@@ -151,13 +139,8 @@ describe('SearchIpcAdapter', () => {
     });
 
     it('SEARCH_PROCESSES propaga eccezioni della use-case', async () => {
-        searchProcessiUC.execute.mockImplementation(() => {
-            throw new Error('processes failed');
-        });
-
-        await expect(
-            ipcMain.invoke(IpcChannels.SEARCH_PROCESSES, 'uuid-1')
-        ).rejects.toThrow('processes failed');
+        searchProcessiUC.execute.mockImplementation(() => { throw new Error('processes failed'); });
+        await expect(ipcMain.invoke(IpcChannels.SEARCH_PROCESSES, 'uuid-1')).rejects.toThrow('processes failed');
     });
 
     // ─── SEARCH_DOCUMENTS ─────────────────────────────────────────────────────
@@ -181,20 +164,15 @@ describe('SearchIpcAdapter', () => {
 
     it('SEARCH_DOCUMENTS propaga rejection della use-case', async () => {
         searchDocumentsUC.execute.mockRejectedValue(new Error('documents failed'));
-
-        await expect(
-            ipcMain.invoke(IpcChannels.SEARCH_DOCUMENTS, {})
-        ).rejects.toThrow('documents failed');
+        await expect(ipcMain.invoke(IpcChannels.SEARCH_DOCUMENTS, {})).rejects.toThrow('documents failed');
     });
 
     // ─── SEARCH_SEMANTIC ──────────────────────────────────────────────────────
 
-    // SEARCH_SEMANTIC chiama execute con la query e ritorna SearchResult[]
     it('SEARCH_SEMANTIC chiama execute con la query e ritorna SearchResult[]', async () => {
         const expectedResults = [{ documentId: 'uuid-s1', name: 'sem.pdf', type: 'DOCUMENTO INFORMATICO', score: 0.91 }];
         searchSemanticUC.execute.mockResolvedValue(expectedResults);
 
-        // Il frontend manda un SearchQuery, non una stringa
         const query = { text: 'ricerca semantica', type: 'FREE', useSemanticSearch: true };
         const result = await ipcMain.invoke(IpcChannels.SEARCH_SEMANTIC, query);
 
@@ -223,51 +201,11 @@ describe('SearchIpcAdapter', () => {
     it('SEARCH_SEMANTIC propaga rejection della use-case', async () => {
         searchSemanticUC.execute.mockRejectedValue(new Error('semantic failed'));
 
-        await expect(
-            ipcMain.invoke(IpcChannels.SEARCH_SEMANTIC, 'q')
-        ).rejects.toThrow('semantic failed');
+        const query = { text: 'query', type: 'FREE', useSemanticSearch: true };
+        await expect(ipcMain.invoke(IpcChannels.SEARCH_SEMANTIC, query)).rejects.toThrow('semantic failed');
     });
 
-    // ─── SEARCH_GET_AI_STATE ──────────────────────────────────────────────────
-
-    it('SEARCH_GET_AI_STATE ritorna initialized false e indexedDocuments 0 quando il modello non è caricato', async () => {
-        aiAdapter.isInitialized.mockReturnValue(false);
-        documentRepo.getIndexedDocumentsCount.mockReturnValue(0);
-
-        const result = await ipcMain.invoke(IpcChannels.SEARCH_GET_AI_STATE);
-
-        expect(result).toEqual({ initialized: false, indexedDocuments: 0 });
-    });
-
-    it('SEARCH_GET_AI_STATE ritorna initialized true quando il modello è caricato', async () => {
-        aiAdapter.isInitialized.mockReturnValue(true);
-        documentRepo.getIndexedDocumentsCount.mockReturnValue(42);
-
-        const result = await ipcMain.invoke(IpcChannels.SEARCH_GET_AI_STATE);
-
-        expect(result).toEqual({ initialized: true, indexedDocuments: 42 });
-    });
-
-    it('SEARCH_GET_AI_STATE riflette il conteggio aggiornato dei documenti indicizzati', async () => {
-        aiAdapter.isInitialized.mockReturnValue(true);
-        documentRepo.getIndexedDocumentsCount.mockReturnValue(150);
-
-        const result = await ipcMain.invoke(IpcChannels.SEARCH_GET_AI_STATE);
-
-        expect(result.indexedDocuments).toBe(150);
-    });
-
-    it('SEARCH_GET_AI_STATE propaga eccezioni durante la lettura dello stato AI', async () => {
-        aiAdapter.isInitialized.mockImplementation(() => {
-            throw new Error('ai state unavailable');
-        });
-
-        await expect(
-            ipcMain.invoke(IpcChannels.SEARCH_GET_AI_STATE)
-        ).rejects.toThrow('ai state unavailable');
-    });
-
-    // ─── SEARCH_FULLTEXT ──────────────────────────────────────────────────────────
+    // ─── SEARCH_FULLTEXT ──────────────────────────────────────────────────────
 
     it('SEARCH_FULLTEXT chiama searchDocumentsUC con filtro sul nome', async () => {
         searchDocumentsUC.execute.mockResolvedValue([]);
@@ -296,5 +234,52 @@ describe('SearchIpcAdapter', () => {
         const result = await ipcMain.invoke(IpcChannels.SEARCH_FULLTEXT, query);
 
         expect(result).toEqual([]);
+    });
+
+    it('SEARCH_FULLTEXT propaga rejection della use-case', async () => {
+        searchDocumentsUC.execute.mockRejectedValue(new Error('fulltext failed'));
+
+        const query = { text: 'query', type: 'FREE', useSemanticSearch: false };
+        await expect(ipcMain.invoke(IpcChannels.SEARCH_FULLTEXT, query)).rejects.toThrow('fulltext failed');
+    });
+
+    // ─── SEARCH_GET_AI_STATE ──────────────────────────────────────────────────
+
+    it('SEARCH_GET_AI_STATE ritorna IDLE quando il modello non è caricato', async () => {
+        aiAdapter.isInitialized.mockReturnValue(false);
+        documentRepo.getIndexedDocumentsCount.mockReturnValue(0);
+
+        const result = await ipcMain.invoke(IpcChannels.SEARCH_GET_AI_STATE);
+
+        expect(result.status).toBe('IDLE');
+        expect(result.progressPercentage).toBe(0);
+        expect(result.lastIndexedAt).toBeNull();
+        expect(result.indexedDocuments).toBe(0);
+    });
+
+    it('SEARCH_GET_AI_STATE ritorna READY quando il modello è caricato', async () => {
+        aiAdapter.isInitialized.mockReturnValue(true);
+        documentRepo.getIndexedDocumentsCount.mockReturnValue(42);
+
+        const result = await ipcMain.invoke(IpcChannels.SEARCH_GET_AI_STATE);
+
+        expect(result.status).toBe('READY');
+        expect(result.progressPercentage).toBe(100);
+        expect(result.lastIndexedAt).toBeNull();
+        expect(result.indexedDocuments).toBe(42);
+    });
+
+    it('SEARCH_GET_AI_STATE riflette il conteggio aggiornato dei documenti indicizzati', async () => {
+        aiAdapter.isInitialized.mockReturnValue(true);
+        documentRepo.getIndexedDocumentsCount.mockReturnValue(150);
+
+        const result = await ipcMain.invoke(IpcChannels.SEARCH_GET_AI_STATE);
+
+        expect(result.indexedDocuments).toBe(150);
+    });
+
+    it('SEARCH_GET_AI_STATE propaga eccezioni durante la lettura dello stato AI', async () => {
+        aiAdapter.isInitialized.mockImplementation(() => { throw new Error('ai state unavailable'); });
+        await expect(ipcMain.invoke(IpcChannels.SEARCH_GET_AI_STATE)).rejects.toThrow('ai state unavailable');
     });
 });

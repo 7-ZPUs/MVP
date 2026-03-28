@@ -18,7 +18,7 @@ export const IpcChannels = {
   SEARCH_CLASSES:      'search:classes',
   SEARCH_PROCESSES:    'search:processes',
   SEARCH_DOCUMENTS:    'ipc:search:advanced',
-  SEARCH_GET_AI_STATE: 'search:ai-state',
+  SEARCH_GET_AI_STATE: 'ipc:indexing:status',
 
   // ----- Integrity -----
   INTEGRITY_VERIFY: 'integrity:verify',
