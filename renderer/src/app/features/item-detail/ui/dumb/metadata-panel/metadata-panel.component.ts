@@ -39,6 +39,7 @@ import { VerificationInfoComponent } from '../../../../document/components/verif
     FormatInfoComponent,
     SubjectListComponent,
     VerificationInfoComponent,
+    AggregateMetadataComponent,
   ],
   template: `
     <div class="metadata-container">
@@ -46,6 +47,14 @@ import { VerificationInfoComponent } from '../../../../document/components/verif
         @case ('AGGREGATE') {
           @if (aggregateData(); as agg) {
             <h2 class="section-title">Dettaglio Fascicolo</h2>
+
+            @if (agg.metadata) {
+              <app-aggregate-metadata [data]="agg.metadata"></app-aggregate-metadata>
+            } @else {
+              <app-optional-field-absent
+                message="Nessun metadato presente per questo fascicolo"
+              ></app-optional-field-absent>
+            }
 
             @if (agg.adminProcedure) {
               <app-admin-procedure [data]="agg.adminProcedure"></app-admin-procedure>
@@ -61,7 +70,54 @@ import { VerificationInfoComponent } from '../../../../document/components/verif
           @if (documentData(); as doc) {
             <h2 class="section-title">Dettaglio Documento</h2>
 
-            <app-registration-data [data]="doc.registration"></app-registration-data>
+            @if (doc.metadata) {
+              <app-document-metadata [data]="doc.metadata"></app-document-metadata>
+            } @else {
+              <app-optional-field-absent
+                message="Nessun metadato documentale presente"
+              ></app-optional-field-absent>
+            }
+
+            @if (doc.registration) {
+              <app-registration-data [data]="doc.registration"></app-registration-data>
+            }
+            @if (doc.classification) {
+              <app-classification-info [data]="doc.classification"></app-classification-info>
+            }
+            @if (doc.format) {
+              <app-format-info [data]="doc.format"></app-format-info>
+            }
+            @if (doc.verification) {
+              <app-verification-info [data]="doc.verification"></app-verification-info>
+            }
+            @if (doc.attachments) {
+              <app-attachments [data]="doc.attachments"></app-attachments>
+            }
+            @if (doc.changeTracking) {
+              <app-change-tracking [data]="doc.changeTracking"></app-change-tracking>
+            }
+            @if (doc.aipInfo) {
+              <app-aip-info [data]="doc.aipInfo"></app-aip-info>
+            }
+            @if (doc.conservationProcess) {
+              <app-conservation-process [data]="doc.conservationProcess"></app-conservation-process>
+            }
+
+            @if (doc.customMetadata?.length) {
+              <app-custom-metadata [entries]="doc.customMetadata"></app-custom-metadata>
+            } @else {
+              <app-optional-field-absent
+                message="Nessuna metadato personalizzato presente"
+              ></app-optional-field-absent>
+            }
+
+            @if (doc.subjects?.length) {
+              <app-subject-list [subjects]="doc.subjects"></app-subject-list>
+            } @else {
+              <app-optional-field-absent
+                message="Nessun soggetto associato al documento"
+              ></app-optional-field-absent>
+            }
           }
         }
       }

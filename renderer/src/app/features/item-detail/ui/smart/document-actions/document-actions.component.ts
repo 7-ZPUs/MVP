@@ -2,8 +2,8 @@ import { Component, inject, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 // Importiamo i Token appena creati!
-import { OUTPUT_FACADE_TOKEN } from '../../../../document/contracts/IOutputFacade';
-import { INTEGRITY_FACADE_TOKEN } from '../../../../verification/contracts/IIntegrityFacade';
+import { OUTPUT_FACADE_TOKEN } from '../../../../../shared/interfaces/output.interfaces';
+import { INTEGRITY_FACADE_TOKEN } from '../../../../../shared/interfaces/integrity.interfaces';
 
 @Component({
   selector: 'app-document-actions',
@@ -139,11 +139,17 @@ export class DocumentActionsComponent {
   integrityFacade = inject(INTEGRITY_FACADE_TOKEN);
 
   onExport() {
-    this.outputFacade.exportItem(this.itemId(), this.itemType());
+    this.outputFacade.exportPdf({
+      documentId: this.itemId(),
+      tipo: this.itemType(),
+    });
   }
 
   onPrint() {
-    this.outputFacade.printItem(this.itemId(), this.itemType());
+    this.outputFacade.print({
+      documentId: this.itemId(),
+      tipo: this.itemType(),
+    });
   }
 
   onVerify() {

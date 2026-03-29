@@ -49,15 +49,12 @@ export class DocumentViewerComponent {
   error = signal<AppError | null>(null);
 
   constructor() {
-    effect(
-      () => {
-        // Quando cambia l'ID, carichiamo il nuovo file binario
-        if (this.documentId()) {
-          this.loadBlob();
-        }
-      },
-      { allowSignalWrites: true },
-    );
+    effect(() => {
+      // Quando cambia l'ID, carichiamo il nuovo file binario
+      if (this.documentId()) {
+        this.loadBlob();
+      }
+    });
   }
 
   async loadBlob() {

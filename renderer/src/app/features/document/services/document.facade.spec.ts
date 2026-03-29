@@ -7,6 +7,7 @@ import { IpcErrorHandlerService } from '../../../shared/infrastructure/ipc-error
 import { IPC_GATEWAY_TOKEN, IIpcGateway } from '../../../shared/interfaces/ipc-gateway.interfaces';
 import { ErrorCode, ErrorCategory, ErrorSeverity, AppError } from '../../../shared/domain';
 import { DocumentDetail, MimeType } from '../domain/document.models';
+import { IpcChannels } from '../../../../../../shared/ipc-channels';
 
 describe('DocumentFacade', () => {
   // (o 'DocumentFacade')
@@ -129,7 +130,11 @@ describe('DocumentFacade', () => {
 
     await facade.loadDocument('456');
 
-    expect(mockGateway.invoke).toHaveBeenCalledWith('ipc:document:get', '456', null);
+    expect(mockGateway.invoke).toHaveBeenCalledWith(
+      IpcChannels.BROWSE_GET_DOCUMENT_BY_ID,
+      '456',
+      null,
+    );
     expect(mockCache.set).toHaveBeenCalledWith('document:456', mockDocumentData, 300000); // 5 min
     expect(facade.getState()().detail).toEqual(mockDocumentData);
   });
@@ -141,7 +146,11 @@ describe('DocumentFacade', () => {
 
     const result = await facade.getFileBlob('456');
 
-    expect(mockGateway.invoke).toHaveBeenCalledWith('ipc:document:blob', '456', null);
+    expect(mockGateway.invoke).toHaveBeenCalledWith(
+      IpcChannels.BROWSE_GET_FILE_BY_DOCUMENT,
+      '456',
+      null,
+    );
     expect(mockCache.set).toHaveBeenCalledWith('blob:456', mockBlob, 60000); // 1 min
     expect(result).toEqual(mockBlob);
   });

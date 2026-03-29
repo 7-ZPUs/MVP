@@ -1,20 +1,25 @@
 import { Injectable } from '@angular/core';
 import { IIpcGateway, CachePolicy, IpcHandler } from '../interfaces/ipc-gateway.interfaces';
+import { IpcChannels } from '../../../../../shared/ipc-channels';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ElectronIpcGateway implements IIpcGateway {
-  async invoke<T = unknown>(channel: string, payload?: unknown, cachePolicy?: CachePolicy | null): Promise<T> {
+  async invoke<T = unknown>(
+    channel: string,
+    payload?: unknown,
+    cachePolicy?: CachePolicy | null,
+  ): Promise<T> {
     const electronApi = (window as any).electronAPI || (window as any).api;
     if (electronApi && typeof electronApi.invoke === 'function') {
       return electronApi.invoke(channel, payload);
     }
-    
+
     console.warn(`[ElectronIpcGateway] MOCKING invoke for channel: ${channel}`);
     return new Promise<T>((resolve) => {
       setTimeout(() => {
-        if (channel === 'ipc:aggregate:get') {
+        if (channel === IpcChannels.BROWSE_GET_DOCUMENT_BY_ID) {
           resolve({
             aggregateId: String(payload),
             metadata: {
@@ -26,16 +31,14 @@ export class ElectronIpcGateway implements IIpcGateway {
               progressivo: '123',
               posizioneFisica: 'Archivio 1',
               idPrimaria: 'ID-PRIM',
-              conservazione: '10 anni'
+              conservazione: '10 anni',
             },
-            documentIndex: [
-              { tipo: 'Principale', identificativo: 'DOC-1' }
-            ]
+            documentIndex: [{ tipo: 'Principale', identificativo: 'DOC-1' }],
           } as any as T);
           return;
         }
 
-        if (channel === 'ipc:document:get') {
+        if (channel === IpcChannels.BROWSE_GET_DOCUMENT_BY_ID) {
           resolve({
             documentId: String(payload),
             fileName: 'documento.pdf',
@@ -46,50 +49,50 @@ export class ElectronIpcGateway implements IIpcGateway {
               tipoDocumentale: 'Circolare',
               modalitaFormazione: 'Nativa digitale',
               riservatezza: 'Nessuna',
-              versione: '1.0'
+              versione: '1.0',
             },
             registration: {
               flusso: 'E',
               tipoRegistro: 'Predefinito',
               data: '2023-01-01',
               numero: '001',
-              codice: 'A'
+              codice: 'A',
             },
             classification: {
               indice: '1.2.3',
               descrizione: 'Test',
-              uriPiano: '/uri'
+              uriPiano: '/uri',
             },
             format: {
               tipo: 'PDF',
               prodotto: 'Word',
               versione: '1.0',
-              produttore: 'Microsoft'
+              produttore: 'Microsoft',
             },
             verification: {
               firmaDigitale: 'Valida',
               sigillo: 'N/A',
               marcaturaTemporale: 'Presente',
-              conformitaCopie: 'N/A'
+              conformitaCopie: 'N/A',
             },
             attachments: {
-              numero: 0
+              numero: 0,
             },
             changeTracking: {
               tipo: 'Creazione',
               soggetto: 'Admin',
               data: '2023-01-01',
-              idVersionePrecedente: ''
+              idVersionePrecedente: '',
             },
             aipInfo: {
               classeDocumentale: 'A',
-              uuid: 'AIP-1'
+              uuid: 'AIP-1',
             },
             conservationProcess: {
               processo: 'P1',
               sessione: 'S1',
-              dataInizio: '2023-02-01'
-            }
+              dataInizio: '2023-02-01',
+            },
           } as any as T);
           return;
         }

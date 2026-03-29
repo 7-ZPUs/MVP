@@ -6,6 +6,7 @@ import { TelemetryService } from '../../../shared/infrastructure/telemetry.servi
 import { IpcErrorHandlerService } from '../../../shared/infrastructure/ipc-error-handler.service';
 import { IPC_GATEWAY_TOKEN, IIpcGateway } from '../../../shared/interfaces/ipc-gateway.interfaces';
 import { TelemetryMetric } from '../../../shared/domain';
+import { IpcChannels } from '../../../../../../shared/ipc-channels';
 
 @Injectable()
 export class DocumentFacade implements IDocumentFacade {
@@ -52,7 +53,7 @@ export class DocumentFacade implements IDocumentFacade {
       }
 
       // Chiamata IPC se non in cache
-      const rawData = await this.ipcGateway.invoke('ipc:document:get', id, null);
+      const rawData = await this.ipcGateway.invoke(IpcChannels.BROWSE_GET_DOCUMENT_BY_ID, id, null);
       const documentDetail = rawData as DocumentDetail;
 
       // Salvataggio e aggiornamento stato
@@ -79,7 +80,11 @@ export class DocumentFacade implements IDocumentFacade {
       }
 
       // Chiamata IPC
-      const rawBlob = await this.ipcGateway.invoke('ipc:document:blob', documentId, null);
+      const rawBlob = await this.ipcGateway.invoke(
+        IpcChannels.BROWSE_GET_FILE_BY_DOCUMENT, // o BROWSE_GET_FILE_BY_ID
+        documentId,
+        null,
+      );
       const blob = rawBlob as Uint8Array;
 
       // Salvataggio Blob in cache (Solo 1 min per non intasare la RAM)

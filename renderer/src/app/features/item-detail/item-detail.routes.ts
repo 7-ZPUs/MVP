@@ -11,8 +11,7 @@ import { INTEGRITY_FACADE_TOKEN } from '../../shared/interfaces/integrity.interf
 import { AggregateFacade } from '../aggregate/services/aggregate.facade';
 import { DocumentFacade } from '../document/services/document.facade';
 import { OutputFacade } from '../document/services/output.facade';
-// Assumendo che tu abbia creato anche l'IntegrityFacade:
-// import { IntegrityFacade } from '../document/services/integrity.facade';
+import { IntegrityFacade } from '../verification/services/integrity.facade';
 
 export const itemDetailRoutes: Routes = [
   {
@@ -27,9 +26,7 @@ export const itemDetailRoutes: Routes = [
       { provide: AGGREGATE_FACADE_TOKEN, useClass: AggregateFacade },
       { provide: DOCUMENT_FACADE_TOKEN, useClass: DocumentFacade },
       { provide: OUTPUT_FACADE_TOKEN, useClass: OutputFacade },
-
-      // Scommenta questa riga quando avrai implementato anche la classe IntegrityFacade
-      // { provide: INTEGRITY_FACADE_TOKEN, useClass: IntegrityFacade }
+      { provide: INTEGRITY_FACADE_TOKEN, useClass: IntegrityFacade },
     ],
   },
 ];

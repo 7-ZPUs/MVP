@@ -5,6 +5,8 @@ import { signal, WritableSignal } from '@angular/core';
 import { ItemDetailPageComponent } from './item-detail-page.component';
 import { AGGREGATE_FACADE_TOKEN } from '../../../../aggregate/contracts/IAggregateFacade';
 import { DOCUMENT_FACADE_TOKEN } from '../../../../document/contracts/IDocumentFacade';
+import { OUTPUT_FACADE_TOKEN } from '../../../../../shared/interfaces/output.interfaces';
+import { INTEGRITY_FACADE_TOKEN } from '../../../../../shared/interfaces/integrity.interfaces';
 import { AggregateState } from '../../../../aggregate/domain/aggregate.models';
 import { DocumentState } from '../../../../document/domain/document.models';
 import { AppError, ErrorCode, ErrorCategory, ErrorSeverity } from '../../../../../shared/domain';
@@ -35,11 +37,24 @@ describe('ItemDetailPageComponent', () => {
       loadDocument: vi.fn(),
     };
 
+    let mockOutputFacade = {
+      isWorking: signal(false),
+      printDocument: vi.fn(),
+      saveDocument: vi.fn(),
+    };
+
+    let mockIntegrityFacade = {
+      isVerifying: signal(false),
+      verifyIntegrity: vi.fn(),
+    };
+
     await TestBed.configureTestingModule({
       imports: [ItemDetailPageComponent],
       providers: [
         { provide: AGGREGATE_FACADE_TOKEN, useValue: mockAggregateFacade },
         { provide: DOCUMENT_FACADE_TOKEN, useValue: mockDocumentFacade },
+        { provide: OUTPUT_FACADE_TOKEN, useValue: mockOutputFacade },
+        { provide: INTEGRITY_FACADE_TOKEN, useValue: mockIntegrityFacade },
       ],
     }).compileComponents();
 

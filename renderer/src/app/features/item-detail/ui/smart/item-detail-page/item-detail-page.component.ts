@@ -1,5 +1,6 @@
-import { Component, inject, input, computed, effect } from '@angular/core';
+import { Component, inject, input, computed, effect, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 
 // Iniezione dei Token separati come da C4
 import { AGGREGATE_FACADE_TOKEN } from '../../../../aggregate/contracts/IAggregateFacade';
@@ -10,6 +11,7 @@ import { MetadataPanelComponent } from '../../dumb/metadata-panel/metadata-panel
 import { ErrorDialogComponent } from '../../../../../shared/components/error-dialog/error-dialog.component'; // Dal C4
 // Importa i componenti di destra (la Toolbar, il Viewer, l'Index)
 import { DocumentToolbarComponent } from '../../dumb/document-toolbar/document-toolbar.component';
+import { DocumentActionsComponent } from '../document-actions/document-actions.component';
 import { DocumentViewerComponent } from '../../../../document/components/document-viewer/document-viewer.component';
 import { DocumentIndexComponent } from '../../../../aggregate/components/document-index/document-index.component';
 
@@ -20,38 +22,80 @@ import { DocumentIndexComponent } from '../../../../aggregate/components/documen
     CommonModule,
     MetadataPanelComponent,
     ErrorDialogComponent,
-    // DocumentToolbarComponent, DocumentViewerComponent, DocumentIndexComponent
+    DocumentToolbarComponent,
+    DocumentActionsComponent,
+    DocumentViewerComponent,
+    DocumentIndexComponent,
   ],
   template: `
     <div class="page-layout">
-      @if (currentError(); as err) {
-        <app-error-dialog [error]="err" (onRetry)="retryLoad()"></app-error-dialog>
+      @if (!isLoading() && !currentError()) {
+        <app-document-actions [itemId]="itemId()" [itemType]="itemType()"></app-document-actions>
+
+        @if (itemType() === 'DOCUMENT') {
+          <app-document-toolbar
+            [titolo]="pageTitle()"
+            [formato]="documentState().detail?.mimeType || ''"
+            [zoomLevel]="zoomLevel()"
+            [parentAggregateId]="null"
+            [isPreviewVisible]="isPreviewVisible()"
+            (zoomIn)="zoomLevel.set(zoomLevel() + 10)"
+            (zoomOut)="zoomLevel.set(Math.max(10, zoomLevel() - 10))"
+            (resetZoom)="zoomLevel.set(100)"
+            (navigateBack)="onNavigateBack($event)"
+            (closePreview)="onClosePreview()"
+            (openPreview)="onOpenPreview()"
+          >
+          </app-document-toolbar>
+        }
       }
 
       @if (isLoading()) {
         <div class="spinner-overlay">
-          <div class="spinner"></div>
-          <p>Recupero dati in corso...</p>
+          <p>Caricamento in corso...</p>
         </div>
       }
 
-      @if (!isLoading() && !currentError()) {
-        <div class="split-screen-content">
-          <aside class="left-panel">
-            <app-metadata-panel
-              [itemType]="itemType()"
-              [aggregateData]="aggregateState().detail"
-              [documentData]="documentState().detail"
-            >
-            </app-metadata-panel>
-          </aside>
+      @if (currentError()) {
+        <app-error-dialog [error]="currentError()!" (retry)="retryLoad()"> </app-error-dialog>
+      }
 
-          <main class="right-panel">
-            <div class="viewer-container">
-              @if (itemType() === 'AGGREGATE' && aggregateState().detail) {
-              } @else if (itemType() === 'DOCUMENT' && documentState().detail) {}
-            </div>
-          </main>
+      @if (!isLoading() && !currentError()) {
+        <div class="content-layout">
+          @if (itemType() === 'DOCUMENT' && documentState().detail; as doc) {
+            <aside
+              class="sidebar"
+              [style.flex-basis]="isPreviewVisible() ? '350px' : '100%'"
+              [style.max-width]="isPreviewVisible() ? '350px' : '100%'"
+            >
+              <app-metadata-panel [itemType]="'DOCUMENT'" [documentData]="doc"></app-metadata-panel>
+            </aside>
+
+            @if (isPreviewVisible()) {
+              <main class="main-content">
+                <app-document-viewer
+                  [documentId]="doc.documentId"
+                  [mimeType]="doc.mimeType"
+                ></app-document-viewer>
+              </main>
+            }
+          }
+
+          @if (itemType() === 'AGGREGATE' && aggregateState().detail; as agg) {
+            <aside class="sidebar">
+              <app-metadata-panel
+                [itemType]="'AGGREGATE'"
+                [aggregateData]="agg"
+              ></app-metadata-panel>
+            </aside>
+
+            <main class="main-content">
+              <app-document-index
+                [items]="agg.documentIndex"
+                (documentSelected)="onDocumentSelected($event)"
+              ></app-document-index>
+            </main>
+          }
         </div>
       }
     </div>
@@ -105,6 +149,35 @@ import { DocumentIndexComponent } from '../../../../aggregate/components/documen
         height: 40px;
         animation: spin 1s linear infinite;
       }
+      .content-layout {
+        display: flex;
+        flex: 1;
+        gap: 20px;
+        overflow: hidden; /* Evita che sfondi oltre lo schermo */
+        padding: 0 20px 20px 20px; /* Un po' di padding se necessario */
+      }
+
+      .sidebar {
+        width: 350px;
+        flex-shrink: 0;
+        overflow-y: auto; /* Se i metadati sono tanti, scorrono qui */
+      }
+
+      .main-content {
+        flex-grow: 1;
+        background-color: #f5f5f5; /* Sfondo grigetto tipico dei visualizzatori PDF */
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+      app-document-viewer,
+      app-document-index,
+      app-metadata-panel {
+        display: block;
+        flex: 1;
+        height: 100%;
+        width: 100%;
+      }
       @keyframes spin {
         0% {
           transform: rotate(0deg);
@@ -120,6 +193,7 @@ export class ItemDetailPageComponent {
   // 1. INIEZIONE TRAMITE TOKEN (Dependency Inversion)
   private readonly aggregateFacade = inject(AGGREGATE_FACADE_TOKEN);
   private readonly documentFacade = inject(DOCUMENT_FACADE_TOKEN);
+  private readonly router = inject(Router);
 
   // 2. INPUT DALLA ROTTA (es. /detail/AGGREGATE/123)
   itemId = input.required<string>();
@@ -153,13 +227,10 @@ export class ItemDetailPageComponent {
   });
 
   constructor() {
-    effect(
-      () => {
-        // Quando cambia l'URL o l'ID, ricarica i dati con il Facade corretto
-        this.loadData();
-      },
-      { allowSignalWrites: true },
-    );
+    effect(() => {
+      // Quando cambia l'URL o l'ID, ricarica i dati con il Facade corretto
+      this.loadData();
+    });
   }
 
   private loadData() {
@@ -172,5 +243,32 @@ export class ItemDetailPageComponent {
 
   retryLoad() {
     this.loadData(); // Invocato dall'ErrorDialogComponent
+  }
+
+  // Aggiunto per soddisfare gli input/output richiesti da DocumentToolbarComponent e DocumentIndexComponent
+  Math = Math;
+  zoomLevel = signal(100);
+
+  // Controlla se la preview del documento (app-document-viewer) è visibile
+  isPreviewVisible = signal(true);
+
+  onNavigateBack(aggregateId: string) {
+    this.router.navigate(['/detail', 'AGGREGATE', aggregateId]);
+  }
+
+  onDocumentSelected(docId: string) {
+    this.router.navigate(['/detail', 'DOCUMENT', docId]);
+    // Resetta la visibilità della preview quando si apre un nuovo documento
+    this.isPreviewVisible.set(true);
+  }
+
+  onClosePreview() {
+    // Invece di navigare, nascondiamo la preview e lasciamo espandere i metadati
+    this.isPreviewVisible.set(false);
+  }
+
+  onOpenPreview() {
+    // Mostra nuovamente la preview
+    this.isPreviewVisible.set(true);
   }
 }

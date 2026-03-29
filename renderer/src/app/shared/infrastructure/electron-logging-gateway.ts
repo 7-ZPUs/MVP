@@ -6,6 +6,7 @@ import {
   IElectronContextBridge,
   ELECTRON_CONTEXT_BRIDGE_TOKEN,
 } from '../contracts/index';
+import { IpcChannels } from '../../../../../shared/ipc-channels';
 
 @Injectable({ providedIn: 'root' })
 export class ElectronLoggingGateway implements ILoggingChannel {

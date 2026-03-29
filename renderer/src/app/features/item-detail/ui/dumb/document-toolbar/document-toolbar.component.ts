@@ -22,32 +22,48 @@ import { CommonModule } from '@angular/common';
       </div>
 
       <div class="actions-section">
-        <div class="zoom-controls">
-          <button
-            class="icon-btn"
-            (click)="zoomOut.emit()"
-            aria-label="Riduci zoom"
-            title="Riduci zoom"
-          >
-            -
-          </button>
-          <span class="zoom-label">{{ zoomLevel() * 100 | number: '1.0-0' }}%</span>
-          <button
-            class="icon-btn"
-            (click)="zoomIn.emit()"
-            aria-label="Aumenta zoom"
-            title="Aumenta zoom"
-          >
-            +
-          </button>
-          <button class="icon-btn reset-btn" (click)="resetZoom.emit()" title="Ripristina zoom">
-            Ripristina
-          </button>
-        </div>
+        @if (isPreviewVisible()) {
+          <div class="zoom-controls">
+            <button
+              class="icon-btn"
+              (click)="zoomOut.emit()"
+              aria-label="Riduci zoom"
+              title="Riduci zoom"
+            >
+              -
+            </button>
+            <span class="zoom-label">{{ zoomLevel() * 100 | number: '1.0-0' }}%</span>
+            <button
+              class="icon-btn"
+              (click)="zoomIn.emit()"
+              aria-label="Aumenta zoom"
+              title="Aumenta zoom"
+            >
+              +
+            </button>
+            <button class="icon-btn reset-btn" (click)="resetZoom.emit()" title="Ripristina zoom">
+              Ripristina
+            </button>
+          </div>
 
-        <button class="close-btn" (click)="closePreview.emit()" aria-label="Chiudi anteprima">
-          ✕
-        </button>
+          <button
+            class="close-btn"
+            (click)="closePreview.emit()"
+            aria-label="Chiudi anteprima"
+            title="Chiudi anteprima"
+          >
+            ✕
+          </button>
+        } @else {
+          <button
+            class="btn-back"
+            style="border-color: #3b82f6; color: #3b82f6;"
+            (click)="openPreview.emit()"
+            title="Apri anteprima"
+          >
+            👁 Apri Anteprima
+          </button>
+        }
       </div>
     </div>
   `,
@@ -177,11 +193,15 @@ export class DocumentToolbarComponent {
   // Nuovo input opzionale per il breadcrumb
   parentAggregateId = input<string | null>(null);
 
+  // Indica se la preview è visibile
+  isPreviewVisible = input<boolean>(true);
+
   // Output moderni (senza EventEmitter)
   zoomIn = output<void>();
   zoomOut = output<void>();
   resetZoom = output<void>();
   closePreview = output<void>();
+  openPreview = output<void>();
 
   // Emette l'ID del fascicolo a cui tornare
   navigateBack = output<string>();
