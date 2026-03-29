@@ -1,5 +1,3 @@
-import { MetadataDTO } from "../dto/MetadataDTO";
-
 export enum MetadataType {
   STRING = "STRING",
   NUMBER = "NUMBER",
@@ -18,17 +16,6 @@ export class Metadata {
    * Serializza in un plain object trasferibile via IPC.
    * Da chiamare SOLO nell'IPC adapter.
    */
-  public toDTO(): MetadataDTO {
-    const dtoValue = this.isComposite()
-      ? this.getChildren().map((child) => child.toDTO())
-      : this.getStringValue();
-
-    return {
-      name: this.name,
-      value: dtoValue,
-      type: this.type,
-    };
-  }
 
   public findNodeByName(name: string): Metadata | null {
     if (this.name === name) {

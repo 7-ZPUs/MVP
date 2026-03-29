@@ -58,37 +58,4 @@ describe("Dip entity", () => {
       expect(dip.getIntegrityStatus()).toBe(IntegrityStatusEnum.VALID);
     });
   });
-
-  describe("toDTO", () => {
-    // identifier: TU-F-browsing-06
-    // method_name: toDTO()
-    // description: should lancia un errore se id è null
-    // expected_value: matches asserted behavior: lancia un errore se id è null
-    it("TU-F-browsing-06: toDTO() should lancia un errore se id è null", () => {
-      const dip = new Dip("abc-123");
-      expect(() => dip.toDTO()).toThrow(
-        "Cannot convert Dip to DTO: id is null",
-      );
-    });
-
-    // identifier: TU-F-browsing-07
-    // method_name: toDTO()
-    // description: should restituisce il DTO corretto quando l'id è valorizzato
-    // expected_value: returns DTO fields matching the Dip persisted values
-    it("TU-F-browsing-07: toDTO() should restituisce il DTO corretto quando l'id è valorizzato", () => {
-      const row: DipRow = {
-        id: 1,
-        uuid: "abc-123",
-        integrityStatus: "INVALID",
-      };
-      const dip = Dip.fromDB(row);
-
-      const dto = dip.toDTO();
-
-      expect(dto.id).toBe(1);
-      expect(dto.dipId).toBe(1);
-      expect(dto.uuid).toBe("abc-123");
-      expect(dto.integrityStatus).toBe(IntegrityStatusEnum.INVALID);
-    });
-  });
 });

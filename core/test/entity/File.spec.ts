@@ -14,6 +14,7 @@ describe("File entity", () => {
         "/dip/subdir/documento.xml",
         "hash-doc",
         true,
+        "file-uuid",
         "doc-uuid",
       );
       expect(file.getFilename()).toBe("documento.xml");
@@ -32,6 +33,7 @@ describe("File entity", () => {
         "/f.xml",
         "hash-default",
         false,
+        "file-uuid",
         "doc-uuid",
       );
       expect(file.getIntegrityStatus()).toBe(IntegrityStatusEnum.UNKNOWN);
@@ -47,6 +49,7 @@ describe("File entity", () => {
         "/f.xml",
         "hash-default",
         false,
+        "file-uuid",
         "doc-uuid",
       );
       expect(file.getId()).toBeNull();
@@ -62,6 +65,7 @@ describe("File entity", () => {
         "/allegato.pdf",
         "hash-allegato",
         false,
+        "file-uuid",
         "doc-uuid",
       );
       expect(file.getIsMain()).toBe(false);
@@ -122,54 +126,11 @@ describe("File entity", () => {
         "/f.xml",
         "hash-default",
         true,
+        "file-uuid",
         "doc-uuid",
       );
       file.setIntegrityStatus(IntegrityStatusEnum.INVALID);
       expect(file.getIntegrityStatus()).toBe(IntegrityStatusEnum.INVALID);
-    });
-  });
-
-  describe("toDTO", () => {
-    // identifier: TU-F-browsing-31
-    // method_name: toDTO()
-    // description: should lancia un errore se id è null
-    // expected_value: matches asserted behavior: lancia un errore se id è null
-    it("TU-F-browsing-31: toDTO() should lancia un errore se id è null", () => {
-      const file = new File(
-        "f.xml",
-        "/f.xml",
-        "hash-default",
-        true,
-        "doc-uuid",
-      );
-      expect(() => file.toDTO()).toThrow(
-        "Cannot convert to DTO: File entity is not yet persisted and has no ID.",
-      );
-    });
-
-    // identifier: TU-F-browsing-32
-    // method_name: toDTO()
-    // description: should restituisce il DTO corretto
-    // expected_value: matches asserted behavior: restituisce il DTO corretto
-    it("TU-F-browsing-32: toDTO() should restituisce il DTO corretto", () => {
-      const row: FileRow = {
-        id: 5,
-        filename: "doc.xml",
-        path: "/doc.xml",
-        hash: "hash-doc",
-        integrityStatus: "INVALID",
-        isMain: 1,
-        documentId: 3,
-      };
-      const file = File.fromDB(row);
-      const dto = file.toDTO();
-
-      expect(dto.id).toBe(5);
-      expect(dto.filename).toBe("doc.xml");
-      expect(dto.path).toBe("/doc.xml");
-      expect(dto.integrityStatus).toBe(IntegrityStatusEnum.INVALID);
-      expect(dto.isMain).toBe(true);
-      expect(dto.documentId).toBe(3);
     });
   });
 });

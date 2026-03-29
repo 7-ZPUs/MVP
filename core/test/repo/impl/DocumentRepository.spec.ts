@@ -31,25 +31,31 @@ describe("DocumentRepository", () => {
   // description: should successfully persist a document with complex metadata
   // expected_value: matches asserted behavior: successfully persist a document with complex metadata
   it("TU-F-browsing-55: save() should successfully persist a document with complex metadata", () => {
-    const metadata = [
-      new Metadata("titolo", "Documento A", MetadataType.STRING),
-      new Metadata("anno", "2026", MetadataType.NUMBER),
-      new Metadata(
-        "soggetto",
-        [new Metadata("nome", "Mario", MetadataType.STRING)],
-        MetadataType.COMPOSITE,
-      ),
-    ];
+    const metadata = new Metadata(
+      "root",
+      [
+        new Metadata("titolo", "Documento A", MetadataType.STRING),
+        new Metadata("anno", "2026", MetadataType.NUMBER),
+        new Metadata(
+          "soggetto",
+          [new Metadata("nome", "Mario", MetadataType.STRING)],
+          MetadataType.COMPOSITE,
+        ),
+      ],
+      MetadataType.COMPOSITE,
+    );
 
     const document = new Document("doc-1", metadata, "process-uuid");
     const saved = repo.save(document);
-    const found = repo.getById(saved.toDTO().id);
+    const found = repo.getById(saved.getId() as number);
 
     expect(found).not.toBeNull();
     expect(found?.getUuid()).toBe("doc-1");
     expect(found?.getIntegrityStatus()).toBe(IntegrityStatusEnum.UNKNOWN);
-    expect(found?.getMetadata()).toHaveLength(3);
-    expect(found?.getMetadata()[2].type).toBe(MetadataType.COMPOSITE);
+    expect(found?.getMetadata().getChildren()).toHaveLength(3);
+    expect(found?.getMetadata().getChildren()[2].type).toBe(
+      MetadataType.COMPOSITE,
+    );
   });
 
   // identifier: TU-S-browsing-56
@@ -57,12 +63,20 @@ describe("DocumentRepository", () => {
   // description: should handle updating an existing document
   // expected_value: matches asserted behavior: handle updating an existing document
   it("TU-S-browsing-56: save() should handle updating an existing document", () => {
-    const doc = new Document("doc-unique", [], "process-uuid");
+    const doc = new Document(
+      "doc-unique",
+      new Metadata("root", [], MetadataType.COMPOSITE),
+      "process-uuid",
+    );
     repo.save(doc);
 
     const docUpdated = new Document(
       "doc-unique",
-      [new Metadata("test", "val", MetadataType.STRING)],
+      new Metadata(
+        "root",
+        [new Metadata("test", "val", MetadataType.STRING)],
+        MetadataType.COMPOSITE,
+      ),
       "process-uuid",
     );
     repo.save(docUpdated);
@@ -163,11 +177,15 @@ describe("DocumentRepository", () => {
         return originalPrepare(query);
       });
 
-    const doc = new Document("doc-fallback", [], "process-uuid");
+    const doc = new Document(
+      "doc-fallback",
+      new Metadata("root", [], MetadataType.COMPOSITE),
+      "process-uuid",
+    );
     const saved = repo.save(doc);
 
     expect(saved.getUuid()).toBe("doc-fallback");
-    expect(saved.toDTO().id).toBeGreaterThan(0);
+    expect(saved.getId()).toBeGreaterThan(0);
     prepareSpy.mockRestore();
   });
 

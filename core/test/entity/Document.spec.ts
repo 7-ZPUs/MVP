@@ -83,41 +83,4 @@ describe("Document entity", () => {
       expect(doc.getIntegrityStatus()).toBe(IntegrityStatusEnum.INVALID);
     });
   });
-
-  describe("toDTO", () => {
-    // identifier: TU-F-browsing-14
-    // method_name: toDTO()
-    // description: should lancia un errore se id è null
-    // expected_value: matches asserted behavior: lancia un errore se id è null
-    it("TU-F-browsing-14: toDTO() should lancia un errore se id è null", () => {
-      const doc = new Document("uuid", [], "process-uuid");
-      expect(() => doc.toDTO()).toThrow(
-        "Cannot convert to DTO: Document entity is not yet persisted and has no ID.",
-      );
-    });
-
-    // identifier: TU-F-browsing-15
-    // method_name: toDTO()
-    // description: should restituisce il DTO corretto
-    // expected_value: matches asserted behavior: restituisce il DTO corretto
-    it("TU-F-browsing-15: toDTO() should restituisce il DTO corretto", () => {
-      const row: DocumentRow = {
-        id: 2,
-        uuid: "doc-abc",
-        integrityStatus: "INVALID",
-        processId: 5,
-      };
-      const doc = Document.fromDB(row, meta);
-
-      const dto = doc.toDTO();
-
-      expect(dto.id).toBe(2);
-      expect(dto.uuid).toBe("doc-abc");
-      expect(dto.integrityStatus).toBe(IntegrityStatusEnum.INVALID);
-      expect(dto.processId).toBe(5);
-      expect(dto.metadata).toHaveLength(2);
-      expect(dto.metadata[0].name).toBe("autore");
-      expect(dto.metadata[1].name).toBe("anno");
-    });
-  });
 });

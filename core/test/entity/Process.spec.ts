@@ -83,40 +83,4 @@ describe("Process entity", () => {
       expect(proc.getIntegrityStatus()).toBe(IntegrityStatusEnum.INVALID);
     });
   });
-
-  describe("toDTO", () => {
-    // identifier: TU-F-browsing-39
-    // method_name: toDTO()
-    // description: should lancia un errore se id è null
-    // expected_value: matches asserted behavior: lancia un errore se id è null
-    it("TU-F-browsing-39: toDTO() should lancia un errore se id è null", () => {
-      const proc = new Process("dc-uuid", "uuid", []);
-      expect(() => proc.toDTO()).toThrow(
-        "Cannot convert to DTO: Process entity is not yet persisted and has no ID.",
-      );
-    });
-
-    // identifier: TU-F-browsing-40
-    // method_name: toDTO()
-    // description: should restituisce il DTO corretto
-    // expected_value: matches asserted behavior: restituisce il DTO corretto
-    it("TU-F-browsing-40: toDTO() should restituisce il DTO corretto", () => {
-      const row: ProcessRow = {
-        id: 3,
-        documentClassId: 2,
-        uuid: "proc-abc",
-        integrityStatus: "VALID",
-      };
-      const proc = Process.fromDB(row, meta);
-      const dto = proc.toDTO();
-
-      expect(dto.id).toBe(3);
-      expect(dto.documentClassId).toBe(2);
-      expect(dto.uuid).toBe("proc-abc");
-      expect(dto.integrityStatus).toBe(IntegrityStatusEnum.VALID);
-      expect(dto.metadata).toHaveLength(2);
-      expect(dto.metadata[0].name).toBe("tipo");
-      expect(dto.metadata[1].name).toBe("anno");
-    });
-  });
 });

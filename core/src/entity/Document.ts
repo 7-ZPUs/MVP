@@ -1,5 +1,4 @@
 import { Metadata } from "../value-objects/Metadata";
-import { DocumentDTO } from "../dto/DocumentDTO";
 import { IntegrityStatusEnum } from "../value-objects/IntegrityStatusEnum";
 
 /** Forma della riga SQLite che il repository legge. */
@@ -73,24 +72,5 @@ export class Document {
 
   public getProcessUuid(): string {
     return this.processUuid;
-  }
-
-  /**
-   * Serializza l'entità in un plain object trasferibile via IPC.
-   * Da chiamare SOLO nell'IPC adapter, mai nel dominio o nel repository.
-   */
-  public toDTO(): DocumentDTO {
-    if (this.id === null || this.processId === null) {
-      throw new Error(
-        "Cannot convert to DTO: Document entity is not yet persisted and has no ID.",
-      );
-    }
-    return {
-      id: this.id,
-      uuid: this.uuid,
-      integrityStatus: this.integrityStatus,
-      metadata: this.metadata.toDTO(),
-      processId: this.processId,
-    };
   }
 }

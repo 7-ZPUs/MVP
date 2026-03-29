@@ -1,5 +1,4 @@
 import { IntegrityStatusEnum } from "../value-objects/IntegrityStatusEnum";
-import { FileDTO } from "../dto/FileDTO";
 
 /** Forma della riga SQLite che il repository legge. */
 export interface FileRow {
@@ -106,26 +105,5 @@ export class File {
 
   public getDocumentUuid(): string {
     return this.documentUuid;
-  }
-
-  /**
-   * Serializza l'entità in un plain object trasferibile via IPC.
-   * Da chiamare SOLO nell'IPC adapter, mai nel dominio o nel repository.
-   */
-  public toDTO(): FileDTO {
-    if (this.id === null || this.documentId === null) {
-      throw new Error(
-        "Cannot convert to DTO: File entity is not yet persisted and has no ID.",
-      );
-    }
-    return {
-      id: this.id,
-      documentId: this.documentId,
-      filename: this.filename,
-      path: this.path,
-      hash: this.hash,
-      integrityStatus: this.integrityStatus,
-      isMain: this.isMain,
-    };
   }
 }

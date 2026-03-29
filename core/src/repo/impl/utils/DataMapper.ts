@@ -93,8 +93,9 @@ export class DataMapper implements IDataMapper {
         map: (rawMetadataFragment: any) => {
           let extractedMetadata: Metadata[] = [];
           if (rawMetadataFragment) {
-            extractedMetadata =
+            const docMetadata =
               this.extractDocumentMetadata(rawMetadataFragment);
+            extractedMetadata = [docMetadata];
           }
           const extractedHashes = this.hashMapper.map(
             extractedMetadata,
@@ -123,7 +124,7 @@ export class DataMapper implements IDataMapper {
     path: string;
     aipRoot: string;
   }): string {
-    const normalizedOriginalPath = extractedPath.path.replaceAll('/./', "/");
+    const normalizedOriginalPath = extractedPath.path.replaceAll("/./", "/");
     if (
       extractedPath.aipRoot &&
       normalizedOriginalPath.startsWith(extractedPath.aipRoot)
@@ -254,8 +255,10 @@ export class DataMapper implements IDataMapper {
     return [...primaryFragments, ...attachmentFragments];
   }
 
-  private extractDocumentMetadata(rawMetadataFragment: any): Metadata[] {
-    if (!rawMetadataFragment?.Document?.[0]) return [];
+  private extractDocumentMetadata(rawMetadataFragment: any): Metadata {
+    if (!rawMetadataFragment?.Document?.[0]) {
+      return new Metadata("Unknown", [], MetadataType.COMPOSITE);
+    }
     const documentNode = rawMetadataFragment.Document[0];
 
     const rootCandidates = [
@@ -265,11 +268,13 @@ export class DataMapper implements IDataMapper {
     ] as const;
 
     const rootTag = rootCandidates.find((candidate) => documentNode[candidate]);
-    if (!rootTag) return [];
+    if (!rootTag) {
+      return new Metadata("Unknown", [], MetadataType.COMPOSITE);
+    }
 
     const rootNode = documentNode[rootTag];
     const children = this.extractMetadataDict(rootNode, true);
-    return [new Metadata(rootTag, children, MetadataType.COMPOSITE)];
+    return new Metadata(rootTag, children, MetadataType.COMPOSITE);
   }
 
   private extractProcessMetadata(rawMetadataFragment: any): Metadata[] {

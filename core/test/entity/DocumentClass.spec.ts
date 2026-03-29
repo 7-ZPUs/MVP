@@ -110,46 +110,4 @@ describe("DocumentClass entity", () => {
       expect(dc.getIntegrityStatus()).toBe(IntegrityStatusEnum.INVALID);
     });
   });
-
-  describe("toDTO", () => {
-    // identifier: TU-F-browsing-22
-    // method_name: toDTO()
-    // description: should lancia un errore se id è null
-    // expected_value: matches asserted behavior: lancia un errore se id è null
-    it("TU-F-browsing-22: toDTO() should lancia un errore se id è null", () => {
-      const dc = new DocumentClass(
-        "dip-uuid",
-        "uuid",
-        "Nome",
-        "2024-01-01T00:00:00Z",
-      );
-      expect(() => dc.toDTO()).toThrow(
-        "Cannot convert to DTO: DocumentClass entity is not yet persisted and has no ID.",
-      );
-    });
-
-    // identifier: TU-F-browsing-23
-    // method_name: toDTO()
-    // description: should restituisce il DTO corretto
-    // expected_value: matches asserted behavior: restituisce il DTO corretto
-    it("TU-F-browsing-23: toDTO() should restituisce il DTO corretto", () => {
-      const row: DocumentClassRow = {
-        id: 7,
-        dipId: 2,
-        uuid: "dc-abc",
-        name: "Ricevute",
-        timestamp: "2025-03-01T08:00:00Z",
-        integrityStatus: "VALID",
-      };
-      const dc = DocumentClass.fromDB(row);
-      const dto = dc.toDTO();
-
-      expect(dto.id).toBe(7);
-      expect(dto.dipId).toBe(2);
-      expect(dto.uuid).toBe("dc-abc");
-      expect(dto.name).toBe("Ricevute");
-      expect(dto.timestamp).toBe("2025-03-01T08:00:00Z");
-      expect(dto.integrityStatus).toBe(IntegrityStatusEnum.VALID);
-    });
-  });
 });

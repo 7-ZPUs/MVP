@@ -171,7 +171,7 @@ describe("LocalPackageReaderAdapter integration tests", () => {
     expect(documents[0].getProcessUuid()).toBe("aip-1");
     expect(documents[0].getIntegrityStatus()).toBe(IntegrityStatusEnum.UNKNOWN);
 
-    const metadata = documents[0].getMetadata()[0].getChildren();
+    const metadata = documents[0].getMetadata().getChildren();
     expect(metadata).toHaveLength(5);
 
     expect(metadata[0].getName()).toBe("IdDoc");

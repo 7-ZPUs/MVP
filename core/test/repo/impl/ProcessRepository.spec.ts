@@ -91,14 +91,17 @@ describe("ProcessRepository", () => {
     const process = new Process("dc-uuid", "proc-1", metadata);
 
     const saved = repo.save(process);
-    const found = repo.getById(saved.toDTO().id);
+    const found = repo.getById(saved.getId() as number);
 
     expect(found).not.toBeNull();
     expect(found?.getDocumentClassId()).toBe(11);
     expect(found?.getUuid()).toBe("proc-1");
     expect(found?.getIntegrityStatus()).toBe(IntegrityStatusEnum.UNKNOWN);
-    expect(found?.getMetadata()).toHaveLength(2);
-    expect(found?.getMetadata()[0].name).toBe("fase");
+    expect(found?.getMetadata()).toHaveLength(1);
+    const root = found?.getMetadata()[0];
+    expect(root?.name).toBe("root");
+    expect(root?.getChildren()).toHaveLength(2);
+    expect(root?.getChildren()[0].name).toBe("fase");
     expect(insertMetadataRun).toHaveBeenCalledTimes(2);
   });
 

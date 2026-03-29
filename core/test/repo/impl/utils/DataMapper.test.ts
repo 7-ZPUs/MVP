@@ -350,7 +350,7 @@ describe("DataMapper", () => {
     expect(doc.getUuid()).toBe("doc-1");
     expect(doc.getProcessUuid()).toBe("aip-1");
     expect(doc.getIntegrityStatus()).toBe("UNKNOWN"); // Default when not specified
-    const metadata = doc.getMetadata()[0];
+    const metadata = doc.getMetadata();
     expect(metadata.getName()).toBe("DocumentoInformatico");
     expect(metadata.getChildren()).toHaveLength(6);
     expect(metadata.getChildren()[0].getName()).toBe("IdDoc");
@@ -362,43 +362,22 @@ describe("DataMapper", () => {
       metadata.getChildren()[0].getChildren()[0].getChildren(),
     ).toHaveLength(2);
     expect(
-      metadata
-        .getChildren()[0]
-        .getChildren()[0]
-        .getChildren()[0]
-        .getName(),
+      metadata.getChildren()[0].getChildren()[0].getChildren()[0].getName(),
     ).toBe("Impronta");
     expect(
-      metadata
-        .getChildren()[0]
-        .getChildren()[0]
-        .getChildren()[1]
-        .getName(),
+      metadata.getChildren()[0].getChildren()[0].getChildren()[1].getName(),
     ).toBe("Algoritmo");
-    expect(
-      metadata.getChildren()[0].getChildren()[1].getName(),
-    ).toBe("Identificativo");
-    expect(metadata.getChildren()[1].getName()).toBe(
-      "Riservato",
+    expect(metadata.getChildren()[0].getChildren()[1].getName()).toBe(
+      "Identificativo",
     );
-    expect(metadata.getChildren()[2].getName()).toBe(
-      "TempoDiConservazione",
+    expect(metadata.getChildren()[1].getName()).toBe("Riservato");
+    expect(metadata.getChildren()[2].getName()).toBe("TempoDiConservazione");
+    expect(metadata.getChildren()[3].getName()).toBe("Soggetti");
+    expect(metadata.getChildren()[3].getChildren()).toHaveLength(2);
+    expect(metadata.getChildren()[3].getChildren()[0].getName()).toBe("Ruolo");
+    expect(metadata.getChildren()[3].getChildren()[0].getChildren()[0]).toEqual(
+      new Metadata("Tipo", "Autore", MetadataType.STRING),
     );
-    expect(metadata.getChildren()[3].getName()).toBe(
-      "Soggetti",
-    );
-    expect(
-      metadata.getChildren()[3].getChildren(),
-    ).toHaveLength(2);
-    expect(
-      metadata.getChildren()[3].getChildren()[0].getName(),
-    ).toBe("Ruolo");
-    expect(
-      metadata
-        .getChildren()[3]
-        .getChildren()[0]
-        .getChildren()[0],
-    ).toEqual(new Metadata("Tipo", "Autore", MetadataType.STRING));
     expect(metadata.getChildren()[4].getName()).toBe("Titolo");
     expect(metadata.getChildren()[4]).toEqual(
       new Metadata("Titolo", "Documento di test", MetadataType.STRING),
@@ -425,7 +404,8 @@ describe("DataMapper", () => {
     expect(doc.getUuid()).toBe("doc-1");
     expect(doc.getProcessUuid()).toBe("aip-1");
     expect(doc.getIntegrityStatus()).toBe("UNKNOWN");
-    expect(doc.getMetadata()).toEqual([]);
+    expect(doc.getMetadata().getName()).toBe("Unknown");
+    expect(doc.getMetadata().getChildren()).toHaveLength(0);
   });
 
   it("TU-F-Indexing-144: getFileMappers() should return correctly mapped paths for files in the dipindex_test.xml structure", () => {
