@@ -15,8 +15,8 @@ export const IpcChannels = {
   // ----- Search -----
   SEARCH_FULLTEXT:     'ipc:search:text',
   SEARCH_SEMANTIC:     'ipc:search:semantic',
-  SEARCH_CLASSES:      'search:classes',
-  SEARCH_PROCESSES:    'search:processes',
+  SEARCH_CLASSES:      'search:classes', // obsoleto
+  SEARCH_PROCESSES:    'search:processes', // obsoleto
   SEARCH_DOCUMENTS:    'ipc:search:advanced',
   SEARCH_GET_AI_STATE: 'ipc:indexing:status',
 
