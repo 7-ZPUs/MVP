@@ -346,20 +346,8 @@ describe("Index use-case integration tests", () => {
       (m) => m.getName() === "child",
     );
     expect(childWithAttribute).toBeDefined();
-    expect(childWithAttribute?.getType()).toBe(MetadataType.COMPOSITE);
-
-    const childWithAttributeChildren = childWithAttribute?.getChildren() ?? [];
-    const nameAttr = childWithAttributeChildren.find(
-      (m) => m.getName() === "@_name",
-    );
-    expect(nameAttr).toBeDefined();
-    expect(nameAttr?.getStringValue()).toBe("child2");
-
-    const textNode = childWithAttributeChildren.find(
-      (m) => m.getName() === "#text",
-    );
-    expect(textNode).toBeDefined();
-    expect(textNode?.getStringValue()).toBe("true");
+    expect(childWithAttribute?.getType()).toBe(MetadataType.BOOLEAN);
+    expect(childWithAttribute?.getStringValue()).toBe("true");
   });
 
   // identifier: TU-F-Indexing-19

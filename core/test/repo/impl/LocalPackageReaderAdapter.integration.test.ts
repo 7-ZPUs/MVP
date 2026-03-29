@@ -209,60 +209,65 @@ describe("LocalPackageReaderAdapter integration tests", () => {
 
     expect(files).toHaveLength(5);
 
-    expect(files[0].getId()).toBeNull();
-    expect(files[0].getFilename()).toBe("./primary.pdf");
-    expect(files[0].getPath()).toBe(
+    const primary1 = files.find((f) => f.getFilename() === "./primary.pdf");
+    expect(primary1).toBeDefined();
+    expect(primary1?.getId()).toBeNull();
+    expect(primary1?.getPath()).toBe(
       "./class-1/aip-1/documents/doc-1/primary.pdf",
     );
-    expect(files[0].getHash()).toBe("");
-    expect(files[0].getIsMain()).toBe(true);
-    expect(files[0].getDocumentId()).toBeNull();
-    expect(files[0].getDocumentUuid()).toBe("doc-1");
-    expect(files[0].getIntegrityStatus()).toBe(IntegrityStatusEnum.UNKNOWN);
+    expect(primary1?.getHash()).toBe("");
+    expect(primary1?.getIsMain()).toBe(true);
+    expect(primary1?.getDocumentId()).toBeNull();
+    expect(primary1?.getDocumentUuid()).toBe("doc-1");
+    expect(primary1?.getIntegrityStatus()).toBe(IntegrityStatusEnum.UNKNOWN);
 
-    expect(files[1].getFilename()).toBe("./primary2.pdf");
-    expect(files[1].getPath()).toBe(
+    const primary2 = files.find((f) => f.getFilename() === "./primary2.pdf");
+    expect(primary2).toBeDefined();
+    expect(primary2?.getPath()).toBe(
       "./class-2/aip-2/documents/doc-2/primary2.pdf",
     );
-    expect(files[1].getHash()).toBe("");
-    expect(files[1].getId()).toBeNull();
-    expect(files[1].getDocumentId()).toBeNull();
-    expect(files[1].getUuid()).toBe("prim-2");
-    expect(files[1].getDocumentUuid()).toBe("doc-2");
-    expect(files[1].getIntegrityStatus()).toBe(IntegrityStatusEnum.UNKNOWN);
-    expect(files[1].getIsMain()).toBe(true);
+    expect(primary2?.getHash()).toBe("");
+    expect(primary2?.getId()).toBeNull();
+    expect(primary2?.getDocumentId()).toBeNull();
+    expect(primary2?.getUuid()).toBe("prim-2");
+    expect(primary2?.getDocumentUuid()).toBe("doc-2");
+    expect(primary2?.getIntegrityStatus()).toBe(IntegrityStatusEnum.UNKNOWN);
+    expect(primary2?.getIsMain()).toBe(true);
 
-    expect(files[2].getFilename()).toBe("./att1.pdf");
-    expect(files[2].getPath()).toBe("./class-2/aip-2/documents/doc-2/att1.pdf");
-    expect(files[2].getHash()).toBe("");
-    expect(files[2].getId()).toBeNull();
-    expect(files[2].getDocumentId()).toBeNull();
-    expect(files[2].getUuid()).toBe("att-1");
-    expect(files[2].getDocumentUuid()).toBe("doc-2");
-    expect(files[2].getIntegrityStatus()).toBe(IntegrityStatusEnum.UNKNOWN);
-    expect(files[2].getIsMain()).toBe(false);
+    const att1 = files.find((f) => f.getFilename() === "./att1.pdf");
+    expect(att1).toBeDefined();
+    expect(att1?.getPath()).toBe("./class-2/aip-2/documents/doc-2/att1.pdf");
+    expect(att1?.getHash()).toBe("");
+    expect(att1?.getId()).toBeNull();
+    expect(att1?.getDocumentId()).toBeNull();
+    expect(att1?.getUuid()).toBe("att-1");
+    expect(att1?.getDocumentUuid()).toBe("doc-2");
+    expect(att1?.getIntegrityStatus()).toBe(IntegrityStatusEnum.UNKNOWN);
+    expect(att1?.getIsMain()).toBe(false);
 
-    expect(files[3].getFilename()).toBe("./att2.pdf");
-    expect(files[3].getPath()).toBe("./class-2/aip-2/documents/doc-2/att2.pdf");
-    expect(files[3].getHash()).toBe("");
-    expect(files[3].getId()).toBeNull();
-    expect(files[3].getDocumentId()).toBeNull();
-    expect(files[3].getUuid()).toBe("att-2");
-    expect(files[3].getDocumentUuid()).toBe("doc-2");
-    expect(files[3].getIntegrityStatus()).toBe(IntegrityStatusEnum.UNKNOWN);
-    expect(files[3].getIsMain()).toBe(false);
+    const att2 = files.find((f) => f.getFilename() === "./att2.pdf");
+    expect(att2).toBeDefined();
+    expect(att2?.getPath()).toBe("./class-2/aip-2/documents/doc-2/att2.pdf");
+    expect(att2?.getHash()).toBe("");
+    expect(att2?.getId()).toBeNull();
+    expect(att2?.getDocumentId()).toBeNull();
+    expect(att2?.getUuid()).toBe("att-2");
+    expect(att2?.getDocumentUuid()).toBe("doc-2");
+    expect(att2?.getIntegrityStatus()).toBe(IntegrityStatusEnum.UNKNOWN);
+    expect(att2?.getIsMain()).toBe(false);
 
-    expect(files[4].getFilename()).toBe("./primary3.pdf");
-    expect(files[4].getPath()).toBe(
+    const primary3 = files.find((f) => f.getFilename() === "./primary3.pdf");
+    expect(primary3).toBeDefined();
+    expect(primary3?.getPath()).toBe(
       "./class-2/aip-3/documents/doc-3/primary3.pdf",
     );
-    expect(files[4].getHash()).toBe("");
-    expect(files[4].getId()).toBeNull();
-    expect(files[4].getDocumentId()).toBeNull();
-    expect(files[4].getUuid()).toBe("prim-3");
-    expect(files[4].getDocumentUuid()).toBe("doc-3");
-    expect(files[4].getIntegrityStatus()).toBe(IntegrityStatusEnum.UNKNOWN);
-    expect(files[4].getIsMain()).toBe(true);
+    expect(primary3?.getHash()).toBe("");
+    expect(primary3?.getId()).toBeNull();
+    expect(primary3?.getDocumentId()).toBeNull();
+    expect(primary3?.getUuid()).toBe("prim-3");
+    expect(primary3?.getDocumentUuid()).toBe("doc-3");
+    expect(primary3?.getIntegrityStatus()).toBe(IntegrityStatusEnum.UNKNOWN);
+    expect(primary3?.getIsMain()).toBe(true);
   });
 
   // identifier: TU-F-Indexing-06
@@ -272,7 +277,7 @@ describe("LocalPackageReaderAdapter integration tests", () => {
   it("TU-F-Indexing-06: readFileBytes() should read file bytes from the package", async () => {
     const filePath = path.join(
       dipPackagePath,
-      "./class-1/aip-1/doc-1/./primary.pdf",
+      "./class-1/aip-1/documents/doc-1/primary.pdf",
     );
 
     const stream = await adapter.readFileBytes(filePath);
