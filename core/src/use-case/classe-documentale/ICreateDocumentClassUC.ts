@@ -1,6 +1,12 @@
-import { CreateDocumentClassDTO } from "../../dto/DocumentClassDTO";
 import { DocumentClass } from "../../entity/DocumentClass";
 
+export interface CreateDocumentClassInput {
+    dipId: number;
+    uuid: string;
+    name: string;
+    timestamp: string;
+}
+
 export interface ICreateDocumentClassUC {
-    execute(dto: CreateDocumentClassDTO): DocumentClass;
+    execute(input: CreateDocumentClassInput): DocumentClass;
 }

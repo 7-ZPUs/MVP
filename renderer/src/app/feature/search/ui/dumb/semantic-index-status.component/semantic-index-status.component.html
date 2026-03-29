@@ -1,0 +1,38 @@
+<div
+  class="semantic-status-badge {{ statusClass }}"
+  style="
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    background-color: #f1f5f9;
+    border: 1px solid #e2e8f0;
+  "
+>
+  <span
+    class="status-indicator"
+    [style.background-color]="
+      state?.status === 'READY'
+        ? '#22c55e'
+        : state?.status === 'INDEXING'
+          ? '#eab308'
+          : state?.status === 'ERROR'
+            ? '#ef4444'
+            : '#94a3b8'
+    "
+    style="width: 8px; height: 8px; border-radius: 50%; display: inline-block"
+  >
+  </span>
+
+  <span class="status-text">{{ statusLabel }}</span>
+
+  <span
+    *ngIf="state?.status === 'INDEXING' && $any(state).progress != null"
+    class="status-progress"
+  >
+    ({{ $any(state).progress }}%)
+  </span>
+</div>

@@ -1,6 +1,13 @@
-import { CreateFileDTO } from '../../dto/FileDTO';
 import type { File } from '../../entity/File';
 
+export interface CreateFileInput {
+    documentId: number;
+    filename: string;
+    path: string;
+    isMain: boolean;
+    hash: string;
+}
+
 export interface ICreateFileUC {
-    execute(dto: CreateFileDTO): File;
+    execute(input: CreateFileInput): File;
 }

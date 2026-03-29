@@ -4,7 +4,7 @@
     "rootDir": ".",
     "outDir": "dist/core"
   },
-  "include": ["core/src/**/*","shared/**/*"], // questo è per includere anche i DTO condivisi
+  "include": ["core/src/**/*", "shared/**/*"],
   "exclude": [
     "node_modules",
     "dist",

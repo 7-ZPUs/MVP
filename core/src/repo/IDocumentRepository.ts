@@ -1,32 +1,23 @@
-import { CreateDocumentDTO } from '../dto/DocumentDTO';
-import type { Document } from '../entity/Document';
-import { IntegrityStatusEnum } from '../value-objects/IntegrityStatusEnum';
-import { SearchFilters } from '../../../shared/domain/metadata/search.models';
+import type { Document } from "../entity/Document";
+import { IntegrityStatusEnum } from "../value-objects/IntegrityStatusEnum";
+import { SearchFilters } from "../../../shared/domain/metadata/search.models";
 
-export const DOCUMENTO_REPOSITORY_TOKEN = Symbol('IDocumentRepository');
+export const DOCUMENTO_REPOSITORY_TOKEN = Symbol("IDocumentRepository");
 
 export interface IDocumentRepository {
-    /** Restituisce un document per id, o null se non esiste. */
-    getById(id: number): Document | null;
+  getById(id: number): Document | null;
+  getByProcessId(processId: number): Document[];
+  getByStatus(status: IntegrityStatusEnum): Document[];
 
-    /** Restituisce tutti i documenti appartenenti a un processo. */
-    getByProcessId(processId: number): Document[];
+  save(document: Document): Document;
 
-    /** Restituisce tutti i documenti con un determinato stato di integrità. */
-    getByStatus(status: IntegrityStatusEnum): Document[];
+  updateIntegrityStatus(id: number, status: IntegrityStatusEnum): void;
 
-    /** Persiste un nuovo document e restituisce l'entità con l'id assegnato. */
-    save(dto: CreateDocumentDTO): Document;
+  searchDocument(filters: SearchFilters): Document[];
 
-    /** Aggiorna lo stato di integrità di un document. */
-    updateIntegrityStatus(id: number, status: IntegrityStatusEnum): void;
+  searchDocumentSemantic(
+    query: string,
+  ): Promise<Array<{ document: Document; score: number }>>;
 
-    /** Ricerca documenti mediante metadati */
-    searchDocument(filters: SearchFilters): Document[];
-
-    /** metodo per indicizzazione e ricerca semantica */
-    searchDocumentSemantic(query: string): Promise<Array<{ document: Document; score: number }>>;
-
-    /** per recuperare il numero di documenti indicizzati */
-    getIndexedDocumentsCount(): number;
+  getIndexedDocumentsCount(): number;
 }

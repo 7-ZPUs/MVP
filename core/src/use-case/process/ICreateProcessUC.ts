@@ -1,6 +1,16 @@
-import { CreateProcessDTO } from '../../dto/ProcessDTO';
 import type { Process } from '../../entity/Process';
+import { MetadataType } from '../../value-objects/Metadata';
+
+export interface CreateProcessInput {
+    documentClassId: number;
+    uuid: string;
+    metadata: {
+        name: string;
+        value: string;
+        type: MetadataType;
+    }[];
+}
 
 export interface ICreateProcessUC {
-    execute(dto: CreateProcessDTO): Process;
+    execute(input: CreateProcessInput): Process;
 }

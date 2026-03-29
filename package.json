@@ -9,11 +9,16 @@
     "build:renderer": "cd renderer && npx ng build",
     "build:all": "npm run build:renderer && npm run build:core",
     "start": "ELECTRON_DISABLE_SANDBOX=1 electron .",
+    "start:dev": "NODE_ENV=development npm run build:all && npm run start",
     "start:renderer": "cd renderer && ng serve --host 0.0.0.0",
-    "test": "npm run test:core",
-    "test:core": "vitest run",
-    "test:renderer": "cd renderer && ng test",
-    "test:coverage": "npm run test:core -- --coverage"
+    "test:core": "vitest run --passWithNoTests",
+    "test:core:watch": "vitest",
+    "test:core:coverage": "vitest run --passWithNoTests --coverage",
+    "test:renderer": "cd renderer && npx ng test --watch=false",
+    "test:renderer:coverage": "cd renderer && npx ng test --watch=false --coverage",
+    "test": "npm run test:core && npm run test:renderer",
+    "test:coverage": "npm run test:core:coverage && npm run test:renderer:coverage",
+    "lint": "eslint . --ext .ts,.tsx"
   },
   "dependencies": {
     "@angular/router": "^21.2.6",
@@ -37,7 +42,6 @@
     "electron": "^30.0.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.5",
-    "typescript-eslint": "^8.56.1",
     "vitest": "^1.5.0"
   }
 }
