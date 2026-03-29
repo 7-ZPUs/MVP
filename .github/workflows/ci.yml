@@ -43,6 +43,7 @@ jobs:
           npm run test:renderer
 
           # Test Core (Electron)
+          npm run setup:download-models 
           npm run test:core
 
           npm run test:coverage
