@@ -2,10 +2,8 @@ import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/
 import { provideRouter, withHashLocation } from '@angular/router';
 
 import { routes } from './app.routes';
+import { SearchFacade } from './feature/search/services'; // Aggiusta se serve
 
 export const appConfig: ApplicationConfig = {
-  providers: [
-    provideBrowserGlobalErrorListeners(),
-    provideRouter(routes, withHashLocation()),
-  ]
+  providers: [provideBrowserGlobalErrorListeners(), provideRouter(routes, withHashLocation())],
 };
