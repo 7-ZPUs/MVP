@@ -36,12 +36,12 @@
   "devDependencies": {
     "@types/adm-zip": "^0.5.5",
     "@types/better-sqlite3": "^7.6.8",
-    "@types/node": "^20.12.7",
+    "@types/node": "^20.19.37",
     "@vitest/coverage-v8": "^1.6.1",
     "better-sqlite3": "^9.6.0",
     "electron": "^30.0.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.5",
-    "vitest": "^1.5.0"
+    "vitest": "^1.6.1"
   }
 }

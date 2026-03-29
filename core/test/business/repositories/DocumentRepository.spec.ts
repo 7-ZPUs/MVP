@@ -385,7 +385,7 @@ describe("DocumentRepository.searchDocument — filtri diDai", () => {
     const callArgs = db.prepare.mock.results[0].value.all.mock
       .calls[0] as string[];
     expect(callArgs).toContain("ModalitaDiFormazione");
-    expect(callArgs).toContain("EX_NOVO");
+    expect(callArgs).toContain(DIDAIFormation.EX_NOVO);
   });
 
   it("filtra per Riservato (riservatezza)", () => {
@@ -667,7 +667,7 @@ describe("DocumentRepository.searchDocument — filtri diDai", () => {
     const callArgs = db.prepare.mock.results[0].value.all.mock
       .calls[0] as string[];
     expect(callArgs).toContain("TipoRegistro");
-    expect(callArgs).toContain("PROTOCOLLO");
+    expect(callArgs).toContain(RegisterType.PROTOCOLLO);
   });
 
   it("filtra per NumeroRegistrazioneDocumento (registrazione.numeroRegistrazione)", () => {

@@ -15,6 +15,8 @@ export interface IDocumentRepository {
 
   searchDocument(filters: SearchFilters): Document[];
 
+  getAggregatedIntegrityStatusByProcessId(processId: number): IntegrityStatusEnum;
+
   searchDocumentSemantic(
     query: string,
   ): Promise<Array<{ document: Document; score: number }>>;
