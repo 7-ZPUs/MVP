@@ -112,6 +112,37 @@ export class DocumentClassRepository implements IDocumentClassRepository {
       .run(status, id);
   }
 
+  getAggregatedIntegrityStatusByDipId(dipId: number): IntegrityStatusEnum {
+        const row = this.db
+            .prepare<[number], { total: number; invalidCount: number; unknownCount: number }>(
+                `SELECT
+                    COUNT(*) AS total,
+                    SUM(CASE WHEN integrity_status = 'INVALID' THEN 1 ELSE 0 END) AS invalidCount,
+                    SUM(CASE WHEN integrity_status = 'UNKNOWN' THEN 1 ELSE 0 END) AS unknownCount
+                 FROM document_class
+                 WHERE dip_id = ?`
+            )
+            .get(dipId);
+
+        const total = row?.total ?? 0;
+        const invalidCount = row?.invalidCount ?? 0;
+        const unknownCount = row?.unknownCount ?? 0;
+
+        if (!total) {
+            return IntegrityStatusEnum.UNKNOWN;
+        }
+
+        if (invalidCount) {
+            return IntegrityStatusEnum.INVALID;
+        }
+
+        if (unknownCount) {
+            return IntegrityStatusEnum.UNKNOWN;
+        }
+
+        return IntegrityStatusEnum.VALID;
+    }
+
   searchDocumentalClasses(name: string): DocumentClass[] {
     const rows = this.db
       .prepare<[string], DocumentClassRow>(

@@ -116,6 +116,37 @@ export class ProcessRepository implements IProcessRepository {
       .run(status, id);
   }
 
+  getAggregatedIntegrityStatusByDocumentClassId(documentClassId: number): IntegrityStatusEnum {
+        const row = this.db
+            .prepare<[number], { total: number; invalidCount: number; unknownCount: number }>(
+                `SELECT
+                    COUNT(*) AS total,
+                    SUM(CASE WHEN integrity_status = 'INVALID' THEN 1 ELSE 0 END) AS invalidCount,
+                    SUM(CASE WHEN integrity_status = 'UNKNOWN' THEN 1 ELSE 0 END) AS unknownCount
+                 FROM process
+                 WHERE document_class_id = ?`
+            )
+            .get(documentClassId);
+
+        const total = row?.total ?? 0;
+        const invalidCount = row?.invalidCount ?? 0;
+        const unknownCount = row?.unknownCount ?? 0;
+
+        if (!total) {
+            return IntegrityStatusEnum.UNKNOWN;
+        }
+
+        if (invalidCount) {
+            return IntegrityStatusEnum.INVALID;
+        }
+
+        if (unknownCount) {
+            return IntegrityStatusEnum.UNKNOWN;
+        }
+
+        return IntegrityStatusEnum.VALID;
+    }
+
   searchProcesses(uuid: string): Process[] {
     const rows = this.db
       .prepare<[string], ProcessRow>(

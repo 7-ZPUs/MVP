@@ -1,7 +1,4 @@
 import { Routes } from '@angular/router';
-import { PersonaComponent } from './features/persona/persona.component';
+import { SearchPageComponent } from './feature/search/ui/smart/search-page/search-page.component'; // Aggiusta questo path!
 
-export const routes: Routes = [
-  { path: '', redirectTo: 'persone', pathMatch: 'full' },
-  { path: 'persone', component: PersonaComponent },
-];
+export const routes: Routes = [];

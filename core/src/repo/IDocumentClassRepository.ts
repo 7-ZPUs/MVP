@@ -13,6 +13,6 @@ export interface IDocumentClassRepository {
   save(documentClass: DocumentClass): DocumentClass;
 
   updateIntegrityStatus(id: number, status: IntegrityStatusEnum): void;
-
+  getAggregatedIntegrityStatusByDipId(dipId: number): IntegrityStatusEnum;
   searchDocumentalClasses(name: string): DocumentClass[];
 }

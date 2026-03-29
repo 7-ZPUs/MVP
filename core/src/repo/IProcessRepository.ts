@@ -11,6 +11,6 @@ export interface IProcessRepository {
   save(process: Process): Process;
 
   updateIntegrityStatus(id: number, status: IntegrityStatusEnum): void;
-
+  getAggregatedIntegrityStatusByDocumentClassId(documentClassId: number): IntegrityStatusEnum;
   searchProcesses(uuid: string): Process[];
 }
