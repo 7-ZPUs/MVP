@@ -9,7 +9,7 @@
                 <AiP uuid="aip-1">
                     <AiPRoot>./class-1/aip-1</AiPRoot>
                     <Document uuid="doc-1">
-                        <DocumentPath>./class-1/aip-1/doc-1</DocumentPath>
+                        <DocumentPath>./documents/doc-1</DocumentPath>
                         <Files FilesCount="2">
                             <Metadata uuid="meta-1">./meta.xml</Metadata>
                             <Primary uuid="prim-1">./primary.pdf</Primary>
@@ -21,7 +21,7 @@
                 <AiP uuid="aip-2">
                     <AiPRoot>./class-2/aip-2</AiPRoot>
                     <Document uuid="doc-2">
-                        <DocumentPath>./class-2/aip-2/doc-2</DocumentPath>
+                        <DocumentPath>./documents/doc-2</DocumentPath>
                         <Files FilesCount="4">
                             <Metadata uuid="meta-2">./meta2.xml</Metadata>
                             <Primary uuid="prim-2">./primary2.pdf</Primary>
@@ -33,7 +33,7 @@
                 <AiP uuid="aip-3">
                     <AiPRoot>./class-2/aip-3</AiPRoot>
                     <Document uuid="doc-3">
-                        <DocumentPath>./class-2/aip-3/doc-3</DocumentPath>
+                        <DocumentPath>./documents/doc-3</DocumentPath>
                         <Files FilesCount="2">
                             <Metadata uuid="meta-3">./meta3.xml</Metadata>
                             <Primary uuid="prim-3">./primary3.pdf</Primary>

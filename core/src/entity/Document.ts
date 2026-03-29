@@ -4,89 +4,93 @@ import { IntegrityStatusEnum } from "../value-objects/IntegrityStatusEnum";
 
 /** Forma della riga SQLite che il repository legge. */
 export interface DocumentRow {
-    id: number;
-    uuid: string;
-    integrityStatus?: string;
-    processId: number;
+  id: number;
+  uuid: string;
+  integrityStatus?: string;
+  processId: number;
 }
 
 export class Document {
-    /**
-     * `null`  → entità non ancora persistita (prima dell'INSERT).
-     * `number` → entità caricata dal DB o appena salvata.
-     */
-    private id: number | null = null;
-    private readonly uuid: string;
-    private readonly metadata: Metadata[];
-    private integrityStatus: IntegrityStatusEnum;
-    private processId: number | null = null;
-    private readonly processUuid: string;
+  /**
+   * `null`  → entità non ancora persistita (prima dell'INSERT).
+   * `number` → entità caricata dal DB o appena salvata.
+   */
+  private id: number | null = null;
+  private readonly uuid: string;
+  private readonly metadata: Metadata;
+  private integrityStatus: IntegrityStatusEnum;
+  private processId: number | null = null;
+  private readonly processUuid: string;
 
-    /**
-     * Costruttore usato per creare una nuova entità non ancora persistita.
-     * L'id viene omesso: il DB lo assegnerà all'INSERT.
-     */
-    constructor(uuid: string, metadata: Metadata[], processUuid: string) {
-        this.uuid = uuid;
-        this.metadata = metadata;
-        this.integrityStatus = IntegrityStatusEnum.UNKNOWN;
-        this.processUuid = processUuid;
-    }
+  /**
+   * Costruttore usato per creare una nuova entità non ancora persistita.
+   * L'id viene omesso: il DB lo assegnerà all'INSERT.
+   */
+  constructor(uuid: string, metadata: Metadata, processUuid: string) {
+    this.uuid = uuid;
+    this.metadata = metadata;
+    this.integrityStatus = IntegrityStatusEnum.UNKNOWN;
+    this.processUuid = processUuid;
+  }
 
-    /**
-     * Factory per ricostituire l'entità da una riga del DB.
-     * Da usare esclusivamente nel repository.
-     */
-    static fromDB(row: DocumentRow, metadata: Metadata[]): Document {
-        const doc = new Document(row.uuid, metadata, "");
-        doc.id = row.id;
-        doc.processId = row.processId;
-        doc.integrityStatus = (row.integrityStatus as IntegrityStatusEnum) ?? IntegrityStatusEnum.UNKNOWN;
-        return doc;
-    }
+  /**
+   * Factory per ricostituire l'entità da una riga del DB.
+   * Da usare esclusivamente nel repository.
+   */
+  static fromDB(row: DocumentRow, metadata: Metadata): Document {
+    const doc = new Document(row.uuid, metadata, "");
+    doc.id = row.id;
+    doc.processId = row.processId;
+    doc.integrityStatus =
+      (row.integrityStatus as IntegrityStatusEnum) ??
+      IntegrityStatusEnum.UNKNOWN;
+    return doc;
+  }
 
-    public getId(): number | null {
-        return this.id;
-    }
+  public getId(): number | null {
+    return this.id;
+  }
 
-    public getUuid(): string {
-        return this.uuid;
-    }
+  public getUuid(): string {
+    return this.uuid;
+  }
 
-    public getMetadata(): Metadata[] {
-        return this.metadata;
-    }
+  public getMetadata(): Metadata {
+    return this.metadata;
+  }
 
-    public getIntegrityStatus(): IntegrityStatusEnum {
-        return this.integrityStatus;
-    }
+  public getIntegrityStatus(): IntegrityStatusEnum {
+    return this.integrityStatus;
+  }
 
-    public setIntegrityStatus(status: IntegrityStatusEnum): void {
-        this.integrityStatus = status;
-    }
+  public setIntegrityStatus(status: IntegrityStatusEnum): void {
+    this.integrityStatus = status;
+  }
 
-    public getProcessId(): number | null {
-        return this.processId;
-    }
+  public getProcessId(): number | null {
+    return this.processId;
+  }
 
-    public getProcessUuid(): string {
-        return this.processUuid;
-    }
+  public getProcessUuid(): string {
+    return this.processUuid;
+  }
 
-    /**
-     * Serializza l'entità in un plain object trasferibile via IPC.
-     * Da chiamare SOLO nell'IPC adapter, mai nel dominio o nel repository.
-     */
-    public toDTO(): DocumentDTO {
-        if (this.id === null || this.processId === null) {
-            throw new Error("Cannot convert to DTO: Document entity is not yet persisted and has no ID.");
-        }
-        return {
-            id: this.id,
-            uuid: this.uuid,
-            integrityStatus: this.integrityStatus,
-            metadata: this.metadata.map((m) => m.toDTO()),
-            processId: this.processId,
-        };
+  /**
+   * Serializza l'entità in un plain object trasferibile via IPC.
+   * Da chiamare SOLO nell'IPC adapter, mai nel dominio o nel repository.
+   */
+  public toDTO(): DocumentDTO {
+    if (this.id === null || this.processId === null) {
+      throw new Error(
+        "Cannot convert to DTO: Document entity is not yet persisted and has no ID.",
+      );
     }
+    return {
+      id: this.id,
+      uuid: this.uuid,
+      integrityStatus: this.integrityStatus,
+      metadata: this.metadata.toDTO(),
+      processId: this.processId,
+    };
+  }
 }

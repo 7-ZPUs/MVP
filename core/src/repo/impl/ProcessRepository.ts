@@ -50,7 +50,13 @@ export class ProcessRepository implements IProcessRepository {
   }
 
   private rowToEntity(row: ProcessRow): Process {
-    const metadata = loadMetadata(this.db, METADATA_TABLE, METADATA_FK, row.id);
+    const metadataRoot = loadMetadata(
+      this.db,
+      METADATA_TABLE,
+      METADATA_FK,
+      row.id,
+    );
+    const metadata = metadataRoot ? [metadataRoot] : [];
     return Process.fromDB(row, metadata);
   }
 

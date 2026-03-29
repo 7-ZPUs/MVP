@@ -13,6 +13,7 @@ import Database from "better-sqlite3";
 
 import { Document, DocumentRow } from "../../entity/Document";
 import { IntegrityStatusEnum } from "../../value-objects/IntegrityStatusEnum";
+import { Metadata, MetadataType } from "../../value-objects/Metadata";
 import type { IDocumentRepository } from "../IDocumentRepository";
 import { DatabaseProvider, DATABASE_PROVIDER_TOKEN } from "./DatabaseProvider";
 import { loadMetadata, saveMetadata } from "./MetadataHelper";
@@ -67,7 +68,10 @@ export class DocumentRepository implements IDocumentRepository {
 
   private rowToEntity(row: DocumentRow): Document {
     const metadata = loadMetadata(this.db, METADATA_TABLE, METADATA_FK, row.id);
-    return Document.fromDB(row, metadata);
+    return Document.fromDB(
+      row,
+      metadata ?? new Metadata("Document", [], MetadataType.COMPOSITE),
+    );
   }
 
   // -------------------------------------------------------------------------

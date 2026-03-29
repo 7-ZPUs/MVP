@@ -1,11 +1,30 @@
 import { Metadata } from "../../../value-objects/Metadata";
 
 export class DocumentMetadataHashMapper {
+  private readonly documentRoots = new Set([
+    "DocumentoInformatico",
+    "DocumentoAmministrativoInformatico",
+    "AggregazioneDocumentaliInformatiche",
+  ]);
+
   private getCompositeChildren(metadata: Metadata | undefined): Metadata[] {
-    if (!metadata || typeof metadata.value === "string") {
+    if (!metadata) {
       return [];
     }
-    return metadata.value;
+    return metadata.getChildren();
+  }
+
+  private unwrapDocumentRoot(metadata: Metadata[]): Metadata[] {
+    if (metadata.length !== 1) {
+      return metadata;
+    }
+
+    const onlyNode = metadata[0];
+    if (!this.documentRoots.has(onlyNode.getName())) {
+      return metadata;
+    }
+
+    return onlyNode.getChildren();
   }
 
   private extractHashFromIdDoc(idDoc: Metadata): {
@@ -13,13 +32,15 @@ export class DocumentMetadataHashMapper {
     hash?: string;
   } {
     const children = this.getCompositeChildren(idDoc);
-    const uuid = children.find((item) => item.name === "Identificativo")?.value;
+    const uuid = children
+      .find((item) => item.getName() === "Identificativo")
+      ?.getStringValue();
     const improntaNode = children.find(
-      (item) => item.name === "ImprontaCrittograficaDelDocumento",
+      (item) => item.getName() === "ImprontaCrittograficaDelDocumento",
     );
-    const impronta = this.getCompositeChildren(improntaNode).find(
-      (item) => item.name === "Impronta",
-    )?.value;
+    const impronta = this.getCompositeChildren(improntaNode)
+      .find((item) => item.getName() === "Impronta")
+      ?.getStringValue();
 
     return {
       uuid: typeof uuid === "string" ? uuid : undefined,
@@ -29,8 +50,11 @@ export class DocumentMetadataHashMapper {
 
   public map(metadata: Metadata[], mainFileUuid?: string): Map<string, string> {
     const hashByFileUuid = new Map<string, string>();
+    const normalizedMetadata = this.unwrapDocumentRoot(metadata);
 
-    const mainIdDoc = metadata.find((item) => item.name === "IdDoc");
+    const mainIdDoc = normalizedMetadata.find(
+      (item) => item.getName() === "IdDoc",
+    );
     if (mainIdDoc) {
       const { uuid, hash } = this.extractHashFromIdDoc(mainIdDoc);
       if (hash) {
@@ -42,14 +66,16 @@ export class DocumentMetadataHashMapper {
       }
     }
 
-    const allegati = metadata.find((item) => item.name === "Allegati");
+    const allegati = normalizedMetadata.find(
+      (item) => item.getName() === "Allegati",
+    );
     const indiceAllegati = this.getCompositeChildren(allegati).filter(
-      (item) => item.name === "IndiceAllegati",
+      (item) => item.getName() === "IndiceAllegati",
     );
 
     for (const indice of indiceAllegati) {
       const idDoc = this.getCompositeChildren(indice).find(
-        (item) => item.name === "IdDoc",
+        (item) => item.getName() === "IdDoc",
       );
       if (!idDoc) {
         continue;

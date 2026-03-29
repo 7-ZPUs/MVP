@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<AiPInfo>
+    <Process uuid="dummy-process-uuid">
+        <Start>
+            <Date>2025-01-01T00:00:00Z</Date>
+            <UserUUID>dummy-user-uuid</UserUUID>
+            <Source>DummySource</Source>
+        </Start>
+        <End>
+            <Date>2025-01-01T01:00:00Z</Date>
+            <UserUUID>dummy-user-uuid</UserUUID>
+            <Source>DummySource</Source>
+            <Status>Completed</Status>
+        </End>
+        <DocumentClass uuid="dummy-class-uuid">
+            <Name>DummyClass</Name>
+            <Version>1</Version>
+            <ArchiveUUID>dummy-archive-uuid</ArchiveUUID>
+            <AcceptedMIMEType>
+                <MIMEType uuid="dummy-mime-uuid" extension=".pdf">application/pdf</MIMEType>
+            </AcceptedMIMEType>
+            <PrecompiledValues/>
+        </DocumentClass>
+        <Customization>
+            <Properties name="useDefaultMetadata">true</Properties>
+        </Customization>
+        <SubmissionSession uuid="dummy-session-uuid">
+            <Start>
+                <Date>2025-01-01T00:00:00Z</Date>
+                <UserUUID>dummy-user-uuid</UserUUID>
+                <Source>DummySource</Source>
+            </Start>
+            <End>
+                <Date>2025-01-01T00:30:00Z</Date>
+                <UserUUID>dummy-user-uuid</UserUUID>
+                <Source>DummySource</Source>
+                <Status>Completed</Status>
+            </End>
+        </SubmissionSession>
+        <PreservationSession uuid="dummy-preservation-uuid">
+            <Start>
+                <Date>2025-01-01T00:45:00Z</Date>
+                <UserUUID>dummy-user-uuid</UserUUID>
+                <Source>DummySource</Source>
+            </Start>
+            <HashEncoding>Base64</HashEncoding>
+            <AdvancedElectronicSignaturesFormat>XAdES</AdvancedElectronicSignaturesFormat>
+            <DocumentsStats>
+                <SipCount>1</SipCount>
+                <DocumentsCount>1</DocumentsCount>
+                <DocumentsFilesCount>1</DocumentsFilesCount>
+                <DocumentsOverallSize unit="bytes">12345</DocumentsOverallSize>
+                <MimeTypeStats extension="application/pdf">1</MimeTypeStats>
+            </DocumentsStats>
+        </PreservationSession>
+    </Process>
+</AiPInfo>

@@ -20,88 +20,133 @@ export class DataMapper implements IDataMapper {
   public mapDocumentClasses(rawDipIndex: any): DocumentClass[] {
     const classes = this.extractDocumentClassFragments(rawDipIndex);
     const dipUuid = rawDipIndex?.DiPIndex?.PackageInfo?.ProcessUUID || "";
-    return classes.map(c => new DocumentClass(
-      dipUuid,
-      c["@_uuid"],
-      c["@_name"],
-      c["@_validFrom"]
-    ));
+    return classes.map((c) => {
+      // Support both xml2js ($) and legacy (@_uuid/@_name) attribute formats
+      const uuid = c.$?.uuid ?? c["@_uuid"] ?? "";
+      const name = c.$?.name ?? c["@_name"] ?? "";
+      const validFrom = c.$?.validFrom ?? c["@_validFrom"] ?? undefined;
+      return new DocumentClass(dipUuid, uuid, name, validFrom);
+    });
   }
 
   public getProcessMappers(rawDipIndex: any): MapperRequest<Process>[] {
     const fragments = this.extractProcessFragments(rawDipIndex);
-    return fragments.map(proc => ({
-      metadataRelativePath: `${proc.AiPRoot}/AiPInfo.${proc["@_uuid"]}.xml`,
-      map: (rawMetadataFragment: any) => {
-        const metadata = this.extractProcessMetadata(rawMetadataFragment);
-        return new Process(
-          proc._documentClassUuid,
-          proc["@_uuid"],
-          metadata
-        );
-      }
-    }));
+    return fragments.map((proc) => {
+      // Support both xml2js ($) and legacy (@_uuid) attribute formats
+      const uuid = proc.$?.uuid ?? proc["@_uuid"] ?? "";
+      const documentClassUuid =
+        proc._documentClassUuid ?? proc.$?._documentClassUuid ?? "";
+      const aipRoot = proc.AiPRoot ?? proc.$?.AiPRoot ?? "";
+      return {
+        metadataRelativePath: `${aipRoot}/AiPInfo.${uuid}.xml`,
+        map: (rawMetadataFragment: any) => {
+          const metadata = this.extractProcessMetadata(rawMetadataFragment);
+          return new Process(documentClassUuid, uuid, metadata);
+        },
+      };
+    });
   }
 
   public getDocumentMappers(rawDipIndex: any): MapperRequest<Document>[] {
     const fragments = this.extractDocumentFragments(rawDipIndex);
-    return fragments.map(doc => {
+    return fragments.map((doc) => {
+      // Support both xml2js ($) and legacy (@_uuid) attribute formats
+      const uuid = doc.$?.uuid ?? doc["@_uuid"] ?? "";
+      const processUuid = doc._processUuid ?? doc.$?._processUuid ?? "";
       const pathInfo = this.extractDocumentMetadataPath(doc);
       return {
-        metadataRelativePath: pathInfo.path ? this.resolveRelativePath(pathInfo) : null,
+        metadataRelativePath: pathInfo.path
+          ? this.resolveRelativePath(pathInfo)
+          : null,
         map: (rawMetadataFragment: any) => {
           const metadata = this.extractDocumentMetadata(rawMetadataFragment);
-          return new Document(
-            doc["@_uuid"],
-            metadata,
-            doc._processUuid
-          );
-        }
+          return new Document(uuid, metadata, processUuid);
+        },
       };
     });
   }
 
   public getFileMappers(rawDipIndex: any): MapperRequest<File>[] {
     const docFragments = this.extractDocumentFragments(rawDipIndex);
-    const fileFragments = this.extractFileFragments(rawDipIndex);
+    const fileFragments = this.extractFileFragments(rawDipIndex).filter(
+      (file) => !this.shouldIgnoreFilePath(this.extractNodeText(file)),
+    );
 
-    return fileFragments.map(file => {
-      const doc = docFragments.find(d => d["@_uuid"] === file._documentUuid);
+    return fileFragments.map((file) => {
+      // Support both xml2js ($) and legacy (@_uuid) attribute formats
+      const uuid = file.$?.uuid ?? file["@_uuid"] ?? "";
+      const documentUuid = file._documentUuid ?? file.$?._documentUuid ?? "";
+      const basePath = file._basePath ?? file.$?._basePath ?? "";
+      const aipRoot = file._aipRoot ?? file.$?._aipRoot ?? "";
+      const isMain = file.isMain ?? file.$?.isMain ?? false;
+      const text = this.extractNodeText(file) || file.$?.text || "";
+      const doc = docFragments.find(
+        (d) => (d.$?.uuid ?? d["@_uuid"]) === documentUuid,
+      );
       const pathInfo = doc ? this.extractDocumentMetadataPath(doc) : null;
-      const metadataRelativePath = pathInfo?.path ? this.resolveRelativePath(pathInfo) : null;
+      const metadataRelativePath = pathInfo?.path
+        ? this.resolveRelativePath(pathInfo)
+        : null;
 
       return {
         metadataRelativePath,
         map: (rawMetadataFragment: any) => {
           let extractedMetadata: Metadata[] = [];
           if (rawMetadataFragment) {
-            extractedMetadata = this.extractDocumentMetadata(rawMetadataFragment);
+            extractedMetadata =
+              this.extractDocumentMetadata(rawMetadataFragment);
           }
-          const extractedHashes = this.hashMapper.map(extractedMetadata, file._documentUuid);
-          const hash = extractedHashes.get(file["@_uuid"]);
-          const physicalPath = `${file._basePath}/${file["#text"]}`;
+          const extractedHashes = this.hashMapper.map(
+            extractedMetadata,
+            documentUuid,
+          );
+          const hash = extractedHashes.get(uuid);
+          const physicalPath = this.resolveRelativePath({
+            path: `${basePath}/${text}`,
+            aipRoot,
+          });
 
           return new File(
-            file["#text"],
+            text,
             physicalPath,
             hash ?? "",
-            file.isMain,
-            file._documentUuid
+            isMain,
+            uuid,
+            documentUuid,
           );
-        }
+        },
       };
     });
   }
 
-  private resolveRelativePath(extractedPath: { path: string, aipRoot: string }): string {
-    if (extractedPath.aipRoot && extractedPath.path.startsWith(extractedPath.aipRoot)) {
-      return extractedPath.path;
+  private resolveRelativePath(extractedPath: {
+    path: string;
+    aipRoot: string;
+  }): string {
+    const normalizedOriginalPath = extractedPath.path.replaceAll('/./', "/");
+    if (
+      extractedPath.aipRoot &&
+      normalizedOriginalPath.startsWith(extractedPath.aipRoot)
+    ) {
+      return normalizedOriginalPath;
     }
-    return `${extractedPath.aipRoot ? extractedPath.aipRoot + "/" : ""}${extractedPath.path}`;
+    const normalizedPath = normalizedOriginalPath.replace(/^\.\//, "");
+    return `${extractedPath.aipRoot ? extractedPath.aipRoot + "/" : ""}${normalizedPath}`;
+  }
+
+  private extractNodeText(node: any): string {
+    if (!node) return "";
+    if (typeof node === "string") return node;
+    return node["#text"] ?? node._ ?? "";
+  }
+
+  private shouldIgnoreFilePath(path: string): boolean {
+    return path.toLowerCase().endsWith(".metadata.xml");
   }
 
   private extractDocumentClassFragments(rawDipIndex: any): any[] {
-    const classes = rawDipIndex?.DiPIndex?.PackageContent?.DiPDocuments?.DocumentClass;
+    const classes =
+      rawDipIndex?.DiPIndex?.PackageContent?.DiPDocuments?.DocumentClass;
     if (!classes) return [];
     return Array.isArray(classes) ? classes : [classes];
   }
@@ -110,12 +155,14 @@ export class DataMapper implements IDataMapper {
     const classes = this.extractDocumentClassFragments(rawDipIndex);
     const fragments: any[] = [];
     for (const dc of classes) {
+      // Support both xml2js ($) and legacy (@_uuid) attribute formats
+      const documentClassUuid = dc.$?.uuid ?? dc["@_uuid"] ?? "";
       if (dc.AiP) {
         const aips = Array.isArray(dc.AiP) ? dc.AiP : [dc.AiP];
         for (const aip of aips) {
           fragments.push({
             ...aip,
-            _documentClassUuid: dc["@_uuid"]
+            _documentClassUuid: documentClassUuid,
           });
         }
       }
@@ -127,13 +174,16 @@ export class DataMapper implements IDataMapper {
     const processes = this.extractProcessFragments(rawDipIndex);
     const fragments: any[] = [];
     for (const p of processes) {
+      // Support both xml2js ($) and legacy (@_uuid) attribute formats
+      const processUuid = p.$?.uuid ?? p["@_uuid"] ?? "";
+      const aipRoot = p.AiPRoot ?? p.$?.AiPRoot ?? "";
       if (p.Document) {
         const docs = Array.isArray(p.Document) ? p.Document : [p.Document];
         for (const doc of docs) {
           fragments.push({
             ...doc,
-            _processUuid: p["@_uuid"],
-            _aipRoot: p.AiPRoot
+            _processUuid: processUuid,
+            _aipRoot: aipRoot,
           });
         }
       }
@@ -141,57 +191,89 @@ export class DataMapper implements IDataMapper {
     return fragments;
   }
 
-  private extractDocumentMetadataPath(rawDocumentFragment: any): { path: string; aipRoot: string; processUuid: string } {
+  private extractDocumentMetadataPath(rawDocumentFragment: any): {
+    path: string;
+    aipRoot: string;
+    processUuid: string;
+  } {
+    const documentPath =
+      rawDocumentFragment.DocumentPath ??
+      rawDocumentFragment.$?.DocumentPath ??
+      "";
+    const metadataPath = this.extractNodeText(
+      rawDocumentFragment.Files?.Metadata,
+    );
     return {
-      path: `${rawDocumentFragment.DocumentPath}/${rawDocumentFragment.Files?.Metadata?.["#text"]}`,
+      path: metadataPath ? `${documentPath}/${metadataPath}` : "",
       aipRoot: rawDocumentFragment._aipRoot || "",
-      processUuid: rawDocumentFragment._processUuid || ""
+      processUuid: rawDocumentFragment._processUuid || "",
     };
   }
 
   private extractFileFragments(rawDipIndex: any): any[] {
     const documents = this.extractDocumentFragments(rawDipIndex);
-    const fragments: any[] = [];
+    const primaryFragments: any[] = [];
+    const attachmentFragments: any[] = [];
     for (const doc of documents) {
+      // Support both xml2js ($) and legacy (@_uuid) attribute formats
+      const documentUuid = doc.$?.uuid ?? doc["@_uuid"] ?? "";
+      const basePath = doc.DocumentPath ?? doc.$?.DocumentPath ?? "";
+      const aipRoot = doc._aipRoot ?? doc.$?._aipRoot ?? "";
       const files = doc.Files;
       if (files?.Primary) {
-        fragments.push({
-          ...files.Primary,
-          _documentUuid: doc["@_uuid"],
-          _basePath: doc.DocumentPath,
-          _aipRoot: doc._aipRoot,
-          isMain: true
-        });
+        const primaryText = this.extractNodeText(files.Primary);
+        if (!this.shouldIgnoreFilePath(primaryText)) {
+          primaryFragments.push({
+            ...files.Primary,
+            _documentUuid: documentUuid,
+            _basePath: basePath,
+            _aipRoot: aipRoot,
+            isMain: true,
+          });
+        }
       }
       if (files?.Attachments) {
-        const atts = Array.isArray(files.Attachments) ? files.Attachments : [files.Attachments];
+        const atts = Array.isArray(files.Attachments)
+          ? files.Attachments
+          : [files.Attachments];
         for (const att of atts) {
-          fragments.push({
+          const attText = this.extractNodeText(att);
+          if (this.shouldIgnoreFilePath(attText)) {
+            continue;
+          }
+          attachmentFragments.push({
             ...att,
-            _documentUuid: doc["@_uuid"],
-            _basePath: doc.DocumentPath,
-            _aipRoot: doc._aipRoot,
-            isMain: false
+            _documentUuid: documentUuid,
+            _basePath: basePath,
+            _aipRoot: aipRoot,
+            isMain: false,
           });
         }
       }
     }
-    return fragments;
+    return [...primaryFragments, ...attachmentFragments];
   }
 
   private extractDocumentMetadata(rawMetadataFragment: any): Metadata[] {
     if (!rawMetadataFragment?.Document?.[0]) return [];
-    const root =
-      rawMetadataFragment.Document[0].DocumentDocumentoAmministrativoInformatico ||
-      rawMetadataFragment.Document[0].DocumentoInformatico ||
-      rawMetadataFragment.Document[0].AggregazioneDocumentaliInformatiche;
+    const documentNode = rawMetadataFragment.Document[0];
 
-    if (!root) return [];
-    return this.extractMetadataDict(root, true);
+    const rootCandidates = [
+      "DocumentoAmministrativoInformatico",
+      "DocumentoInformatico",
+      "AggregazioneDocumentaliInformatiche",
+    ] as const;
+
+    const rootTag = rootCandidates.find((candidate) => documentNode[candidate]);
+    if (!rootTag) return [];
+
+    const rootNode = documentNode[rootTag];
+    const children = this.extractMetadataDict(rootNode, true);
+    return [new Metadata(rootTag, children, MetadataType.COMPOSITE)];
   }
 
   private extractProcessMetadata(rawMetadataFragment: any): Metadata[] {
-    const root = rawMetadataFragment?.AiPInfo;
+    const root = rawMetadataFragment?.AiPInfo ?? rawMetadataFragment;
     if (!root) return [];
     return this.extractMetadataDict(root, false);
   }
@@ -206,11 +288,15 @@ export class DataMapper implements IDataMapper {
           if (typeof item === "object" && item !== null) {
             const nested = this.extractMetadataDict(item, filterUuid);
             if (filterUuid && nested.length === 0) return [];
-            return filterUuid ? [new Metadata(key, nested, MetadataType.COMPOSITE)] : nested;
+            return filterUuid
+              ? [new Metadata(key, nested, MetadataType.COMPOSITE)]
+              : nested;
           }
           return [new Metadata(key, String(item), this.getMetadataType(item))];
         });
-        return filterUuid ? nestedList : [new Metadata(key, nestedList, MetadataType.COMPOSITE)];
+        return filterUuid
+          ? nestedList
+          : [new Metadata(key, nestedList, MetadataType.COMPOSITE)];
       }
 
       if (typeof value === "object" && value !== null) {

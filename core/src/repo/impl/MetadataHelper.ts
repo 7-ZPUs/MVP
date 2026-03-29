@@ -4,7 +4,7 @@
  * Usato da DocumentoRepository e ProcessRepository per evitare duplicazioni.
  */
 import Database from "better-sqlite3";
-import { Metadata } from "../../value-objects/Metadata";
+import { Metadata, MetadataType } from "../../value-objects/Metadata";
 
 export interface MetadataRow {
   id: number;
@@ -27,7 +27,7 @@ export function loadMetadata(
   table: string,
   fkColumn: string,
   ownerId: number,
-): Metadata[] {
+): Metadata | null {
   const rows = db
     .prepare<
       [number],
@@ -35,38 +35,49 @@ export function loadMetadata(
     >(`SELECT * FROM ${table} WHERE ${fkColumn} = ? ORDER BY id`)
     .all(ownerId);
 
-  // Mappa per associare i node per il loro id
-  const metadataMap = new Map<number, Metadata>();
-  // Nodes that have parent_id = null will go here
-  const rootNodes: Metadata[] = [];
+  const rowById = new Map<number, MetadataRow>();
+  const childrenByParentId = new Map<number, number[]>();
+  const rootIds: number[] = [];
 
-  // Prima passata: crea i Metadata object e associali al loro id dalla row
-  for (const r of rows) {
-    // Se il tipo è COMPOSITE, il value logico atteso in memoria è un array, non una stringa
-    const parsedValue = r.type === "COMPOSITE" ? [] : r.value;
-    const metadataObj = new Metadata(
-      r.name,
-      parsedValue,
-      r.type as Metadata["type"],
-    );
-    metadataMap.set(r.id, metadataObj);
-  }
-
-  // Seconda passata: ricostruisci l'albero inserendo i figli nei rispettivi parent
-  for (const r of rows) {
-    const metadataObj = metadataMap.get(r.id)!;
-    if (r.parent_id == null) {
-      // Nodo radice
-      rootNodes.push(metadataObj);
-    } else {
-      const parentMetadata = metadataMap.get(r.parent_id);
-      if (parentMetadata && Array.isArray(parentMetadata.value)) {
-        parentMetadata.value.push(metadataObj);
-      }
+  for (const row of rows) {
+    rowById.set(row.id, row);
+    if (row.parent_id == null) {
+      rootIds.push(row.id);
+      continue;
     }
+    const children = childrenByParentId.get(row.parent_id) ?? [];
+    children.push(row.id);
+    childrenByParentId.set(row.parent_id, children);
   }
 
-  return rootNodes;
+  const buildNode = (id: number): Metadata => {
+    const row = rowById.get(id);
+    if (!row) {
+      throw new Error(`Invalid metadata tree: missing row for id ${id}`);
+    }
+
+    const type = row.type as MetadataType;
+    if (type !== MetadataType.COMPOSITE) {
+      return new Metadata(row.name, row.value, type);
+    }
+
+    const childrenIds = childrenByParentId.get(id) ?? [];
+    const children = childrenIds.map((childId) => buildNode(childId));
+    return new Metadata(row.name, children, MetadataType.COMPOSITE);
+  };
+
+  const rootNodes = rootIds.map((id) => buildNode(id));
+
+  if (rootNodes.length === 0) {
+    return null;
+  }
+
+  if (rootNodes.length === 1) {
+    return rootNodes[0];
+  }
+
+  // Multiple top-level nodes are represented as a synthetic composite root.
+  return new Metadata("root", rootNodes, MetadataType.COMPOSITE);
 }
 
 /**
@@ -83,27 +94,30 @@ export function saveMetadata(
   table: string,
   fkColumn: string,
   ownerId: number,
-  metadata: Metadata[],
+  metadata: Metadata | Metadata[],
 ): void {
   const stmt = db.prepare(
     `INSERT INTO ${table} (${fkColumn}, parent_id, name, value, type) VALUES (?, ?, ?, ?, ?)`,
   );
 
   function insertRecursive(meta: Metadata, parentId: number | null) {
-    // Se è COMPOSITE, salviamo una stringa vuota o descrittiva su DB.
-    const dbValue = meta.type === "COMPOSITE" ? "" : (meta.value as string);
+    const type = meta.getType();
+    const dbValue =
+      type === MetadataType.COMPOSITE ? "" : meta.getStringValue();
 
-    const info = stmt.run(ownerId, parentId, meta.name, dbValue, meta.type);
+    const info = stmt.run(ownerId, parentId, meta.getName(), dbValue, type);
     const lastId = info.lastInsertRowid as number;
 
-    if (meta.type === "COMPOSITE" && Array.isArray(meta.value)) {
-      for (const child of meta.value) {
+    if (type === MetadataType.COMPOSITE) {
+      for (const child of meta.getChildren()) {
         insertRecursive(child, lastId);
       }
     }
   }
 
-  for (const m of metadata) {
+  const metadataList = Array.isArray(metadata) ? metadata : [metadata];
+
+  for (const m of metadataList) {
     insertRecursive(m, null);
   }
 }
