@@ -88,7 +88,12 @@ describe("EntityToDtoConverter", () => {
     // description: should lanciare errore se id è null
     // expected_value: throws error with message about null id
     it("TU-F-converter-05: documentClassToDto() should lanciare errore se id è null", () => {
-      const dc = new DocumentClass("dip-uuid", "dc-uuid", "Nome", "2024-01-01T00:00:00Z");
+      const dc = new DocumentClass(
+        "dip-uuid",
+        "dc-uuid",
+        "Nome",
+        "2024-01-01T00:00:00Z",
+      );
 
       expect(() => EntityToDtoConverter.documentClassToDto(dc)).toThrow(
         "Cannot convert DocumentClass to DTO: id or dipId is null",
@@ -326,7 +331,11 @@ describe("EntityToDtoConverter", () => {
     // description: should convertire un Metadata semplice (STRING) a MetadataDTO
     // expected_value: matches asserted behavior: converte correttamente
     it("TU-F-converter-16: metadataToDto() should convertire un Metadata semplice (STRING) a MetadataDTO", () => {
-      const metadata = new Metadata("autore", "Mario Rossi", MetadataType.STRING);
+      const metadata = new Metadata(
+        "autore",
+        "Mario Rossi",
+        MetadataType.STRING,
+      );
 
       const dto = EntityToDtoConverter.metadataToDto(metadata);
 
