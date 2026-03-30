@@ -1,5 +1,6 @@
 import { Injectable } from "@angular/core";
 import { DipTreeNode } from "../contracts/dip-tree-node";
+import { NodeId } from "../domain/types";
 
 @Injectable({ providedIn: 'root' })
 export class IpcGateway {

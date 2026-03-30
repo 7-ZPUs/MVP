@@ -2,6 +2,7 @@ import { Injectable, signal, Signal, WritableSignal, inject } from "@angular/cor
 import { IpcGateway } from "./ipc-gateway";
 import { DipTreeNode } from "../contracts/dip-tree-node";
 import { AppError } from "../contracts/app-error";
+import { NodeId } from "../domain/types";
 
 export interface DipState {
     phase: 'ready' | 'loading' | 'idle';
