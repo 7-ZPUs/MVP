@@ -1,6 +1,6 @@
 import { Component, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { AdminProcedureData } from '../../domain/aggregate.models';
+import { AggregateDetailDTO } from '../../../../shared/domain/dto/AggregateDTO';
 
 @Component({
   selector: 'app-admin-procedure',
@@ -11,16 +11,19 @@ import { AdminProcedureData } from '../../domain/aggregate.models';
       <h3 class="card-title">Procedimento Amministrativo</h3>
       <div class="data-row">
         <span class="label">Denominazione:</span>
-        <span class="value">{{ data().denominazione }}</span>
+        <span class="value">{{ data().procedimentoAmministrativo?.procedimento }}</span>
       </div>
       <div class="data-row">
         <span class="label">Indice/URI:</span>
-        <span class="value">{{ data().indice }} / {{ data().uri }}</span>
+        <span class="value"
+          >{{ data().procedimentoAmministrativo?.materiaArgomentoStruttura }} /
+          {{ data().procedimentoAmministrativo?.uriProcedimento }}</span
+        >
       </div>
 
       <h4 class="sub-title">Fasi del Procedimento</h4>
       <ul class="phases-list">
-        @for (fase of data().fasi; track fase.tipoFase) {
+        @for (fase of data().procedimentoAmministrativo?.fasi; track fase.tipoFase) {
           <li class="phase-item">
             <span class="phase-type">{{ fase.tipoFase }}</span>
             <span class="phase-dates">
@@ -117,5 +120,5 @@ import { AdminProcedureData } from '../../domain/aggregate.models';
   ],
 })
 export class AdminProcedureComponent {
-  data = input.required<AdminProcedureData>();
+  data = input.required<AggregateDetailDTO>();
 }

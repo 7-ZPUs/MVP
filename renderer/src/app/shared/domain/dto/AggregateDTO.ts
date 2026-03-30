@@ -8,6 +8,24 @@ export type TipologiaFascicoloEnum =
   | 'procedimento amministrativo'; // [cite: 17, 18]
 
 // --- INTERFACCE STRUTTURALI ---
+export interface FaseDTO {
+  tipoFase:
+    | 'Preparatoria'
+    | 'Istruttoria'
+    | 'Consultiva'
+    | 'Decisoria o liberativa'
+    | "Integrazione dell'efficacia"; // [cite: 36]
+  dataInizio: string; // Formato YYYY-MM-DD [cite: 36]
+  dataFine?: string; // [cite: 36]
+}
+
+export interface AssegnazioneDTO {
+  tipoAssegnazione: 'Per competenza' | 'Per conoscenza'; // [cite: 16]
+  soggettoAssegnatario: SoggettoDTO;
+  dataInizioAssegnazione: string; // Formato YYYY-MM-DD [cite: 16]
+  dataFineAssegnazione?: string; // [cite: 16]
+}
+
 export interface IdAggDTO {
   tipoAggregazione: TipoAggregazioneEnum; // [cite: 16, 17]
   idAggregazione: string; // [cite: 16]
@@ -35,7 +53,8 @@ export interface SoggettoDTO {
 export interface ProcedimentoAmministrativoDTO {
   materiaArgomentoStruttura: string; // [cite: 36]
   procedimento: string; // [cite: 36]
-  fasi: { tipoFase: string; dataInizio: string }[]; // [cite: 36, 37]
+  uriProcedimento: string; // [cite: 36]
+  fasi: FaseDTO[]; // [cite: 36, 37]
 }
 
 export interface DocumentIndexEntryDTO {
@@ -49,6 +68,7 @@ export interface AggregateDetailDTO {
   idAgg: IdAggDTO; // [cite: 14]
   tipologiaFascicolo?: TipologiaFascicoloEnum; // [cite: 14]
   soggetti: SoggettoDTO[]; // [cite: 14]
+  assegnazione: AssegnazioneDTO;
   dataApertura: string; // Formato YYYY-MM-DD [cite: 14]
   dataChiusura?: string; // [cite: 15]
   classificazione: ClassificazioneDTO; // [cite: 15]

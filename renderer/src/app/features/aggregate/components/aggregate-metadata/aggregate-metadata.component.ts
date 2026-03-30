@@ -1,6 +1,6 @@
 import { Component, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { AggregateMetadata } from '../../domain/aggregate.models';
+import { AggregateDetailDTO } from '../../../../shared/domain/dto/AggregateDTO';
 
 @Component({
   selector: 'app-aggregate-metadata',
@@ -9,6 +9,80 @@ import { AggregateMetadata } from '../../domain/aggregate.models';
   template: `
     <div class="metadata-card">
       <h3 class="card-title">Metadati dell'Aggregato</h3>
+
+      <div class="data-row">
+        <span class="label">Tipo Aggregazione</span>
+        <span class="value">{{ data().idAgg.tipoAggregazione }}</span>
+      </div>
+      <div class="data-row">
+        <span class="label">ID Aggregazione</span>
+        <span class="value">{{ data().idAgg.idAggregazione }}</span>
+      </div>
+
+      @if (data().tipologiaFascicolo) {
+        <div class="data-row">
+          <span class="label">Tipologia</span>
+          <span class="value">{{ data().tipologiaFascicolo }}</span>
+        </div>
+      }
+
+      <div class="data-row">
+        <span class="label">Apertura</span>
+        <span class="value">{{ data().dataApertura | date: 'longDate' }}</span>
+      </div>
+
+      @if (data().dataChiusura) {
+        <div class="data-row">
+          <span class="label">Chiusura</span>
+          <span class="value">{{ data().dataChiusura | date: 'longDate' }}</span>
+        </div>
+      }
+
+      <div class="data-row">
+        <span class="label">Progressivo</span>
+        <span class="value">{{ data().progressivo }}</span>
+      </div>
+
+      <div class="data-row">
+        <span class="label">Classificazione</span>
+        <span class="value"
+          >{{ data().classificazione.indiceDiClassificazione }} -
+          {{ data().classificazione.descrizione }}</span
+        >
+      </div>
+
+      <div class="data-row">
+        <span class="label">Oggetto</span>
+        <span class="value">{{ data().chiaveDescrittiva.oggetto }}</span>
+      </div>
+
+      @if (data().chiaveDescrittiva.paroleChiave) {
+        <div class="data-row">
+          <span class="label">Parole Chiave</span>
+          <span class="value">{{ data().chiaveDescrittiva.paroleChiave }}</span>
+        </div>
+      }
+
+      @if (data().posizioneFisicaAggregazioneDocumentale) {
+        <div class="data-row">
+          <span class="label">Posizione Fisica</span>
+          <span class="value">{{ data().posizioneFisicaAggregazioneDocumentale }}</span>
+        </div>
+      }
+
+      @if (data().tempoDiConservazione) {
+        <div class="data-row">
+          <span class="label">Tempo Conservazione</span>
+          <span class="value">{{ data().tempoDiConservazione }} anni</span>
+        </div>
+      }
+
+      @if (data().note) {
+        <div class="data-row">
+          <span class="label">Note</span>
+          <span class="value">{{ data().note }}</span>
+        </div>
+      }
     </div>
   `,
   styles: [
@@ -92,5 +166,5 @@ import { AggregateMetadata } from '../../domain/aggregate.models';
   ],
 })
 export class AggregateMetadataComponent {
-  data = input.required<AggregateMetadata>();
+  data = input.required<AggregateDetailDTO>();
 }

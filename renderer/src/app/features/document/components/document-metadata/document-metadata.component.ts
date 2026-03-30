@@ -11,8 +11,17 @@ import { DocumentMetadata } from '../../domain/document.models'; // Assicurati d
         <span class="label">Nome:</span> <span class="value">{{ data().nome }}</span>
       </div>
       <div class="data-row">
+        <span class="label">Oggetto:</span> <span class="value">{{ data().oggetto }}</span>
+      </div>
+      <div class="data-row">
         <span class="label">Descrizione:</span> <span class="value">{{ data().descrizione }}</span>
       </div>
+      @if (data().dataCreazione) {
+        <div class="data-row">
+          <span class="label">Data Creazione:</span>
+          <span class="value">{{ data().dataCreazione }}</span>
+        </div>
+      }
       <div class="data-row">
         <span class="label">Tipo Doc:</span> <span class="value">{{ data().tipoDocumentale }}</span>
       </div>
@@ -20,6 +29,18 @@ import { DocumentMetadata } from '../../domain/document.models'; // Assicurati d
         <span class="label">Formazione:</span>
         <span class="value">{{ data().modalitaFormazione }}</span>
       </div>
+      @if (data().paroleChiave && data().paroleChiave!.length > 0) {
+        <div class="data-row">
+          <span class="label">Parole Chiave:</span>
+          <span class="value">{{ data().paroleChiave?.join(', ') }}</span>
+        </div>
+      }
+      @if (data().lingua) {
+        <div class="data-row">
+          <span class="label">Lingua:</span>
+          <span class="value">{{ data().lingua }}</span>
+        </div>
+      }
       <div class="data-row">
         <span class="label">Riservatezza:</span>
         <span class="value">{{ data().riservatezza }}</span>

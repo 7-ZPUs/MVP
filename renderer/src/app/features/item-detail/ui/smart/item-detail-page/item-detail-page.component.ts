@@ -91,7 +91,7 @@ import { DocumentIndexComponent } from '../../../../aggregate/components/documen
 
             <main class="main-content">
               <app-document-index
-                [items]="agg.documentIndex"
+                [items]="agg.indiceDocumenti"
                 (documentSelected)="onDocumentSelected($event)"
               ></app-document-index>
             </main>
@@ -218,7 +218,7 @@ export class ItemDetailPageComponent {
 
   pageTitle = computed(() => {
     if (this.itemType() === 'AGGREGATE' && this.aggregateState().detail) {
-      return `Fascicolo ${this.aggregateState().detail!.metadata.progressivo}`;
+      return `Fascicolo ${this.aggregateState().detail!.tipologiaFascicolo}`;
     }
     if (this.itemType() === 'DOCUMENT' && this.documentState().detail) {
       return this.documentState().detail!.fileName;

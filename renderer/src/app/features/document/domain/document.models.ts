@@ -19,6 +19,10 @@ export enum SubjectType {
 export interface DocumentMetadata {
   nome: string;
   descrizione: string;
+  oggetto: string;
+  paroleChiave?: string[];
+  dataCreazione?: string;
+  lingua?: string;
   note?: string;
   tipoDocumentale: string;
   modalitaFormazione: string;
@@ -50,6 +54,8 @@ export interface DocumentDetail {
   customMetadata?: CustomMetadataEntry[];
   aipInfo: AipInfo;
   conservationProcess: ConservationProcessData;
+  idAggregazione?: string;
+  documentiCollegati?: string[];
 }
 
 export interface ClassificationInfo {
@@ -63,6 +69,8 @@ export interface FormatInfo {
   prodotto: string;
   versione: string;
   produttore: string;
+  impronta: string;
+  algoritmoImpronta: string;
 }
 
 export interface VerificationInfo {

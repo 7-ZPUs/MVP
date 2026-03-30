@@ -1,6 +1,6 @@
 import { Component, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { DocumentIndexEntry } from '../../domain/aggregate.models';
+import { DocumentIndexEntryDTO } from '../../../../shared/domain/dto/AggregateDTO';
 
 @Component({
   selector: 'app-document-index',
@@ -23,7 +23,7 @@ import { DocumentIndexEntry } from '../../domain/aggregate.models';
             @for (doc of items(); track doc.identificativo) {
               <tr class="table-row">
                 <td>
-                  <span class="badge">{{ doc.tipo }}</span>
+                  <span class="badge">{{ doc.tipoDocumento }}</span>
                 </td>
                 <td class="mono">{{ doc.identificativo }}</td>
                 <td>
@@ -118,7 +118,7 @@ import { DocumentIndexEntry } from '../../domain/aggregate.models';
   ],
 })
 export class DocumentIndexComponent {
-  items = input.required<DocumentIndexEntry[]>();
+  items = input.required<DocumentIndexEntryDTO[]>();
   documentSelected = output<string>();
 
   onView(id: string) {
