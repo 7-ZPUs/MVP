@@ -29,7 +29,6 @@ export class EntityToDtoConverter {
     }
     return {
       id,
-      dipId: id,
       uuid: dip.getUuid(),
       integrityStatus: dip.getIntegrityStatus(),
     };
@@ -100,7 +99,7 @@ export class EntityToDtoConverter {
       documentClassId,
       uuid: process.getUuid(),
       integrityStatus: process.getIntegrityStatus(),
-      metadata: process.getMetadata().map((m) => this.metadataToDto(m)),
+      metadata: this.metadataToDto(process.getMetadata()),
     };
   }
 

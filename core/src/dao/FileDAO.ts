@@ -27,9 +27,17 @@ export class FileDAO implements IFileDAO {
   getById(id: number): File | null {
     const row = this.db
       .prepare<[number], FilePersistenceRow>(
-        `SELECT id, filename, path, hash, integrity_status as integrityStatus,
-                    is_main as isMain, document_id as documentId
-                 FROM file WHERE id = ?`,
+        `SELECT f.id,
+                f.filename,
+                f.path,
+                f.hash,
+                f.integrity_status as integrityStatus,
+                f.is_main as isMain,
+                f.document_id as documentId,
+                d.uuid as documentUuid
+         FROM file f
+         JOIN document d ON d.id = f.document_id
+         WHERE f.id = ?`,
       )
       .get(id);
     return row ? this.rowEntity(row) : null;
@@ -38,9 +46,18 @@ export class FileDAO implements IFileDAO {
   getByDocumentId(documentId: number): File[] {
     const rows = this.db
       .prepare<[number], FilePersistenceRow>(
-        `SELECT id, filename, path, hash, integrity_status as integrityStatus,
-                    is_main as isMain, document_id as documentId
-                 FROM file WHERE document_id = ? ORDER BY is_main DESC, id`,
+        `SELECT f.id,
+                f.filename,
+                f.path,
+                f.hash,
+                f.integrity_status as integrityStatus,
+                f.is_main as isMain,
+                f.document_id as documentId,
+                d.uuid as documentUuid
+         FROM file f
+         JOIN document d ON d.id = f.document_id
+         WHERE f.document_id = ?
+         ORDER BY f.is_main DESC, f.id`,
       )
       .all(documentId);
     return rows.map((r) => this.rowEntity(r));
@@ -49,16 +66,25 @@ export class FileDAO implements IFileDAO {
   getByStatus(status: IntegrityStatusEnum): File[] {
     const rows = this.db
       .prepare<[string], FilePersistenceRow>(
-        `SELECT id, filename, path, hash, integrity_status as integrityStatus,
-                    is_main as isMain, document_id as documentId
-                 FROM file WHERE integrity_status = ? ORDER BY id`,
+        `SELECT f.id,
+                f.filename,
+                f.path,
+                f.hash,
+                f.integrity_status as integrityStatus,
+                f.is_main as isMain,
+                f.document_id as documentId,
+                d.uuid as documentUuid
+         FROM file f
+         JOIN document d ON d.id = f.document_id
+         WHERE f.integrity_status = ?
+         ORDER BY f.id`,
       )
       .all(status);
     return rows.map((r) => this.rowEntity(r));
   }
 
   save(file: File): File {
-    const result = this.db
+    this.db
       .prepare(
         `INSERT INTO file (filename, path, hash, integrity_status, is_main, document_id)
                  VALUES (?, ?, ?, ?, ?, (SELECT id FROM document WHERE uuid = ?))
@@ -77,17 +103,23 @@ export class FileDAO implements IFileDAO {
         file.getDocumentUuid(),
       );
 
-    let id = result.lastInsertRowid as number;
+    const docIdRow = this.db
+      .prepare("SELECT id FROM document WHERE uuid = ?")
+      .get(file.getDocumentUuid()) as { id: number } | undefined;
+
+    if (!docIdRow) {
+      throw new Error(
+        `Failed to save File: document not found for uuid=${file.getDocumentUuid()}`,
+      );
+    }
+
+    const row = this.db
+      .prepare("SELECT id FROM file WHERE document_id = ? AND path = ?")
+      .get(docIdRow.id, file.getPath()) as { id: number } | undefined;
+
+    const id = row?.id;
     if (!id) {
-      const docIdRow = this.db
-        .prepare("SELECT id FROM document WHERE uuid = ?")
-        .get(file.getDocumentUuid()) as { id: number } | undefined;
-      if (docIdRow) {
-        const row = this.db
-          .prepare("SELECT id FROM file WHERE document_id = ? AND path = ?")
-          .get(docIdRow.id, file.getPath()) as { id: number };
-        if (row) id = row.id;
-      }
+      throw new Error(`Failed to save File with uuid=${file.getUuid()}`);
     }
 
     const saved = this.getById(id);

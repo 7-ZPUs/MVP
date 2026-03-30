@@ -4,7 +4,7 @@ import { IntegrityStatusEnum } from "../../value-objects/IntegrityStatusEnum";
 
 export interface FilePersistenceRow {
   id: number;
-  uuid: string;
+  uuid?: string;
   filename: string;
   path: string;
   hash: string;
@@ -31,7 +31,7 @@ export class FileMapper {
       row.path,
       row.hash,
       row.isMain === 1,
-      row.uuid,
+      row.uuid ?? "",
       row.documentUuid,
       IntegrityStatusEnum[
         row.integrityStatus as keyof typeof IntegrityStatusEnum
