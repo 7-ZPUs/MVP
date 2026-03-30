@@ -7,7 +7,8 @@
     "setup:download-models": "ts-node --project tsconfig.json core/src/scripts/download-models.ts",
     "build:core": "tsc --project tsconfig.core.json",
     "build:renderer": "cd renderer && npx ng build",
-    "build:all": "npm run build:renderer && npm run build:core",
+    "build:main": "tsc --project tsconfig.json",
+    "build:all": "npm run build:renderer && npm run build:core && npm run build:main",
     "start": "ELECTRON_DISABLE_SANDBOX=1 electron .",
     "start:dev": "NODE_ENV=development npm run build:all && npm run start",
     "start:renderer": "cd renderer && ng serve --host 0.0.0.0",
@@ -22,16 +23,14 @@
   },
   "dependencies": {
     "@angular/router": "^21.2.6",
+    "@huggingface/transformers": "^3.8.1",
+    "@xenova/transformers": "^2.17.2",
     "adm-zip": "^0.5.10",
     "fast-xml-parser": "^4.3.6",
+    "onnxruntime-node": "^1.17.3",
     "reflect-metadata": "^0.2.2",
     "sqlite-vss": "^0.1.2",
     "tsyringe": "^4.8.0"
-  },
-  "optionalDependencies": {
-    "@huggingface/transformers": "^3.8.1",
-    "@xenova/transformers": "^2.17.2",
-    "onnxruntime-node": "^1.17.3"
   },
   "devDependencies": {
     "@types/adm-zip": "^0.5.5",
@@ -40,6 +39,7 @@
     "@vitest/coverage-v8": "^1.6.1",
     "better-sqlite3": "^9.6.0",
     "electron": "^30.0.0",
+    "electron-rebuild": "^3.2.9",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.5",
     "vitest": "^1.6.1"
