@@ -50,7 +50,6 @@ function createWindow(): BrowserWindow {
       nodeIntegration: false,
     },
   });
-
   // In development load the Angular dev server; in production load the built index.
   if (process.env["NODE_ENV"] === "development") {
     win.loadURL("http://localhost:4200");

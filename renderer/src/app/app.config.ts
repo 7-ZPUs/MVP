@@ -1,31 +1,76 @@
-import { ApplicationConfig } from '@angular/core';
-import { provideRouter } from '@angular/router';
-import { routes } from './app.routes'; // Assicurati che qui ci sia la rotta alla SearchPageComponent
-import { ELECTRON_CONTEXT_BRIDGE_TOKEN } from './shared/contracts'; // Usa il path corretto per la tua app
+import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
+import { provideRouter, withHashLocation } from '@angular/router';
+import { signal } from '@angular/core';
+import { routes } from './app.routes';
+
+import {
+  ELECTRON_CONTEXT_BRIDGE_TOKEN,
+  CACHE_SERVICE_TOKEN,
+  ERROR_HANDLER_TOKEN,
+  LOGGING_CHANNEL_TOKEN,
+} from './shared/contracts/index';
+
+import { SearchIpcGateway } from './feature/search/adapters/search-ipc-gateway';
+import { FilterValidatorService } from './feature/validation/services/filter-validator.service';
+import { IpcErrorHandlerService } from './shared/services/ipc-error-handler.service';
+import { TelemetryService } from './shared/services/telemetry.service';
+import { LiveAnnouncerService } from './shared/services/live-announcer.service';
+import { IpcCacheService } from './shared/services/ipc-cache.service';
+import { ElectronLoggingGateway } from './shared/services/electron-logging-gateway';
+import { SearchFacade } from './feature/search/services';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    provideRouter(routes),
+    provideBrowserGlobalErrorListeners(),
+    provideAnimationsAsync(), // richiesto da @angular/cdk LiveAnnouncer
+    provideRouter(routes, withHashLocation()),
 
-    // Agganciamo l'interfaccia Angular all'oggetto reale di Electron
+    // Electron bridge
     {
       provide: ELECTRON_CONTEXT_BRIDGE_TOKEN,
       useFactory: () => {
-        // electronAPI è il nome esposto dal preload.ts
         if (typeof window !== 'undefined' && (window as any).electronAPI) {
           return (window as any).electronAPI;
         }
-
-        // Fallback se apri il progetto nel browser web normale invece che in Electron
         return {
-          invoke: () =>
-            Promise.reject(
-              new Error(
-                'Ponte Electron (electronAPI) non trovato. Stai eseguendo app in un browser web?',
-              ),
-            ),
+          invoke: () => Promise.reject(new Error('electronAPI non trovato')),
         };
       },
     },
+
+    // Cache
+    { provide: CACHE_SERVICE_TOKEN, useClass: IpcCacheService },
+
+    // Logging
+    { provide: LOGGING_CHANNEL_TOKEN, useClass: ElectronLoggingGateway },
+
+    // Error handler
+    { provide: ERROR_HANDLER_TOKEN, useClass: IpcErrorHandlerService },
+    { provide: 'IErrorHandler', useClass: IpcErrorHandlerService },
+
+    // Telemetry
+    { provide: 'ITelemetry', useClass: TelemetryService },
+
+    // Live announcer
+    { provide: 'ILiveAnnouncer', useClass: LiveAnnouncerService },
+
+    // Search channel
+    { provide: 'ISearchChannel', useClass: SearchIpcGateway },
+
+    // Filter validator
+    { provide: 'IFilterValidator', useClass: FilterValidatorService },
+
+    // Semantic index status — mock per ora
+    {
+      provide: 'ISemanticIndexStatus',
+      useValue: { getStatus: () => signal({ status: 'READY' }) },
+    },
+
+    // Router
+    { provide: 'IRouter', useValue: { navigate: () => {} } },
+
+    // Facade
+    { provide: 'ISearchFacade', useClass: SearchFacade },
   ],
 };
