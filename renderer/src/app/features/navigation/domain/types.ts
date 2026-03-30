@@ -1,1 +1,1 @@
-type NodeId = string;
+export type NodeId = string;
