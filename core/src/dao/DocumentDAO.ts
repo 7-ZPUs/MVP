@@ -53,8 +53,14 @@ export class DocumentDAO implements IDocumentDAO {
   getById(id: number): Document | null {
     const row = this.db
       .prepare<[number], DocumentPersistenceRow>(
-        `SELECT id, uuid, integrity_status as integrityStatus, process_id as processId 
-                 FROM document WHERE id = ?`,
+        `SELECT d.id,
+                d.uuid,
+                d.integrity_status as integrityStatus,
+                d.process_id as processId,
+                p.uuid as processUuid
+         FROM document d
+         JOIN process p ON p.id = d.process_id
+         WHERE d.id = ?`,
       )
       .get(id);
     return row ? this.rowToEntity(row) : null;
@@ -63,8 +69,15 @@ export class DocumentDAO implements IDocumentDAO {
   getByProcessId(processId: number): Document[] {
     const rows = this.db
       .prepare<[number], DocumentPersistenceRow>(
-        `SELECT id, uuid, integrity_status as integrityStatus, process_id as processId
-                 FROM document WHERE process_id = ? ORDER BY id`,
+        `SELECT d.id,
+                d.uuid,
+                d.integrity_status as integrityStatus,
+                d.process_id as processId,
+                p.uuid as processUuid
+         FROM document d
+         JOIN process p ON p.id = d.process_id
+         WHERE d.process_id = ?
+         ORDER BY d.id`,
       )
       .all(processId);
     return rows.map((r) => this.rowToEntity(r));
@@ -73,8 +86,15 @@ export class DocumentDAO implements IDocumentDAO {
   getByStatus(status: IntegrityStatusEnum): Document[] {
     const rows = this.db
       .prepare<[string], DocumentPersistenceRow>(
-        `SELECT id, uuid, integrity_status as integrityStatus, process_id as processId
-                 FROM document WHERE integrity_status = ? ORDER BY id`,
+        `SELECT d.id,
+                d.uuid,
+                d.integrity_status as integrityStatus,
+                d.process_id as processId,
+                p.uuid as processUuid
+         FROM document d
+         JOIN process p ON p.id = d.process_id
+         WHERE d.integrity_status = ?
+         ORDER BY d.id`,
       )
       .all(status);
     return rows.map((r) => this.rowToEntity(r));
@@ -83,7 +103,7 @@ export class DocumentDAO implements IDocumentDAO {
   save(document: Document): Document {
     const metadata = document.getMetadata();
 
-    const result = this.db
+    this.db
       .prepare(
         `
                 INSERT INTO document (uuid, integrity_status, process_id) 
@@ -99,14 +119,13 @@ export class DocumentDAO implements IDocumentDAO {
         document.getProcessUuid(),
       );
 
-    let id = result.lastInsertRowid as number;
+    const row = this.db
+      .prepare("SELECT id FROM document WHERE uuid = ?")
+      .get(document.getUuid()) as { id: number } | undefined;
+
+    const id = row?.id;
     if (!id) {
-      const row = this.db
-        .prepare("SELECT id FROM document WHERE uuid = ?")
-        .get(document.getUuid()) as { id: number };
-      if (row) {
-        id = row.id;
-      }
+      throw new Error(`Failed to save Document with uuid=${document.getUuid()}`);
     }
 
     // Clean up old metadata before inserting new set
@@ -116,7 +135,11 @@ export class DocumentDAO implements IDocumentDAO {
 
     saveMetadata(this.db, METADATA_TABLE, METADATA_FK, id, metadata);
 
-    return this.getById(id)!;
+    const saved = this.getById(id);
+    if (!saved) {
+      throw new Error(`Failed to rehydrate Document with id=${id}`);
+    }
+    return saved;
   }
 
   updateIntegrityStatus(id: number, status: IntegrityStatusEnum): void {

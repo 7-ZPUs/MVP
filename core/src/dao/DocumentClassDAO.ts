@@ -32,7 +32,18 @@ export class DocumentClassDAO implements IDocumentClassDAO {
       .prepare<
         [number],
         DocumentClassPersistenceRow
-      >("SELECT id, dip_id as dipId, uuid, integrity_status as integrityStatus, name, timestamp FROM document_class WHERE id = ?")
+      >(
+        `SELECT dc.id,
+                dc.dip_id as dipId,
+                d.uuid as dipUuid,
+                dc.uuid,
+                dc.integrity_status as integrityStatus,
+                dc.name,
+                dc.timestamp
+         FROM document_class dc
+         JOIN dip d ON d.id = dc.dip_id
+         WHERE dc.id = ?`,
+      )
       .get(id);
     return row ? this.rowToEntity(row) : null;
   }
@@ -42,7 +53,18 @@ export class DocumentClassDAO implements IDocumentClassDAO {
       .prepare<
         [number],
         DocumentClassPersistenceRow
-      >("SELECT id, dip_id as dipId, uuid, integrity_status as integrityStatus, name, timestamp FROM document_class WHERE dip_id = ?")
+      >(
+        `SELECT dc.id,
+                dc.dip_id as dipId,
+                d.uuid as dipUuid,
+                dc.uuid,
+                dc.integrity_status as integrityStatus,
+                dc.name,
+                dc.timestamp
+         FROM document_class dc
+         JOIN dip d ON d.id = dc.dip_id
+         WHERE dc.dip_id = ?`,
+      )
       .all(dipId);
     return rows.map((row) => this.rowToEntity(row));
   }
@@ -52,13 +74,24 @@ export class DocumentClassDAO implements IDocumentClassDAO {
       .prepare<
         [string],
         DocumentClassPersistenceRow
-      >("SELECT id, dip_id as dipId, uuid, integrity_status as integrityStatus, name, timestamp FROM document_class WHERE integrity_status = ?")
+      >(
+        `SELECT dc.id,
+                dc.dip_id as dipId,
+                d.uuid as dipUuid,
+                dc.uuid,
+                dc.integrity_status as integrityStatus,
+                dc.name,
+                dc.timestamp
+         FROM document_class dc
+         JOIN dip d ON d.id = dc.dip_id
+         WHERE dc.integrity_status = ?`,
+      )
       .all(status);
     return rows.map((row) => this.rowToEntity(row));
   }
 
   save(documentClass: DocumentClass): DocumentClass {
-    const result = this.db
+    this.db
       .prepare(
         `
                 INSERT INTO document_class (dip_id, uuid, name, timestamp) 
@@ -76,15 +109,15 @@ export class DocumentClassDAO implements IDocumentClassDAO {
         documentClass.getTimestamp(),
       );
 
-    let id = result.lastInsertRowid as number;
+    const row = this.db
+      .prepare("SELECT id FROM document_class WHERE uuid = ?")
+      .get(documentClass.getUuid()) as { id: number } | undefined;
 
+    const id = row?.id;
     if (!id) {
-      const row = this.db
-        .prepare("SELECT id FROM document_class WHERE uuid = ?")
-        .get(documentClass.getUuid()) as { id: number };
-      if (row) {
-        id = row.id;
-      }
+      throw new Error(
+        `Failed to save DocumentClass with uuid=${documentClass.getUuid()}`,
+      );
     }
 
     const saved = this.getById(id);
@@ -99,9 +132,16 @@ export class DocumentClassDAO implements IDocumentClassDAO {
   search(query: string): DocumentClass[] | null {
     const result = this.db
       .prepare<[string], DocumentClassPersistenceRow>(
-        `SELECT id, dip_id as dipId, uuid, integrity_status as integrityStatus, name, timestamp 
-                 FROM document_class 
-                 WHERE name LIKE ?`,
+        `SELECT dc.id,
+                dc.dip_id as dipId,
+                d.uuid as dipUuid,
+                dc.uuid,
+                dc.integrity_status as integrityStatus,
+                dc.name,
+                dc.timestamp
+         FROM document_class dc
+         JOIN dip d ON d.id = dc.dip_id
+         WHERE dc.name LIKE ?`,
       )
       .all(`%${query}%`);
 

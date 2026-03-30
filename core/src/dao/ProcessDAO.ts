@@ -34,7 +34,16 @@ export class ProcessDAO implements IProcessDAO {
       .prepare<
         [number],
         ProcessPersistenceRow
-      >("SELECT id, document_class_id as documentClassId, uuid, integrity_status as integrityStatus FROM process WHERE id = ?")
+      >(
+        `SELECT p.id,
+                p.document_class_id as documentClassId,
+                p.uuid,
+                dc.uuid as documentClassUuid,
+                p.integrity_status as integrityStatus
+         FROM process p
+         JOIN document_class dc ON dc.id = p.document_class_id
+         WHERE p.id = ?`,
+      )
       .get(id);
     return row ? this.rowToEntity(row) : null;
   }
@@ -44,7 +53,17 @@ export class ProcessDAO implements IProcessDAO {
       .prepare<
         [number],
         ProcessPersistenceRow
-      >("SELECT id, document_class_id as documentClassId, uuid, integrity_status as integrityStatus FROM process WHERE document_class_id = ? ORDER BY id")
+      >(
+        `SELECT p.id,
+                p.document_class_id as documentClassId,
+                p.uuid,
+                dc.uuid as documentClassUuid,
+                p.integrity_status as integrityStatus
+         FROM process p
+         JOIN document_class dc ON dc.id = p.document_class_id
+         WHERE p.document_class_id = ?
+         ORDER BY p.id`,
+      )
       .all(documentClassId);
     return rows.map((r) => this.rowToEntity(r));
   }
@@ -54,7 +73,17 @@ export class ProcessDAO implements IProcessDAO {
       .prepare<
         [string],
         ProcessPersistenceRow
-      >("SELECT id, document_class_id as documentClassId, uuid, integrity_status as integrityStatus FROM process WHERE integrity_status = ? ORDER BY id")
+      >(
+        `SELECT p.id,
+                p.document_class_id as documentClassId,
+                p.uuid,
+                dc.uuid as documentClassUuid,
+                p.integrity_status as integrityStatus
+         FROM process p
+         JOIN document_class dc ON dc.id = p.document_class_id
+         WHERE p.integrity_status = ?
+         ORDER BY p.id`,
+      )
       .all(status);
     return rows.map((r) => this.rowToEntity(r));
   }
@@ -62,7 +91,7 @@ export class ProcessDAO implements IProcessDAO {
   save(process: Process): Process {
     const metadata = process.getMetadata();
 
-    const result = this.db
+    this.db
       .prepare(
         `INSERT INTO process (document_class_id, uuid, integrity_status) 
          VALUES ((SELECT id FROM document_class WHERE uuid = ?), ?, ?)
@@ -76,15 +105,13 @@ export class ProcessDAO implements IProcessDAO {
         IntegrityStatusEnum.UNKNOWN,
       );
 
-    let id = result.lastInsertRowid as number;
+    const row = this.db
+      .prepare("SELECT id FROM process WHERE uuid = ?")
+      .get(process.getUuid()) as { id: number } | undefined;
 
+    const id = row?.id;
     if (!id) {
-      const row = this.db
-        .prepare("SELECT id FROM process WHERE uuid = ?")
-        .get(process.getUuid()) as { id: number };
-      if (row) {
-        id = row.id;
-      }
+      throw new Error(`Failed to save Process with uuid=${process.getUuid()}`);
     }
 
     // Clean up existing metadata to avoid duplicates

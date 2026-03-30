@@ -42,7 +42,7 @@ export class DipDAO implements IDipDAO {
   }
 
   save(dip: Dip): Dip {
-    const result = this.db
+    this.db
       .prepare(
         `
                 INSERT INTO dip (uuid, integrity_status) 
@@ -52,29 +52,11 @@ export class DipDAO implements IDipDAO {
       )
       .run(dip.getUuid(), IntegrityStatusEnum.UNKNOWN);
 
-    if (result.changes === 0) {
-      // Se non ha inserito o aggiornato nulla (improbabile con ON CONFLICT), rileggiamo
-      const existing = this.getByUuid(dip.getUuid());
-      if (existing) return existing;
+    const saved = this.getByUuid(dip.getUuid());
+    if (!saved) {
+      throw new Error(`Failed to save Dip with uuid=${dip.getUuid()}`);
     }
-
-    // Se è un update, lastInsertRowid non cambia necessariamente al valore della riga aggiornata in versioni vecchie di sqlite,
-    // ma better-sqlite3 e sqlite recenti di solito gestiscono bene.
-    // Per sicurezza, se lastInsertRowid è 0 o non valido, facciamo una get.
-
-    let id = result.lastInsertRowid as number;
-    if (!id) {
-      const existing = this.getByUuid(dip.getUuid());
-      if (existing?.getId()) {
-        id = existing.getId()!;
-      }
-    }
-
-    return DipMapper.toDomain({
-      id: id,
-      uuid: dip.getUuid(),
-      integrityStatus: IntegrityStatusEnum.UNKNOWN,
-    });
+    return saved;
   }
 
   getByStatus(status: IntegrityStatusEnum): Dip[] {

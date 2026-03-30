@@ -118,10 +118,10 @@ export class MetadataMapper {
   }
 
   static flatten(metadata: Metadata): Metadata[] {
-    if (metadata.getType() === MetadataType.STRING) {
+    if (metadata.getType() !== MetadataType.COMPOSITE) {
       return [metadata];
-    } else {
-      return metadata.getChildren().flatMap(this.flatten);
     }
+
+    return metadata.getChildren().flatMap((child) => this.flatten(child));
   }
 }
