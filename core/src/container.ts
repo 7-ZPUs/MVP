@@ -14,6 +14,16 @@ import { DOCUMENT_CLASS_REPOSITORY_TOKEN } from "./repo/IDocumentClassRepository
 import { DocumentClassRepository } from "./repo/impl/DocumentClassRepository";
 import { DIP_REPOSITORY_TOKEN } from "./repo/IDipRepository";
 import { DipRepository } from "./repo/impl/DipRepository";
+import { DIP_DAO_TOKEN } from "./dao/IDipDAO";
+import { DOCUMENT_CLASS_DAO_TOKEN } from "./dao/IDocumentClassDAO";
+import { DOCUMENT_DAO_TOKEN } from "./dao/IDocumentDAO";
+import { FILE_DAO_TOKEN } from "./dao/IFileDAO";
+import { PROCESS_DAO_TOKEN } from "./dao/IProcessDAO";
+import { DipDAO } from "./dao/DipDAO";
+import { DocumentClassDAO } from "./dao/DocumentClassDAO";
+import { DocumentDAO } from "./dao/DocumentDAO";
+import { FileDAO } from "./dao/FileDAO";
+import { ProcessDAO } from "./dao/ProcessDAO";
 
 // ---- Documento use cases ----
 import { DocumentoUC } from "./use-case/document/tokens";
@@ -77,6 +87,13 @@ container.register(DOCUMENT_CLASS_REPOSITORY_TOKEN, {
   useClass: DocumentClassRepository,
 });
 container.register(DIP_REPOSITORY_TOKEN, { useClass: DipRepository });
+
+// DAOs
+container.register(DIP_DAO_TOKEN, { useClass: DipDAO });
+container.register(DOCUMENT_CLASS_DAO_TOKEN, { useClass: DocumentClassDAO });
+container.register(DOCUMENT_DAO_TOKEN, { useClass: DocumentDAO });
+container.register(FILE_DAO_TOKEN, { useClass: FileDAO });
+container.register(PROCESS_DAO_TOKEN, { useClass: ProcessDAO });
 
 // Documento use cases
 container.register(DocumentoUC.GET_BY_ID, { useClass: GetDocumentByIdUC });

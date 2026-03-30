@@ -1,36 +1,28 @@
 import { IntegrityStatusEnum } from "../value-objects/IntegrityStatusEnum";
 import { Metadata } from "../value-objects/Metadata";
 
-export interface ProcessRow {
-  id: number;
-  documentClassId: number;
-  uuid: string;
-  integrityStatus?: string;
-}
-
 export class Process {
-  private id: number | null = null;
-  private documentClassId: number | null = null;
+  private readonly id: number | null = null;
+  private readonly documentClassId: number | null = null;
   private readonly documentClassUuid: string;
   private readonly uuid: string;
   private integrityStatus: IntegrityStatusEnum;
-  private readonly metadata: Metadata[];
+  private readonly metadata: Metadata;
 
-  constructor(documentClassUuid: string, uuid: string, metadata: Metadata[]) {
+  constructor(
+    documentClassUuid: string,
+    uuid: string,
+    metadata: Metadata,
+    integrityStatus: IntegrityStatusEnum = IntegrityStatusEnum.UNKNOWN,
+    id: number | null = null,
+    documentClassId: number | null = null,
+  ) {
     this.documentClassUuid = documentClassUuid;
     this.uuid = uuid;
-    this.integrityStatus = IntegrityStatusEnum.UNKNOWN;
+    this.integrityStatus = integrityStatus;
     this.metadata = metadata;
-  }
-
-  static fromDB(row: ProcessRow, metadata: Metadata[]): Process {
-    const process = new Process("", row.uuid, metadata);
-    process.id = row.id;
-    process.documentClassId = row.documentClassId;
-    process.integrityStatus =
-      (row.integrityStatus as IntegrityStatusEnum) ??
-      IntegrityStatusEnum.UNKNOWN;
-    return process;
+    this.id = id;
+    this.documentClassId = documentClassId;
   }
 
   public getId(): number | null {
@@ -53,7 +45,7 @@ export class Process {
     return this.integrityStatus;
   }
 
-  public getMetadata(): Metadata[] {
+  public getMetadata(): Metadata {
     return this.metadata;
   }
 

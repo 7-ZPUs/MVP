@@ -1,39 +1,22 @@
 import { IntegrityStatusEnum } from "../value-objects/IntegrityStatusEnum";
 
-export interface DocumentClassRow {
-  id: number;
-  dipId: number;
-  uuid: string;
-  integrityStatus?: string;
-  name: string;
-  timestamp: string;
-}
-
 export class DocumentClass {
-  private id: number | null = null;
-  private dipId: number | null = null;
+  private readonly id: number | null = null;
+  private readonly dipId: number | null = null;
   private readonly dipUuid: string;
   private readonly uuid: string;
   private integrityStatus: IntegrityStatusEnum;
   private readonly name: string;
   private readonly timestamp: string;
 
-  constructor(dipUuid: string, uuid: string, name: string, timestamp: string) {
+  constructor(dipUuid: string, uuid: string, name: string, timestamp: string, integrityStatus: IntegrityStatusEnum = IntegrityStatusEnum.UNKNOWN, id: number | null = null, dipId: number | null = null) {
     this.dipUuid = dipUuid;
     this.uuid = uuid;
     this.name = name;
     this.timestamp = timestamp;
-    this.integrityStatus = IntegrityStatusEnum.UNKNOWN;
-  }
-
-  static fromDB(row: DocumentClassRow): DocumentClass {
-    const docClass = new DocumentClass("", row.uuid, row.name, row.timestamp);
-    docClass.id = row.id;
-    docClass.dipId = row.dipId;
-    docClass.integrityStatus =
-      (row.integrityStatus as IntegrityStatusEnum) ??
-      IntegrityStatusEnum.UNKNOWN;
-    return docClass;
+    this.integrityStatus = integrityStatus;
+    this.id = id;
+    this.dipId = dipId;
   }
 
   public getId(): number | null {

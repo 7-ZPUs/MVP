@@ -4,15 +4,8 @@
  * Usato da DocumentoRepository e ProcessRepository per evitare duplicazioni.
  */
 import Database from "better-sqlite3";
-import { Metadata, MetadataType } from "../../value-objects/Metadata";
-
-export interface MetadataRow {
-  id: number;
-  parent_id: number | null;
-  name: string;
-  value: string;
-  type: string;
-}
+import { MetadataPersistenceRow } from "./mappers/MetadataMapper";
+import { Metadata, MetadataType } from "../value-objects/Metadata";
 
 /**
  * Carica i metadati associati a un record dato il suo id.
@@ -27,57 +20,15 @@ export function loadMetadata(
   table: string,
   fkColumn: string,
   ownerId: number,
-): Metadata | null {
+): MetadataPersistenceRow[] {
   const rows = db
     .prepare<
       [number],
-      MetadataRow
+      MetadataPersistenceRow
     >(`SELECT * FROM ${table} WHERE ${fkColumn} = ? ORDER BY id`)
     .all(ownerId);
 
-  const rowById = new Map<number, MetadataRow>();
-  const childrenByParentId = new Map<number, number[]>();
-  const rootIds: number[] = [];
-
-  for (const row of rows) {
-    rowById.set(row.id, row);
-    if (row.parent_id == null) {
-      rootIds.push(row.id);
-      continue;
-    }
-    const children = childrenByParentId.get(row.parent_id) ?? [];
-    children.push(row.id);
-    childrenByParentId.set(row.parent_id, children);
-  }
-
-  const buildNode = (id: number): Metadata => {
-    const row = rowById.get(id);
-    if (!row) {
-      throw new Error(`Invalid metadata tree: missing row for id ${id}`);
-    }
-
-    const type = row.type as MetadataType;
-    if (type !== MetadataType.COMPOSITE) {
-      return new Metadata(row.name, row.value, type);
-    }
-
-    const childrenIds = childrenByParentId.get(id) ?? [];
-    const children = childrenIds.map((childId) => buildNode(childId));
-    return new Metadata(row.name, children, MetadataType.COMPOSITE);
-  };
-
-  const rootNodes = rootIds.map((id) => buildNode(id));
-
-  if (rootNodes.length === 0) {
-    return null;
-  }
-
-  if (rootNodes.length === 1) {
-    return rootNodes[0];
-  }
-
-  // Multiple top-level nodes are represented as a synthetic composite root.
-  return new Metadata("root", rootNodes, MetadataType.COMPOSITE);
+  return rows;
 }
 
 /**

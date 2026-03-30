@@ -1,49 +1,29 @@
 import { Metadata } from "../value-objects/Metadata";
 import { IntegrityStatusEnum } from "../value-objects/IntegrityStatusEnum";
 
-/** Forma della riga SQLite che il repository legge. */
-export interface DocumentRow {
-  id: number;
-  uuid: string;
-  integrityStatus?: string;
-  processId: number;
-}
-
 export class Document {
   /**
    * `null`  → entità non ancora persistita (prima dell'INSERT).
    * `number` → entità caricata dal DB o appena salvata.
    */
-  private id: number | null = null;
+  private readonly id: number | null = null;
   private readonly uuid: string;
   private readonly metadata: Metadata;
   private integrityStatus: IntegrityStatusEnum;
-  private processId: number | null = null;
+  private readonly processId: number | null = null;
   private readonly processUuid: string;
 
   /**
    * Costruttore usato per creare una nuova entità non ancora persistita.
    * L'id viene omesso: il DB lo assegnerà all'INSERT.
    */
-  constructor(uuid: string, metadata: Metadata, processUuid: string) {
+  constructor(uuid: string, metadata: Metadata, processUuid: string, integrityStatus: IntegrityStatusEnum = IntegrityStatusEnum.UNKNOWN, id: number | null = null, processId: number | null = null) {
     this.uuid = uuid;
     this.metadata = metadata;
-    this.integrityStatus = IntegrityStatusEnum.UNKNOWN;
+    this.integrityStatus = integrityStatus;
     this.processUuid = processUuid;
-  }
-
-  /**
-   * Factory per ricostituire l'entità da una riga del DB.
-   * Da usare esclusivamente nel repository.
-   */
-  static fromDB(row: DocumentRow, metadata: Metadata): Document {
-    const doc = new Document(row.uuid, metadata, "");
-    doc.id = row.id;
-    doc.processId = row.processId;
-    doc.integrityStatus =
-      (row.integrityStatus as IntegrityStatusEnum) ??
-      IntegrityStatusEnum.UNKNOWN;
-    return doc;
+    this.id = id;
+    this.processId = processId;
   }
 
   public getId(): number | null {

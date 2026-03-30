@@ -1,22 +1,11 @@
 import { IntegrityStatusEnum } from "../value-objects/IntegrityStatusEnum";
 
-/** Forma della riga SQLite che il repository legge. */
-export interface FileRow {
-  id: number;
-  filename: string;
-  path: string;
-  hash: string;
-  integrityStatus: string;
-  isMain: number; // SQLite stores booleans as 0/1
-  documentId: number;
-}
-
 export class File {
   /**
    * `null`  → entità non ancora persistita (prima dell'INSERT).
    * `number` → entità caricata dal DB o appena salvata.
    */
-  private id: number | null = null;
+  private readonly id: number | null = null;
   private readonly uuid: string;
   private readonly filename: string;
   private readonly path: string;
@@ -24,7 +13,7 @@ export class File {
   private integrityStatus: IntegrityStatusEnum;
   private readonly isMain: boolean;
   /** Chiave esterna verso Documento — populated by DB only. */
-  private documentId: number | null = null;
+  private readonly documentId: number | null = null;
   private readonly documentUuid: string;
 
   /**
@@ -38,6 +27,9 @@ export class File {
     isMain: boolean,
     uuid: string,
     documentUuid: string,
+    integrityStatus: IntegrityStatusEnum = IntegrityStatusEnum.UNKNOWN,
+    id: number | null = null,
+    documentId: number | null = null
   ) {
     this.filename = filename;
     this.path = path;
@@ -45,26 +37,9 @@ export class File {
     this.isMain = isMain;
     this.uuid = uuid;
     this.documentUuid = documentUuid;
-    this.integrityStatus = IntegrityStatusEnum.UNKNOWN;
-  }
-
-  /**
-   * Factory per ricostituire l'entità da una riga del DB.
-   * Da usare esclusivamente nel repository.
-   */
-  static fromDB(row: FileRow): File {
-    const file = new File(
-      row.filename,
-      row.path,
-      row.hash,
-      row.isMain === 1,
-      "",
-      "",
-    );
-    file.id = row.id;
-    file.documentId = row.documentId;
-    file.integrityStatus = row.integrityStatus as IntegrityStatusEnum;
-    return file;
+    this.integrityStatus = integrityStatus;
+    this.id = id;
+    this.documentId = documentId;
   }
 
   public getId(): number | null {

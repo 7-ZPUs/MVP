@@ -15,6 +15,7 @@ import "./core/src/container";
 
 import { app, BrowserWindow, ipcMain } from "electron";
 import * as path from "node:path";
+import { bootstrapDatabase } from "./db/DatabaseBootstrap";
 
 // Disable GPU acceleration — required in headless/container environments
 // where no real GPU is available (dev containers, CI, Codespaces, etc.).
@@ -66,6 +67,7 @@ function createWindow(): BrowserWindow {
   createWindow();
 
   app.on("activate", () => {
+    bootstrapDatabase();
     if (BrowserWindow.getAllWindows().length === 0) {
       createWindow();
     }

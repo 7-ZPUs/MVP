@@ -1,14 +1,12 @@
 import { IntegrityStatusEnum } from "../value-objects/IntegrityStatusEnum";
 
 export interface CreateDipDTO {
-    dipId: number;
     uuid: string;
     integrityStatus: IntegrityStatusEnum;
 }
 
 export interface DipDTO {
-    id: number;
-    dipId: number;
+    id: number | null;
     uuid: string;
     integrityStatus: IntegrityStatusEnum;
 }
