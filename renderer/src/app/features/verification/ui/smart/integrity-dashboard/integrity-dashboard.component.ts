@@ -1,6 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IntegrityFacade } from '../../../services/integrity.facade';
+import { INTEGRITY_FACADE_TOKEN } from '../../../contracts/IIntegrityFacade';
 import { IntegritySummaryCardsComponent } from '../../dumb/integrity-summary-cards/integrity-summary-cards.component';
 import { IntegrityCorruptedPanelComponent } from '../../dumb/integrity-corrupted-panel/integrity-corrupted-panel.component';
 import { IntegrityValidPanelComponent } from '../../dumb/integrity-valid-panel/integrity-valid-panel.component';
@@ -167,7 +167,7 @@ import { IntegrityValidPanelComponent } from '../../dumb/integrity-valid-panel/i
   ],
 })
 export class IntegrityDashboardComponent implements OnInit {
-  facade = inject(IntegrityFacade);
+  facade = inject(INTEGRITY_FACADE_TOKEN);
   currentDipId = 1;
 
   ngOnInit() {

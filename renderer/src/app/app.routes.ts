@@ -1,5 +1,4 @@
 import { Routes } from '@angular/router';
-import { IntegrityDashboardComponent } from './features/verification/ui/smart/integrity-dashboard/integrity-dashboard.component';
 
 export const routes: Routes = [
   {
@@ -9,6 +8,7 @@ export const routes: Routes = [
   },
   {
     path: 'integrity-dashboard',
-    component: IntegrityDashboardComponent,
+    loadChildren: () =>
+      import('./features/verification/verification.routes').then((m) => m.VERIFICATION_ROUTES),
   },
 ];

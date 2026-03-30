@@ -5,8 +5,10 @@ import { DocumentClassDTO } from '../../../shared/domain/dto/indexDTO';
 import { IntegrityStatusEnum } from '../../../shared/domain/value-objects/IntegrityStatusEnum';
 import { IntegrityNodeVM, IntegrityOverviewStats } from '../domain/integrity.view-models';
 
-@Injectable({ providedIn: 'root' })
-export class IntegrityFacade {
+import { IIntegrityFacade } from '../contracts/IIntegrityFacade';
+
+@Injectable()
+export class IntegrityFacade implements IIntegrityFacade {
   private readonly gateway = inject(IntegrityIpcGateway);
   private readonly errorHandler = inject(IpcErrorHandlerService);
 
