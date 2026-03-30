@@ -6,6 +6,7 @@ import { CommonModule } from "@angular/common";
 import { DipTreeNodeComponent } from "../dumb/dip-tree-node.component";
 import { CdkVirtualScrollViewport, ScrollingModule } from '@angular/cdk/scrolling';
 import { InlineErrorComponent } from "../dumb/inline-error.component";
+import { NodeId } from "../../domain/types";
 
 @Component ({
     selector: 'app-dip-tree',
