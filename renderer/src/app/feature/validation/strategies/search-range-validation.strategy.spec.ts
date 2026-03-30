@@ -61,6 +61,122 @@ describe('SearchRangeValidationStrategy', () => {
       expect(strategy.validate(filters1).size).toBe(0);
       expect(strategy.validate(filters2).size).toBe(0);
     });
+
+    it('dovrebbe segnalare errore se dataApertura è successiva a dataChiusura', () => {
+      const filters = {
+        aggregate: {
+          dataApertura: '2026-12-31',
+          dataChiusura: '2026-01-01',
+        },
+      } as unknown as PartialSearchFilters;
+
+      const result = strategy.validate(filters);
+
+      expect(result.has('aggregate.dataApertura')).toBe(true);
+      expect(result.get('aggregate.dataApertura')?.[0].code).toBe('ERR_RANGE_001');
+    });
+
+    it('NON dovrebbe segnalare errore se dataApertura è precedente o uguale a dataChiusura', () => {
+      const filters1 = {
+        aggregate: { dataApertura: '2026-01-01', dataChiusura: '2026-12-31' },
+      } as unknown as PartialSearchFilters;
+      const filters2 = {
+        aggregate: { dataApertura: '2026-05-15', dataChiusura: '2026-05-15' },
+      } as unknown as PartialSearchFilters;
+
+      expect(strategy.validate(filters1).size).toBe(0);
+      expect(strategy.validate(filters2).size).toBe(0);
+    });
+
+    it('dovrebbe segnalare errore se dataInizioAssegn è successiva a dataFineAssegn', () => {
+      const filters = {
+        aggregate: {
+          assegnazione: {
+            dataInizioAssegn: '2026-12-31',
+            dataFineAssegn: '2026-01-01',
+          },
+        },
+      } as unknown as PartialSearchFilters;
+
+      const result = strategy.validate(filters);
+
+      expect(result.has('aggregate.assegnazione.dataInizioAssegn')).toBe(true);
+      expect(result.get('aggregate.assegnazione.dataInizioAssegn')?.[0].code).toBe('ERR_RANGE_001');
+    });
+
+    it('NON dovrebbe segnalare errore se dataInizioAssegn è precedente o uguale a dataFineAssegn', () => {
+      const filters1 = {
+        aggregate: {
+          assegnazione: {
+            dataInizioAssegn: '2026-01-01',
+            dataFineAssegn: '2026-12-31',
+          },
+        },
+      } as unknown as PartialSearchFilters;
+      const filters2 = {
+        aggregate: {
+          assegnazione: {
+            dataInizioAssegn: '2026-05-15',
+            dataFineAssegn: '2026-05-15',
+          },
+        },
+      } as unknown as PartialSearchFilters;
+
+      expect(strategy.validate(filters1).size).toBe(0);
+      expect(strategy.validate(filters2).size).toBe(0);
+    });
+
+    it('dovrebbe segnalare errore se dataInizioFase è successiva a dataFineFase', () => {
+      const filters = {
+        aggregate: {
+          procedimento: {
+            fasi: [
+              {
+                dataInizioFase: '2026-12-31',
+                dataFineFase: '2026-01-01',
+              },
+            ],
+          },
+        },
+      } as unknown as PartialSearchFilters;
+
+      const result = strategy.validate(filters);
+
+      expect(result.has('aggregate.procedimento.fasi.0.dataInizioFase')).toBe(true);
+      expect(result.get('aggregate.procedimento.fasi.0.dataInizioFase')?.[0].code).toBe(
+        'ERR_RANGE_001',
+      );
+    });
+
+    it('NON dovrebbe segnalare errore se dataInizioFase è precedente o uguale a dataFineFase', () => {
+      const filters1 = {
+        aggregate: {
+          procedimento: {
+            fasi: [
+              {
+                dataInizioFase: '2026-01-01',
+                dataFineFase: '2026-12-31',
+              },
+            ],
+          },
+        },
+      } as unknown as PartialSearchFilters;
+      const filters2 = {
+        aggregate: {
+          procedimento: {
+            fasi: [
+              {
+                dataInizioFase: '2026-05-15',
+                dataFineFase: '2026-05-15',
+              },
+            ],
+          },
+        },
+      } as unknown as PartialSearchFilters;
+
+      expect(strategy.validate(filters1).size).toBe(0);
+      expect(strategy.validate(filters2).size).toBe(0);
+    });
   });
 
   describe('Contraddizioni di Range Numerici', () => {

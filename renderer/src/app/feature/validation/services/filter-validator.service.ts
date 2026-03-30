@@ -13,6 +13,7 @@ import { RegistryContradictionValidationStrategy } from '../strategies/registry-
 import { FormationModeContradictionStrategy } from '../strategies/formation-mode-contradiction.strategy';
 import { SearchRangeValidationStrategy } from '../strategies/search-range-validation.strategy';
 import { AggregationContradictionStrategy } from '../strategies/aggregation-contradiction.strategy';
+import { DateTimeCoherenceValidationStrategy } from '../strategies/date-time-coherence-validation.strategy';
 
 @Injectable({ providedIn: 'root' })
 export class FilterValidatorService implements IFilterValidator {
@@ -21,6 +22,7 @@ export class FilterValidatorService implements IFilterValidator {
   constructor() {
     this.registerStrategy(new RegistryContradictionValidationStrategy());
     this.registerStrategy(new FormationModeContradictionStrategy());
+    this.registerStrategy(new DateTimeCoherenceValidationStrategy());
     this.registerStrategy(new SearchRangeValidationStrategy());
     this.registerStrategy(new AggregationContradictionStrategy()); // Attivata
   }

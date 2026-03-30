@@ -142,4 +142,61 @@ describe('AdvancedFilterPanelComponent', () => {
       expect(component.isExpanded).toBe(false);
     });
   });
+
+  describe('Getter/Setter filters e Logica di Reset', () => {
+    it('dovrebbe eseguire patchValue (ramo else) se i filtri NON sono vuoti', () => {
+      const patchSpy = vi.spyOn(component.panelForm, 'patchValue');
+      const newFilters: SearchFilters = {
+        common: { test: 'valore' } as any,
+        diDai: {} as any,
+        aggregate: {} as any,
+        customMeta: null,
+        subject: null,
+      };
+
+      fixture.componentRef.setInput('filters', newFilters);
+
+      expect(patchSpy).toHaveBeenCalledWith(newFilters, { emitEvent: false });
+    });
+
+    it('dovrebbe eseguire reset (ramo if) e incrementare subjectResetCounter se i filtri SONO vuoti', () => {
+      const resetSpy = vi.spyOn(component.panelForm, 'reset');
+      const initialCounter = component.subjectResetCounter;
+      const resetFilters: SearchFilters = {
+        common: {} as any,
+        diDai: {} as any,
+        aggregate: {} as any,
+        customMeta: null,
+        subject: null,
+      };
+
+      fixture.componentRef.setInput('filters', resetFilters);
+
+      expect(resetSpy).toHaveBeenCalledWith({}, { emitEvent: false });
+      expect(component.subjectResetCounter).toBe(initialCounter + 1);
+    });
+
+    it('dovrebbe gestire in modo sicuro i valori undefined (copertura dei rami || {})', () => {
+      const resetSpy = vi.spyOn(component.panelForm, 'reset');
+      const undefinedFilters: any = {
+        common: undefined,
+        diDai: undefined,
+        aggregate: undefined,
+        customMeta: null,
+        subject: null,
+      };
+
+      fixture.componentRef.setInput('filters', undefinedFilters);
+
+      expect(resetSpy).toHaveBeenCalledWith({}, { emitEvent: false });
+    });
+
+    it('NON dovrebbe fare nulla se panelForm non è ancora inizializzato', () => {
+      (component as any).panelForm = undefined;
+
+      expect(() => {
+        component.filters = { common: { t: 1 } } as any;
+      }).not.toThrow();
+    });
+  });
 });

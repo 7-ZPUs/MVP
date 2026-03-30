@@ -13,6 +13,7 @@ describe('SearchPageComponent', () => {
   let fixture: ComponentFixture<SearchPageComponent>;
   let mockFacade: any;
   let mockStateSignal: any;
+  let mockFilterValidator: any;
 
   beforeEach(async () => {
     mockStateSignal = signal<SearchState>({
@@ -36,9 +37,16 @@ describe('SearchPageComponent', () => {
       retry: vi.fn(),
     };
 
+    mockFilterValidator = {
+      validate: vi.fn().mockReturnValue({ isValid: true, errors: new Map() }),
+    };
+
     await TestBed.configureTestingModule({
       imports: [SearchPageComponent],
-      providers: [{ provide: SearchFacade, useValue: mockFacade }],
+      providers: [
+        { provide: SearchFacade, useValue: mockFacade },
+        { provide: 'IFilterValidator', useValue: mockFilterValidator },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(SearchPageComponent);
@@ -115,6 +123,36 @@ describe('SearchPageComponent', () => {
       expect(mockFacade.search).toHaveBeenCalled();
       expect(mockFacade.searchSemantic).not.toHaveBeenCalled();
     });
+
+    it('dovrebbe bloccare la ricerca principale e mostrare externalValidation se i filtri sono invalidi', () => {
+      const validation = {
+        isValid: false,
+        errors: new Map([
+          [
+            'aggregate.dataApertura',
+            [
+              {
+                field: 'aggregate.dataApertura',
+                code: 'ERR_RANGE_001',
+                message: 'La data di inizio non può essere successiva alla data di fine.',
+              },
+            ],
+          ],
+        ]),
+      };
+      mockFilterValidator.validate.mockReturnValue(validation);
+
+      component.onSearchRequested();
+
+      expect(component.externalValidation).toEqual(validation);
+      expect(mockFacade.search).not.toHaveBeenCalled();
+      expect(mockFacade.searchSemantic).not.toHaveBeenCalled();
+    });
+
+    it('dovrebbe validare i filtri prima della ricerca principale', () => {
+      component.onSearchRequested();
+      expect(mockFilterValidator.validate).toHaveBeenCalled();
+    });
   });
 
   describe('Interazione con i Filtri (Eventi DOM)', () => {
@@ -149,6 +187,23 @@ describe('SearchPageComponent', () => {
 
       expect(mockFacade.searchAdvanced).toHaveBeenCalledWith(mockFilters);
       expect(mockFacade.search).not.toHaveBeenCalled();
+    });
+
+    it('dovrebbe aggiornare externalValidation intercettando (validationResult) dal figlio', () => {
+      const filterPanel = fixture.debugElement.query(By.css('app-advanced-filter-panel'));
+      const result = {
+        isValid: false,
+        errors: new Map([
+          [
+            'aggregate.dataApertura',
+            [{ field: 'aggregate.dataApertura', code: 'ERR_RANGE_001', message: 'range' }],
+          ],
+        ]),
+      } as any;
+
+      filterPanel.triggerEventHandler('validationResult', result);
+
+      expect(component.externalValidation).toEqual(result);
     });
   });
 

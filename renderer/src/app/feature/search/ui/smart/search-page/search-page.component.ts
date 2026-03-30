@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, Inject } from '@angular/core';
 import { JsonPipe } from '@angular/common';
 import { SearchFacade } from '../../../services';
 import { AdvancedFilterPanelComponent } from '../advanced-filter-panel/advanced-filter-panel';
@@ -6,8 +6,10 @@ import {
   SearchFilters,
   SearchQuery,
   ValidationResult,
+  PartialSearchFilters,
 } from '../../../../../../../../shared/metadata';
 import { SearchQueryType } from '../../../../../../../../shared/metadata/search.enum';
+import { IFilterValidator } from '../../../../validation/contracts/filter-validator.interface';
 
 @Component({
   selector: 'app-search-page',
@@ -19,6 +21,8 @@ export class SearchPageComponent implements OnInit {
   protected readonly searchFacade = inject(SearchFacade);
   public readonly state = this.searchFacade.getState();
   public externalValidation: ValidationResult | null = null;
+
+  constructor(@Inject('IFilterValidator') private readonly filterValidator: IFilterValidator) {}
 
   public ngOnInit(): void {}
 
@@ -43,6 +47,16 @@ export class SearchPageComponent implements OnInit {
 
   public onSearchRequested(): void {
     const currentState = this.state();
+
+    const validation = this.filterValidator.validate(
+      currentState.filters as unknown as PartialSearchFilters,
+    );
+    this.externalValidation = validation;
+
+    if (!validation.isValid) {
+      return;
+    }
+
     if (currentState.query.useSemanticSearch) {
       this.searchFacade.searchSemantic(currentState.query);
     } else {
@@ -52,6 +66,12 @@ export class SearchPageComponent implements OnInit {
 
   public onAdvancedSearchRequested(filters: SearchFilters): void {
     this.searchFacade.searchAdvanced(filters);
+
+    const validationErrors = this.state().validationErrors;
+    this.externalValidation = {
+      isValid: validationErrors.size === 0,
+      errors: validationErrors,
+    };
   }
 
   public onFiltersReset(): void {
@@ -62,5 +82,15 @@ export class SearchPageComponent implements OnInit {
       customMeta: null,
       subject: null,
     } as any);
+
+    this.externalValidation = null;
+  }
+
+  public validateFilters = (filters: PartialSearchFilters): ValidationResult => {
+    return this.filterValidator.validate(filters);
+  };
+
+  public onLiveValidationChanged(result: ValidationResult): void {
+    this.externalValidation = result;
   }
 }
