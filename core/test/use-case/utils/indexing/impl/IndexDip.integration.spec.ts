@@ -22,6 +22,7 @@ import { FileDAO } from "../../../../../src/dao/FileDAO";
 import { DocumentClassDAO } from "../../../../../src/dao/DocumentClassDAO";
 import { DocumentDAO } from "../../../../../src/dao/DocumentDAO";
 import { ProcessDAO } from "../../../../../src/dao/ProcessDAO";
+import { readFileSync } from "node:fs";
 
 // ---------------------------------------------------------------------------
 // Realistic DiP index XML — one DocumentClass, one AiP, two Documents
@@ -168,6 +169,8 @@ describe("Index use-case integration tests", () => {
     await fs.mkdir(path.dirname(dbPath), { recursive: true });
 
     dbProvider = new DatabaseProvider(dbPath);
+    const schema = readFileSync("db/schema.sql", "utf-8");
+    dbProvider.db.exec(schema);
 
     const packageReader = new LocalPackageReaderAdapter(
       new XmlDipParser(),
@@ -176,7 +179,9 @@ describe("Index use-case integration tests", () => {
     );
 
     dipRepository = new DipRepository(new DipDAO(dbProvider));
-    documentClassRepository = new DocumentClassRepository(new DocumentClassDAO(dbProvider));
+    documentClassRepository = new DocumentClassRepository(
+      new DocumentClassDAO(dbProvider),
+    );
     processRepository = new ProcessRepository(new ProcessDAO(dbProvider));
     documentRepository = new DocumentRepository(new DocumentDAO(dbProvider));
     fileRepository = new FileRepository(new FileDAO(dbProvider));
