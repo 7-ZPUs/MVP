@@ -141,6 +141,27 @@ describe('DiDaiFiltersComponent', () => {
       component.validationResult = { isValid: true, errors: new Map() };
       expect(component.getError('registrazione.tipologiaFlusso')).toBeUndefined();
     });
+
+    it('dovrebbe restituire errore corretto per tracciature indicizzate', () => {
+      component.validationResult = {
+        isValid: false,
+        errors: new Map([
+          [
+            'diDai.tracciatureModifiche.0.dataModifica',
+            [
+              {
+                message: "La data di modifica è obbligatoria quando è presente l'ora.",
+                code: 'ERR_CONF_DT_002',
+                field: '',
+              },
+            ],
+          ],
+        ]),
+      };
+
+      const error = component.getTracciaturaError(0, 'dataModifica');
+      expect(error?.code).toBe('ERR_CONF_DT_002');
+    });
   });
 
   it('dovrebbe innescare i metodi di tracciatura cliccando fisicamente i bottoni nel template HTML', async () => {

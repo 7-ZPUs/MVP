@@ -5,7 +5,7 @@
 >
   <details
     class="filter-accordion"
-    open
+    closed
     style="border: 1px solid #cbd5e1; border-radius: 6px; padding: 0.5rem; background: white"
   >
     <summary style="font-weight: bold; cursor: pointer; padding: 0.5rem; user-select: none">
@@ -52,7 +52,15 @@
             type="date"
             formControlName="dataRegistrazione"
             style="width: 100%; padding: 0.4rem; border: 1px solid #cbd5e1; border-radius: 4px"
+            [attr.aria-invalid]="!!getError('registrazione.dataRegistrazione')"
           />
+          <div
+            *ngIf="getError('registrazione.dataRegistrazione') as err"
+            class="validation-error"
+            style="color: #dc2626; font-size: 0.75rem; margin-top: 0.25rem"
+          >
+            {{ err.message }}
+          </div>
         </div>
         <div class="form-group" style="flex: 1">
           <label style="display: block; font-size: 0.875rem; margin-bottom: 0.25rem"
@@ -364,7 +372,15 @@
                 type="date"
                 formControlName="dataModifica"
                 style="width: 100%; padding: 0.4rem; border: 1px solid #cbd5e1; border-radius: 4px"
+                [attr.aria-invalid]="!!getTracciaturaError(i, 'dataModifica')"
               />
+              <div
+                *ngIf="getTracciaturaError(i, 'dataModifica') as err"
+                class="validation-error"
+                style="color: #dc2626; font-size: 0.75rem; margin-top: 0.25rem"
+              >
+                {{ err.message }}
+              </div>
             </div>
           </div>
 

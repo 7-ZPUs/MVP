@@ -120,6 +120,90 @@ describe('AggregateFiltersComponent', () => {
 
       expect(() => fixture.detectChanges()).not.toThrow();
     });
+
+    it('dovrebbe mostrare il messaggio di errore per dataApertura quando presente', () => {
+      fixture.componentRef.setInput('validationResult', {
+        isValid: false,
+        errors: new Map([
+          [
+            'aggregate.dataApertura',
+            [
+              {
+                message: 'La data di inizio non può essere successiva alla data di fine.',
+                code: 'ERR_RANGE_001',
+                field: 'aggregate.dataApertura',
+              },
+            ],
+          ],
+        ]),
+      });
+
+      fixture.detectChanges();
+
+      const errorEl = fixture.debugElement.query(By.css('.validation-error'));
+      expect(errorEl?.nativeElement.textContent).toContain(
+        'La data di inizio non può essere successiva alla data di fine.',
+      );
+    });
+
+    it('dovrebbe mostrare il messaggio di errore per assegnazione.dataInizioAssegn quando presente', () => {
+      fixture.componentRef.setInput('validationResult', {
+        isValid: false,
+        errors: new Map([
+          [
+            'aggregate.assegnazione.dataInizioAssegn',
+            [
+              {
+                message: 'La data di inizio non può essere successiva alla data di fine.',
+                code: 'ERR_RANGE_001',
+                field: 'aggregate.assegnazione.dataInizioAssegn',
+              },
+            ],
+          ],
+        ]),
+      });
+
+      fixture.detectChanges();
+
+      const errors = fixture.debugElement.queryAll(By.css('.validation-error'));
+      expect(
+        errors.some((el) =>
+          el.nativeElement.textContent.includes(
+            'La data di inizio non può essere successiva alla data di fine.',
+          ),
+        ),
+      ).toBe(true);
+    });
+
+    it('dovrebbe mostrare il messaggio di errore per procedimento.fasi[0].dataInizioFase quando presente', () => {
+      fixture.componentRef.setInput('validationResult', {
+        isValid: false,
+        errors: new Map([
+          [
+            'aggregate.procedimento.fasi.0.dataInizioFase',
+            [
+              {
+                message: 'La data di inizio non può essere successiva alla data di fine.',
+                code: 'ERR_RANGE_001',
+                field: 'aggregate.procedimento.fasi.0.dataInizioFase',
+              },
+            ],
+          ],
+        ]),
+      });
+
+      component.addFase(false);
+      fixture.detectChanges();
+
+      const errors = fixture.debugElement.queryAll(By.css('.validation-error'));
+      expect(
+        errors.some((el) =>
+          el.nativeElement.textContent.includes(
+            'La data di inizio non può essere successiva alla data di fine.',
+          ),
+        ),
+      ).toBe(true);
+    });
   });
 
   it('ngOnDestroy() deve pulire le sottoscrizioni', () => {
