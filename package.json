@@ -14,6 +14,7 @@
     "start:lore": "DBUS_SESSION_BUS_ADDRESS=/dev/null ELECTRON_DISABLE_SANDBOX=1 electron .",
     "start:dev": "NODE_ENV=development npm run build:all && npm run start",
     "start:renderer": "cd renderer && ng serve --host 0.0.0.0",
+    "test:system": "vitest run shared/system_test",
     "test:core": "vitest run --passWithNoTests",
     "test:core:watch": "vitest",
     "test:core:coverage": "vitest run --passWithNoTests --coverage",
@@ -33,6 +34,7 @@
     "fast-xml-parser": "^4.3.6",
     "onnxruntime-node": "^1.17.3",
     "reflect-metadata": "^0.2.2",
+    "sharp": "^0.34.5",
     "sqlite-vss": "^0.1.2",
     "tsyringe": "^4.8.0"
   },
