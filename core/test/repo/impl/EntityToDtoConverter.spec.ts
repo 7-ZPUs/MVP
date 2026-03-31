@@ -7,6 +7,7 @@ import { File } from "../../../src/entity/File";
 import { Process } from "../../../src/entity/Process";
 import { Metadata, MetadataType } from "../../../src/value-objects/Metadata";
 import { IntegrityStatusEnum } from "../../../src/value-objects/IntegrityStatusEnum";
+import { MetadataDTO } from "../../../src/dto/MetadataDTO";
 
 describe("EntityToDtoConverter", () => {
   describe("dipToDto", () => {
@@ -15,16 +16,11 @@ describe("EntityToDtoConverter", () => {
     // description: should convertire un Dip entity a DipDTO correttamente
     // expected_value: matches asserted behavior: converte correttamente
     it("TU-F-converter-01: dipToDto() should convertire un Dip entity a DipDTO correttamente", () => {
-      const dip = Dip.fromDB({
-        id: 1,
-        uuid: "test-uuid",
-        integrityStatus: "VALID",
-      });
+      const dip = new Dip("test-uuid", IntegrityStatusEnum.VALID, 1);
 
       const dto = EntityToDtoConverter.dipToDto(dip);
 
       expect(dto.id).toBe(1);
-      expect(dto.dipId).toBe(1);
       expect(dto.uuid).toBe("test-uuid");
       expect(dto.integrityStatus).toBe(IntegrityStatusEnum.VALID);
     });
@@ -56,14 +52,15 @@ describe("EntityToDtoConverter", () => {
     // description: should convertire un DocumentClass entity a DocumentClassDTO correttamente
     // expected_value: matches asserted behavior: converte correttamente
     it("TU-F-converter-04: documentClassToDto() should convertire un DocumentClass entity a DocumentClassDTO correttamente", () => {
-      const dc = DocumentClass.fromDB({
-        id: 2,
-        dipId: 1,
-        uuid: "dc-uuid",
-        name: "Ricevute",
-        timestamp: "2025-03-01T08:00:00Z",
-        integrityStatus: "VALID",
-      });
+      const dc = new DocumentClass(
+        "dip-uuid",
+        "dc-uuid",
+        "Ricevute",
+        "2025-03-01T08:00:00Z",
+        IntegrityStatusEnum.VALID,
+        2,
+        1,
+      );
 
       const dto = EntityToDtoConverter.documentClassToDto(dc);
 
@@ -97,14 +94,15 @@ describe("EntityToDtoConverter", () => {
     // description: should gestire INVALID integrity status
     // expected_value: returns DTO with INVALID status
     it("TU-F-converter-06: documentClassToDto() should gestire INVALID integrity status", () => {
-      const dc = DocumentClass.fromDB({
-        id: 3,
-        dipId: 2,
-        uuid: "dc-uuid-2",
-        name: "Contratti",
-        timestamp: "2025-04-01T08:00:00Z",
-        integrityStatus: "INVALID",
-      });
+      const dc = new DocumentClass(
+        "dc-uuid-2",
+        "Contratti",
+        "2025-04-01T08:00:00Z",
+        "INVALID",
+        IntegrityStatusEnum.INVALID,
+        3,
+        1,
+      );
 
       const dto = EntityToDtoConverter.documentClassToDto(dc);
 
@@ -126,14 +124,13 @@ describe("EntityToDtoConverter", () => {
         ],
         MetadataType.COMPOSITE,
       );
-      const doc = Document.fromDB(
-        {
-          id: 5,
-          uuid: "doc-uuid",
-          integrityStatus: "VALID",
-          processId: 10,
-        },
+      const doc = new Document(
+        "doc-uuid",
         metadata,
+        "proc-uuid",
+        IntegrityStatusEnum.VALID,
+        5,
+        10,
       );
 
       const dto = EntityToDtoConverter.documentToDto(doc);
@@ -153,7 +150,14 @@ describe("EntityToDtoConverter", () => {
     // expected_value: throws error with message about null id
     it("TU-F-converter-08: documentToDto() should lanciare errore se id è null", () => {
       const metadata = new Metadata("root", [], MetadataType.COMPOSITE);
-      const doc = new Document("doc-uuid", metadata, "proc-uuid");
+      const doc = new Document(
+        "doc-uuid",
+        metadata,
+        "proc-uuid",
+        IntegrityStatusEnum.VALID,
+        null,
+        10,
+      );
 
       expect(() => EntityToDtoConverter.documentToDto(doc)).toThrow(
         "Cannot convert Document to DTO: id or processId is null",
@@ -184,15 +188,17 @@ describe("EntityToDtoConverter", () => {
     // description: should convertire un File entity a FileDTO correttamente
     // expected_value: matches asserted behavior: converte correttamente
     it("TU-F-converter-10: fileToDto() should convertire un File entity a FileDTO correttamente", () => {
-      const file = File.fromDB({
-        id: 7,
-        filename: "documento.pdf",
-        path: "/docs/documento.pdf",
-        hash: "abc123hash",
-        integrityStatus: "VALID",
-        isMain: 1,
-        documentId: 5,
-      });
+      const file = new File(
+        "documento.pdf",
+        "/docs/documento.pdf",
+        "abc123hash",
+        true,
+        "file-uuid",
+        "doc-uuid",
+        IntegrityStatusEnum.VALID,
+        7,
+        5,
+      );
 
       const dto = EntityToDtoConverter.fileToDto(file);
 
@@ -254,14 +260,13 @@ describe("EntityToDtoConverter", () => {
         new Metadata("fase", "Acquisizione", MetadataType.STRING),
         new Metadata("ordine", "1", MetadataType.NUMBER),
       ];
-      const proc = Process.fromDB(
-        {
-          id: 10,
-          documentClassId: 2,
-          uuid: "proc-uuid",
-          integrityStatus: "VALID",
-        },
-        metadata,
+      const proc = new Process(
+        "dc-uuid",
+        "proc-uuid",
+        new Metadata("root", metadata, MetadataType.COMPOSITE),
+        IntegrityStatusEnum.VALID,
+        10,
+        2,
       );
 
       const dto = EntityToDtoConverter.processToDto(proc);
@@ -270,11 +275,11 @@ describe("EntityToDtoConverter", () => {
       expect(dto.documentClassId).toBe(2);
       expect(dto.uuid).toBe("proc-uuid");
       expect(dto.integrityStatus).toBe(IntegrityStatusEnum.VALID);
-      expect(dto.metadata).toHaveLength(2);
-      expect(dto.metadata[0].name).toBe("fase");
-      expect(dto.metadata[0].value).toBe("Acquisizione");
-      expect(dto.metadata[1].name).toBe("ordine");
-      expect(dto.metadata[1].value).toBe("1");
+      expect((dto.metadata.value as MetadataDTO[]).length).toBe(2);
+      expect((dto.metadata.value[0] as MetadataDTO).name).toBe("fase");
+      expect((dto.metadata.value[0] as MetadataDTO).value).toBe("Acquisizione");
+      expect((dto.metadata.value[1] as MetadataDTO).name).toBe("ordine");
+      expect((dto.metadata.value[1] as MetadataDTO).value).toBe("1");
     });
 
     // identifier: TU-F-converter-14
@@ -282,7 +287,11 @@ describe("EntityToDtoConverter", () => {
     // description: should lanciare errore se id è null
     // expected_value: throws error with message about null id
     it("TU-F-converter-14: processToDto() should lanciare errore se id è null", () => {
-      const proc = new Process("dc-uuid", "proc-uuid", []);
+      const proc = new Process(
+        "dc-uuid",
+        "proc-uuid",
+        new Metadata("root", [], MetadataType.COMPOSITE),
+      );
 
       expect(() => EntityToDtoConverter.processToDto(proc)).toThrow(
         "Cannot convert Process to DTO: id or documentClassId is null",

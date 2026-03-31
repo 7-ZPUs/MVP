@@ -30,6 +30,9 @@ export class CheckDipIntegrityStatusUC implements ICheckDipIntegrityStatusUC {
             throw new Error(`Dip has not been saved yet, cannot check integrity`);
         }
 
-        return this.hashingService.checkDipIntegrity(dip.getId() as number);
+        const result = this.hashingService.checkDipIntegrity(dip.getId() as number);
+        this.dipRepo.updateIntegrityStatus(dip.getId() as number, result);
+
+        
     }
 }

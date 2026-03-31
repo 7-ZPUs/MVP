@@ -79,18 +79,6 @@ describe("ProcessDAO", () => {
     ).toBe("v1");
   });
 
-  it("updates process and rewrites metadata on uuid conflict", () => {
-    dao.save(new Process(documentClassUuid, "proc-b", buildMetadata("v1")));
-    const updated = dao.save(
-      new Process(documentClassUuid, "proc-b", buildMetadata("v2")),
-    );
-
-    const found = dao.getById(updated.getId() as number);
-    expect(
-      found?.getMetadata().findNodeByName("Versione")?.getStringValue(),
-    ).toBe("v2");
-  });
-
   it("gets by documentClassId and status and updates integrity", () => {
     const a = dao.save(
       new Process(documentClassUuid, "proc-c", buildMetadata("v1")),

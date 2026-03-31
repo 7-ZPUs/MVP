@@ -8,6 +8,7 @@ import { DocumentClass } from "../../../../src/entity/DocumentClass";
 import { IDocumentClassRepository } from "../../../../src/repo/IDocumentClassRepository";
 import { IntegrityStatusEnum } from "../../../../src/value-objects/IntegrityStatusEnum";
 import { IProcessRepository } from "../../../../src/repo/IProcessRepository";
+import { IHashingService } from "../../../../src/services/IHashingService";
 
 describe("DocumentClass use-cases", () => {
   // identifier: TU-S-browsing-80
@@ -72,7 +73,17 @@ describe("DocumentClass use-cases", () => {
     > = {
       getById: vi
         .fn()
-        .mockReturnValue(new DocumentClass("1", "dc", "Classe", "2026-01-01")),
+        .mockReturnValue(
+          new DocumentClass(
+            "1",
+            "dc",
+            "Classe",
+            "2026-01-01",
+            IntegrityStatusEnum.UNKNOWN,
+            1,
+            2,
+          ),
+        ),
       updateIntegrityStatus: vi.fn(),
     };
     const processRepo: Pick<
@@ -84,15 +95,17 @@ describe("DocumentClass use-cases", () => {
         .mockReturnValue(IntegrityStatusEnum.UNKNOWN),
     };
 
+    const hashingService: Pick<IHashingService, "checkDocumentClassIntegrity"> = {
+      checkDocumentClassIntegrity: vi.fn(),
+    };
+
     const uc = new CheckDocumentClassIntegrityStatusUC(
       docClassRepo as IDocumentClassRepository,
       processRepo as IProcessRepository,
+      hashingService as IHashingService,
     );
     const result = uc.execute(1);
 
-    expect(
-      processRepo.getAggregatedIntegrityStatusByDocumentClassId,
-    ).toHaveBeenCalledWith(1);
     expect(docClassRepo.updateIntegrityStatus).toHaveBeenCalledWith(
       1,
       IntegrityStatusEnum.UNKNOWN,
@@ -119,9 +132,14 @@ describe("DocumentClass use-cases", () => {
       getAggregatedIntegrityStatusByDocumentClassId: vi.fn(),
     };
 
+    const hashingService: Pick<IHashingService, "checkDocumentClassIntegrity"> = {
+      checkDocumentClassIntegrity: vi.fn(),
+    };
+
     const uc = new CheckDocumentClassIntegrityStatusUC(
       docClassRepo as IDocumentClassRepository,
       processRepo as IProcessRepository,
+      hashingService as IHashingService,
     );
 
     expect(() => uc.execute(14)).toThrow("DocumentClass with id 14 not found");

@@ -59,7 +59,7 @@ const REALISTIC_INDEX_XML = `<?xml version="1.0" encoding="UTF-8"?>
 </DiPIndex>`;
 
 const REALISTIC_AIPINFO_XML = `
-<example>
+<AiPInfo>
 <simpleField>simple value</simpleField>
 <compositeField>
   <compositeChild>
@@ -67,7 +67,7 @@ const REALISTIC_AIPINFO_XML = `
   </compositeChild>
   <child name="child2">value2</child>
 </compositeField>
-</example>
+</AiPInfo>
 `;
 
 // ---------------------------------------------------------------------------
@@ -247,10 +247,9 @@ describe("Index use-case integration tests", () => {
     expect(process.getUuid()).toBe("proc-001");
 
     const metadata = process.getMetadata();
-    expect(metadata).toHaveLength(1);
 
-    const root = metadata[0];
-    expect(root.getName()).toBe("example");
+    const root = metadata;
+    expect(root.getName()).toBe("AiPInfo");
     expect(root.getType()).toBe(MetadataType.COMPOSITE);
 
     const rootChildren = root.getChildren();

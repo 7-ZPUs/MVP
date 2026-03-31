@@ -23,7 +23,7 @@ export class CheckDocumentClassIntegrityStatusUC implements ICheckDocumentClassI
     private readonly hashingService: IHashingService,
   ) {}
 
-  execute(documentClassId: number): Promise<IntegrityStatusEnum> {
+  async execute(documentClassId: number): Promise<IntegrityStatusEnum> {
     const documentClass = this.documentClassRepo.getById(documentClassId);
     if (!documentClass) {
       throw new Error(`DocumentClass with id ${documentClassId} not found`);
@@ -33,8 +33,12 @@ export class CheckDocumentClassIntegrityStatusUC implements ICheckDocumentClassI
       throw new Error(`DocumentClass has not been saved yet, cannot check integrity`);
     }
 
-    return this.hashingService.checkDocumentClassIntegrity(
+    const result = await this.hashingService.checkDocumentClassIntegrity(
       documentClass.getId() as number,
     );
+
+    this.documentClassRepo.updateIntegrityStatus(documentClass.getId() as number, result);
+
+    return result;
   }
 }

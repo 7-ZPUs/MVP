@@ -56,11 +56,12 @@ export class DocumentMapper {
   }
 
   static toPersistence(document: Document): DocumentPersistenceModel {
-    return {
+    let temp = {
       uuid: document.getUuid(),
       integrityStatus: document.getIntegrityStatus(),
       processUuid: document.getProcessUuid(),
       metadata: MetadataMapper.flatten(document.getMetadata()),
     };
+    return temp
   }
 }

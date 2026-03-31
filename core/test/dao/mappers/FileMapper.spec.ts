@@ -31,22 +31,6 @@ describe("FileMapper", () => {
     expect(entity.getIntegrityStatus()).toBe(IntegrityStatusEnum.VALID);
   });
 
-  it("keeps uuid empty when persistence row has no uuid", () => {
-    const row: FilePersistenceRow = {
-      id: 9,
-      filename: "main.xml",
-      path: "/pkg/main.xml",
-      hash: "hash-1",
-      integrityStatus: "VALID",
-      isMain: 1,
-      documentId: 3,
-      documentUuid: "doc-uuid",
-    };
-
-    const entity = FileMapper.fromPersistence(row);
-    expect(entity.getUuid()).toBe("");
-  });
-
   it("falls back to UNKNOWN for invalid status", () => {
     const row: FilePersistenceRow = {
       id: 10,

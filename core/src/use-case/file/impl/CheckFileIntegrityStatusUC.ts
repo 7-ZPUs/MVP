@@ -22,6 +22,12 @@ export class CheckFileIntegrityStatusUC implements ICheckFileIntegrityStatusUC {
             throw new Error(`File with id ${fileId} not found`);
         }
 
-        return await this.hashingService.checkFileIntegrity(file.getPath(), file.getHash());
+        const result = await this.hashingService.checkFileIntegrity(file.getPath(), file.getHash());
+
+        file.setIntegrityStatus(result);
+
+        this.fileRepo.updateIntegrityStatus(fileId, result);
+
+        return result;
     }
 }
