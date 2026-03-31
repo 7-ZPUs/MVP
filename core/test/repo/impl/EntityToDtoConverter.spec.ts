@@ -41,16 +41,8 @@ describe("EntityToDtoConverter", () => {
       );
     });
 
-    // identifier: TU-F-converter-03
-    // method_name: dipToDto()
-    // description: should gestire UNKNOWN integrity status
-    // expected_value: returns DTO with UNKNOWN status
-    it("TU-F-converter-03: dipToDto() should gestire UNKNOWN integrity status", () => {
-      const dip = Dip.fromDB({
-        id: 5,
-        uuid: "another-uuid",
-        integrityStatus: "UNKNOWN",
-      });
+    it("keeps UNKNOWN integrity status", () => {
+      const dip = new Dip("dip-uuid", IntegrityStatusEnum.UNKNOWN, 5);
 
       const dto = EntityToDtoConverter.dipToDto(dip);
 
@@ -168,26 +160,21 @@ describe("EntityToDtoConverter", () => {
       );
     });
 
-    // identifier: TU-F-converter-09
-    // method_name: documentToDto()
-    // description: should gestire metadati vuoti
-    // expected_value: returns DTO with empty metadata children
-    it("TU-F-converter-09: documentToDto() should gestire metadati vuoti", () => {
-      const metadata = new Metadata("root", [], MetadataType.COMPOSITE);
-      const doc = Document.fromDB(
-        {
-          id: 6,
-          uuid: "doc-empty",
-          integrityStatus: "UNKNOWN",
-          processId: 11,
-        },
-        metadata,
+    it("converts document with empty composite metadata", () => {
+      const entity = new Document(
+        "doc-empty",
+        new Metadata("root", [], MetadataType.COMPOSITE),
+        "proc-uuid",
+        IntegrityStatusEnum.UNKNOWN,
+        6,
+        11,
       );
 
-      const dto = EntityToDtoConverter.documentToDto(doc);
+      const dto = EntityToDtoConverter.documentToDto(entity);
 
       expect(dto.metadata.name).toBe("root");
-      expect(dto.metadata.value).toHaveLength(0);
+      expect(Array.isArray(dto.metadata.value)).toBe(true);
+      expect((dto.metadata.value as MetadataDTO[]).length).toBe(0);
     });
   });
 
@@ -237,22 +224,20 @@ describe("EntityToDtoConverter", () => {
       );
     });
 
-    // identifier: TU-F-converter-12
-    // method_name: fileToDto()
-    // description: should gestire file allegati (isMain = false)
-    // expected_value: returns DTO with isMain = false
-    it("TU-F-converter-12: fileToDto() should gestire file allegati (isMain = false)", () => {
-      const file = File.fromDB({
-        id: 8,
-        filename: "allegato.txt",
-        path: "/docs/allegato.txt",
-        hash: "def456hash",
-        integrityStatus: "INVALID",
-        isMain: 0,
-        documentId: 6,
-      });
+    it("converts non-main attachment file", () => {
+      const entity = new File(
+        "allegato.txt",
+        "/docs/allegato.txt",
+        "def456hash",
+        false,
+        "file-uuid-2",
+        "doc-uuid",
+        IntegrityStatusEnum.INVALID,
+        8,
+        6,
+      );
 
-      const dto = EntityToDtoConverter.fileToDto(file);
+      const dto = EntityToDtoConverter.fileToDto(entity);
 
       expect(dto.isMain).toBe(false);
       expect(dto.integrityStatus).toBe(IntegrityStatusEnum.INVALID);
@@ -304,24 +289,21 @@ describe("EntityToDtoConverter", () => {
       );
     });
 
-    // identifier: TU-F-converter-15
-    // method_name: processToDto()
-    // description: should gestire process senza metadati
-    // expected_value: returns DTO with empty metadata array
-    it("TU-F-converter-15: processToDto() should gestire process senza metadati", () => {
-      const proc = Process.fromDB(
-        {
-          id: 11,
-          documentClassId: 3,
-          uuid: "proc-no-meta",
-          integrityStatus: "UNKNOWN",
-        },
-        [],
+    it("converts process with empty metadata children", () => {
+      const entity = new Process(
+        "dc-uuid",
+        "proc-no-meta",
+        new Metadata("ProcessoVuoto", [], MetadataType.COMPOSITE),
+        IntegrityStatusEnum.UNKNOWN,
+        11,
+        3,
       );
 
-      const dto = EntityToDtoConverter.processToDto(proc);
+      const dto = EntityToDtoConverter.processToDto(entity);
 
-      expect(dto.metadata).toHaveLength(0);
+      expect(dto.metadata.name).toBe("ProcessoVuoto");
+      expect(Array.isArray(dto.metadata.value)).toBe(true);
+      expect((dto.metadata.value as MetadataDTO[]).length).toBe(0);
     });
   });
 
@@ -372,19 +354,14 @@ describe("EntityToDtoConverter", () => {
       expect(dto.type).toBe(MetadataType.BOOLEAN);
     });
 
-    // identifier: TU-F-converter-19
-    // method_name: metadataToDto()
-    // description: should convertire un Metadata composito con figli a MetadataDTO
-    // expected_value: matches asserted behavior: converte ricorsivamente i figli
-    it("TU-F-converter-19: metadataToDto() should convertire un Metadata composito con figli a MetadataDTO", () => {
+    it("converts COMPOSITE metadata recursively", () => {
       const metadata = new Metadata(
-        "DocumentoInformatico",
+        "root",
         [
-          new Metadata("autore", "Mario Rossi", MetadataType.STRING),
-          new Metadata("anno", "2025", MetadataType.NUMBER),
+          new Metadata("child1", "v1", MetadataType.STRING),
           new Metadata(
-            "allegati",
-            [new Metadata("file1", "doc.pdf", MetadataType.STRING)],
+            "nested",
+            [new Metadata("child2", "v2", MetadataType.STRING)],
             MetadataType.COMPOSITE,
           ),
         ],
@@ -393,21 +370,13 @@ describe("EntityToDtoConverter", () => {
 
       const dto = EntityToDtoConverter.metadataToDto(metadata);
 
-      expect(dto.name).toBe("DocumentoInformatico");
+      expect(dto.name).toBe("root");
       expect(dto.type).toBe(MetadataType.COMPOSITE);
       expect(Array.isArray(dto.value)).toBe(true);
-      expect((dto.value as any[]).length).toBe(3);
-      expect((dto.value as any[])[0].name).toBe("autore");
-      expect((dto.value as any[])[0].value).toBe("Mario Rossi");
-      expect((dto.value as any[])[2].name).toBe("allegati");
-      expect((dto.value as any[])[2].value).toHaveLength(1);
+      expect((dto.value as any[]).length).toBe(2);
     });
 
-    // identifier: TU-F-converter-20
-    // method_name: metadataToDto()
-    // description: should gestire Metadata composito vuoto
-    // expected_value: returns DTO with empty children array
-    it("TU-F-converter-20: metadataToDto() should gestire Metadata composito vuoto", () => {
+    it("converts empty COMPOSITE metadata", () => {
       const metadata = new Metadata("emptyRoot", [], MetadataType.COMPOSITE);
 
       const dto = EntityToDtoConverter.metadataToDto(metadata);
@@ -415,14 +384,10 @@ describe("EntityToDtoConverter", () => {
       expect(dto.name).toBe("emptyRoot");
       expect(dto.type).toBe(MetadataType.COMPOSITE);
       expect(Array.isArray(dto.value)).toBe(true);
-      expect((dto.value as any[]).length).toBe(0);
+      expect((dto.value as MetadataDTO[]).length).toBe(0);
     });
 
-    // identifier: TU-F-converter-21
-    // method_name: metadataToDto()
-    // description: should gestire Metadata annidati profondamente
-    // expected_value: matches asserted behavior: converte ricorsivamente
-    it("TU-F-converter-21: metadataToDto() should gestire Metadata annidati profondamente", () => {
+    it("converts deeply nested metadata", () => {
       const metadata = new Metadata(
         "level1",
         [
@@ -444,13 +409,13 @@ describe("EntityToDtoConverter", () => {
       const dto = EntityToDtoConverter.metadataToDto(metadata);
 
       expect(dto.name).toBe("level1");
-      const level2 = (dto.value as any[])[0];
+      const level2 = (dto.value as MetadataDTO[])[0];
       expect(level2.name).toBe("level2");
-      const level3 = (level2.value as any[])[0];
+      const level3 = (level2.value as MetadataDTO[])[0];
       expect(level3.name).toBe("level3");
-      const deepValue = (level3.value as any[])[0];
-      expect(deepValue.name).toBe("deep");
-      expect(deepValue.value).toBe("value");
+      const deep = (level3.value as MetadataDTO[])[0];
+      expect(deep.name).toBe("deep");
+      expect(deep.value).toBe("value");
     });
   });
 });

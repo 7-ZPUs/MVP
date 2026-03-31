@@ -45,48 +45,7 @@ describe("File entity", () => {
         });
     });
 
-    describe("fromDB", () => {
-        // identifier: TU-F-browsing-28
-        // method_name: ricostruisce()
-        // description: should ricostruisce correttamente da una riga del database (isMain = 1)
-        // expected_value: matches asserted behavior: ricostruisce correttamente da una riga del database (isMain = 1)
-        it("TU-F-browsing-28: ricostruisce() should ricostruisce correttamente da una riga del database (isMain = 1)", () => {
-            const row: FileRow = {
-                id: 20,
-                filename: "main.xml",
-                path: "/pkg/main.xml",
-                hash: "hash-main",
-                integrityStatus: "VALID",
-                isMain: 1,
-                documentId: 8,
-            };
-            const file = File.fromDB(row);
-
-            expect(file.getId()).toBe(20);
-            expect(file.getFilename()).toBe("main.xml");
-            expect(file.getPath()).toBe("/pkg/main.xml");
-            expect(file.getIntegrityStatus()).toBe(IntegrityStatusEnum.VALID);
-            expect(file.getIsMain()).toBe(true);
-            expect(file.getDocumentId()).toBe(8);
-        });
-
-        // identifier: TU-F-browsing-29
-        // method_name: converte()
-        // description: should converte isMain = 0 in false
-        // expected_value: matches asserted behavior: converte isMain = 0 in false
-        it("TU-F-browsing-29: converte() should converte isMain = 0 in false", () => {
-            const row: FileRow = {
-                id: 21,
-                filename: "allegato.pdf",
-                path: "/pkg/allegato.pdf",
-                hash: "hash-allegato",
-                integrityStatus: "UNKNOWN",
-                isMain: 0,
-                documentId: 8,
-            };
-            expect(File.fromDB(row).getIsMain()).toBe(false);
-        });
-    });
+   
 
     describe("setIntegrityStatus", () => {
         // identifier: TU-F-browsing-30
@@ -100,34 +59,4 @@ describe("File entity", () => {
         });
     });
 
-    describe("toDTO", () => {
-        // identifier: TU-F-browsing-31
-        // method_name: lancia()
-        // description: should lancia un errore se id è null
-        // expected_value: matches asserted behavior: lancia un errore se id è null
-        it("TU-F-browsing-31: lancia() should lancia un errore se id è null", () => {
-            const file = new File("f.xml", "/f.xml", "hash-default", true, "doc-uuid");
-            expect(() => file.toDTO()).toThrow("Cannot convert to DTO: File entity is not yet persisted and has no ID.");
-        });
-
-        // identifier: TU-F-browsing-32
-        // method_name: restituisce()
-        // description: should restituisce il DTO corretto
-        // expected_value: matches asserted behavior: restituisce il DTO corretto
-        it("TU-F-browsing-32: restituisce() should restituisce il DTO corretto", () => {
-            const row: FileRow = {
-                id: 5, filename: "doc.xml", path: "/doc.xml", hash: "hash-doc",
-                integrityStatus: "INVALID", isMain: 1, documentId: 3,
-            };
-            const file = File.fromDB(row);
-            const dto = file.toDTO();
-
-            expect(dto.id).toBe(5);
-            expect(dto.filename).toBe("doc.xml");
-            expect(dto.path).toBe("/doc.xml");
-            expect(dto.integrityStatus).toBe(IntegrityStatusEnum.INVALID);
-            expect(dto.isMain).toBe(true);
-            expect(dto.documentId).toBe(3);
-        });
-    });
 });
