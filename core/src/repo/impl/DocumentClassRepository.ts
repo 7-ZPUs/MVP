@@ -36,8 +36,4 @@ export class DocumentClassRepository implements IDocumentClassRepository {
   updateIntegrityStatus(id: number, status: IntegrityStatusEnum): void {
     return this.dao.updateIntegrityStatus(id, status);
   }
-
-  getAggregatedIntegrityStatusByDipId(dipId: number): IntegrityStatusEnum {
-    return this.dao.getAggregatedIntegrityStatusByDipId(dipId);
-  }
 }

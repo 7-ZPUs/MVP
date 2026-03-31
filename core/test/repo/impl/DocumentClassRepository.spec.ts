@@ -13,7 +13,6 @@ describe("DocumentClassRepository", () => {
     save: ReturnType<typeof vi.fn>;
     search: ReturnType<typeof vi.fn>;
     updateIntegrityStatus: ReturnType<typeof vi.fn>;
-    getAggregatedIntegrityStatusByDipId: ReturnType<typeof vi.fn>;
   };
   let repo: DocumentClassRepository;
 
@@ -25,7 +24,6 @@ describe("DocumentClassRepository", () => {
       save: vi.fn(),
       search: vi.fn(),
       updateIntegrityStatus: vi.fn(),
-      getAggregatedIntegrityStatusByDipId: vi.fn(),
     };
     repo = new DocumentClassRepository(dao as unknown as DocumentClassDAO);
   });
@@ -122,28 +120,12 @@ describe("DocumentClassRepository", () => {
     );
   });
 
-  it("TU-F-browsing-54: getAggregatedIntegrityStatusByDipId() should getAggregatedIntegrityStatusByDipId return logic", () => {
-    dao.getAggregatedIntegrityStatusByDipId
-      .mockReturnValueOnce(IntegrityStatusEnum.UNKNOWN)
-      .mockReturnValueOnce(IntegrityStatusEnum.UNKNOWN)
-      .mockReturnValueOnce(IntegrityStatusEnum.INVALID)
-      .mockReturnValueOnce(IntegrityStatusEnum.UNKNOWN)
-      .mockReturnValueOnce(IntegrityStatusEnum.VALID);
+  it("TU-F-browsing-54: getById() should return null quando la classe non esiste", () => {
+    dao.getById.mockReturnValue(null);
 
-    expect(repo.getAggregatedIntegrityStatusByDipId(1)).toBe(
-      IntegrityStatusEnum.UNKNOWN,
-    );
-    expect(repo.getAggregatedIntegrityStatusByDipId(1)).toBe(
-      IntegrityStatusEnum.UNKNOWN,
-    );
-    expect(repo.getAggregatedIntegrityStatusByDipId(2)).toBe(
-      IntegrityStatusEnum.INVALID,
-    );
-    expect(repo.getAggregatedIntegrityStatusByDipId(3)).toBe(
-      IntegrityStatusEnum.UNKNOWN,
-    );
-    expect(repo.getAggregatedIntegrityStatusByDipId(4)).toBe(
-      IntegrityStatusEnum.VALID,
-    );
+    const result = repo.getById(404);
+
+    expect(dao.getById).toHaveBeenCalledWith(404);
+    expect(result).toBeNull();
   });
 });

@@ -62,11 +62,32 @@ import { FILE_SYSTEM_PROVIDER_TOKEN } from "./repo/impl/utils/IFileSystemProvide
 import { FileSystemProvider } from "./repo/impl/utils/FileSystemProvider";
 import { DIP_PARSER_TOKEN } from "./repo/impl/utils/IDipParser";
 import { XmlDipParser } from "./repo/impl/utils/XmlDipParser";
+import { DATABASE_PROVIDER_TOKEN, DatabaseProvider } from "./repo/impl/DatabaseProvider";
+import { TRANSACTION_MANAGER_TOKEN } from "./repo/ITransactionManager";
+import { SqliteTransactionManager } from "./repo/impl/SqliteTransactionManager";
+import { HASHING_SERVICE_TOKEN } from "./services/IHashingService";
+import { HashingService } from "./services/impl/HashingService";
+import {
+  INTEGRITY_VERIFICATION_SERVICE_TOKEN,
+} from "./services/IIntegrityVerificationService";
+import { IntegrityVerificationService } from "./services/impl/IntegrityVerificationService";
 
 // Ports
 
 container.register(PACKAGE_READER_PORT_TOKEN, {
   useClass: LocalPackageReaderAdapter,
+});
+container.register(DATABASE_PROVIDER_TOKEN, {
+  useClass: DatabaseProvider,
+});
+container.register(TRANSACTION_MANAGER_TOKEN, {
+  useClass: SqliteTransactionManager,
+});
+container.register(HASHING_SERVICE_TOKEN, {
+  useClass: HashingService,
+});
+container.register(INTEGRITY_VERIFICATION_SERVICE_TOKEN, {
+  useClass: IntegrityVerificationService,
 });
 
 // Utils

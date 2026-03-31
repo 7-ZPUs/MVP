@@ -13,18 +13,9 @@ export interface IFileRepository {
   /** Restituisce tutti i file con un determinato stato di integrità. */
   getByStatus(status: IntegrityStatusEnum): File[];
 
-    /** Persiste un nuovo file e restituisce l'entità con l'id assegnato. */
-    save(file: File): File;
+  /** Persiste un nuovo file e restituisce l'entità con l'id assegnato. */
+  save(file: File): File;
 
-    /** Aggiorna lo stato di integrità di un file. */
-    updateIntegrityStatus(id: number, status: IntegrityStatusEnum): void;
-
-    /**
-     * Calcola rapidamente lo stato di integrità aggregato dei file di un documento.
-     * Regole:
-     * - almeno un INVALID -> INVALID
-     * - altrimenti almeno un UNKNOWN o nessun file -> UNKNOWN
-     * - altrimenti -> VALID
-     */
-    getAggregatedIntegrityStatusByDocumentId(documentId: number): IntegrityStatusEnum;
+  /** Aggiorna lo stato di integrità di un file. */
+  updateIntegrityStatus(id: number, status: IntegrityStatusEnum): void;
 }

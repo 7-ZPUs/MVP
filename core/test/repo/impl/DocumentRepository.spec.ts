@@ -13,7 +13,6 @@ describe("DocumentRepository", () => {
     getByStatus: ReturnType<typeof vi.fn>;
     save: ReturnType<typeof vi.fn>;
     updateIntegrityStatus: ReturnType<typeof vi.fn>;
-    getAggregatedIntegrityStatusByProcessId: ReturnType<typeof vi.fn>;
   };
   let repo: DocumentRepository;
 
@@ -24,7 +23,6 @@ describe("DocumentRepository", () => {
       getByStatus: vi.fn(),
       save: vi.fn(),
       updateIntegrityStatus: vi.fn(),
-      getAggregatedIntegrityStatusByProcessId: vi.fn(),
     };
     repo = new DocumentRepository(dao as unknown as DocumentDAO);
   });
@@ -134,24 +132,12 @@ describe("DocumentRepository", () => {
     expect(result.getId()).toBe(33);
   });
 
-  it("TU-F-browsing-63: getAggregatedIntegrityStatusByProcessId() should returns correctly", () => {
-    dao.getAggregatedIntegrityStatusByProcessId
-      .mockReturnValueOnce(IntegrityStatusEnum.UNKNOWN)
-      .mockReturnValueOnce(IntegrityStatusEnum.VALID)
-      .mockReturnValueOnce(IntegrityStatusEnum.UNKNOWN)
-      .mockReturnValueOnce(IntegrityStatusEnum.INVALID);
+  it("TU-F-browsing-63: getById() should return null quando il documento non esiste", () => {
+    dao.getById.mockReturnValue(null);
 
-    expect(repo.getAggregatedIntegrityStatusByProcessId(1)).toBe(
-      IntegrityStatusEnum.UNKNOWN,
-    );
-    expect(repo.getAggregatedIntegrityStatusByProcessId(1)).toBe(
-      IntegrityStatusEnum.VALID,
-    );
-    expect(repo.getAggregatedIntegrityStatusByProcessId(1)).toBe(
-      IntegrityStatusEnum.UNKNOWN,
-    );
-    expect(repo.getAggregatedIntegrityStatusByProcessId(1)).toBe(
-      IntegrityStatusEnum.INVALID,
-    );
+    const result = repo.getById(999);
+
+    expect(dao.getById).toHaveBeenCalledWith(999);
+    expect(result).toBeNull();
   });
 });

@@ -7,7 +7,7 @@ import { CheckProcessIntegrityStatusUC } from "../../../../src/use-case/process/
 import { Process } from "../../../../src/entity/Process";
 import { IProcessRepository } from "../../../../src/repo/IProcessRepository";
 import { IntegrityStatusEnum } from "../../../../src/value-objects/IntegrityStatusEnum";
-import { IDocumentRepository } from "../../../../src/repo/IDocumentRepository";
+import { IIntegrityVerificationService } from "../../../../src/services/IIntegrityVerificationService";
 
 describe("Process use-cases", () => {
   // identifier: TU-S-browsing-102
@@ -63,38 +63,24 @@ describe("Process use-cases", () => {
 
   // identifier: TU-S-browsing-105
   // method_name: execute()
-  // description: should update and return aggregated status
-  // expected_value: updates state as asserted: update and return aggregated status
-  it("TU-S-browsing-105: execute() should update and return aggregated status", () => {
-    const processRepo: Pick<
-      IProcessRepository,
-      "getById" | "updateIntegrityStatus"
+  // description: should delegate and return service status
+  // expected_value: updates state as asserted: delegate and return service status
+  it("TU-S-browsing-105: execute() should update and return aggregated status", async () => {
+    const integrityService: Pick<
+      IIntegrityVerificationService,
+      "checkProcessIntegrityStatus"
     > = {
-      getById: vi.fn().mockReturnValue(new Process("dc-uuid", "proc-1", [])),
-      updateIntegrityStatus: vi.fn(),
-    };
-    const docRepo: Pick<
-      IDocumentRepository,
-      "getAggregatedIntegrityStatusByProcessId"
-    > = {
-      getAggregatedIntegrityStatusByProcessId: vi
+      checkProcessIntegrityStatus: vi
         .fn()
-        .mockReturnValue(IntegrityStatusEnum.VALID),
+        .mockResolvedValue(IntegrityStatusEnum.VALID),
     };
 
     const uc = new CheckProcessIntegrityStatusUC(
-      processRepo as IProcessRepository,
-      docRepo as IDocumentRepository,
+      integrityService as IIntegrityVerificationService,
     );
-    const result = uc.execute(1);
+    const result = await uc.execute(1);
 
-    expect(
-      docRepo.getAggregatedIntegrityStatusByProcessId,
-    ).toHaveBeenCalledWith(1);
-    expect(processRepo.updateIntegrityStatus).toHaveBeenCalledWith(
-      1,
-      IntegrityStatusEnum.VALID,
-    );
+    expect(integrityService.checkProcessIntegrityStatus).toHaveBeenCalledWith(1);
     expect(result).toBe(IntegrityStatusEnum.VALID);
   });
 
@@ -102,26 +88,20 @@ describe("Process use-cases", () => {
   // method_name: execute()
   // description: should throw an error
   // expected_value: throws an error
-  it("TU-S-browsing-106: execute() should throw an error", () => {
-    const processRepo: Pick<
-      IProcessRepository,
-      "getById" | "updateIntegrityStatus"
+  it("TU-S-browsing-106: execute() should throw an error", async () => {
+    const integrityService: Pick<
+      IIntegrityVerificationService,
+      "checkProcessIntegrityStatus"
     > = {
-      getById: vi.fn().mockReturnValue(null),
-      updateIntegrityStatus: vi.fn(),
-    };
-    const docRepo: Pick<
-      IDocumentRepository,
-      "getAggregatedIntegrityStatusByProcessId"
-    > = {
-      getAggregatedIntegrityStatusByProcessId: vi.fn(),
+      checkProcessIntegrityStatus: vi
+        .fn()
+        .mockRejectedValue(new Error("Process with id 55 not found")),
     };
 
     const uc = new CheckProcessIntegrityStatusUC(
-      processRepo as IProcessRepository,
-      docRepo as IDocumentRepository,
+      integrityService as IIntegrityVerificationService,
     );
 
-    expect(() => uc.execute(55)).toThrow("Process with id 55 not found");
+    await expect(uc.execute(55)).rejects.toThrow("Process with id 55 not found");
   });
 });

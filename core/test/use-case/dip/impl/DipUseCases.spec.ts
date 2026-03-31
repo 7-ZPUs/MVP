@@ -6,7 +6,7 @@ import { CheckDipIntegrityStatusUC } from "../../../../src/use-case/dip/impl/Che
 import { Dip } from "../../../../src/entity/Dip";
 import { IDipRepository } from "../../../../src/repo/IDipRepository";
 import { IntegrityStatusEnum } from "../../../../src/value-objects/IntegrityStatusEnum";
-import { IDocumentClassRepository } from "../../../../src/repo/IDocumentClassRepository";
+import { IIntegrityVerificationService } from "../../../../src/services/IIntegrityVerificationService";
 
 describe("Dip use-cases", () => {
   // identifier: TU-S-browsing-85
@@ -77,35 +77,24 @@ describe("Dip use-cases", () => {
 
   // identifier: TU-S-browsing-89
   // method_name: execute()
-  // description: should successfully update and return the newly aggregated status
-  // expected_value: matches asserted behavior: successfully update and return the newly aggregated status
-  it("TU-S-browsing-89: execute() should successfully update and return the newly aggregated status", () => {
-    const dipRepo: Pick<IDipRepository, "getById" | "updateIntegrityStatus"> = {
-      getById: vi.fn().mockReturnValue(new Dip("dip-1")),
-      updateIntegrityStatus: vi.fn(),
-    };
-    const docClassRepo: Pick<
-      IDocumentClassRepository,
-      "getAggregatedIntegrityStatusByDipId"
+  // description: should successfully delegate and return the resulting status
+  // expected_value: matches asserted behavior: successfully delegate and return the resulting status
+  it("TU-S-browsing-89: execute() should successfully update and return the newly aggregated status", async () => {
+    const integrityService: Pick<
+      IIntegrityVerificationService,
+      "checkDipIntegrityStatus"
     > = {
-      getAggregatedIntegrityStatusByDipId: vi
+      checkDipIntegrityStatus: vi
         .fn()
-        .mockReturnValue(IntegrityStatusEnum.VALID),
+        .mockResolvedValue(IntegrityStatusEnum.VALID),
     };
 
     const uc = new CheckDipIntegrityStatusUC(
-      dipRepo as IDipRepository,
-      docClassRepo as IDocumentClassRepository,
+      integrityService as IIntegrityVerificationService,
     );
-    const result = uc.execute(1);
+    const result = await uc.execute(1);
 
-    expect(
-      docClassRepo.getAggregatedIntegrityStatusByDipId,
-    ).toHaveBeenCalledWith(1);
-    expect(dipRepo.updateIntegrityStatus).toHaveBeenCalledWith(
-      1,
-      IntegrityStatusEnum.VALID,
-    );
+    expect(integrityService.checkDipIntegrityStatus).toHaveBeenCalledWith(1);
     expect(result).toBe(IntegrityStatusEnum.VALID);
   });
 
@@ -113,24 +102,20 @@ describe("Dip use-cases", () => {
   // method_name: execute()
   // description: should throw an error
   // expected_value: throws an error
-  it("TU-S-browsing-90: execute() should throw an error", () => {
-    const dipRepo: Pick<IDipRepository, "getById" | "updateIntegrityStatus"> = {
-      getById: vi.fn().mockReturnValue(null),
-      updateIntegrityStatus: vi.fn(),
-    };
-    const docClassRepo: Pick<
-      IDocumentClassRepository,
-      "getAggregatedIntegrityStatusByDipId"
+  it("TU-S-browsing-90: execute() should throw an error", async () => {
+    const integrityService: Pick<
+      IIntegrityVerificationService,
+      "checkDipIntegrityStatus"
     > = {
-      getAggregatedIntegrityStatusByDipId: vi.fn(),
+      checkDipIntegrityStatus: vi
+        .fn()
+        .mockRejectedValue(new Error("Dip with id 3 not found")),
     };
 
     const uc = new CheckDipIntegrityStatusUC(
-      dipRepo as IDipRepository,
-      docClassRepo as IDocumentClassRepository,
+      integrityService as IIntegrityVerificationService,
     );
 
-    expect(() => uc.execute(3)).toThrow("Dip with id 3 not found");
-    expect(dipRepo.updateIntegrityStatus).not.toHaveBeenCalled();
+    await expect(uc.execute(3)).rejects.toThrow("Dip with id 3 not found");
   });
 });

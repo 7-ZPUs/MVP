@@ -7,7 +7,7 @@ import { CheckDocumentIntegrityStatusUC } from "../../../../src/use-case/documen
 import { Document } from "../../../../src/entity/Document";
 import { IDocumentRepository } from "../../../../src/repo/IDocumentRepository";
 import { IntegrityStatusEnum } from "../../../../src/value-objects/IntegrityStatusEnum";
-import { IFileRepository } from "../../../../src/repo/IFileRepository";
+import { IIntegrityVerificationService } from "../../../../src/services/IIntegrityVerificationService";
 
 describe("Document use-cases", () => {
   // identifier: TU-S-browsing-91
@@ -63,67 +63,47 @@ describe("Document use-cases", () => {
 
   // identifier: TU-S-browsing-94
   // method_name: execute()
-  // description: should CheckDocumentIntegrityStatusUC aggiorna lo status aggregato dai file
-  // expected_value: matches asserted behavior: CheckDocumentIntegrityStatusUC aggiorna lo status aggregato dai file
-  it("TU-S-browsing-94: execute() should CheckDocumentIntegrityStatusUC aggiorna lo status aggregato dai file", () => {
-    const docRepo: Pick<
-      IDocumentRepository,
-      "getById" | "updateIntegrityStatus"
+  // description: should CheckDocumentIntegrityStatusUC delega al servizio di verifica integrità
+  // expected_value: matches asserted behavior: CheckDocumentIntegrityStatusUC delega al servizio di verifica integrità
+  it("TU-S-browsing-94: execute() should CheckDocumentIntegrityStatusUC aggiorna lo status aggregato dai file", async () => {
+    const integrityService: Pick<
+      IIntegrityVerificationService,
+      "checkDocumentIntegrityStatus"
     > = {
-      getById: vi
+      checkDocumentIntegrityStatus: vi
         .fn()
-        .mockReturnValue(new Document("doc-1", [], "process-uuid")),
-      updateIntegrityStatus: vi.fn(),
-    };
-    const fileRepo: Pick<
-      IFileRepository,
-      "getAggregatedIntegrityStatusByDocumentId"
-    > = {
-      getAggregatedIntegrityStatusByDocumentId: vi
-        .fn()
-        .mockReturnValue(IntegrityStatusEnum.INVALID),
+        .mockResolvedValue(IntegrityStatusEnum.INVALID),
     };
 
     const uc = new CheckDocumentIntegrityStatusUC(
-      docRepo as IDocumentRepository,
-      fileRepo as IFileRepository,
+      integrityService as IIntegrityVerificationService,
     );
-    const result = uc.execute(1);
+    const result = await uc.execute(1);
 
-    expect(
-      fileRepo.getAggregatedIntegrityStatusByDocumentId,
-    ).toHaveBeenCalledWith(1);
-    expect(docRepo.updateIntegrityStatus).toHaveBeenCalledWith(
+    expect(integrityService.checkDocumentIntegrityStatus).toHaveBeenCalledWith(
       1,
-      IntegrityStatusEnum.INVALID,
     );
     expect(result).toBe(IntegrityStatusEnum.INVALID);
   });
 
   // identifier: TU-S-browsing-95
   // method_name: execute()
-  // description: should CheckDocumentIntegrityStatusUC lancia errore se document inesistente
-  // expected_value: matches asserted behavior: CheckDocumentIntegrityStatusUC lancia errore se document inesistente
-  it("TU-S-browsing-95: execute() should CheckDocumentIntegrityStatusUC lancia errore se document inesistente", () => {
-    const docRepo: Pick<
-      IDocumentRepository,
-      "getById" | "updateIntegrityStatus"
+  // description: should CheckDocumentIntegrityStatusUC propaga errore dal servizio
+  // expected_value: matches asserted behavior: CheckDocumentIntegrityStatusUC propaga errore dal servizio
+  it("TU-S-browsing-95: execute() should CheckDocumentIntegrityStatusUC lancia errore se document inesistente", async () => {
+    const integrityService: Pick<
+      IIntegrityVerificationService,
+      "checkDocumentIntegrityStatus"
     > = {
-      getById: vi.fn().mockReturnValue(null),
-      updateIntegrityStatus: vi.fn(),
-    };
-    const fileRepo: Pick<
-      IFileRepository,
-      "getAggregatedIntegrityStatusByDocumentId"
-    > = {
-      getAggregatedIntegrityStatusByDocumentId: vi.fn(),
+      checkDocumentIntegrityStatus: vi
+        .fn()
+        .mockRejectedValue(new Error("Document with id 77 not found")),
     };
 
     const uc = new CheckDocumentIntegrityStatusUC(
-      docRepo as IDocumentRepository,
-      fileRepo as IFileRepository,
+      integrityService as IIntegrityVerificationService,
     );
 
-    expect(() => uc.execute(77)).toThrow("Document with id 77 not found");
+    await expect(uc.execute(77)).rejects.toThrow("Document with id 77 not found");
   });
 });

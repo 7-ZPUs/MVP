@@ -32,12 +32,4 @@ export class ProcessRepository implements IProcessRepository {
   updateIntegrityStatus(id: number, status: IntegrityStatusEnum): void {
     return this.dao.updateIntegrityStatus(id, status);
   }
-
-  getAggregatedIntegrityStatusByDocumentClassId(
-    documentClassId: number,
-  ): IntegrityStatusEnum {
-    return this.dao.getAggregatedIntegrityStatusByDocumentClassId(
-      documentClassId,
-    );
-  }
 }

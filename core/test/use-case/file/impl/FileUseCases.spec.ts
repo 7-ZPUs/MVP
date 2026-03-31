@@ -1,4 +1,3 @@
-import fs from "node:fs";
 import { describe, expect, it, vi } from "vitest";
 
 import { GetFileByIdUC } from "../../../../src/use-case/file/impl/GetFileByIdUC";
@@ -8,7 +7,7 @@ import { CheckFileIntegrityStatusUC } from "../../../../src/use-case/file/impl/C
 import { File } from "../../../../src/entity/File";
 import { IFileRepository } from "../../../../src/repo/IFileRepository";
 import { IntegrityStatusEnum } from "../../../../src/value-objects/IntegrityStatusEnum";
-import { IHashingService } from "../../../../src/services/IHashingService";
+import { IIntegrityVerificationService } from "../../../../src/services/IIntegrityVerificationService";
 
 describe("File use-cases", () => {
   // identifier: TU-S-browsing-96
@@ -64,77 +63,66 @@ describe("File use-cases", () => {
 
   // identifier: TU-S-browsing-99
   // method_name: execute()
-  // description: should CheckFileIntegrityStatusUC imposta VALID se hash coincide
-  // expected_value: matches asserted behavior: CheckFileIntegrityStatusUC imposta VALID se hash coincide
+  // description: should CheckFileIntegrityStatusUC delega al servizio di verifica integrità
+  // expected_value: matches asserted behavior: CheckFileIntegrityStatusUC delega al servizio di verifica integrità
   it("TU-S-browsing-99: execute() should CheckFileIntegrityStatusUC imposta VALID se hash coincide", async () => {
-    const entity = new File("f", "/f", "expected", false, "8");
-    const repo: Pick<IFileRepository, "getById" | "updateIntegrityStatus"> = {
-      getById: vi.fn().mockReturnValue(entity),
-      updateIntegrityStatus: vi.fn(),
+    const integrityService: Pick<
+      IIntegrityVerificationService,
+      "checkFileIntegrityStatus"
+    > = {
+      checkFileIntegrityStatus: vi
+        .fn()
+        .mockResolvedValue(IntegrityStatusEnum.VALID),
     };
-    const hashingService: Pick<IHashingService, "calcolaHash"> = {
-      calcolaHash: vi.fn().mockResolvedValue("expected"),
-    };
-
-    vi.spyOn(fs, "readFileSync").mockReturnValue(Buffer.from("abc"));
 
     const uc = new CheckFileIntegrityStatusUC(
-      repo as IFileRepository,
-      hashingService as IHashingService,
+      integrityService as IIntegrityVerificationService,
     );
     const result = await uc.execute(8);
 
     expect(result).toBe(IntegrityStatusEnum.VALID);
-    expect(repo.updateIntegrityStatus).toHaveBeenCalledWith(
-      8,
-      IntegrityStatusEnum.VALID,
-    );
+    expect(integrityService.checkFileIntegrityStatus).toHaveBeenCalledWith(8);
   });
 
   // identifier: TU-S-browsing-100
   // method_name: execute()
-  // description: should CheckFileIntegrityStatusUC imposta UNKNOWN se hash atteso manca
-  // expected_value: matches asserted behavior: CheckFileIntegrityStatusUC imposta UNKNOWN se hash atteso manca
+  // description: should CheckFileIntegrityStatusUC delega e propaga UNKNOWN
+  // expected_value: matches asserted behavior: CheckFileIntegrityStatusUC delega e propaga UNKNOWN
   it("TU-S-browsing-100: execute() should CheckFileIntegrityStatusUC imposta UNKNOWN se hash atteso manca", async () => {
-    const entity = new File("f", "/f", "", false, "8");
-    const repo: Pick<IFileRepository, "getById" | "updateIntegrityStatus"> = {
-      getById: vi.fn().mockReturnValue(entity),
-      updateIntegrityStatus: vi.fn(),
-    };
-    const hashingService: Pick<IHashingService, "calcolaHash"> = {
-      calcolaHash: vi.fn(),
+    const integrityService: Pick<
+      IIntegrityVerificationService,
+      "checkFileIntegrityStatus"
+    > = {
+      checkFileIntegrityStatus: vi
+        .fn()
+        .mockResolvedValue(IntegrityStatusEnum.UNKNOWN),
     };
 
     const uc = new CheckFileIntegrityStatusUC(
-      repo as IFileRepository,
-      hashingService as IHashingService,
+      integrityService as IIntegrityVerificationService,
     );
     const result = await uc.execute(8);
 
     expect(result).toBe(IntegrityStatusEnum.UNKNOWN);
-    expect(repo.updateIntegrityStatus).toHaveBeenCalledWith(
-      8,
-      IntegrityStatusEnum.UNKNOWN,
-    );
-    expect(hashingService.calcolaHash).not.toHaveBeenCalled();
+    expect(integrityService.checkFileIntegrityStatus).toHaveBeenCalledWith(8);
   });
 
   // identifier: TU-S-browsing-101
   // method_name: execute()
-  // description: should CheckFileIntegrityStatusUC lancia errore se file inesistente
-  // expected_value: matches asserted behavior: CheckFileIntegrityStatusUC lancia errore se file inesistente
+  // description: should CheckFileIntegrityStatusUC propaga errore dal servizio
+  // expected_value: matches asserted behavior: CheckFileIntegrityStatusUC propaga errore dal servizio
   it("TU-S-browsing-101: execute() should CheckFileIntegrityStatusUC lancia errore se file inesistente", async () => {
-    const repo: Pick<IFileRepository, "getById" | "updateIntegrityStatus"> = {
-      getById: vi.fn().mockReturnValue(null),
-      updateIntegrityStatus: vi.fn(),
-    };
-    const hashingService: Pick<IHashingService, "calcolaHash"> = {
-      calcolaHash: vi.fn(),
+    const integrityService: Pick<
+      IIntegrityVerificationService,
+      "checkFileIntegrityStatus"
+    > = {
+      checkFileIntegrityStatus: vi
+        .fn()
+        .mockRejectedValue(new Error("File with id 99 not found")),
     };
 
     const uc = new CheckFileIntegrityStatusUC(
-      repo as IFileRepository,
-      hashingService as IHashingService,
+      integrityService as IIntegrityVerificationService,
     );
 
     await expect(uc.execute(99)).rejects.toThrow("File with id 99 not found");

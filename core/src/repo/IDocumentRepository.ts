@@ -11,5 +11,4 @@ export interface IDocumentRepository {
     save(document: Document): Document;
 
     updateIntegrityStatus(id: number, status: IntegrityStatusEnum): void;
-    getAggregatedIntegrityStatusByProcessId(processId: number): IntegrityStatusEnum;
 }

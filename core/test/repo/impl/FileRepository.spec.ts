@@ -12,7 +12,6 @@ describe("FileRepository", () => {
     getByStatus: ReturnType<typeof vi.fn>;
     save: ReturnType<typeof vi.fn>;
     updateIntegrityStatus: ReturnType<typeof vi.fn>;
-    getAggregatedIntegrityStatusByDocumentId: ReturnType<typeof vi.fn>;
   };
   let repo: FileRepository;
 
@@ -23,7 +22,6 @@ describe("FileRepository", () => {
       getByStatus: vi.fn(),
       save: vi.fn(),
       updateIntegrityStatus: vi.fn(),
-      getAggregatedIntegrityStatusByDocumentId: vi.fn(),
     };
     repo = new FileRepository(dao as unknown as FileDAO);
   });
@@ -118,28 +116,12 @@ describe("FileRepository", () => {
     expect(result.getId()).toBe(88);
   });
 
-  it("TU-F-browsing-67: getAggregatedIntegrityStatusByDocumentId() should getAggregatedIntegrityStatusByDocumentId return logic", () => {
-    dao.getAggregatedIntegrityStatusByDocumentId
-      .mockReturnValueOnce(IntegrityStatusEnum.UNKNOWN)
-      .mockReturnValueOnce(IntegrityStatusEnum.UNKNOWN)
-      .mockReturnValueOnce(IntegrityStatusEnum.INVALID)
-      .mockReturnValueOnce(IntegrityStatusEnum.UNKNOWN)
-      .mockReturnValueOnce(IntegrityStatusEnum.VALID);
+  it("TU-F-browsing-67: getById() should return null quando il file non esiste", () => {
+    dao.getById.mockReturnValue(null);
 
-    expect(repo.getAggregatedIntegrityStatusByDocumentId(1)).toBe(
-      IntegrityStatusEnum.UNKNOWN,
-    );
-    expect(repo.getAggregatedIntegrityStatusByDocumentId(1)).toBe(
-      IntegrityStatusEnum.UNKNOWN,
-    );
-    expect(repo.getAggregatedIntegrityStatusByDocumentId(2)).toBe(
-      IntegrityStatusEnum.INVALID,
-    );
-    expect(repo.getAggregatedIntegrityStatusByDocumentId(3)).toBe(
-      IntegrityStatusEnum.UNKNOWN,
-    );
-    expect(repo.getAggregatedIntegrityStatusByDocumentId(4)).toBe(
-      IntegrityStatusEnum.VALID,
-    );
+    const result = repo.getById(404);
+
+    expect(dao.getById).toHaveBeenCalledWith(404);
+    expect(result).toBeNull();
   });
 });

@@ -31,10 +31,4 @@ export class FileRepository implements IFileRepository {
   updateIntegrityStatus(id: number, status: IntegrityStatusEnum): void {
     return this.dao.updateIntegrityStatus(id, status);
   }
-
-  getAggregatedIntegrityStatusByDocumentId(
-    documentId: number,
-  ): IntegrityStatusEnum {
-    return this.dao.getAggregatedIntegrityStatusByDocumentId(documentId);
-  }
 }
