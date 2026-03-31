@@ -12,5 +12,4 @@ export interface FlatNode {
     childrenError?: AppError;
     timestamp?: string;
     verificationStatus?: string;
-
 }
