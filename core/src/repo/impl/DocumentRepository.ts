@@ -230,13 +230,13 @@ export class DocumentRepository implements IDocumentRepository {
       addMeta("TipoAggregazione", a.tipoAggregazione);
       addMeta("IdAggregazione", a.idAggregazione);
       addMeta("TipoAgg", a.tipoFascicolo);
-      addMeta("DataDocumento", a.dataApertura); // da controllare con lore se giusto
-      addMeta("DataRegistrazioneDocumento", a.dataChiusura); // da controllare con lore se giusto
+      addMeta("DataApertura", a.dataApertura);
+      addMeta("DataChiusura", a.dataChiusura);
       addMeta("Oggetto", a.procedimento?.materia);
       addMeta("Denominazione", a.procedimento?.denominazioneProcedimento);
       addMeta("TipoRuolo", a.assegnazione?.tipoAssegnazione);
-      addMeta("DataProtocollazioneDocumento", a.assegnazione?.dataInizioAssegn); // da controllare con lore se giusto
-      addMeta("OraProtocollazioneDocumento", a.assegnazione?.dataFineAssegn); // da controllare con lore se giusto
+      addMeta("DataInizioAssegnazione", a.assegnazione?.dataInizioAssegn);
+      addMeta("DataFineAssegnazione", a.assegnazione?.dataFineAssegn);
     }
 
     // --- custom ---
