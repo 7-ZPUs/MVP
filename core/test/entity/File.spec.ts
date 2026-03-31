@@ -11,6 +11,8 @@ describe("File entity", () => {
         // expected_value: matches asserted behavior: assegna filename, path, isMain e documentUuid
         it("TU-F-browsing-24: assegna() should assegna filename, path, isMain, uuid e documentUuid", () => {
             const file = new File("documento.xml", "/dip/subdir/documento.xml", "hash-doc", true, "uuid", "doc-uuid", IntegrityStatusEnum.VALID);
+        it("TU-F-browsing-24: assegna() should assegna filename, path, isMain, uuid e documentUuid", () => {
+            const file = new File("documento.xml", "/dip/subdir/documento.xml", "hash-doc", true, "uuid", "doc-uuid", IntegrityStatusEnum.VALID);
             expect(file.getFilename()).toBe("documento.xml");
             expect(file.getPath()).toBe("/dip/subdir/documento.xml");
             expect(file.getIsMain()).toBe(true);
@@ -24,6 +26,7 @@ describe("File entity", () => {
         // expected_value: matches asserted behavior: imposta integrityStatus a UNKNOWN di default
         it("TU-F-browsing-25: imposta() should imposta integrityStatus a UNKNOWN di default", () => {
             const file = new File("f.xml", "/f.xml", "hash-default", false, "uuid", "doc-uuid", IntegrityStatusEnum.UNKNOWN);
+            const file = new File("f.xml", "/f.xml", "hash-default", false, "uuid", "doc-uuid", IntegrityStatusEnum.UNKNOWN);
             expect(file.getIntegrityStatus()).toBe(IntegrityStatusEnum.UNKNOWN);
         });
 
@@ -33,6 +36,7 @@ describe("File entity", () => {
         // expected_value: matches asserted behavior: id è null finché non viene persistito
         it("TU-F-browsing-26: id() should id è null finché non viene persistito", () => {
             const file = new File("f.xml", "/f.xml", "hash-default", false, "uuid", "doc-uuid", IntegrityStatusEnum.UNKNOWN);
+            const file = new File("f.xml", "/f.xml", "hash-default", false, "uuid", "doc-uuid", IntegrityStatusEnum.UNKNOWN);
             expect(file.getId()).toBeNull();
         });
 
@@ -41,6 +45,7 @@ describe("File entity", () => {
         // description: should isMain = false viene mantenuto
         // expected_value: matches asserted behavior: isMain = false viene mantenuto
         it("TU-F-browsing-27: isMain() should isMain = false viene mantenuto", () => {
+            const file = new File("allegato.pdf", "/allegato.pdf", "hash-allegato", false, "uuid", "doc-uuid", IntegrityStatusEnum.UNKNOWN);
             const file = new File("allegato.pdf", "/allegato.pdf", "hash-allegato", false, "uuid", "doc-uuid", IntegrityStatusEnum.UNKNOWN);
             expect(file.getIsMain()).toBe(false);
         });
