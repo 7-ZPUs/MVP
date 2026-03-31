@@ -44,7 +44,7 @@
         <h4 style="margin-bottom: 0.5rem; color: #334155">Comuni</h4>
         <app-common-filters
           [filters]="$any(filters.common || {})"
-          [validationResult]="currentValidationResult || externalValidation"
+          [validationResult]="effectiveValidationResult"
           (filtersChanged)="onCommonFiltersChanged($event)"
         >
         </app-common-filters>
@@ -54,7 +54,7 @@
         <h4 style="margin-bottom: 0.5rem; color: #334155">Dati Documento (DiDai)</h4>
         <app-di-dai-filters
           [filters]="$any(filters.diDai || {})"
-          [validationResult]="currentValidationResult || externalValidation"
+          [validationResult]="effectiveValidationResult"
           (filtersChanged)="onDiDaiFiltersChanged($event)"
         >
         </app-di-dai-filters>
@@ -64,7 +64,7 @@
         <h4 style="margin-bottom: 0.5rem; color: #334155">Dati di Aggregazione</h4>
         <app-aggregate-filters
           [filters]="$any(filters.aggregate || {})"
-          [validationResult]="currentValidationResult || externalValidation"
+          [validationResult]="effectiveValidationResult"
           (filtersChanged)="onAggregateFiltersChanged($event)"
         >
         </app-aggregate-filters>
@@ -74,7 +74,7 @@
         <h4 style="margin-bottom: 0.5rem; color: #334155">Metadati Personalizzati</h4>
         <app-custom-meta-filters
           [filters]="filters.customMeta || null"
-          [validationResult]="currentValidationResult || externalValidation"
+          [validationResult]="effectiveValidationResult"
           (filtersChanged)="onEntriesChanged($event)"
         >
         </app-custom-meta-filters>
@@ -83,7 +83,7 @@
       <div class="filter-section" style="margin-bottom: 1.5rem">
         <app-subject-filters
           [subject]="filters.subject || null"
-          [validationResult]="currentValidationResult || externalValidation"
+          [validationResult]="effectiveValidationResult"
           (subjectChanged)="onSubjectChanged($event)"
         >
         </app-subject-filters>
@@ -115,7 +115,7 @@
         </button>
         <button
           type="submit"
-          [disabled]="currentValidationResult?.isValid === false"
+          [disabled]="effectiveValidationResult?.isValid === false"
           style="
             padding: 0.5rem 1rem;
             background: #3b82f6;

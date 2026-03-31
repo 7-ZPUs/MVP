@@ -1,4 +1,12 @@
-import { Component, EventEmitter, Input, Output, OnInit } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+  OnInit,
+  OnChanges,
+  SimpleChanges,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 
@@ -35,10 +43,31 @@ import { SubjectFiltersComponent } from '../../dumb/subject-filters.component/su
   ],
   templateUrl: './advanced-filter-panel.html',
 })
-export class AdvancedFilterPanelComponent implements OnInit {
-  @Input() filters!: SearchFilters;
+export class AdvancedFilterPanelComponent implements OnInit, OnChanges {
   @Input() validator?: FilterValidatorFn;
   @Input() externalValidation: ValidationResult | null = null;
+  private _filters!: SearchFilters;
+  @Input()
+  set filters(value: SearchFilters) {
+    this._filters = value;
+    if (this.panelForm && value) {
+      const isReset =
+        Object.keys(value.common || {}).length === 0 &&
+        Object.keys(value.diDai || {}).length === 0 &&
+        Object.keys(value.aggregate || {}).length === 0 &&
+        value.customMeta === null &&
+        value.subject === null;
+      if (isReset) {
+        this.panelForm.reset({}, { emitEvent: false });
+        this.subjectResetCounter++;
+      } else {
+        this.panelForm.patchValue(value, { emitEvent: false });
+      }
+    }
+  }
+  get filters(): SearchFilters {
+    return this._filters;
+  }
 
   @Output() filtersChanged = new EventEmitter<SearchFilters>();
   @Output() filtersSubmit = new EventEmitter<SearchFilters>();
@@ -68,6 +97,20 @@ export class AdvancedFilterPanelComponent implements OnInit {
     this.panelForm.valueChanges.subscribe((values) => {
       this.validateAndEmit(values);
     });
+  }
+
+  public ngOnChanges(changes: SimpleChanges): void {
+    if (changes['externalValidation']?.currentValue?.isValid === false) {
+      this.isExpanded = true;
+    }
+  }
+
+  public get effectiveValidationResult(): ValidationResult | null {
+    if (this.externalValidation?.isValid === false) {
+      return this.externalValidation;
+    }
+
+    return this.currentValidationResult || this.externalValidation;
   }
 
   public onCommonFiltersChanged(values: CommonFilterValues): void {
