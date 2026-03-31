@@ -18,12 +18,18 @@ describe('DipTreeNodeComponent', () => {
     isLoading: false,
   };
 
-  const mockFlatNode: FlatNode = {
+  const createFlatNode = (overrides = {}): FlatNode => ({
     node: mockNode,
     depth: 1,
     hasChildren: true,
     isLoading: false,
     isExpanded: false,
+    ...overrides
+  });
+
+  const setup = (overrides = {}) => {
+    component.flatNode = createFlatNode(overrides);
+    fixture.detectChanges();
   };
 
   beforeEach(async () => {
@@ -37,8 +43,8 @@ describe('DipTreeNodeComponent', () => {
 
     fixture = TestBed.createComponent(DipTreeNodeComponent);
     component = fixture.componentInstance;
-    component.flatNode = mockFlatNode;
-    fixture.detectChanges();
+
+    component.flatNode = createFlatNode();
   });
 
   it('dovrebbe creare il componente', () => {
@@ -46,26 +52,97 @@ describe('DipTreeNodeComponent', () => {
   });
 
   it('dovrebbe mostrare il nome del nodo', () => {
+    component.flatNode = createFlatNode();
+    fixture.detectChanges()
+
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.textContent).toContain(mockNode.name);
   });
 
-  it('dovrebbe emettere evento toggle quando onToggle viene chiamato', () => {
+  it('dovrebbe emettere toggle quando clicco il bottone', () => {
+    component.flatNode = createFlatNode();
+    fixture.detectChanges()
     vi.spyOn(component.toggle, 'emit');
-    component.onToggle(new MouseEvent('click'));
+  
+    const button = fixture.nativeElement.querySelector('.toggle-icon');
+    button.click();
+  
     expect(component.toggle.emit).toHaveBeenCalledWith(mockNode.id);
   });
 
-  it('dovrebbe emettere evento stopPropagation quando onToggle viene chiamato', () => {
-    vi.spyOn(component.toggle, 'emit');
-    component.onToggle(new MouseEvent('click'));
-    expect(component.toggle.emit).toHaveBeenCalled();
-  })
+  it('dovrebbe chiamare stopPropagation su toggle', () => {
+    const event = new MouseEvent('click');
+    const spy = vi.spyOn(event, 'stopPropagation');
+  
+    component.onToggle(event);
+  
+    expect(spy).toHaveBeenCalled();
+  });
 
-  it('dovrebbe emettere evento nodeSelected quando onClick viene chiamato', () => {
+  it('dovrebbe emettere nodeSelected quando clicco il nodo', () => {
     vi.spyOn(component.nodeSelected, 'emit');
-    component.onClick();
+  
+    const div = fixture.nativeElement.querySelector('div');
+    div.click();
+  
     expect(component.nodeSelected.emit).toHaveBeenCalledWith(mockNode);
   });
 
+  it('dovrebbe mostrare il bottone toggle se ha figli', () => {
+    setup({ hasChildren: true });
+
+    const button = fixture.nativeElement.querySelector('.toggle-icon');
+    expect(button).toBeTruthy();
+  });
+
+  it('non dovrebbe mostrare il bottone toggle se non ha figli', () => {
+    setup({ hasChildren: false });
+    
+    const button = fixture.nativeElement.querySelector('.toggle-icon');
+    expect(button).toBeFalsy();
+  });
+
+  it('dovrebbe mostrare spinner quando isLoading è true', () => {
+    setup({ isLoading: true });
+
+    const spinner = fixture.nativeElement.querySelector('.spinner');
+    expect(spinner).toBeTruthy();
+  });
+  
+  it('non dovrebbe mostrare spinner quando isLoading è false', () => {
+    setup({ isLoading: false });
+  
+    const spinner = fixture.nativeElement.querySelector('.spinner');
+    expect(spinner).toBeFalsy();
+  });
+
+
+  /*it('dovrebbe mostrare inline error se childrenError esiste', () => {
+    component.flatNode.childrenError = 'Errore!';
+    fixture.detectChanges();
+  
+    const error = fixture.nativeElement.querySelector('app-inline-error');
+    expect(error).toBeTruthy();
+  });*/
+  
+  it('non dovrebbe mostrare inline error se non c’è errore', () => {
+    setup({ childrenError: undefined });
+  
+    const error = fixture.nativeElement.querySelector('app-inline-error');
+    expect(error).toBeFalsy();
+  });
+
+  it('dovrebbe mostrare ▶ quando non è espanso', () => {
+    setup({ isExpanded: false });
+  
+    const button = fixture.nativeElement.querySelector('.toggle-icon');
+    expect(button.textContent).toContain('▶');
+  });
+  
+  it('dovrebbe mostrare ▼ quando è espanso', () => {
+    setup({ isExpanded: true });
+  
+    const button = fixture.nativeElement.querySelector('.toggle-icon');
+    expect(button.textContent).toContain('▼');
+  });
 });
