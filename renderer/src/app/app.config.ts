@@ -1,48 +1,76 @@
 import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
-import { provideRouter, withComponentInputBinding } from '@angular/router';
-
+import { provideRouter, withHashLocation } from '@angular/router';
+import { signal } from '@angular/core';
 import { routes } from './app.routes';
-import { IPC_GATEWAY_TOKEN } from './shared/interfaces/ipc-gateway.interfaces';
-import { ElectronIpcGateway } from './shared/infrastructure/electron-ipc-gateway';
 
-import { LOGGING_CHANNEL_TOKEN } from './shared/contracts/logging-channel.interface';
-import { ElectronLoggingGateway } from './shared/infrastructure/electron-logging-gateway';
+import {
+  ELECTRON_CONTEXT_BRIDGE_TOKEN,
+  CACHE_SERVICE_TOKEN,
+  ERROR_HANDLER_TOKEN,
+  LOGGING_CHANNEL_TOKEN,
+} from './shared/contracts/index';
 
-import { ELECTRON_CONTEXT_BRIDGE_TOKEN } from './shared/contracts/electron-context-bridge.interface';
+import { SearchIpcGateway } from './feature/search/adapters/search-ipc-gateway';
+import { FilterValidatorService } from './feature/validation/services/filter-validator.service';
+import { IpcErrorHandlerService } from './shared/services/ipc-error-handler.service';
+import { TelemetryService } from './shared/services/telemetry.service';
+import { LiveAnnouncerService } from './shared/services/live-announcer.service';
+import { IpcCacheService } from './shared/services/ipc-cache.service';
+import { ElectronLoggingGateway } from './shared/services/electron-logging-gateway';
+import { SearchFacade } from './feature/search/services';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
-    provideRouter(routes, withComponentInputBinding()),
-    { provide: LOGGING_CHANNEL_TOKEN, useClass: ElectronLoggingGateway },
-    { provide: IPC_GATEWAY_TOKEN, useClass: ElectronIpcGateway },
+    provideAnimationsAsync(), // richiesto da @angular/cdk LiveAnnouncer
+    provideRouter(routes, withHashLocation()),
+
+    // Electron bridge
     {
       provide: ELECTRON_CONTEXT_BRIDGE_TOKEN,
       useFactory: () => {
-        const electronApi = (window as any).electronAPI || (window as any).api;
-
-        // Browser Mock / Fallback
-        if (!electronApi) {
-          console.warn('[ElectronContextBridge] Running in browser, injecting mock api.');
-          return {
-            invoke: (channel: string, ...args: any[]) => {
-              console.log(`[Mock Bridge] invoke: ${channel}`, args);
-              return Promise.resolve();
-            },
-            on: (channel: string, func: any) => {
-              console.log(`[Mock Bridge] on: ${channel}`);
-            },
-            once: (channel: string, func: any) => {
-              console.log(`[Mock Bridge] once: ${channel}`);
-            },
-            removeListener: (channel: string, func: any) => {
-              console.log(`[Mock Bridge] removeListener: ${channel}`);
-            },
-          };
+        if (typeof window !== 'undefined' && (window as any).electronAPI) {
+          return (window as any).electronAPI;
         }
-
-        return electronApi;
+        return {
+          invoke: () => Promise.reject(new Error('electronAPI non trovato')),
+        };
       },
     },
+
+    // Cache
+    { provide: CACHE_SERVICE_TOKEN, useClass: IpcCacheService },
+
+    // Logging
+    { provide: LOGGING_CHANNEL_TOKEN, useClass: ElectronLoggingGateway },
+
+    // Error handler
+    { provide: ERROR_HANDLER_TOKEN, useClass: IpcErrorHandlerService },
+    { provide: 'IErrorHandler', useClass: IpcErrorHandlerService },
+
+    // Telemetry
+    { provide: 'ITelemetry', useClass: TelemetryService },
+
+    // Live announcer
+    { provide: 'ILiveAnnouncer', useClass: LiveAnnouncerService },
+
+    // Search channel
+    { provide: 'ISearchChannel', useClass: SearchIpcGateway },
+
+    // Filter validator
+    { provide: 'IFilterValidator', useClass: FilterValidatorService },
+
+    // Semantic index status — mock per ora
+    {
+      provide: 'ISemanticIndexStatus',
+      useValue: { getStatus: () => signal({ status: 'READY' }) },
+    },
+
+    // Router
+    { provide: 'IRouter', useValue: { navigate: () => {} } },
+
+    // Facade
+    { provide: 'ISearchFacade', useClass: SearchFacade },
   ],
 };

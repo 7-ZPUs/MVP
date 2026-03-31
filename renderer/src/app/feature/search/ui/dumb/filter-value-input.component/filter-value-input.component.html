@@ -1,0 +1,54 @@
+<div class="filter-input-wrapper" style="margin-bottom: 1rem">
+  <label
+    [for]="definition.key"
+    style="display: block; font-weight: 500; font-size: 0.875rem; margin-bottom: 0.25rem"
+  >
+    {{ definition.label }} <span *ngIf="definition.required" style="color: red">*</span>
+  </label>
+
+  <ng-container [ngSwitch]="definition.type">
+    <input
+      *ngSwitchCase="FieldType.TEXT"
+      [id]="definition.key"
+      type="text"
+      [ngModel]="value"
+      (ngModelChange)="onModelChange($event)"
+      class="form-control"
+      style="width: 100%; padding: 0.4rem; border: 1px solid #cbd5e1; border-radius: 4px"
+    />
+
+    <input
+      *ngSwitchCase="FieldType.DATE"
+      [id]="definition.key"
+      type="date"
+      [ngModel]="value"
+      (ngModelChange)="onModelChange($event)"
+      class="form-control"
+      style="width: 100%; padding: 0.4rem; border: 1px solid #cbd5e1; border-radius: 4px"
+    />
+
+    <input
+      *ngSwitchCase="FieldType.NUMBER"
+      [id]="definition.key"
+      type="number"
+      [ngModel]="value"
+      (ngModelChange)="onModelChange($event)"
+      class="form-control"
+      style="width: 100%; padding: 0.4rem; border: 1px solid #cbd5e1; border-radius: 4px"
+    />
+
+    <select
+      *ngSwitchCase="FieldType.ENUM"
+      [id]="definition.key"
+      [ngModel]="value"
+      (ngModelChange)="onModelChange($event)"
+      class="form-control"
+      style="width: 100%; padding: 0.4rem; border: 1px solid #cbd5e1; border-radius: 4px"
+    >
+      <option [ngValue]="null">Seleziona...</option>
+      <option *ngFor="let opt of definition.options" [ngValue]="opt.value">{{ opt.label }}</option>
+    </select>
+  </ng-container>
+
+  <app-field-error [errors]="errors"></app-field-error>
+</div>
