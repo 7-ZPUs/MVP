@@ -5,9 +5,9 @@ import { IpcCacheService } from '../../../shared/infrastructure/ipc-cache.servic
 import { TelemetryService } from '../../../shared/infrastructure/telemetry.service';
 import { IpcErrorHandlerService } from '../../../shared/infrastructure/ipc-error-handler.service';
 // Supponiamo che il token del gateway esista
-import { IPC_GATEWAY_TOKEN, IIpcGateway } from '../../../shared/interfaces/ipc-gateway.interfaces';
+import { IPC_GATEWAY_TOKEN } from '../../../shared/interfaces/ipc-gateway.interfaces';
 import { ErrorCode, ErrorCategory, ErrorSeverity, AppError } from '../../../shared/domain';
-import { AggregateDetail } from '../domain/aggregate.models';
+import { AggregateDetailDTO } from '../../../shared/domain/dto/AggregateDTO';
 
 describe('AggregateFacade', () => {
   // (o 'DocumentFacade')
@@ -21,21 +21,40 @@ describe('AggregateFacade', () => {
   let mockTelemetry: any;
   let mockErrorHandler: any;
 
-  const mockAggregateData: AggregateDetail = {
-    aggregateId: '123',
-    metadata: {
-      tipo: 'Fascicolo',
-      id: '123',
-      tipologiaFascicolo: 'Affari Generali',
-      assegnazione: 'Ufficio Protocollo',
-      dateApertura: '2023-01-01',
-      progressivo: '001/2023',
-      posizioneFisica: 'Archivio Centrale',
-      idPrimaria: 'AGG-000',
-      conservazione: '10 anni',
+  const mockAggregateData: AggregateDetailDTO = {
+    idAgg: {
+      tipoAggregazione: 'Fascicolo',
+      idAggregazione: '123',
     },
-    // adminProcedure è opzionale, possiamo ometterlo nel test base
-    documentIndex: [{ tipo: 'DAI', identificativo: 'DOC-999' }],
+    soggetti: [
+      {
+        tipoRuolo: 'Richiedente',
+        denominazione: 'Mario Rossi',
+      },
+    ],
+    assegnazione: {
+      tipoAssegnazione: 'Per competenza',
+      soggettoAssegnatario: {
+        tipoRuolo: 'Responsabile',
+        denominazione: 'Ufficio Protocollo',
+      },
+      dataInizioAssegnazione: '2023-01-01',
+    },
+    dataApertura: '2023-01-01',
+    classificazione: {
+      indiceDiClassificazione: '1.2.3',
+      descrizione: 'Affari Generali',
+    },
+    progressivo: 1,
+    chiaveDescrittiva: {
+      oggetto: 'Pratica 123',
+    },
+    indiceDocumenti: [
+      {
+        tipoDocumento: 'DocumentoAmministativoinformatico',
+        identificativo: 'DOC-999',
+      },
+    ],
   };
 
   beforeEach(() => {

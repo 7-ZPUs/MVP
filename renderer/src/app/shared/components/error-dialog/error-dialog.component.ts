@@ -1,6 +1,6 @@
 import { Component, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { AppError, ErrorSeverity } from '../../domain'; // Aggiusta il percorso se i tipi sono altrove
+import { AppError, ErrorSeverity } from '../../domain';
 
 @Component({
   selector: 'app-error-dialog',

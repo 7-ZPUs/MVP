@@ -1,7 +1,7 @@
 import { Component, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-import { AggregateDetail } from '../../../../aggregate/domain/aggregate.models';
+import { AggregateDetailDTO } from '../../../../../shared/domain/dto/AggregateDTO';
 import { DocumentDetail } from '../../../../document/domain/document.models';
 
 // Importiamo i Dumb Component di Epica 1
@@ -48,16 +48,16 @@ import { VerificationInfoComponent } from '../../../../document/components/verif
           @if (aggregateData(); as agg) {
             <h2 class="section-title">Dettaglio Fascicolo</h2>
 
-            @if (agg.metadata) {
-              <app-aggregate-metadata [data]="agg.metadata"></app-aggregate-metadata>
+            @if (agg) {
+              <app-aggregate-metadata [data]="agg"></app-aggregate-metadata>
             } @else {
               <app-optional-field-absent
                 message="Nessun metadato presente per questo fascicolo"
               ></app-optional-field-absent>
             }
 
-            @if (agg.adminProcedure) {
-              <app-admin-procedure [data]="agg.adminProcedure"></app-admin-procedure>
+            @if (agg.procedimentoAmministrativo) {
+              <app-admin-procedure [data]="agg"></app-admin-procedure>
             } @else {
               <app-optional-field-absent
                 message="Nessun procedimento amministrativo associato"
@@ -195,6 +195,6 @@ import { VerificationInfoComponent } from '../../../../document/components/verif
 })
 export class MetadataPanelComponent {
   itemType = input.required<'AGGREGATE' | 'DOCUMENT'>();
-  aggregateData = input<AggregateDetail | null>(null);
+  aggregateData = input<AggregateDetailDTO | null>(null);
   documentData = input<DocumentDetail | null>(null);
 }

@@ -1,6 +1,7 @@
 import { Injectable, Inject, signal, Signal } from '@angular/core';
 import { IAggregateFacade } from '../contracts/IAggregateFacade';
-import { AggregateState, AggregateDetail } from '../domain/aggregate.models';
+import { AggregateState } from '../domain/aggregate.models';
+import { AggregateDetailDTO } from '../../../shared/domain/dto/AggregateDTO';
 import { IpcCacheService } from '../../../shared/infrastructure/ipc-cache.service';
 import { TelemetryService } from '../../../shared/infrastructure/telemetry.service';
 import { IpcErrorHandlerService } from '../../../shared/infrastructure/ipc-error-handler.service';
@@ -40,7 +41,7 @@ export class AggregateFacade implements IAggregateFacade {
 
     try {
       // 1. Logica Cache-First
-      const cachedDetail = this.cache.get<AggregateDetail>(cacheKey);
+      const cachedDetail = this.cache.get<AggregateDetailDTO>(cacheKey);
 
       if (cachedDetail) {
         this.state.update((s) => ({ ...s, detail: cachedDetail, loading: false }));
@@ -53,7 +54,7 @@ export class AggregateFacade implements IAggregateFacade {
       const rawData = await this.ipcGateway.invoke('ipc:aggregate:get', id, null);
 
       // Qui ipotizziamo che il gateway restituisca già l'oggetto formattato o che tu faccia un mapping
-      const aggregateDetail = rawData as AggregateDetail;
+      const aggregateDetail = rawData as AggregateDetailDTO;
 
       // 3. Salvataggio in Cache
       this.cache.set(cacheKey, aggregateDetail, this.CACHE_TTL_MS);

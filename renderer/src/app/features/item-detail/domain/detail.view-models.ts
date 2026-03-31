@@ -1,4 +1,4 @@
-import { AggregateDetail } from '../../aggregate/domain/aggregate.models';
+import { AggregateDetailDTO } from '../../../shared/domain/dto/AggregateDTO';
 import { DocumentDetail } from '../../document/domain/document.models';
 
 export type ItemDetailType = 'AGGREGATE' | 'DOCUMENT';
@@ -6,7 +6,7 @@ export type ItemDetailType = 'AGGREGATE' | 'DOCUMENT';
 // Definiamo i due stati possibili della nostra UI
 export interface AggregateItemVM {
   type: 'AGGREGATE';
-  data: AggregateDetail;
+  data: AggregateDetailDTO;
 }
 
 export interface DocumentItemVM {
