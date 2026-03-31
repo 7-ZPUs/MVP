@@ -15,7 +15,7 @@ describe("File use-cases", () => {
   // description: should GetFileByIdUC delega a repo.getById
   // expected_value: matches asserted behavior: GetFileByIdUC delega a repo.getById
   it("TU-S-browsing-96: execute() should GetFileByIdUC delega a repo.getById", () => {
-    const entity = new File("f", "/f", "h", false, "2");
+    const entity = new File("f", "/f", "h", false, "2", "doc-uuid");
     const repo: Pick<IFileRepository, "getById"> = {
       getById: vi.fn().mockReturnValue(entity),
     };
@@ -32,7 +32,7 @@ describe("File use-cases", () => {
   // description: should GetFileByDocumentUC delega a repo.getByDocumentId
   // expected_value: matches asserted behavior: GetFileByDocumentUC delega a repo.getByDocumentId
   it("TU-S-browsing-97: execute() should GetFileByDocumentUC delega a repo.getByDocumentId", () => {
-    const list = [new File("f", "/f", "h", false, "8")];
+    const list = [new File("f", "/f", "h", false, "8", "doc-uuid")];
     const repo: Pick<IFileRepository, "getByDocumentId"> = {
       getByDocumentId: vi.fn().mockReturnValue(list),
     };
@@ -49,7 +49,7 @@ describe("File use-cases", () => {
   // description: should GetFileByStatusUC delega a repo.getByStatus
   // expected_value: matches asserted behavior: GetFileByStatusUC delega a repo.getByStatus
   it("TU-S-browsing-98: execute() should GetFileByStatusUC delega a repo.getByStatus", () => {
-    const list = [new File("f", "/f", "h", false, "8")];
+    const list = [new File("f", "/f", "h", false, "8", "doc-uuid")];
     const repo: Pick<IFileRepository, "getByStatus"> = {
       getByStatus: vi.fn().mockReturnValue(list),
     };

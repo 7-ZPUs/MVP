@@ -8,6 +8,7 @@ import { Document } from "../../../../src/entity/Document";
 import { IDocumentRepository } from "../../../../src/repo/IDocumentRepository";
 import { IntegrityStatusEnum } from "../../../../src/value-objects/IntegrityStatusEnum";
 import { IIntegrityVerificationService } from "../../../../src/services/IIntegrityVerificationService";
+import { Metadata, MetadataType } from "../../../../src/value-objects/Metadata";
 
 describe("Document use-cases", () => {
   // identifier: TU-S-browsing-91
@@ -15,7 +16,7 @@ describe("Document use-cases", () => {
   // description: should GetDocumentByIdUC delega a repo.getById
   // expected_value: matches asserted behavior: GetDocumentByIdUC delega a repo.getById
   it("TU-S-browsing-91: execute() should GetDocumentByIdUC delega a repo.getById", () => {
-    const entity = new Document("doc-2", [], "process-uuid");
+    const entity = new Document("doc-2", {} as Metadata, "process-uuid");
     const repo: Pick<IDocumentRepository, "getById"> = {
       getById: vi.fn().mockReturnValue(entity),
     };
@@ -32,7 +33,7 @@ describe("Document use-cases", () => {
   // description: should GetDocumentByProcessUC delega a repo.getByProcessId
   // expected_value: matches asserted behavior: GetDocumentByProcessUC delega a repo.getByProcessId
   it("TU-S-browsing-92: execute() should GetDocumentByProcessUC delega a repo.getByProcessId", () => {
-    const list = [new Document("doc-3", [], "process-uuid")];
+    const list = [new Document("doc-3", {} as Metadata, "process-uuid")];
     const repo: Pick<IDocumentRepository, "getByProcessId"> = {
       getByProcessId: vi.fn().mockReturnValue(list),
     };
@@ -49,7 +50,7 @@ describe("Document use-cases", () => {
   // description: should GetDocumentByStatusUC delega a repo.getByStatus
   // expected_value: matches asserted behavior: GetDocumentByStatusUC delega a repo.getByStatus
   it("TU-S-browsing-93: execute() should GetDocumentByStatusUC delega a repo.getByStatus", () => {
-    const list = [new Document("doc-4", [], "process-uuid")];
+    const list = [new Document("doc-4", {} as Metadata, "process-uuid")];
     const repo: Pick<IDocumentRepository, "getByStatus"> = {
       getByStatus: vi.fn().mockReturnValue(list),
     };
