@@ -9,7 +9,4 @@ export interface IDocumentDAO {
   getByStatus(status: IntegrityStatusEnum): Document[];
   save(document: Document): Document;
   updateIntegrityStatus(id: number, status: IntegrityStatusEnum): void;
-  getAggregatedIntegrityStatusByProcessId(
-    processId: number,
-  ): IntegrityStatusEnum;
 }

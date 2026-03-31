@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { Document, DocumentRow } from "../../src/entity/Document";
+import { Document } from "../../src/entity/Document";
 import { IntegrityStatusEnum } from "../../src/value-objects/IntegrityStatusEnum";
 import { Metadata, MetadataType } from "../../src/value-objects/Metadata";
 
-const meta = [
+const meta = new Metadata("root", [
   new Metadata("autore", "Mario Rossi"),
   new Metadata("anno", "2024", MetadataType.NUMBER),
-];
+]);
 
 describe("Document entity", () => {
   describe("constructor", () => {
@@ -40,38 +40,6 @@ describe("Document entity", () => {
     });
   });
 
-  describe("fromDB", () => {
-    // identifier: TU-F-browsing-11
-    // method_name: ricostruisce()
-    // description: should ricostruisce correttamente da una riga del database
-    // expected_value: matches asserted behavior: ricostruisce correttamente da una riga del database
-    it("TU-F-browsing-11: ricostruisce() should ricostruisce correttamente da una riga del database", () => {
-      const row: DocumentRow = {
-        id: 10,
-        uuid: "doc-uuid",
-        integrityStatus: "VALID",
-        processId: 3,
-      };
-      const doc = Document.fromDB(row, meta);
-
-      expect(doc.getId()).toBe(10);
-      expect(doc.getUuid()).toBe("doc-uuid");
-      expect(doc.getIntegrityStatus()).toBe(IntegrityStatusEnum.VALID);
-      expect(doc.getProcessId()).toBe(3);
-      expect(doc.getMetadata()).toBe(meta);
-    });
-
-    // identifier: TU-F-browsing-12
-    // method_name: usa()
-    // description: should usa UNKNOWN se integrityStatus è assente nella riga
-    // expected_value: matches asserted behavior: usa UNKNOWN se integrityStatus è assente nella riga
-    it("TU-F-browsing-12: usa() should usa UNKNOWN se integrityStatus è assente nella riga", () => {
-      const row: DocumentRow = { id: 5, uuid: "x", processId: 1 };
-      const doc = Document.fromDB(row, []);
-      expect(doc.getIntegrityStatus()).toBe(IntegrityStatusEnum.UNKNOWN);
-    });
-  });
-
   describe("setIntegrityStatus", () => {
     // identifier: TU-F-browsing-13
     // method_name: aggiorna()
@@ -81,43 +49,6 @@ describe("Document entity", () => {
       const doc = new Document("uuid", [], "process-uuid");
       doc.setIntegrityStatus(IntegrityStatusEnum.INVALID);
       expect(doc.getIntegrityStatus()).toBe(IntegrityStatusEnum.INVALID);
-    });
-  });
-
-  describe("toDTO", () => {
-    // identifier: TU-F-browsing-14
-    // method_name: lancia()
-    // description: should lancia un errore se id è null
-    // expected_value: matches asserted behavior: lancia un errore se id è null
-    it("TU-F-browsing-14: lancia() should lancia un errore se id è null", () => {
-      const doc = new Document("uuid", [], "process-uuid");
-      expect(() => doc.toDTO()).toThrow(
-        "Cannot convert to DTO: Document entity is not yet persisted and has no ID.",
-      );
-    });
-
-    // identifier: TU-F-browsing-15
-    // method_name: restituisce()
-    // description: should restituisce il DTO corretto
-    // expected_value: matches asserted behavior: restituisce il DTO corretto
-    it("TU-F-browsing-15: restituisce() should restituisce il DTO corretto", () => {
-      const row: DocumentRow = {
-        id: 2,
-        uuid: "doc-abc",
-        integrityStatus: "INVALID",
-        processId: 5,
-      };
-      const doc = Document.fromDB(row, meta);
-
-      const dto = doc.toDTO();
-
-      expect(dto.id).toBe(2);
-      expect(dto.uuid).toBe("doc-abc");
-      expect(dto.integrityStatus).toBe(IntegrityStatusEnum.INVALID);
-      expect(dto.processId).toBe(5);
-      expect(dto.metadata).toHaveLength(2);
-      expect(dto.metadata[0].name).toBe("autore");
-      expect(dto.metadata[1].name).toBe("anno");
     });
   });
 });

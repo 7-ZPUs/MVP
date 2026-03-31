@@ -25,7 +25,7 @@ export interface FilePersistenceModel {
 }
 
 export class FileMapper {
-  static toDomain(row: FilePersistenceRow): File {
+  static fromPersistence(row: FilePersistenceRow): File {
     return new File(
       row.filename,
       row.path,

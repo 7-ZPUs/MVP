@@ -3,9 +3,7 @@
     "target": "ES2022",
     "module": "CommonJS",
     "moduleResolution": "Node",
-    "lib": [
-      "ES2022"
-    ],
+    "lib": ["ES2022"],
     "outDir": "dist",
     "rootDir": ".",
     "strict": true,
@@ -27,12 +25,8 @@
     "**/*.test.ts",
     "core/test/unit/indexing/IndexDip.old",
     "core/test/unit/indexing/PackageReaderPort.test.old",
-    "core/test/domain/dip-index-parsing.old"
+    "core/test/domain/dip-index-parsing.old",
+    "core/test/dao/helpers/testDb.ts"
   ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "renderer",
-    "coverage"
-  ]
+  "exclude": ["node_modules", "dist", "renderer", "coverage"]
 }

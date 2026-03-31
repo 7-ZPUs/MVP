@@ -1,10 +1,8 @@
 import { inject, injectable } from "tsyringe";
-import Database from "better-sqlite3";
 
 import { Dip } from "../../entity/Dip";
 import { IntegrityStatusEnum } from "../../value-objects/IntegrityStatusEnum";
 import { IDipRepository } from "../IDipRepository";
-import { DATABASE_PROVIDER_TOKEN, DatabaseProvider } from "./DatabaseProvider";
 import { DipDAO } from "../../dao/DipDAO";
 import { DIP_DAO_TOKEN } from "../../dao/IDipDAO";
 

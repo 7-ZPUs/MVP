@@ -25,6 +25,7 @@ app.disableHardwareAcceleration();
 // IPC adapter registration
 // ---------------------------------------------------------------------------
 import { BrowsingIpcAdapter } from "./core/src/ipc/BrowsingIpcAdapter";
+import { CheckIntegrityIpcAdapter } from "./core/src/ipc/CheckIntegrityIpcAdapter";
 
 // ---------------------------------------------------------------------------
 // Window management
@@ -63,6 +64,7 @@ function createWindow(): BrowserWindow {
 
   // Register all IPC adapters before creating the window
   BrowsingIpcAdapter.register(ipcMain);
+  CheckIntegrityIpcAdapter.register(ipcMain);
 
   createWindow();
 

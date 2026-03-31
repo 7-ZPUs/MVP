@@ -222,22 +222,18 @@ describe("DataMapper", () => {
     // Check process metadata
     const metadata = proc.getMetadata();
 
-    // Helper to find a metadata entry by name
-    const findMeta = (arr: any[], name: string) =>
-      arr.find((m) => m.name === name);
-
     // All actual metadata is under the 'Process' key
-    const processMeta = findMeta(metadata, "Process");
+    const processMeta = metadata.findNodeByName("Process");
     expect(processMeta).toBeDefined();
-    if (!processMeta || !Array.isArray(processMeta.value))
+    if (!processMeta || !Array.isArray(processMeta.getChildren())) {
       throw new Error("Process metadata missing or malformed");
-    const processValue = processMeta.value;
+    }
 
     // Start
-    const startMeta = findMeta(processValue, "Start");
+    const startMeta = processMeta.findNodeByName("Start");
     expect(startMeta).toBeDefined();
     if (startMeta) {
-      expect(startMeta.value).toEqual([
+      expect(startMeta.getChildren()).toEqual([
         expect.objectContaining({
           name: "Date",
           value: "2025-01-01T00:00:00Z",
@@ -248,10 +244,10 @@ describe("DataMapper", () => {
     }
 
     // End
-    const endMeta = findMeta(processValue, "End");
+    const endMeta = processMeta.findNodeByName("End");
     expect(endMeta).toBeDefined();
     if (endMeta) {
-      expect(endMeta.value).toEqual([
+      expect(endMeta.getChildren()).toEqual([
         expect.objectContaining({
           name: "Date",
           value: "2025-01-01T01:00:00Z",
@@ -263,11 +259,11 @@ describe("DataMapper", () => {
     }
 
     // SubmissionSession
-    const submissionMeta = findMeta(processValue, "SubmissionSession");
+    const submissionMeta = processMeta.findNodeByName("SubmissionSession");
     expect(submissionMeta).toBeDefined();
-    if (submissionMeta && Array.isArray(submissionMeta.value)) {
-      const submissionStart = findMeta(submissionMeta.value, "Start");
-      expect(submissionStart?.value).toEqual([
+    if (submissionMeta && Array.isArray(submissionMeta.getChildren())) {
+      const submissionStart = submissionMeta.findNodeByName("Start");
+      expect(submissionStart?.getChildren()).toEqual([
         expect.objectContaining({
           name: "Date",
           value: "2025-01-01T00:00:00Z",
@@ -275,8 +271,8 @@ describe("DataMapper", () => {
         expect.objectContaining({ name: "UserUUID", value: "dummy-user-uuid" }),
         expect.objectContaining({ name: "Source", value: "DummySource" }),
       ]);
-      const submissionEnd = findMeta(submissionMeta.value, "End");
-      expect(submissionEnd?.value).toEqual([
+      const submissionEnd = submissionMeta.findNodeByName("End");
+      expect(submissionEnd?.getChildren()).toEqual([
         expect.objectContaining({
           name: "Date",
           value: "2025-01-01T00:30:00Z",
@@ -290,11 +286,11 @@ describe("DataMapper", () => {
     }
 
     // PreservationSession
-    const preservationMeta = findMeta(processValue, "PreservationSession");
+    const preservationMeta = processMeta.findNodeByName("PreservationSession");
     expect(preservationMeta).toBeDefined();
-    if (preservationMeta && Array.isArray(preservationMeta.value)) {
-      const preservationStart = findMeta(preservationMeta.value, "Start");
-      expect(preservationStart?.value).toEqual([
+    if (preservationMeta && Array.isArray(preservationMeta.getChildren())) {
+      const preservationStart = preservationMeta.findNodeByName("Start");
+      expect(preservationStart?.getChildren()).toEqual([
         expect.objectContaining({
           name: "Date",
           value: "2025-01-01T00:45:00Z",
@@ -303,9 +299,9 @@ describe("DataMapper", () => {
         expect.objectContaining({ name: "Source", value: "DummySource" }),
       ]);
       // End is not present in exampleAipInfo, so only check if present
-      const preservationEnd = findMeta(preservationMeta.value, "End");
+      const preservationEnd = preservationMeta.findNodeByName("End");
       if (preservationEnd) {
-        expect(preservationEnd.value).toBeDefined();
+        expect(preservationEnd.getChildren()).toBeDefined();
       }
     } else if (preservationMeta) {
       throw new Error("preservationMeta.value is not an array as expected");
@@ -321,7 +317,7 @@ describe("DataMapper", () => {
     const proc = mappedProcesses[0];
     expect(proc.getUuid()).toBe("aip-1");
     expect(proc.getDocumentClassUuid()).toBe("class-1");
-    expect(proc.getMetadata()).toEqual([]);
+    expect(proc.getMetadata()).toEqual(new Metadata("AiPInfo", [], MetadataType.COMPOSITE));
   });
 
   it("TU-F-Indexing-140: getProcessMappers() should handle unexpected metadata structures gracefully", () => {
@@ -332,7 +328,7 @@ describe("DataMapper", () => {
     const proc = mappedProcesses[0];
     expect(proc.getUuid()).toBe("aip-1");
     expect(proc.getDocumentClassUuid()).toBe("class-1");
-    expect(proc.getMetadata()).toEqual([]);
+    expect(proc.getMetadata()).toEqual(new Metadata("AiPInfo", [], MetadataType.COMPOSITE));
   });
 
   it("TU-F-Indexing-141: getDocumentMappers() should map documents correctly", () => {

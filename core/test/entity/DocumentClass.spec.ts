@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DocumentClass, DocumentClassRow } from "../../src/entity/DocumentClass";
+import { DocumentClass } from "../../src/entity/DocumentClass";
 import { IntegrityStatusEnum } from "../../src/value-objects/IntegrityStatusEnum";
 
 describe("DocumentClass entity", () => {

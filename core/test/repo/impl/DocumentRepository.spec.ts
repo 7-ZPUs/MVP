@@ -1,224 +1,155 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { DocumentRepository } from "../../../src/repo/impl/DocumentRepository";
-import { IntegrityStatusEnum } from "../../../src/value-objects/IntegrityStatusEnum";
-import { DatabaseProvider } from "../../../src/repo/impl/DatabaseProvider";
+import { DocumentDAO } from "../../../src/dao/DocumentDAO";
 import { Document } from "../../../src/entity/Document";
+import { IntegrityStatusEnum } from "../../../src/value-objects/IntegrityStatusEnum";
 import { Metadata, MetadataType } from "../../../src/value-objects/Metadata";
-import Database from "better-sqlite3";
 
 describe("DocumentRepository", () => {
-  let db: Database.Database;
+  let dao: {
+    getById: ReturnType<typeof vi.fn>;
+    getByProcessId: ReturnType<typeof vi.fn>;
+    getByStatus: ReturnType<typeof vi.fn>;
+    save: ReturnType<typeof vi.fn>;
+    updateIntegrityStatus: ReturnType<typeof vi.fn>;
+    getAggregatedIntegrityStatusByProcessId: ReturnType<typeof vi.fn>;
+  };
   let repo: DocumentRepository;
 
   beforeEach(() => {
-    db = new Database("test.db");
-    db.exec(`
-      DROP TABLE IF EXISTS document_metadata;
-      DROP TABLE IF EXISTS document;
-      DROP TABLE IF EXISTS process;
-      CREATE TABLE IF NOT EXISTS process (
-          id   INTEGER PRIMARY KEY AUTOINCREMENT,
-          uuid TEXT    NOT NULL UNIQUE
-      );
-      INSERT INTO process (uuid) VALUES ('process-uuid');
-    `);
-    repo = new DocumentRepository({ db } as unknown as DatabaseProvider);
+    dao = {
+      getById: vi.fn(),
+      getByProcessId: vi.fn(),
+      getByStatus: vi.fn(),
+      save: vi.fn(),
+      updateIntegrityStatus: vi.fn(),
+      getAggregatedIntegrityStatusByProcessId: vi.fn(),
+    };
+    repo = new DocumentRepository(dao as unknown as DocumentDAO);
   });
 
-  // identifier: TU-F-browsing-55
-  // method_name: save()
-  // description: should successfully persist a document with complex metadata
-  // expected_value: matches asserted behavior: successfully persist a document with complex metadata
+  const metadata = new Metadata(
+    "root",
+    [new Metadata("titolo", "Documento A", MetadataType.STRING)],
+    MetadataType.COMPOSITE,
+  );
+
   it("TU-F-browsing-55: save() should successfully persist a document with complex metadata", () => {
-    const metadata = new Metadata(
-      "root",
-      [
-        new Metadata("titolo", "Documento A", MetadataType.STRING),
-        new Metadata("anno", "2026", MetadataType.NUMBER),
-        new Metadata(
-          "soggetto",
-          [new Metadata("nome", "Mario", MetadataType.STRING)],
-          MetadataType.COMPOSITE,
-        ),
-      ],
-      MetadataType.COMPOSITE,
+    const input = new Document("doc-1", metadata, "process-uuid");
+    const saved = new Document(
+      "doc-1",
+      metadata,
+      "process-uuid",
+      IntegrityStatusEnum.UNKNOWN,
+      1,
+      10,
     );
+    dao.save.mockReturnValue(saved);
 
-    const document = new Document("doc-1", metadata, "process-uuid");
-    const saved = repo.save(document);
-    const found = repo.getById(saved.getId() as number);
+    const result = repo.save(input);
 
-    expect(found).not.toBeNull();
-    expect(found?.getUuid()).toBe("doc-1");
-    expect(found?.getIntegrityStatus()).toBe(IntegrityStatusEnum.UNKNOWN);
-    expect(found?.getMetadata().getChildren()).toHaveLength(3);
-    expect(found?.getMetadata().getChildren()[2].type).toBe(
-      MetadataType.COMPOSITE,
-    );
+    expect(dao.save).toHaveBeenCalledWith(input);
+    expect(result).toBe(saved);
   });
 
-  // identifier: TU-S-browsing-56
-  // method_name: save()
-  // description: should handle updating an existing document
-  // expected_value: matches asserted behavior: handle updating an existing document
   it("TU-S-browsing-56: save() should handle updating an existing document", () => {
-    const doc = new Document(
+    const updated = new Document(
       "doc-unique",
-      new Metadata("root", [], MetadataType.COMPOSITE),
+      metadata,
       "process-uuid",
+      IntegrityStatusEnum.UNKNOWN,
+      2,
+      10,
     );
-    repo.save(doc);
+    dao.save.mockReturnValue(updated);
 
-    const docUpdated = new Document(
-      "doc-unique",
-      new Metadata(
-        "root",
-        [new Metadata("test", "val", MetadataType.STRING)],
-        MetadataType.COMPOSITE,
-      ),
-      "process-uuid",
+    const result = repo.save(
+      new Document("doc-unique", metadata, "process-uuid"),
     );
-    repo.save(docUpdated);
 
-    const rows = db
-      .prepare("SELECT * FROM document WHERE uuid = 'doc-unique'")
-      .all();
-    expect(rows).toHaveLength(1);
+    expect(result.getUuid()).toBe("doc-unique");
+    expect(dao.save).toHaveBeenCalledTimes(1);
   });
 
-  // identifier: TU-F-browsing-57
-  // method_name: getByProcessId()
-  // description: should return a list of documents
-  // expected_value: returns a list of documents
   it("TU-F-browsing-57: getByProcessId() should return a list of documents", () => {
-    db.prepare(
-      "INSERT INTO document (uuid, integrity_status, process_id) VALUES (?, ?, ?)",
-    ).run("doc-p1", IntegrityStatusEnum.UNKNOWN, 1);
+    const rows = [new Document("doc-p1", metadata, "process-uuid")];
+    dao.getByProcessId.mockReturnValue(rows);
 
     const results = repo.getByProcessId(1);
+
+    expect(dao.getByProcessId).toHaveBeenCalledWith(1);
     expect(results).toHaveLength(1);
     expect(results[0].getUuid()).toBe("doc-p1");
   });
 
-  // identifier: TU-F-browsing-58
-  // method_name: getByProcessId()
-  // description: should return an empty array
-  // expected_value: returns an empty array
   it("TU-F-browsing-58: getByProcessId() should return an empty array", () => {
+    dao.getByProcessId.mockReturnValue([]);
+
     const results = repo.getByProcessId(999);
+
     expect(results).toHaveLength(0);
   });
 
-  // identifier: TU-F-browsing-59
-  // method_name: getByStatus()
-  // description: should return documents
-  // expected_value: returns documents
   it("TU-F-browsing-59: getByStatus() should return documents", () => {
-    db.prepare(
-      "INSERT INTO document (uuid, integrity_status, process_id) VALUES (?, ?, ?)",
-    ).run("doc-s1", IntegrityStatusEnum.VALID, 1);
-    db.prepare(
-      "INSERT INTO document (uuid, integrity_status, process_id) VALUES (?, ?, ?)",
-    ).run("doc-s2", IntegrityStatusEnum.INVALID, 1);
+    const rows = [new Document("doc-s1", metadata, "process-uuid")];
+    dao.getByStatus.mockReturnValue(rows);
 
     const results = repo.getByStatus(IntegrityStatusEnum.VALID);
+
+    expect(dao.getByStatus).toHaveBeenCalledWith(IntegrityStatusEnum.VALID);
     expect(results).toHaveLength(1);
-    expect(results[0].getUuid()).toBe("doc-s1");
   });
 
-  // identifier: TU-F-browsing-60
-  // method_name: getByStatus()
-  // description: should return an empty array
-  // expected_value: returns an empty array
   it("TU-F-browsing-60: getByStatus() should return an empty array", () => {
-    const results = repo.getByStatus(IntegrityStatusEnum.VALID);
-    expect(results).toHaveLength(0);
+    dao.getByStatus.mockReturnValue([]);
+
+    expect(repo.getByStatus(IntegrityStatusEnum.VALID)).toHaveLength(0);
   });
 
-  // identifier: TU-S-browsing-61
-  // method_name: updateIntegrityStatus()
-  // description: should successfully update the status
-  // expected_value: matches asserted behavior: successfully update the status
   it("TU-S-browsing-61: updateIntegrityStatus() should successfully update the status", () => {
-    const insertResult = db
-      .prepare(
-        "INSERT INTO document (uuid, integrity_status, process_id) VALUES (?, ?, ?)",
-      )
-      .run("doc-u1", IntegrityStatusEnum.UNKNOWN, 1);
-    const docId = insertResult.lastInsertRowid as number;
+    repo.updateIntegrityStatus(7, IntegrityStatusEnum.VALID);
 
-    repo.updateIntegrityStatus(docId, IntegrityStatusEnum.VALID);
-
-    const row = db
-      .prepare("SELECT integrity_status FROM document WHERE id = ?")
-      .get(docId) as any;
-    expect(row.integrity_status).toBe(IntegrityStatusEnum.VALID);
-  });
-
-  // identifier: TU-S-browsing-62
-  // method_name: save()
-  // description: should fallback to select
-  // expected_value: matches asserted behavior: fallback to select
-  it("TU-S-browsing-62: save() should fallback to select", () => {
-    const originalPrepare = db.prepare.bind(db);
-    const prepareSpy = vi
-      .spyOn(db, "prepare")
-      .mockImplementation((query: string) => {
-        if (query.includes("INSERT INTO document")) {
-          const stmt = originalPrepare(query);
-          const originalRun = stmt.run.bind(stmt);
-          stmt.run = (...args: any[]) => {
-            originalRun(...args);
-            return { lastInsertRowid: 0, changes: 0 };
-          };
-          return stmt;
-        }
-        return originalPrepare(query);
-      });
-
-    const doc = new Document(
-      "doc-fallback",
-      new Metadata("root", [], MetadataType.COMPOSITE),
-      "process-uuid",
+    expect(dao.updateIntegrityStatus).toHaveBeenCalledWith(
+      7,
+      IntegrityStatusEnum.VALID,
     );
-    const saved = repo.save(doc);
-
-    expect(saved.getUuid()).toBe("doc-fallback");
-    expect(saved.getId()).toBeGreaterThan(0);
-    prepareSpy.mockRestore();
   });
 
-  // identifier: TU-F-browsing-63
-  // method_name: getAggregatedIntegrityStatusByProcessId()
-  // description: should returns correctly
-  // expected_value: matches asserted behavior: getAggregatedIntegrityStatusByProcessId() returns correctly
+  it("TU-S-browsing-62: save() should fallback to select", () => {
+    const saved = new Document(
+      "doc-fallback",
+      metadata,
+      "process-uuid",
+      IntegrityStatusEnum.UNKNOWN,
+      33,
+      10,
+    );
+    dao.save.mockReturnValue(saved);
+
+    const result = repo.save(
+      new Document("doc-fallback", metadata, "process-uuid"),
+    );
+
+    expect(result.getId()).toBe(33);
+  });
+
   it("TU-F-browsing-63: getAggregatedIntegrityStatusByProcessId() should returns correctly", () => {
-    // Initially empty
+    dao.getAggregatedIntegrityStatusByProcessId
+      .mockReturnValueOnce(IntegrityStatusEnum.UNKNOWN)
+      .mockReturnValueOnce(IntegrityStatusEnum.VALID)
+      .mockReturnValueOnce(IntegrityStatusEnum.UNKNOWN)
+      .mockReturnValueOnce(IntegrityStatusEnum.INVALID);
+
     expect(repo.getAggregatedIntegrityStatusByProcessId(1)).toBe(
       IntegrityStatusEnum.UNKNOWN,
     );
-
-    // Add a valid doc
-    db.prepare(
-      "INSERT INTO document (uuid, integrity_status, process_id) VALUES (?, ?, ?)",
-    ).run("doc-agg-1", IntegrityStatusEnum.VALID, 1);
     expect(repo.getAggregatedIntegrityStatusByProcessId(1)).toBe(
       IntegrityStatusEnum.VALID,
     );
-
-    // Add an unknown doc
-    db.prepare(
-      "INSERT INTO document (uuid, integrity_status, process_id) VALUES (?, ?, ?)",
-    ).run("doc-agg-2", IntegrityStatusEnum.UNKNOWN, 1);
     expect(repo.getAggregatedIntegrityStatusByProcessId(1)).toBe(
       IntegrityStatusEnum.UNKNOWN,
     );
-
-    // Add an invalid doc
-    db.prepare(
-      "INSERT INTO document (uuid, integrity_status, process_id) VALUES (?, ?, ?)",
-    ).run("doc-agg-3", IntegrityStatusEnum.INVALID, 1);
     expect(repo.getAggregatedIntegrityStatusByProcessId(1)).toBe(
       IntegrityStatusEnum.INVALID,
     );

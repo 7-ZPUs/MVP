@@ -9,7 +9,4 @@ export interface IFileDAO {
   getByStatus(status: IntegrityStatusEnum): File[];
   save(file: File): File;
   updateIntegrityStatus(id: number, status: IntegrityStatusEnum): void;
-  getAggregatedIntegrityStatusByDocumentId(
-    documentId: number,
-  ): IntegrityStatusEnum;
 }

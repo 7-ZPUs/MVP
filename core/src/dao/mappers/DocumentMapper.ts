@@ -20,7 +20,7 @@ export interface DocumentPersistenceModel {
 }
 
 export class DocumentMapper {
-  static toDomain(
+  static fromPersistence(
     row: DocumentPersistenceRow,
     metadata: MetadataPersistenceRow[],
   ): Document {

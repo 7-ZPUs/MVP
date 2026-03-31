@@ -7,7 +7,7 @@ import { LocalPackageReaderAdapter } from "../../../src/repo/impl/LocalPackageRe
 import { XmlDipParser } from "../../../src/repo/impl/utils/XmlDipParser";
 import { FileSystemProvider } from "../../../src/repo/impl/utils/FileSystemProvider";
 import { IntegrityStatusEnum } from "../../../src/value-objects/IntegrityStatusEnum";
-import { MetadataType } from "../../../src/value-objects/Metadata";
+import { Metadata, MetadataType } from "../../../src/value-objects/Metadata";
 
 const RESOURCES_DIR = "core/test/resources";
 const DIP_INDEX_FILE = "DiPIndex.123e4567-e89b-12d3-a456-426614174000.xml";
@@ -146,7 +146,9 @@ describe("LocalPackageReaderAdapter integration tests", () => {
     expect(processes[0].getDocumentClassId()).toBeNull();
     expect(processes[0].getDocumentClassUuid()).toBe("class-1");
     expect(processes[0].getUuid()).toBe("aip-1");
-    expect(processes[0].getMetadata()).toEqual([]);
+    expect(processes[0].getMetadata()).toEqual(
+      new Metadata("Unknown", [], MetadataType.COMPOSITE),
+    );
     expect(processes[0].getIntegrityStatus()).toBe(IntegrityStatusEnum.UNKNOWN);
 
     expect(processes[1].getUuid()).toBe("aip-2");

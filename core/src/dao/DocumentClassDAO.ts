@@ -24,7 +24,7 @@ export class DocumentClassDAO implements IDocumentClassDAO {
   }
 
   private rowToEntity(row: DocumentClassPersistenceRow): DocumentClass {
-    return DocumentClassMapper.toDomain(row);
+    return DocumentClassMapper.fromPersistence(row);
   }
 
   getById(id: number): DocumentClass | null {
@@ -32,7 +32,7 @@ export class DocumentClassDAO implements IDocumentClassDAO {
       .prepare<
         [number],
         DocumentClassPersistenceRow
-      >("SELECT id, dip_id as dipId, uuid, integrity_status as integrityStatus, name, timestamp FROM document_class WHERE id = ?")
+      >("SELECT id, dip_id as dipId, dipUuid, uuid, integrity_status as integrityStatus, name, timestamp FROM document_class WHERE id = ?")
       .get(id);
     return row ? this.rowToEntity(row) : null;
   }
@@ -61,10 +61,11 @@ export class DocumentClassDAO implements IDocumentClassDAO {
     const result = this.db
       .prepare(
         `
-                INSERT INTO document_class (dip_id, uuid, name, timestamp) 
-                VALUES ((SELECT id FROM dip WHERE uuid = ?), ?, ?, ?)
+                INSERT INTO document_class (dip_id, uuid, dipUuid, name, timestamp) 
+                VALUES ((SELECT id FROM dip WHERE uuid = ?), ?, ?, ?, ?)
                 ON CONFLICT(uuid) DO UPDATE SET 
                     dip_id = excluded.dip_id,
+                    dipUuid = excluded.dipUuid,
                     name = excluded.name,
                     timestamp = excluded.timestamp
             `,
@@ -72,6 +73,7 @@ export class DocumentClassDAO implements IDocumentClassDAO {
       .run(
         documentClass.getDipUuid(),
         documentClass.getUuid(),
+        documentClass.getDipUuid(),
         documentClass.getName(),
         documentClass.getTimestamp(),
       );
@@ -114,39 +116,5 @@ export class DocumentClassDAO implements IDocumentClassDAO {
     this.db
       .prepare("UPDATE document_class SET integrity_status = ? WHERE id = ?")
       .run(status, id);
-  }
-
-  getAggregatedIntegrityStatusByDipId(dipId: number): IntegrityStatusEnum {
-    const row = this.db
-      .prepare<
-        [number],
-        { total: number; invalidCount: number; unknownCount: number }
-      >(
-        `SELECT
-                    COUNT(*) AS total,
-                    SUM(CASE WHEN integrity_status = 'INVALID' THEN 1 ELSE 0 END) AS invalidCount,
-                    SUM(CASE WHEN integrity_status = 'UNKNOWN' THEN 1 ELSE 0 END) AS unknownCount
-                 FROM document_class
-                 WHERE dip_id = ?`,
-      )
-      .get(dipId);
-
-    const total = row?.total ?? 0;
-    const invalidCount = row?.invalidCount ?? 0;
-    const unknownCount = row?.unknownCount ?? 0;
-
-    if (!total) {
-      return IntegrityStatusEnum.UNKNOWN;
-    }
-
-    if (invalidCount) {
-      return IntegrityStatusEnum.INVALID;
-    }
-
-    if (unknownCount) {
-      return IntegrityStatusEnum.UNKNOWN;
-    }
-
-    return IntegrityStatusEnum.VALID;
   }
 }

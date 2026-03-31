@@ -28,7 +28,7 @@ export class DipDAO implements IDipDAO {
         DipPersistenceRow
       >(`SELECT id, uuid, integrity_status as integrityStatus FROM dip WHERE id = ?`)
       .get(id);
-    return row ? DipMapper.toDomain(row) : null;
+    return row ? DipMapper.fromPersistence(row) : null;
   }
 
   getByUuid(uuid: string): Dip | null {
@@ -38,7 +38,7 @@ export class DipDAO implements IDipDAO {
         DipPersistenceRow
       >(`SELECT id, uuid, integrity_status as integrityStatus FROM dip WHERE uuid = ?`)
       .get(uuid);
-    return row ? DipMapper.toDomain(row) : null;
+    return row ? DipMapper.fromPersistence(row) : null;
   }
 
   save(dip: Dip): Dip {
@@ -70,7 +70,7 @@ export class DipDAO implements IDipDAO {
       }
     }
 
-    return DipMapper.toDomain({
+    return DipMapper.fromPersistence({
       id: id,
       uuid: dip.getUuid(),
       integrityStatus: IntegrityStatusEnum.UNKNOWN,
@@ -84,7 +84,7 @@ export class DipDAO implements IDipDAO {
         DipPersistenceRow
       >(`SELECT id, uuid, integrity_status as integrityStatus FROM dip WHERE integrity_status = ?`)
       .all(status);
-    return rows.map(DipMapper.toDomain);
+    return rows.map(DipMapper.fromPersistence);
   }
 
   updateIntegrityStatus(id: number, status: IntegrityStatusEnum): void {

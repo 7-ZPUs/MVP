@@ -17,6 +17,11 @@ import { DatabaseProvider } from "../../../../../src/repo/impl/DatabaseProvider"
 import { IntegrityStatusEnum } from "../../../../../src/value-objects/IntegrityStatusEnum";
 import { MetadataType } from "../../../../../src/value-objects/Metadata";
 import { Document } from "../../../../../src/entity/Document";
+import { DipDAO } from "../../../../../src/dao/DipDAO";
+import { FileDAO } from "../../../../../src/dao/FileDAO";
+import { DocumentClassDAO } from "../../../../../src/dao/DocumentClassDAO";
+import { DocumentDAO } from "../../../../../src/dao/DocumentDAO";
+import { ProcessDAO } from "../../../../../src/dao/ProcessDAO";
 
 // ---------------------------------------------------------------------------
 // Realistic DiP index XML — one DocumentClass, one AiP, two Documents
@@ -170,11 +175,11 @@ describe("Index use-case integration tests", () => {
       new DataMapper(),
     );
 
-    dipRepository = new DipRepository(dbProvider);
-    documentClassRepository = new DocumentClassRepository(dbProvider);
-    processRepository = new ProcessRepository(dbProvider);
-    documentRepository = new DocumentRepository(dbProvider);
-    fileRepository = new FileRepository(dbProvider);
+    dipRepository = new DipRepository(new DipDAO(dbProvider));
+    documentClassRepository = new DocumentClassRepository(new DocumentClassDAO(dbProvider));
+    processRepository = new ProcessRepository(new ProcessDAO(dbProvider));
+    documentRepository = new DocumentRepository(new DocumentDAO(dbProvider));
+    fileRepository = new FileRepository(new FileDAO(dbProvider));
 
     const useCase = new IndexDip(
       packageReader,

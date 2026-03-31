@@ -15,6 +15,11 @@ import { ProcessRepository } from "../../../../../src/repo/impl/ProcessRepositor
 import { DocumentRepository } from "../../../../../src/repo/impl/DocumentRepository";
 import { FileRepository } from "../../../../../src/repo/impl/FileRepository";
 import { DatabaseProvider } from "../../../../../src/repo/impl/DatabaseProvider";
+import { DipDAO } from "../../../../../src/dao/DipDAO";
+import { FileDAO } from "../../../../../src/dao/FileDAO";
+import { DocumentDAO } from "../../../../../src/dao/DocumentDAO";
+import { ProcessDAO } from "../../../../../src/dao/ProcessDAO";
+import { DocumentClassDAO } from "../../../../../src/dao/DocumentClassDAO";
 
 const DEFAULT_REAL_DIP_PATH = "core/test/resources/real_dip_heavy";
 const realDipPath = process.env.REAL_DIP_PATH ?? DEFAULT_REAL_DIP_PATH;
@@ -53,16 +58,29 @@ describe("IndexDip use-case performance", () => {
       const dbPath = path.join(tmpDir, "dip-viewer.db");
       const dbProvider = new DatabaseProvider(dbPath);
 
+      const schema = fs.readFileSync(
+        path.join(process.cwd(), "db/schema.sql"),
+        "utf-8",
+      );
+      const db = dbProvider.db;
+      db.exec(schema);
+
       const packageReader = new LocalPackageReaderAdapter(
         new XmlDipParser(),
         new FileSystemProvider(),
-        new DataMapper()
+        new DataMapper(),
       );
-      const dipRepository = new DipRepository(dbProvider);
-      const documentClassRepository = new DocumentClassRepository(dbProvider);
-      const processRepository = new ProcessRepository(dbProvider);
-      const documentRepository = new DocumentRepository(dbProvider);
-      const fileRepository = new FileRepository(dbProvider);
+      const dipRepository = new DipRepository(new DipDAO(dbProvider));
+      const documentClassRepository = new DocumentClassRepository(
+        new DocumentClassDAO(dbProvider),
+      );
+      const processRepository = new ProcessRepository(
+        new ProcessDAO(dbProvider),
+      );
+      const documentRepository = new DocumentRepository(
+        new DocumentDAO(dbProvider),
+      );
+      const fileRepository = new FileRepository(new FileDAO(dbProvider));
 
       const useCase = new IndexDip(
         packageReader,

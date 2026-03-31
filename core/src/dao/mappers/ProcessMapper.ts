@@ -20,7 +20,7 @@ export interface ProcessPersistenceModel {
 }
 
 export class ProcessMapper {
-  static toDomain(
+  static fromPersistence(
     row: ProcessPersistenceRow,
     metadata: MetadataPersistenceRow[],
   ): Process {

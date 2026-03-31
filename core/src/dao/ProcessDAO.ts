@@ -26,7 +26,7 @@ export class ProcessDAO implements IProcessDAO {
 
   private rowToEntity(row: ProcessPersistenceRow): Process {
     const metadata = loadMetadata(this.db, METADATA_TABLE, METADATA_FK, row.id);
-    return ProcessMapper.toDomain(row, metadata);
+    return ProcessMapper.fromPersistence(row, metadata);
   }
 
   getById(id: number): Process | null {
@@ -105,41 +105,5 @@ export class ProcessDAO implements IProcessDAO {
     this.db
       .prepare("UPDATE process SET integrity_status = ? WHERE id = ?")
       .run(status, id);
-  }
-
-  getAggregatedIntegrityStatusByDocumentClassId(
-    documentClassId: number,
-  ): IntegrityStatusEnum {
-    const row = this.db
-      .prepare<
-        [number],
-        { total: number; invalidCount: number; unknownCount: number }
-      >(
-        `SELECT
-                    COUNT(*) AS total,
-                    SUM(CASE WHEN integrity_status = 'INVALID' THEN 1 ELSE 0 END) AS invalidCount,
-                    SUM(CASE WHEN integrity_status = 'UNKNOWN' THEN 1 ELSE 0 END) AS unknownCount
-                 FROM process
-                 WHERE document_class_id = ?`,
-      )
-      .get(documentClassId);
-
-    const total = row?.total ?? 0;
-    const invalidCount = row?.invalidCount ?? 0;
-    const unknownCount = row?.unknownCount ?? 0;
-
-    if (!total) {
-      return IntegrityStatusEnum.UNKNOWN;
-    }
-
-    if (invalidCount) {
-      return IntegrityStatusEnum.INVALID;
-    }
-
-    if (unknownCount) {
-      return IntegrityStatusEnum.UNKNOWN;
-    }
-
-    return IntegrityStatusEnum.VALID;
   }
 }

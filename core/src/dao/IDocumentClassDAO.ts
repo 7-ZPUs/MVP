@@ -10,5 +10,4 @@ export interface IDocumentClassDAO {
   save(documentClass: DocumentClass): DocumentClass;
   search(query: string): DocumentClass[] | null;
   updateIntegrityStatus(id: number, status: IntegrityStatusEnum): void;
-  getAggregatedIntegrityStatusByDipId(dipId: number): IntegrityStatusEnum;
 }

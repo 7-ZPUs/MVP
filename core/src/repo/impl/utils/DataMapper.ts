@@ -213,46 +213,66 @@ export class DataMapper implements IDataMapper {
 
   private extractFileFragments(rawDipIndex: any): any[] {
     const documents = this.extractDocumentFragments(rawDipIndex);
-    const primaryFragments: any[] = [];
-    const attachmentFragments: any[] = [];
-    for (const doc of documents) {
-      // Support both xml2js ($) and legacy (@_uuid) attribute formats
-      const documentUuid = doc.$?.uuid ?? doc["@_uuid"] ?? "";
-      const basePath = doc.DocumentPath ?? doc.$?.DocumentPath ?? "";
-      const aipRoot = doc._aipRoot ?? doc.$?._aipRoot ?? "";
-      const files = doc.Files;
-      if (files?.Primary) {
-        const primaryText = this.extractNodeText(files.Primary);
-        if (!this.shouldIgnoreFilePath(primaryText)) {
-          primaryFragments.push({
-            ...files.Primary,
-            _documentUuid: documentUuid,
-            _basePath: basePath,
-            _aipRoot: aipRoot,
-            isMain: true,
-          });
-        }
-      }
-      if (files?.Attachments) {
-        const atts = Array.isArray(files.Attachments)
-          ? files.Attachments
-          : [files.Attachments];
-        for (const att of atts) {
-          const attText = this.extractNodeText(att);
-          if (this.shouldIgnoreFilePath(attText)) {
-            continue;
-          }
-          attachmentFragments.push({
-            ...att,
-            _documentUuid: documentUuid,
-            _basePath: basePath,
-            _aipRoot: aipRoot,
-            isMain: false,
-          });
-        }
-      }
-    }
+    const primaryFragments = documents
+      .map((doc) => this.extractPrimaryFileFragment(doc))
+      .filter((fragment): fragment is Record<string, unknown> =>
+        Boolean(fragment),
+      );
+    const attachmentFragments = documents.flatMap((doc) =>
+      this.extractAttachmentFileFragments(doc),
+    );
     return [...primaryFragments, ...attachmentFragments];
+  }
+
+  private extractPrimaryFileFragment(doc: any): Record<string, unknown> | null {
+    const primary = doc.Files?.Primary;
+    if (!primary) return null;
+    return this.createFileFragment(doc, primary, true);
+  }
+
+  private extractAttachmentFileFragments(doc: any): Record<string, unknown>[] {
+    const attachments = doc.Files?.Attachments;
+    if (!attachments) return [];
+
+    const entries = Array.isArray(attachments) ? attachments : [attachments];
+    return entries
+      .map((attachment) => this.createFileFragment(doc, attachment, false))
+      .filter((fragment): fragment is Record<string, unknown> =>
+        Boolean(fragment),
+      );
+  }
+
+  private createFileFragment(
+    doc: any,
+    fileNode: any,
+    isMain: boolean,
+  ): Record<string, unknown> | null {
+    if (this.shouldIgnoreFilePath(this.extractNodeText(fileNode))) {
+      return null;
+    }
+
+    const fileContext = this.extractFileContextFromDocument(doc);
+    return {
+      ...fileNode,
+      ...fileContext,
+      isMain,
+    };
+  }
+
+  private extractFileContextFromDocument(doc: any): {
+    _documentUuid: string;
+    _basePath: string;
+    _aipRoot: string;
+  } {
+    // Support both xml2js ($) and legacy (@_uuid) attribute formats
+    const documentUuid = doc.$?.uuid ?? doc["@_uuid"] ?? "";
+    const basePath = doc.DocumentPath ?? doc.$?.DocumentPath ?? "";
+    const aipRoot = doc._aipRoot ?? doc.$?._aipRoot ?? "";
+    return {
+      _documentUuid: documentUuid,
+      _basePath: basePath,
+      _aipRoot: aipRoot,
+    };
   }
 
   private extractDocumentMetadata(rawMetadataFragment: any): Metadata {
@@ -277,10 +297,11 @@ export class DataMapper implements IDataMapper {
     return new Metadata(rootTag, children, MetadataType.COMPOSITE);
   }
 
-  private extractProcessMetadata(rawMetadataFragment: any): Metadata[] {
+  private extractProcessMetadata(rawMetadataFragment: any): Metadata {
     const root = rawMetadataFragment?.AiPInfo ?? rawMetadataFragment;
-    if (!root) return [];
-    return this.extractMetadataDict(root, false);
+    if (!root) return new Metadata("Unknown", [], MetadataType.COMPOSITE);
+    const children = this.extractMetadataDict(root, false);
+    return new Metadata("AiPInfo", children, MetadataType.COMPOSITE);
   }
 
   private extractMetadataDict(obj: any, filterUuid: boolean): Metadata[] {
