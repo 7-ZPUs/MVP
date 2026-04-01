@@ -35,6 +35,7 @@ jobs:
 
       - name: Build project
         run: |
+          npm rebuild
           npm run build:all
 
       - name: Run Tests and Coverage

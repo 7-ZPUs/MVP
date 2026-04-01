@@ -77,7 +77,7 @@ function resolveProductionDipPath(): string {
     );
   }
 
-  return dipDirs[0]!;
+  return dipDirs[0];
 }
 
 function resolveBootstrapDipPath(): string {

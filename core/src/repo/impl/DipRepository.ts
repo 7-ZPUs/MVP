@@ -3,7 +3,6 @@ import { inject, injectable } from "tsyringe";
 import { Dip } from "../../entity/Dip";
 import { IntegrityStatusEnum } from "../../value-objects/IntegrityStatusEnum";
 import { IDipRepository } from "../IDipRepository";
-import { DipDAO } from "../../dao/DipDAO";
 import { DIP_DAO_TOKEN, IDipDAO } from "../../dao/IDipDAO";
 
 @injectable()

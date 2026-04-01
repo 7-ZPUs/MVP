@@ -7,7 +7,6 @@ import { HASHING_SERVICE_TOKEN } from "./services/IHashingService";
 // ---- Database provider ----
 import {
   DATABASE_PROVIDER_TOKEN,
-  DATABASE_PROVIDER_PATH_TOKEN,
   DatabaseProvider,
 } from "./repo/impl/DatabaseProvider";
 
