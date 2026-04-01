@@ -1,7 +1,7 @@
 import { MetadataType } from "../value-objects/Metadata";
 
 export interface MetadataDTO {
-    name: string;
-    value: string;
-    type: MetadataType;
+  name: string;
+  value: string | MetadataDTO[];
+  type: MetadataType;
 }

@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ValidationError } from '../../../../../../../../shared/metadata';
+import { ValidationError } from '../../../../../../../../shared/domain/metadata';
 
 @Component({
   selector: 'app-field-error',

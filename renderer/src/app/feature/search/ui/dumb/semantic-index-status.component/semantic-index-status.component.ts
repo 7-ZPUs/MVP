@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { SemanticIndexState } from '../../../../../../../../shared/metadata/semantic-filter-models';
+import { SemanticIndexState } from '../../../../../../../../shared/domain/metadata/semantic-filter-models';
 
 @Component({
   selector: 'app-semantic-index-status',

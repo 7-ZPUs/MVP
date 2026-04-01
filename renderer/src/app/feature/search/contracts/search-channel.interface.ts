@@ -3,7 +3,7 @@ import {
   SearchFilters,
   SearchQuery,
   SearchResult,
-} from '../../../../../../shared/metadata/search.models';
+} from '../../../../../../shared/domain/metadata/search.models';
 
 export interface ISearchChannel {
   search(query: SearchQuery, signal: AbortSignal): Observable<SearchResult[]>;

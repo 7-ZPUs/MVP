@@ -1,7 +1,7 @@
 import { Dip } from "../entity/Dip";
 import { IntegrityStatusEnum } from "../value-objects/IntegrityStatusEnum";
 
-export const DIP_REPOSITORY_TOKEN = Symbol('IDipRepository');
+export const DIP_REPOSITORY_TOKEN = Symbol("IDipRepository");
 
 export interface IDipRepository {
     getById(id: number): Dip | null;

@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+
+    <xs:element name="DiPIndex" type="DiPIndexType"/>
+
+    <xs:complexType name="DiPIndexType">
+        <xs:sequence>
+            <xs:element maxOccurs="unbounded" name="ComplianceStatement"
+                type="ComplianceStatementType"/>
+            <xs:element name="PackageInfo" type="PackageInfoType"/>
+            <xs:element name="PackageContent" type="PackageContentType"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="ComplianceStatementType">
+        <xs:sequence>
+            <xs:element name="Title" type="xs:string"
+                default="Dichiarazione di conformità del Pacchetto di Distribuzione."/>
+            <xs:element name="Body" type="xs:string"
+                default="La società Archiverse Srl dichiara e certifica che i documenti contenuti nel presente Pacchetto di Distribuzione sono conformi alle copie conservate nel sistema Archimemo."
+            />
+        </xs:sequence>
+        <xs:attribute default="it" name="lang" type="xs:language"/>
+    </xs:complexType>
+
+    <xs:complexType name="PackageInfoType">
+        <xs:sequence>
+            <xs:element name="CreatingApplication" type="CreatingApplicationType"/>
+            <xs:element name="ProcessUUID" type="xs:string"/>
+            <xs:element name="CreationDate" type="xs:date"/>
+            <xs:element name="DocumentsCount" type="xs:nonNegativeInteger"/>
+            <xs:element name="AiPCount" type="xs:nonNegativeInteger"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="CreatingApplicationType">
+        <xs:sequence>
+            <xs:element name="Name" type="xs:string" default="Archimemo"/>
+            <xs:element name="Version" type="xs:string" default="1.0.0"/>
+            <xs:element name="Producer" type="xs:string" default="Archiverse Srl"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="PackageContentType">
+        <xs:sequence>
+            <xs:element name="DiPDocuments" type="DiPDocumentsType"/>
+            <xs:element name="RepresentationInformation" type="RepresentationInformationType"
+                maxOccurs="unbounded" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="DiPDocumentsType">
+        <xs:sequence>
+            <xs:element name="Statement"
+                fixed="I documenti del presente pacchetto di distribuzione appartengono alle seguenti classi documentali"
+                maxOccurs="unbounded">
+                <xs:complexType>
+                    <xs:simpleContent>
+                        <xs:extension base="xs:string">
+                            <xs:attribute default="it" name="lang" type="xs:language"/>
+                        </xs:extension>
+                    </xs:simpleContent>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="DocumentClass" maxOccurs="unbounded" type="DocumentClassType">
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="DocumentClassType">
+        <xs:sequence>
+            <xs:element maxOccurs="unbounded" minOccurs="0" name="RappresentationInformationUUID"
+                type="xs:string"/>
+            <xs:element name="AiP" maxOccurs="unbounded" type="AiPType"/>
+            <xs:element name="MoreData" type="moreDataType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attribute name="uuid" type="xs:string" use="required"/>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="version" type="xs:string" use="required"/>
+        <xs:attribute name="validFrom" type="dateTimeType" use="required"/>
+        <xs:attribute name="validTo" type="dateTimeType" use="optional"/>
+    </xs:complexType>
+
+    <xs:complexType name="AiPType">
+        <xs:sequence>
+            <xs:element name="AiPRoot" type="xs:string"/>
+            <xs:element minOccurs="0" name="Report" maxOccurs="unbounded" type="ReportType"/>
+            <xs:element minOccurs="0" name="SiP" maxOccurs="unbounded" type="SiPType"/>
+            <xs:element name="Document" maxOccurs="unbounded" type="DocumentType"/>
+        </xs:sequence>
+        <xs:attribute name="uuid" type="xs:string" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="ReportType">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="uuid" type="xs:string" use="required"/>
+                <xs:attribute name="name" type="xs:string" use="required"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    
+    <xs:complexType name="SiPType">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="uuid" type="xs:string" use="required"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <xs:complexType name="DocumentType">
+        <xs:sequence>
+            <xs:element name="DocumentPath" type="xs:string"/>
+            <xs:element name="Files" type="DocumentFilesType"/>
+        </xs:sequence>
+        <xs:attribute name="uuid" type="xs:string" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="DocumentFilesType">
+        <xs:sequence>
+            <xs:element name="Metadata" type="FileType" minOccurs="1" maxOccurs="1"/>
+            <xs:element name="Primary" type="FileType" minOccurs="1" maxOccurs="1"/>
+            <xs:element name="Attachments" type="FileType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attribute name="FilesCount" type="xs:nonNegativeInteger" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="FileType">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="uuid" type="xs:string" use="required"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <xs:complexType name="RepresentationInformationType">
+        <xs:sequence>
+            <xs:element name="Name" type="xs:string"/>
+            <xs:element name="Description" type="xs:string"/>
+            <xs:element name="MimeType" type="xs:string"/>
+            <xs:element name="Content" type="FileType" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attribute name="uuid" type="xs:string" use="required"/>
+    </xs:complexType>
+    <xs:complexType name="moreDataType">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="name" type="xs:string" use="required"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <xs:simpleType name="dateTimeType">
+        <xs:restriction base="xs:dateTime">
+            <xs:minInclusive value="2023-01-02T09:00:00.0+01:00"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+</xs:schema>

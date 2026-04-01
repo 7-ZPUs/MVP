@@ -4,7 +4,7 @@ import { By } from '@angular/platform-browser';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 import { SubjectFiltersComponent } from './subject-filters.component';
-import { SubjectCriteria } from '../../../../../../../../shared/metadata';
+import { SubjectCriteria } from '../../../../../../../../shared/domain/metadata';
 
 describe('SubjectFiltersComponent (Wizard)', () => {
   let component: SubjectFiltersComponent;

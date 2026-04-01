@@ -4,7 +4,7 @@ import { MetadataDTO } from "./MetadataDTO";
 export interface CreateProcessDTO {
     documentClassId: number;
     uuid: string;
-    metadata: MetadataDTO[];
+    metadata: MetadataDTO;
 }
 
 export interface ProcessDTO {
@@ -12,5 +12,5 @@ export interface ProcessDTO {
     documentClassId: number;
     uuid: string;
     integrityStatus: IntegrityStatusEnum;
-    metadata: MetadataDTO[];
+    metadata: MetadataDTO;
 }

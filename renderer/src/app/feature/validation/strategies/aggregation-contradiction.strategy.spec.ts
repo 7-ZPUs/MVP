@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { AggregationContradictionStrategy } from './aggregation-contradiction.strategy';
-import { PartialSearchFilters } from '../../../../../../shared/metadata';
-import { AggregationType, FascicoloType } from '../../../../../../shared/metadata/search.enum';
+import { PartialSearchFilters } from '../../../../../../shared/domain/metadata';
+import { AggregationType, FascicoloType } from '../../../../../../shared/domain/metadata/search.enum';
 
 describe('AggregationContradictionStrategy', () => {
   let strategy: AggregationContradictionStrategy;

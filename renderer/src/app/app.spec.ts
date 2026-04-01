@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { App } from './app';
+import { describe, it, expect, beforeEach } from 'vitest';
 
 describe('App', () => {
   let component: App;

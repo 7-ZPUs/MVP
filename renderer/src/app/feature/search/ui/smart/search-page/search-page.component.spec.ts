@@ -5,8 +5,8 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 import { SearchPageComponent } from './search-page.component';
 import { SearchFacade } from '../../../services';
-import { SearchQueryType } from '../../../../../../../../shared/metadata/search.enum';
-import { SearchResult, SearchState } from '../../../../../../../../shared/metadata';
+import { SearchQueryType } from '../../../../../../../../shared/domain/metadata/search.enum';
+import { SearchState } from '../../../../../../../../shared/domain/metadata';
 
 describe('SearchPageComponent', () => {
   let component: SearchPageComponent;
