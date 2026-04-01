@@ -25,6 +25,6 @@ describe('App', () => {
     fixture.detectChanges();
     await fixture.whenStable();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('router-outlet')).toBeNull();
+    expect(compiled.querySelector('router-outlet')).not.toBeNull();
   });
 });
