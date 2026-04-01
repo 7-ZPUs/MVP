@@ -27,6 +27,7 @@ describe('DocumentFacade', () => {
     mimeType: MimeType.PDF,
     metadata: {
       nome: 'Determina',
+      oggetto: '',
       descrizione: 'Documento di test per i Facade',
       tipoDocumentale: 'Deliberazione',
       modalitaFormazione: 'Nativa Digitale',
@@ -50,6 +51,8 @@ describe('DocumentFacade', () => {
       prodotto: 'Adobe Acrobat',
       versione: '2020',
       produttore: 'Adobe Systems',
+      impronta: 'Impronta di test',
+      algoritmoImpronta: 'SHA-256',
     },
     verification: {
       firmaDigitale: 'Valida',

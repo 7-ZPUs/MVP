@@ -6,7 +6,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { SearchPageComponent } from './search-page.component';
 import { SearchFacade } from '../../../services';
 import { SearchQueryType } from '../../../../../../../../shared/metadata/search.enum';
-import { SearchState } from '../../../../../../../../shared/metadata';
+import { SearchResult, SearchState } from '../../../../../../../../shared/metadata';
 
 describe('SearchPageComponent', () => {
   let component: SearchPageComponent;
@@ -238,19 +238,20 @@ describe('SearchPageComponent', () => {
         loading: false,
         error: null,
         results: [
-          { id: '1', title: 'Documento Test' },
-          { id: '2', title: 'Altro Test' },
-        ] as any,
+         { documentId: 'DOC-123', name: 'Test', type: 'AGGREGAZIONE_DOCUMENTALE', score: null },
+         { documentId: 'DOC-246', name: 'Test2', type: 'DOCUMENTO_INFORMATICO', score: null }
+        ] as SearchResult[],
       }));
       fixture.detectChanges();
 
-      const title = fixture.debugElement.query(By.css('h2'));
-      expect(title).toBeTruthy();
-      expect(title.nativeElement.textContent).toContain('Trovati 2 risultati');
+      const searchResultsElement = fixture.debugElement.query(By.css('app-search-results'));
+      expect(searchResultsElement).toBeTruthy();
 
-      const preJson = fixture.debugElement.query(By.css('pre'));
-      expect(preJson).toBeTruthy();
-      expect(preJson.nativeElement.textContent).toContain('Documento Test');
+      const searchResultsInstance = searchResultsElement.componentInstance;
+      expect(searchResultsInstance.results.length).toBe(2);
+      expect(searchResultsInstance.results[0].name).toBe('Test');
+      expect(searchResultsInstance.results[1].name).toBe('Test2');
+       
     });
 
     it('dovrebbe mostrare il messaggio "Nessun risultato" se array vuoto e query testuale presente', () => {
