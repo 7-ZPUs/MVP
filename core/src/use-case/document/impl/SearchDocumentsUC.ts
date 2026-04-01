@@ -1,7 +1,8 @@
 import { inject, injectable } from 'tsyringe';
 import { ISearchDocumentsUC } from '../ISearchDocumentsUC';
 import { IDocumentRepository, DOCUMENTO_REPOSITORY_TOKEN } from '../../../repo/IDocumentRepository';
-import { SearchFilters, SearchResult } from '../../../../../shared/domain/metadata/search.models';
+import { SearchFilters, SearchResult } from '../../../../../shared/domain/metadata';
+
 
 @injectable()
 export class SearchDocumentsUC implements ISearchDocumentsUC {
@@ -16,8 +17,8 @@ export class SearchDocumentsUC implements ISearchDocumentsUC {
             const metadata = document.getMetadata();
             return {
                 documentId: document.getUuid(),
-                name:  metadata.find(m => m.name === 'nome')?.value  ?? '',
-                type:  metadata.find(m => m.name === 'tipoDocumento')?.value ?? '',
+                name:  metadata.findNodeByName('nome')?.getStringValue()  ?? '',
+                type:  metadata.findNodeByName('tipoDocumento')?.getStringValue() ?? '',
                 score: null,
             };
         });

@@ -14,8 +14,14 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       reporter: ["text", "lcov"],
-      include: ["core/**/impl/**/*.ts"],
-      exclude: ["**/*.d.ts"],
+      include: [
+        "core/**/impl/**/*.ts",
+        "core/src/dao/**/*.ts",
+        "core/src/ipc/**/*.ts",
+        "core/entity/**/*.ts",
+        "core/dto/**/*.ts",
+      ],
+      exclude: ["**/*.d.ts", "core/src/models"],
       reportsDirectory: "./coverage/core",
     },
     testTimeout: 30_000, // per i test di integrazione con il modello

@@ -1,6 +1,6 @@
 {
   "sonarlint.connectedMode.project": {
-    "connectionId": "http-sonarq-ddns-net-25567",
+    "connectionId": "http-sonarq-ddns-net-25567-",
     "projectKey": "dipreader"
   }
 }

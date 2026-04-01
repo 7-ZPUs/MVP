@@ -17,7 +17,14 @@ import "./core/src/container";
 import { container } from "tsyringe";
 
 import { app, BrowserWindow, ipcMain } from "electron";
-import * as path from "path";
+import { existsSync, readdirSync } from "node:fs";
+import * as path from "node:path";
+import { ApplicationBootstrapAdapter } from "./db/DatabaseBootstrap";
+import { DATABASE_PROVIDER_PATH_TOKEN } from "./core/src/repo/impl/DatabaseProvider";
+import {
+  INDEX_DIP_TOKEN,
+  IIndexDip,
+} from "./core/src/use-case/utils/indexing/IIndexDip";
 
 // Disable GPU acceleration — required in headless/container environments
 // where no real GPU is available (dev containers, CI, Codespaces, etc.).
@@ -27,14 +34,9 @@ app.disableHardwareAcceleration();
 // IPC adapter registration
 // ---------------------------------------------------------------------------
 import { BrowsingIpcAdapter } from "./core/src/ipc/BrowsingIpcAdapter";
-import { CreateIpcAdapter } from "./core/src/ipc/CreateIpcAdapter";
+import { CheckIntegrityIpcAdapter } from "./core/src/ipc/CheckIntegrityIpcAdapter";
 import { SearchIpcAdapter } from "./core/src/ipc/SearchIpcAdapter";
 import { FileViewerIpcAdapter } from "./core/src/ipc/FileViewerIpcAdapter";
-
-// ---------------------------------------------------------------------------
-// Database
-// ---------------------------------------------------------------------------
-import { DATABASE_PROVIDER_TOKEN, DatabaseProvider } from "./core/src/repo/impl/DatabaseProvider";
 
 // ---------------------------------------------------------------------------
 // Window management
@@ -63,16 +65,101 @@ function createWindow(): BrowserWindow {
   return win;
 }
 
+function resolveProductionDipPath(): string {
+  const appBasePath = process.cwd();
+  const dipDirs = readdirSync(appBasePath, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory() && entry.name.startsWith("dip."))
+    .map((entry) => path.join(appBasePath, entry.name));
+
+  if (dipDirs.length === 0) {
+    throw new Error(
+      `No dip.{uuid} directory found in application folder: ${appBasePath}`,
+    );
+  }
+
+  return dipDirs[0];
+}
+
+function resolveBootstrapDipPath(): string {
+  if (process.env["NODE_ENV"] !== "development") {
+    return resolveProductionDipPath();
+  }
+  console.log("[BOOTSTRAP] current working directory:", process.cwd());
+  const customDipPath = path.resolve(process.cwd(), "resources", "test-dip");
+  if (existsSync(customDipPath)) {
+    return customDipPath;
+  }
+
+  console.warn(
+    `[BOOTSTRAP] Custom dev DIP path not found: ${customDipPath}. Falling back to auto-discovery.`,
+  );
+  return resolveProductionDipPath();
+}
+
+function exportDb(dstPath: string): void {
+  const dbPath = path.resolve(process.cwd(), "dip-viewer.db");
+  if (!existsSync(dbPath)) {
+    console.warn(`Database file not found at ${dbPath}, skipping export.`);
+    return;
+  }
+
+  const exportPath = path.resolve(process.cwd(), dstPath);
+  try {
+    // In a real application, we would use the IExportPort abstraction here.
+    // For simplicity, we just copy the file directly.
+    require("node:fs").copyFileSync(dbPath, exportPath);
+    console.log(`Database exported successfully to ${exportPath}`);
+  } catch (error) {
+    console.error(
+      `Failed to export database from ${dbPath} to ${exportPath}:`,
+      error instanceof Error ? error.message : String(error),
+    );
+  }
+}
+
 // ---------------------------------------------------------------------------
 // App lifecycle
 // ---------------------------------------------------------------------------
 
-app.whenReady().then(async () => {
-  const dbProvider = container.resolve<DatabaseProvider>(DATABASE_PROVIDER_TOKEN);
-  await dbProvider.init();
+(async () => {
+  await app.whenReady();
 
+  // Ensure all DAOs/repositories use the same DB file created by bootstrap.
+  const appDbPath = path.resolve(process.cwd(), "dip-viewer.db");
+  container.register(DATABASE_PROVIDER_PATH_TOKEN, {
+    useValue: appDbPath,
+  });
+
+  console.warn("[BOOTSTRAP] NODE_ENV =", process.env["NODE_ENV"]);
+  const lazyIndexDip: IIndexDip = {
+    execute: (dipPath: string) =>
+      container.resolve<IIndexDip>(INDEX_DIP_TOKEN).execute(dipPath),
+  };
+  const bootstrapAdapter = new ApplicationBootstrapAdapter(lazyIndexDip);
+  const dipPath = resolveBootstrapDipPath();
+  try {
+    performance.mark("bootstrap-start");
+    await bootstrapAdapter.bootstrap(dipPath);
+    performance.mark("bootstrap-end");
+    performance.measure(
+      "DIP indexing",
+      "bootstrap-start",
+      "bootstrap-end",
+    );
+    console.warn("[BOOTSTRAP] DIP indexing completed successfully in", performance.getEntriesByName("DIP indexing")[0].duration, "ms.");
+    if(process.env["NODE_ENV"] === "development"){
+      exportDb("/workspaces/MVP/dip-viewer-exported.db");
+    }
+  } catch (error) {
+    console.warn(
+      "[BOOTSTRAP] Skipping automatic DIP indexing:",
+      error instanceof Error ? error.message : String(error),
+    );
+  }
+
+  // Register all IPC adapters before creating the window
   BrowsingIpcAdapter.register(ipcMain);
-  CreateIpcAdapter.register(ipcMain);
+  CheckIntegrityIpcAdapter.register(ipcMain);
   SearchIpcAdapter.register(ipcMain);
   FileViewerIpcAdapter.register(ipcMain);
 
@@ -83,10 +170,10 @@ app.whenReady().then(async () => {
       createWindow();
     }
   });
-});
 
-app.on("window-all-closed", () => {
-  if (process.platform !== "darwin") {
-    app.quit();
-  }
-});
+  app.on("window-all-closed", () => {
+    if (process.platform !== "darwin") {
+      app.quit();
+    }
+  });
+})();

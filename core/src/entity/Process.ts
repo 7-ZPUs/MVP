@@ -1,69 +1,55 @@
-import { ProcessDTO } from "../dto/ProcessDTO";
 import { IntegrityStatusEnum } from "../value-objects/IntegrityStatusEnum";
 import { Metadata } from "../value-objects/Metadata";
 
-export interface ProcessRow {
-    id: number;
-    documentClassId: number;
-    uuid: string;
-    integrityStatus?: string;
-}
-
 export class Process {
-    private id: number | null = null;
-    private readonly documentClassId: number;
-    private readonly uuid: string;
-    private integrityStatus: IntegrityStatusEnum;
-    private readonly metadata: Metadata[];
+  private readonly id: number | null = null;
+  private readonly documentClassId: number | null = null;
+  private readonly documentClassUuid: string;
+  private readonly uuid: string;
+  private integrityStatus: IntegrityStatusEnum;
+  private readonly metadata: Metadata;
 
-    constructor(documentClassId: number, uuid: string, metadata: Metadata[]) {
-        this.documentClassId = documentClassId;
-        this.uuid = uuid;
-        this.integrityStatus = IntegrityStatusEnum.UNKNOWN;
-        this.metadata = metadata;
-    }
+  constructor(
+    documentClassUuid: string,
+    uuid: string,
+    metadata: Metadata,
+    integrityStatus: IntegrityStatusEnum = IntegrityStatusEnum.UNKNOWN,
+    id: number | null = null,
+    documentClassId: number | null = null,
+  ) {
+    this.documentClassUuid = documentClassUuid;
+    this.uuid = uuid;
+    this.integrityStatus = integrityStatus;
+    this.metadata = metadata;
+    this.id = id;
+    this.documentClassId = documentClassId;
+  }
 
-    static fromDB(row: ProcessRow, metadata: Metadata[]): Process {
-        const process = new Process(row.documentClassId, row.uuid, metadata);
-        process.id = row.id;
-        process.integrityStatus = (row.integrityStatus as IntegrityStatusEnum) ?? IntegrityStatusEnum.UNKNOWN;
-        return process;
-    }
+  public getId(): number | null {
+    return this.id;
+  }
 
-    public getId(): number | null {
-        return this.id;
-    }
+  public getDocumentClassId(): number | null {
+    return this.documentClassId;
+  }
 
-    public getDocumentClassId(): number {
-        return this.documentClassId;
-    }
+  public getDocumentClassUuid(): string {
+    return this.documentClassUuid;
+  }
 
-    public getUuid(): string {
-        return this.uuid;
-    }
+  public getUuid(): string {
+    return this.uuid;
+  }
 
-    public getIntegrityStatus(): IntegrityStatusEnum {
-        return this.integrityStatus;
-    }
+  public getIntegrityStatus(): IntegrityStatusEnum {
+    return this.integrityStatus;
+  }
 
-    public getMetadata(): Metadata[] {
-        return this.metadata;
-    }
+  public getMetadata(): Metadata {
+    return this.metadata;
+  }
 
-    public setIntegrityStatus(status: IntegrityStatusEnum): void {
-        this.integrityStatus = status;
-    }
-
-    public toDTO(): ProcessDTO {
-        if (this.id === null) {
-            throw new Error("Cannot convert to DTO: Process entity is not yet persisted and has no ID.");
-        }
-        return {
-            id: this.id,
-            documentClassId: this.documentClassId,
-            uuid: this.uuid,
-            integrityStatus: this.integrityStatus,
-            metadata: this.metadata.map((m) => m.toDTO()),
-        };
-    }
+  public setIntegrityStatus(status: IntegrityStatusEnum): void {
+    this.integrityStatus = status;
+  }
 }

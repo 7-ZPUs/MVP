@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:ark-aip="http://archiverse.it/archimemo/aip/v1/"
+    targetNamespace="http://archiverse.it/archimemo/aip/v1/" attributeFormDefault="qualified"
+    elementFormDefault="qualified">
+
+    <xs:element name="AiPInfo" type="ark-aip:aiPInfoType" />
+    
+    <xs:complexType name="aiPInfoType">
+        <xs:sequence>
+            <xs:element name="Process" type="ark-aip:processType" />
+        </xs:sequence>
+        <xs:attribute name="language" type="xs:language" fixed="en" />
+        <xs:attribute name="schemaUri" type="xs:anyURI"
+            fixed="http://archiverse.it/archimemo/aip/v1/AiPInfo.xsd" />
+        <xs:attribute name="schemaVersion" type="xs:string" fixed="1" />
+        <xs:attribute name="validFrom" type="xs:dateTime" default="2024-01-01T00:00:00Z" />
+    </xs:complexType>
+
+    <xs:complexType name="processType">
+        <xs:sequence>
+            <xs:element name="Start" type="ark-aip:startType" />
+            <xs:element name="End" type="ark-aip:endType" />
+            <xs:element name="DocumentClass" type="ark-aip:documentClassType" />
+            <xs:element name="Customization" type="ark-aip:customizationType" minOccurs="0" />
+            <xs:element name="SubmissionSession" type="ark-aip:submissionSessionType"
+                maxOccurs="unbounded" />
+            <xs:element name="PreservationSession" type="ark-aip:preservationSessionType" />
+            <xs:element name="MoreData" type="ark-aip:moreDataType" minOccurs="0"
+                maxOccurs="unbounded" />
+        </xs:sequence>
+        <xs:attribute name="uuid" type="ark-aip:uuidType" />
+    </xs:complexType>
+
+    <xs:complexType name="startType">
+        <xs:sequence>
+            <xs:element name="Date" type="ark-aip:dateTimeType" />
+            <xs:element name="UserUUID" type="ark-aip:uuidType" />
+            <xs:element name="Source" type="ark-aip:sourceType" />
+            <xs:element name="MoreData" type="ark-aip:moreDataType" minOccurs="0"
+                maxOccurs="unbounded" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="endType">
+        <xs:sequence>
+            <xs:element name="Date" type="ark-aip:dateTimeType" />
+            <xs:element name="UserUUID" type="ark-aip:uuidType" minOccurs="0" />
+            <xs:element name="Source" type="ark-aip:sourceType" minOccurs="0" />
+            <xs:element name="Status" type="xs:string" minOccurs="0" />
+            <xs:element name="MoreData" type="ark-aip:moreDataType" minOccurs="0"
+                maxOccurs="unbounded" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="documentClassType">
+        <xs:sequence>
+            <xs:element name="Name" type="xs:string" />
+            <xs:element name="Version" type="xs:string" />
+            <xs:element name="ArchiveUUID" type="xs:string" />
+            <xs:element name="AcceptedMIMEType" type="ark-aip:acceptedMIMETypeTypes" minOccurs="0" />
+            <xs:element name="PrecompiledValues" type="ark-aip:precompiledValuesType" minOccurs="0" />
+            <xs:element name="MoreData" type="ark-aip:moreDataType" minOccurs="0"
+                maxOccurs="unbounded" />
+        </xs:sequence>
+        <xs:attribute name="uuid" type="ark-aip:uuidType" />
+    </xs:complexType>
+
+    <xs:complexType name="acceptedMIMETypeTypes">
+        <xs:sequence>
+            <xs:element name="MIMEType" type="ark-aip:mimeTypesType" minOccurs="0"
+                maxOccurs="unbounded" />
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="mimeTypesType">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="MIMETypeExtension" type="xs:string" />
+                <xs:attribute name="IRUUID" type="ark-aip:uuidType">
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <xs:complexType name="precompiledValuesType">
+        <xs:sequence>
+            <xs:element name="DefaultValue" type="ark-aip:defaultValueType" minOccurs="0"
+                maxOccurs="unbounded" />
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="defaultValueType">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="metadataName" type="xs:string" use="required" />
+                <xs:attribute name="metadataXPath" type="xs:string" use="required" />
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <xs:complexType name="customizationType">
+        <xs:sequence>
+            <xs:element name="Properties" type="ark-aip:moreDataType" maxOccurs="unbounded" />
+            <xs:element name="MoreData" type="ark-aip:moreDataType" minOccurs="0"
+                maxOccurs="unbounded" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="submissionSessionType">
+        <xs:sequence>
+            <xs:element name="Start" type="ark-aip:startType" />
+            <xs:element name="End" type="ark-aip:endType" />
+            <xs:element name="MoreData" type="ark-aip:moreDataType" minOccurs="0"
+                maxOccurs="unbounded" />
+        </xs:sequence>
+        <xs:attribute name="uuid" type="ark-aip:uuidType" />
+    </xs:complexType>
+
+    <xs:complexType name="preservationSessionType">
+        <xs:sequence>
+            <xs:element name="Start" type="ark-aip:startType" />
+            <xs:element minOccurs="0" name="End" type="ark-aip:endType" />
+            <xs:element default="Base64" name="HashEncoding" type="ark-aip:hashEncodingType" />
+            <xs:element name="AdvancedElectronicSignaturesFormat" default="XAdES"
+                type="ark-aip:advancedElectronicSignatureType" />
+            <xs:element name="DocumentsStats" type="ark-aip:documentStatsType" />
+            <xs:element maxOccurs="unbounded" minOccurs="0" name="MoreData"
+                type="ark-aip:moreDataType" />
+        </xs:sequence>
+        <xs:attribute name="uuid" type="ark-aip:uuidType" />
+    </xs:complexType>
+
+    <xs:complexType name="documentType">
+        <xs:sequence>
+            <xs:element name="Primary" type="ark-aip:fileInfoType" />
+            <xs:element name="Attachments" type="ark-aip:attachmentType" minOccurs="0" maxOccurs="1" />
+        </xs:sequence>
+        <xs:attribute name="uuid" type="ark-aip:uuidType" />
+    </xs:complexType>
+
+    <xs:complexType name="documentStatsType">
+        <xs:sequence>
+            <xs:element minOccurs="0" name="SipCount" type="xs:nonNegativeInteger" />
+            <xs:element name="DocumentsCount" type="xs:nonNegativeInteger" />
+            <xs:element name="DocumentsFilesCount" type="xs:nonNegativeInteger" />
+            <xs:element name="DocumentsOverallSize" type="ark-aip:sizeType" />
+            <xs:element maxOccurs="unbounded" minOccurs="0" name="MimeTypeStats"
+                type="ark-aip:mimeTypeStats" />
+            <xs:element maxOccurs="unbounded" minOccurs="0" name="MoreData"
+                type="ark-aip:moreDataType" />
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="attachmentType">
+        <xs:sequence>
+            <xs:element name="Attachment" type="ark-aip:fileType" minOccurs="1"
+                maxOccurs="unbounded" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="fileType">
+        <xs:sequence>
+            <xs:element name="Filename" type="xs:string" />
+            <xs:element name="Hash" type="xs:string" />
+        </xs:sequence>
+        <xs:attribute name="uuid" type="ark-aip:uuidType" />
+    </xs:complexType>
+
+    <xs:complexType name="fileInfoType">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="uuid" type="ark-aip:uuidType" />
+                <xs:attribute name="hash" type="xs:string" use="optional" default="undeclared" />
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+
+    <xs:complexType name="sizeType">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="unit" default="bytes">
+                    <xs:simpleType>
+                        <xs:restriction base="xs:string">
+                            <xs:enumeration value="bytes" />
+                            <xs:enumeration value="kilobytes" />
+                            <xs:enumeration value="megabytes" />
+                            <xs:enumeration value="gigabytes" />
+                            <xs:enumeration value="terabytes" />
+                        </xs:restriction>
+                    </xs:simpleType>
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <xs:complexType name="mimeTypeStats">
+        <xs:simpleContent>
+            <xs:extension base="xs:nonNegativeInteger">
+                <xs:attribute name="MIMETypeExtension" type="xs:string" />
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <xs:complexType name="moreDataType">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="name" type="xs:string" use="required" />
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <xs:simpleType name="uuidType">
+        <xs:restriction base="xs:string"> </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="advancedElectronicSignatureType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="XAdES" />
+            <xs:enumeration value="PAdES" />
+            <xs:enumeration value="CAdES" />
+            <xs:enumeration value="JAdES" />
+            <xs:enumeration value="ASiC" />
+            <xs:enumeration value="Other" />
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="sourceType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="WebService" />
+            <xs:enumeration value="WebGui" />
+            <xs:enumeration value="FolderScan" />
+            <xs:enumeration value="Import" />
+            <xs:enumeration value="System" />
+            <xs:enumeration value="Other" />
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="dateTimeType">
+        <xs:restriction base="xs:dateTime">
+            <xs:minInclusive value="2023-01-02T09:00:00.0+01:00" />
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="hashEncodingType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Hex" />
+            <xs:enumeration value="Base64" />
+        </xs:restriction>
+    </xs:simpleType>
+    
+</xs:schema>

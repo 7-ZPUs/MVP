@@ -2,7 +2,7 @@ import { IpcMain } from 'electron';
 import { container } from 'tsyringe';
 
 import { IpcChannels } from '../../../shared/ipc-channels';
-import { SearchFilters, SearchQuery } from '../../../shared/domain/metadata/search.models';
+
 
 import type { ISearchDocumentalClassUC } from '../use-case/classe-documentale/ISearchDocumentalClassUC';
 import type { ISearchProcessUC } from '../use-case/process/ISearchProcessUC';
@@ -10,14 +10,16 @@ import type { ISearchDocumentsUC } from '../use-case/document/ISearchDocumentsUC
 import type { ISearchSemanticUC } from '../use-case/document/ISearchSemanticUC';
 import type { IWordEmbedding } from '../repo/IWordEmbedding';
 import type { IDocumentRepository } from '../repo/IDocumentRepository';
-import { IndexingStatus } from '../../../shared/domain/metadata/search.enum';
-import { SearchQueryType } from '../../../shared/domain/metadata/search.enum';
+import { IndexingStatus, SearchQueryType } from '../../../shared/domain/metadata/search.enum';
 
 import { DocumentClassUC } from '../use-case/classe-documentale/tokens';
 import { ProcessUC } from '../use-case/process/token';
 import { DocumentoUC } from '../use-case/document/tokens';
 import { WORD_EMBEDDING_PORT_TOKEN } from '../repo/IWordEmbedding';
 import { DOCUMENTO_REPOSITORY_TOKEN } from '../repo/IDocumentRepository';
+import { DocumentClassMapper } from '../dao/mappers/DocumentClassMapper';
+import { ProcessMapper } from '../dao/mappers/ProcessMapper';
+import { SearchFilters, SearchQuery } from '../../../shared/domain/metadata';
 
 // Filtri vuoti usati come base per la ricerca full-text
 const emptyFilters: SearchFilters = {
@@ -38,11 +40,11 @@ export class SearchIpcAdapter {
         const documentRepo = container.resolve<IDocumentRepository>(DOCUMENTO_REPOSITORY_TOKEN);
 
         ipcMain.handle(IpcChannels.SEARCH_CLASSES, (_event, name?: string) => {
-            return searchClassesUC.execute(name ?? '').map((dc) => dc.toDTO());
+            return searchClassesUC.execute(name ?? '').map((dc) => DocumentClassMapper.toDTO(dc));
         });
 
         ipcMain.handle(IpcChannels.SEARCH_PROCESSES, (_event, uuid?: string) => {
-            return searchProcessiUC.execute(uuid ?? '').map((p) => p.toDTO());
+            return searchProcessiUC.execute(uuid ?? '').map((p) => ProcessMapper.toDTO(p));
         });
 
         // Ricerca avanzata con filtri strutturati
@@ -58,9 +60,9 @@ export class SearchIpcAdapter {
         ipcMain.handle(IpcChannels.SEARCH_FULLTEXT, async (_event, query: SearchQuery) => {
             switch (query.type) {
                 case SearchQueryType.PROCESS_ID:
-                    return searchProcessiUC.execute(query.text).map(p => p.toDTO());
+                    return searchProcessiUC.execute(query.text).map(p => ProcessMapper.toDTO(p));
                 case SearchQueryType.CLASS_NAME:
-                    return searchClassesUC.execute(query.text).map(dc => dc.toDTO());
+                    return searchClassesUC.execute(query.text).map(dc => DocumentClassMapper.toDTO(dc));
                 case SearchQueryType.FREE:
                 default: {
                     const filters: SearchFilters = {
