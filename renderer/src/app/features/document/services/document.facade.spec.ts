@@ -150,7 +150,7 @@ describe('DocumentFacade', () => {
     const result = await facade.getFileBlob('456');
 
     expect(mockGateway.invoke).toHaveBeenCalledWith(
-      IpcChannels.BROWSE_GET_FILE_BY_DOCUMENT,
+      IpcChannels.BROWSE_GET_FILE_BY_ID,
       '456',
       null,
     );
