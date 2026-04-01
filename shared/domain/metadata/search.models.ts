@@ -54,3 +54,7 @@ export interface SearchState {
   error: AppError | null;
   validationErrors: Map<string, ValidationError>;
 }
+
+export type FilterValidatorFn = (
+  filters: PartialSearchFilters,
+) => ValidationResult;
