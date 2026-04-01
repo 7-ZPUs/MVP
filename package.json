@@ -35,7 +35,6 @@
     "onnxruntime-node": "^1.17.3",
     "reflect-metadata": "^0.2.2",
     "sharp": "^0.34.5",
-    "sqlite-vss": "^0.1.2",
     "tsyringe": "^4.8.0"
   },
   "devDependencies": {
@@ -45,10 +44,14 @@
     "@types/node": "^20.19.37",
     "@vitest/coverage-v8": "^1.6.1",
     "cpx": "^1.5.0",
+    "cross-env": "^10.1.0",
     "electron": "^30.0.0",
     "electron-rebuild": "^3.2.9",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.5",
     "vitest": "^1.6.1"
+  },
+  "optionalDependencies": {
+    "sqlite-vss": "^0.1.2"
   }
 }

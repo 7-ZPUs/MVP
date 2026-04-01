@@ -17,7 +17,7 @@ import "./core/src/container";
 import { container } from "tsyringe";
 
 import { app, BrowserWindow, ipcMain } from "electron";
-import * as path from "path";
+import * as path from "node:path";
 
 // Disable GPU acceleration — required in headless/container environments
 // where no real GPU is available (dev containers, CI, Codespaces, etc.).
