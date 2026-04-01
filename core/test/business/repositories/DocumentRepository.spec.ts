@@ -26,7 +26,7 @@ import {
   AggregationType,
   FascicoloType,
   AssegnazioneType,
-} from "../../../../shared/metadata/search.enum";
+} from "../../../../shared/domain/metadata/search.enum";
 import { IntegrityStatusEnum } from "../../../src/value-objects/IntegrityStatusEnum";
 import { DatabaseProvider } from "../../../src/repo/impl/DatabaseProvider";
 import { Document } from "../../../src/entity/Document";
@@ -99,7 +99,7 @@ const emptyFilters: SearchFilters = {
     assegnazione: null,
   },
   subject: null,
-  custom: null,
+  customMeta: null,
 };
 
 const fakeRow = {
@@ -971,7 +971,7 @@ describe("DocumentRepository.searchDocument — filtri custom", () => {
 
     const filters: SearchFilters = {
       ...emptyFilters,
-      custom: { field: "Allegati", value: "documento_allegato.pdf" },
+      customMeta: { field: "Allegati", value: "documento_allegato.pdf" },
     };
 
     repo.searchDocument(filters);
@@ -989,7 +989,7 @@ describe("DocumentRepository.searchDocument — filtri custom", () => {
 
     const filters: SearchFilters = {
       ...emptyFilters,
-      custom: { field: "Impronta", value: "sha256:abc123" },
+      customMeta: { field: "Impronta", value: "sha256:abc123" },
     };
 
     repo.searchDocument(filters);
@@ -1006,7 +1006,7 @@ describe("DocumentRepository.searchDocument — filtri custom", () => {
 
     const filters: SearchFilters = {
       ...emptyFilters,
-      custom: { field: "Allegati", value: null },
+      customMeta: { field: "Allegati", value: null },
     };
 
     const results = repo.searchDocument(filters);
@@ -1112,7 +1112,7 @@ describe("DocumentRepository.searchDocument — filtri combinati", () => {
       diDai: { ...emptyFilters.diDai },
       aggregate: { ...emptyFilters.aggregate, idAggregazione: "AGG-001" },
       subject: null,
-      custom: { field: "Impronta", value: "sha256:xyz" },
+      customMeta: { field: "Impronta", value: "sha256:xyz" },
     };
 
     repo.searchDocument(filters);
@@ -1142,7 +1142,7 @@ describe("DocumentRepository.searchDocument — filtri combinati", () => {
         idAggregazione: "AGG-001",
       },
       subject: null,
-      custom: { field: "Allegati", value: "allegato.pdf" },
+      customMeta: { field: "Allegati", value: "allegato.pdf" },
     };
 
     repo.searchDocument(filters);

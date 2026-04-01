@@ -3,9 +3,9 @@ import { CommonFilterValues } from './search-common-filters-models';
 import { CustomFilterValues } from './search-custom-filters-models';
 import { DiDaiFilterValues } from './search-diDai-filters-models';
 
-export interface PartialFilters {
+export interface PartialSearchFilters {
   common: CommonFilterValues;
   diDai: DiDaiFilterValues;
   aggregate: AggregateFilterValues;
-  customMeta: CustomFilterValues[];
+  customMeta: CustomFilterValues | null;
 }

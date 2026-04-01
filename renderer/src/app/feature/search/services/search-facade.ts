@@ -7,8 +7,8 @@ import {
   ValidationError,
   PartialSearchFilters,
   SearchResult,
-} from '../../../../../../shared/metadata';
-import { SearchQueryType } from '../../../../../../shared/metadata/search.enum';
+} from '../../../../../../shared/domain/metadata';
+import { SearchQueryType } from '../../../../../../shared/domain/metadata/search.enum';
 import { IErrorHandler, ITelemetry, ILiveAnnouncer } from '../../../shared/contracts';
 import { debounceTime } from 'rxjs/internal/operators/debounceTime';
 import { ISemanticIndexStatus } from '../contracts/semantic-index.interface';
@@ -73,9 +73,9 @@ export class SearchFacade implements ISearchFacade {
     const validation = this.filterValidator.validate(filters as unknown as PartialSearchFilters);
 
     if (!validation.isValid) {
-      const validationErrors = new Map<string, ValidationError[]>();
+      const validationErrors = new Map<string, ValidationError>();
       validation.errors.forEach((errors: ValidationError[], key: string) => {
-        validationErrors.set(key, errors);
+        validationErrors.set(key, errors[0]);
       });
       this.state.update((s) => ({ ...s, validationErrors }));
       return;

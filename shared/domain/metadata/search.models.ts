@@ -17,14 +17,14 @@ export interface SearchFilters {
   diDai: DiDaiFilterValues;
   aggregate: AggregateFilterValues;
   subject: SubjectCriteria | null;
-  custom: CustomFilterValues | null;
+  customMeta: CustomFilterValues | null;
 }
 
 export interface PartialSearchFilters {
   common: CommonFilterValues;
   diDai: DiDaiFilterValues;
   aggregate: AggregateFilterValues;
-  custom: CustomFilterValues | null;
+  customMeta: CustomFilterValues | null;
 }
 
 export interface SearchResult {

@@ -11,7 +11,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
 
-import { SearchQuery, SearchQueryType } from '../../../../../../../../shared/metadata';
+import { SearchQuery, SearchQueryType } from '../../../../../../../../shared/domain/metadata';
 
 @Component({
   selector: 'app-search-bar',

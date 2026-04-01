@@ -479,13 +479,13 @@ describe("Integration: Search frontend <-> backend flow", () => {
 
     const invalidFilters = {} as SearchFilters;
 
-    facade.searchAdvanced(invalidFilters as any);
+    facade.searchAdvanced(invalidFilters as SearchFilters);
     await sleep(0);
 
     expect(bridge.invoke).not.toHaveBeenCalled();
     expect(facade.getState()().validationErrors.size).toBe(1);
     expect(
-      facade.getState()().validationErrors.get("common")?.[0].message,
+      facade.getState()().validationErrors.get("common")?.message,
     ).toBe("Filtro comune non valido");
   });
 });

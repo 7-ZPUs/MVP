@@ -15,8 +15,8 @@ import {
   CommonFilterValues,
   ValidationResult,
   ValidationError,
-} from '../../../../../../../../shared/metadata';
-import { DocumentType } from '../../../../../../../../shared/metadata/search.enum';
+} from '../../../../../../../../shared/domain/metadata';
+import { DocumentType } from '../../../../../../../../shared/domain/metadata/search.enum';
 
 @Component({
   selector: 'app-common-filters',

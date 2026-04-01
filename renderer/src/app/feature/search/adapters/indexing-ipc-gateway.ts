@@ -1,7 +1,7 @@
 import { Injectable, Inject } from '@angular/core';
 import { Observable, Observer } from 'rxjs';
 import { IIndexingChannel } from '../contracts/semantic-index.interface';
-import { SemanticIndexState } from '../../../../../../shared/metadata/semantic-filter-models';
+import { SemanticIndexState } from '../../../../../../shared/domain/metadata/semantic-filter-models';
 import {
   IErrorHandler,
   ERROR_HANDLER_TOKEN,

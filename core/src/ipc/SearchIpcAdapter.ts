@@ -25,7 +25,7 @@ const emptyFilters: SearchFilters = {
     diDai: { nome: null, versione: null, idPrimario: null, tipologia: null, modalitaFormazione: null, riservatezza: null, identificativoFormato: null, verifica: null, registrazione: null, tracciatureModifiche: null },
     aggregate: { tipoAggregazione: null, idAggregazione: null, tipoFascicolo: null, dataApertura: null, dataChiusura: null, procedimento: null, assegnazione: null },
     subject: null,
-    custom: null,
+    customMeta: null,
 };
 
 export class SearchIpcAdapter {

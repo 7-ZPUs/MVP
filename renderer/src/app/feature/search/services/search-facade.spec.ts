@@ -2,7 +2,7 @@ import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { SearchFacade } from './search-facade';
 import { of, Subject, throwError, Observable } from 'rxjs';
-import { SearchQueryType } from '../../../../../../shared/metadata/search.enum';
+import { SearchQueryType } from '../../../../../../shared/domain/metadata/search.enum';
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 
 // Helper nativo per attendere il completamento di RxJS e Promise senza usare fakeAsync
@@ -100,7 +100,7 @@ describe('SearchFacade', () => {
       await sleep(0);
 
       const state = facade.getState()();
-      expect(state.validationErrors.get('dataDa')).toEqual([validationError]);
+      expect(state.validationErrors.get('dataDa')).toEqual(validationError);
       expect(mockSearchChannel.searchAdvanced).not.toHaveBeenCalled();
     });
   });

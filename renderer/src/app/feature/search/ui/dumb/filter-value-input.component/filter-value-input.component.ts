@@ -1,9 +1,9 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { FilterFieldType } from '../../../../../../../../shared/metadata/search.enum';
-import { SubjectFieldDefinition } from '../../../../../../../../shared/metadata/search-subject-filters-models';
-import { ValidationError } from '../../../../../../../../shared/metadata';
+import { FilterFieldType } from '../../../../../../../../shared/domain/metadata/search.enum';
+import { SubjectFieldDefinition } from '../../../../../../../../shared/domain/metadata/search-subject-filters-models';
+import { ValidationError } from '../../../../../../../../shared/domain/metadata';
 
 import { FieldErrorComponent } from '../field-error.component/field-error.component';
 
