@@ -75,7 +75,7 @@ function downloadFile(url: string, targetPath: string, filename: string): Promis
         }
 
         // Mostra la progress della scaricamento
-        const totalSize = parseInt(response.headers['content-length'] || '0', 10);
+        const totalSize = Number.parseInt(response.headers['content-length'] || '0', 10);
         let downloadedSize = 0;
 
         response.on('data', (chunk: Buffer) => {

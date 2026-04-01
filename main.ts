@@ -3,15 +3,18 @@
  *
  * Responsibilities:
  *  1. Bootstrap the DI container (side-effectful imports, reflect-metadata).
- *  2. Create the BrowserWindow.
+ *  2. Initialise the database (async, via DatabaseProvider.init()).
  *  3. Register all IPC adapters so that renderer IPC calls are handled.
+ *  4. Create the BrowserWindow.
  *
  * No business logic lives here. Delegate everything to IPC adapters and
  * application services via the DI container.
  */
 
-// Must be the very first import so that reflect-metadata is available for tsyringe.
+// Must be the very first import so that reflect-metadata is available for tsyringe
+// and all injectable classes are registered in the container.
 import "./core/src/container";
+import { container } from "tsyringe";
 
 import { app, BrowserWindow, ipcMain } from "electron";
 import * as path from "path";
@@ -29,6 +32,11 @@ import { SearchIpcAdapter } from "./core/src/ipc/SearchIpcAdapter";
 import { FileViewerIpcAdapter } from "./core/src/ipc/FileViewerIpcAdapter";
 
 // ---------------------------------------------------------------------------
+// Database
+// ---------------------------------------------------------------------------
+import { DATABASE_PROVIDER_TOKEN, DatabaseProvider } from "./core/src/repo/impl/DatabaseProvider";
+
+// ---------------------------------------------------------------------------
 // Window management
 // ---------------------------------------------------------------------------
 
@@ -42,7 +50,6 @@ function createWindow(): BrowserWindow {
       nodeIntegration: false,
     },
   });
-
   // In development load the Angular dev server; in production load the built index.
   if (process.env["NODE_ENV"] === "development") {
     win.loadURL("http://localhost:4200");
@@ -60,8 +67,10 @@ function createWindow(): BrowserWindow {
 // App lifecycle
 // ---------------------------------------------------------------------------
 
-app.whenReady().then(() => {
-  // Register all IPC adapters before creating the window
+app.whenReady().then(async () => {
+  const dbProvider = container.resolve<DatabaseProvider>(DATABASE_PROVIDER_TOKEN);
+  await dbProvider.init();
+
   BrowsingIpcAdapter.register(ipcMain);
   CreateIpcAdapter.register(ipcMain);
   SearchIpcAdapter.register(ipcMain);

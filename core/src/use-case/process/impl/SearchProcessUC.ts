@@ -1,12 +1,12 @@
 import { inject, injectable } from 'tsyringe';
 import { ISearchProcessUC } from '../ISearchProcessUC';
-import { IProcessRepository } from '../../../repo/IProcessRepository';
+import { IProcessRepository, PROCESS_REPOSITORY_TOKEN } from '../../../repo/IProcessRepository';
 import { Process } from '../../../entity/Process';
 
 @injectable()
 export class SearchProcessUC implements ISearchProcessUC {
     constructor(
-        @inject('IProcessRepository')
+        @inject(PROCESS_REPOSITORY_TOKEN)
         private readonly repo: IProcessRepository
     ) {}
 

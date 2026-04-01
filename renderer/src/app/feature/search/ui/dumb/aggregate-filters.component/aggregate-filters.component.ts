@@ -91,6 +91,12 @@ export class AggregateFiltersComponent implements OnChanges, OnDestroy {
     if (changes['filters']?.currentValue) {
       const newValues = changes['filters'].currentValue as AggregateFilterValues;
 
+      if (Object.keys(newValues).length === 0) {
+        this.fasiFormArray.clear({ emitEvent: false });
+        this.form.reset({}, { emitEvent: false });
+        return;
+      }
+
       this.fasiFormArray.clear({ emitEvent: false });
       if (newValues.procedimento?.fasi) {
         newValues.procedimento.fasi.forEach(() => this.addFase(false));
@@ -107,5 +113,21 @@ export class AggregateFiltersComponent implements OnChanges, OnDestroy {
 
   public getError(fieldPath: string): ValidationError | undefined {
     return this.validationResult?.errors.get(`aggregate.${fieldPath}`)?.[0];
+  }
+
+  public getFaseError(index: number, fieldPath: string): ValidationError | undefined {
+    return this.validationResult?.errors.get(
+      `aggregate.procedimento.fasi.${index}.${fieldPath}`,
+    )?.[0];
+  }
+
+  public hasProcedimentoFasiErrors(): boolean {
+    if (!this.validationResult?.errors) {
+      return false;
+    }
+
+    return Array.from(this.validationResult.errors.keys()).some((key) =>
+      key.startsWith('aggregate.procedimento.fasi.'),
+    );
   }
 }

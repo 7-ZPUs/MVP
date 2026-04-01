@@ -17,9 +17,9 @@ describe('FilterValidatorService', () => {
     service = TestBed.inject(FilterValidatorService);
   });
 
-  it('dovrebbe inizializzarsi automaticamente con le 4 strategie di ricerca', () => {
+  it('dovrebbe inizializzarsi automaticamente con le 5 strategie di ricerca', () => {
     const strategies = (service as any).strategies;
-    expect(strategies.length).toBe(4);
+    expect(strategies.length).toBe(5);
   });
 
   it('dovrebbe aggregare correttamente gli errori di una nuova strategia aggiunta dinamicamente', () => {

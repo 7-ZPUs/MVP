@@ -96,17 +96,20 @@ export class DiDaiFiltersComponent implements OnChanges, OnDestroy {
     });
   }
 
-  // 1. Aggiungi questo Getter sotto alle dichiarazioni delle variabili
   public get tracciatureFormArray(): FormArray {
     return this.form.get('tracciatureModifiche') as FormArray;
   }
 
-  // 2. Modifica il tuo ngOnChanges per gestire la ricostruzione dell'array
   public ngOnChanges(changes: SimpleChanges): void {
     if (changes['filters']?.currentValue) {
       const newFilters = changes['filters'].currentValue as DiDaiFilterValues;
 
-      // Svuotiamo l'array attuale e lo ricostruiamo in base ai dati in ingresso
+      if (Object.keys(newFilters).length === 0) {
+        this.tracciatureFormArray.clear({ emitEvent: false });
+        this.form.reset({}, { emitEvent: false });
+        return;
+      }
+
       this.tracciatureFormArray.clear({ emitEvent: false });
       if (newFilters.tracciatureModifiche && Array.isArray(newFilters.tracciatureModifiche)) {
         newFilters.tracciatureModifiche.forEach(() => this.addTracciatura(false));
@@ -137,5 +140,11 @@ export class DiDaiFiltersComponent implements OnChanges, OnDestroy {
 
   public getError(fieldPath: string): ValidationError | undefined {
     return this.validationResult?.errors.get(`diDai.${fieldPath}`)?.[0];
+  }
+
+  public getTracciaturaError(index: number, fieldPath: string): ValidationError | undefined {
+    return this.validationResult?.errors.get(
+      `diDai.tracciatureModifiche.${index}.${fieldPath}`,
+    )?.[0];
   }
 }

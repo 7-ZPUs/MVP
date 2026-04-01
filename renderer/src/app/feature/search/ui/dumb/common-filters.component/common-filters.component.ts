@@ -16,7 +16,6 @@ import {
   ValidationResult,
   ValidationError,
 } from '../../../../../../../../shared/metadata';
-// Assicurati che il percorso dell'enum sia corretto
 import { DocumentType } from '../../../../../../../../shared/metadata/search.enum';
 
 @Component({
@@ -60,7 +59,13 @@ export class CommonFiltersComponent implements OnChanges, OnDestroy {
 
   public ngOnChanges(changes: SimpleChanges): void {
     if (changes['filters']?.currentValue) {
-      this.form.patchValue(changes['filters'].currentValue, { emitEvent: false });
+      const newValue = changes['filters'].currentValue;
+
+      if (Object.keys(newValue).length === 0) {
+        this.form.reset({}, { emitEvent: false });
+      } else {
+        this.form.patchValue(newValue, { emitEvent: false });
+      }
     }
   }
 
