@@ -167,8 +167,8 @@ export class DocumentDAO implements IDocumentDAO {
     }
 
     // --- custom ---
-    if (filters.custom) {
-      addMeta(filters.custom.field, filters.custom.value);
+    if (filters.customMeta) {
+      addMeta(filters.customMeta.field, filters.customMeta.value);
     }
 
     if (conditions.length === 0) return [];

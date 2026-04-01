@@ -4,13 +4,13 @@ import { Dip } from "../../entity/Dip";
 import { IntegrityStatusEnum } from "../../value-objects/IntegrityStatusEnum";
 import { IDipRepository } from "../IDipRepository";
 import { DipDAO } from "../../dao/DipDAO";
-import { DIP_DAO_TOKEN } from "../../dao/IDipDAO";
+import { DIP_DAO_TOKEN, IDipDAO } from "../../dao/IDipDAO";
 
 @injectable()
 export class DipRepository implements IDipRepository {
   constructor(
     @inject(DIP_DAO_TOKEN)
-    private readonly dao: DipDAO
+    private readonly dao: IDipDAO
   ) {}
 
   getById(id: number): Dip | null {

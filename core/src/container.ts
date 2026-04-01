@@ -7,6 +7,7 @@ import { HASHING_SERVICE_TOKEN } from "./services/IHashingService";
 // ---- Database provider ----
 import {
   DATABASE_PROVIDER_TOKEN,
+  DATABASE_PROVIDER_PATH_TOKEN,
   DatabaseProvider,
 } from "./repo/impl/DatabaseProvider";
 
@@ -85,6 +86,8 @@ import { SqliteTransactionManager } from "./repo/impl/SqliteTransactionManager";
 import { HashingService } from "./services/impl/HashingService";
 import { INTEGRITY_VERIFICATION_SERVICE_TOKEN } from "./services/IIntegrityVerificationService";
 import { IntegrityVerificationService } from "./services/impl/IntegrityVerificationService";
+import { INDEX_DIP_TOKEN } from "./use-case/utils/indexing/IIndexDip";
+import { IndexDip } from "./use-case/utils/indexing/impl/IndexDip";
 
 container.register(PACKAGE_READER_PORT_TOKEN, {
   useClass: LocalPackageReaderAdapter,
@@ -103,6 +106,9 @@ container.register(HASHING_SERVICE_TOKEN, {
 });
 container.register(INTEGRITY_VERIFICATION_SERVICE_TOKEN, {
   useClass: IntegrityVerificationService,
+});
+container.register(INDEX_DIP_TOKEN, {
+  useClass: IndexDip,
 });
 
 container.register(DATA_MAPPER_TOKEN, { useClass: DataMapper });

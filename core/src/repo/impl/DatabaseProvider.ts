@@ -3,7 +3,7 @@
 DatabaseProvider — Singleton SQLite connection.*
 Tutte le repository condividono la stessa connessione per garantire
 la consistenza dei foreign key e del WAL mode.*/
-import { injectable } from "tsyringe";
+import { inject, injectable } from "tsyringe";
 import Database from "better-sqlite3";
 import * as path from "node:path";
 import * as os from "node:os";
@@ -29,13 +29,17 @@ function loadSqliteVssExtensions(db: Database.Database): void {
 }
 
 export const DATABASE_PROVIDER_TOKEN = Symbol("DatabaseProvider");
+export const DATABASE_PROVIDER_PATH_TOKEN = Symbol("DatabaseProviderPath");
 
 @injectable()
 export class DatabaseProvider {
   private _db: Database.Database | null = null;
   private readonly dbPath: string;
 
-  constructor(dbPath?: string) {
+  constructor(
+    @inject(DATABASE_PROVIDER_PATH_TOKEN)
+    dbPath?: string,
+  ) {
     if (typeof dbPath === "string" && dbPath.trim().length > 0) {
       this.dbPath = dbPath;
       return;

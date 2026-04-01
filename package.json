@@ -12,7 +12,7 @@
     "build:all": "npm run build:renderer && npm run build:core && npm run build:main",
     "start": "ELECTRON_DISABLE_SANDBOX=1 electron .",
     "start:lore": "DBUS_SESSION_BUS_ADDRESS=/dev/null ELECTRON_DISABLE_SANDBOX=1 electron .",
-    "start:dev": "NODE_ENV=development npm run build:all && npm run start",
+    "start:dev": "npm run build:all && NODE_ENV=development npm run start",
     "start:renderer": "cd renderer && ng serve --host 0.0.0.0",
     "test:system": "vitest run shared/system_test",
     "test:core": "vitest run --passWithNoTests --watch=false",
