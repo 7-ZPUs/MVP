@@ -81,7 +81,7 @@ export class DocumentFacade implements IDocumentFacade {
 
       // Chiamata IPC
       const rawBlob = await this.ipcGateway.invoke(
-        IpcChannels.BROWSE_GET_FILE_BY_DOCUMENT, // o BROWSE_GET_FILE_BY_ID
+        IpcChannels.BROWSE_GET_FILE_BY_ID, // o BROWSE_GET_FILE_BY_ID
         documentId,
         null,
       );

@@ -1,24 +1,27 @@
 import { Component, inject, OnInit, Inject } from '@angular/core';
-import { JsonPipe } from '@angular/common';
+import { Router } from '@angular/router';
 import { SearchFacade } from '../../../services';
 import { AdvancedFilterPanelComponent } from '../advanced-filter-panel/advanced-filter-panel';
+import { SearchResultsComponent } from '../../dumb/search-results.component/search-results.component';
 import {
   SearchFilters,
+  SearchResult,
   SearchQuery,
   ValidationResult,
   PartialSearchFilters,
 } from '../../../../../../../../shared/metadata';
-import { SearchQueryType } from '../../../../../../../../shared/metadata/search.enum';
+import { SearchQueryType, DocumentType } from '../../../../../../../../shared/metadata/search.enum';
 import { IFilterValidator } from '../../../../validation/contracts/filter-validator.interface';
 
 @Component({
   selector: 'app-search-page',
   standalone: true,
-  imports: [AdvancedFilterPanelComponent, JsonPipe],
+  imports: [AdvancedFilterPanelComponent, SearchResultsComponent],
   templateUrl: './search-page.html',
 })
 export class SearchPageComponent implements OnInit {
   protected readonly searchFacade = inject(SearchFacade);
+  protected readonly router = inject(Router);
   public readonly state = this.searchFacade.getState();
   public externalValidation: ValidationResult | null = null;
 
@@ -92,5 +95,23 @@ export class SearchPageComponent implements OnInit {
 
   public onLiveValidationChanged(result: ValidationResult): void {
     this.externalValidation = result;
+  }
+
+  public onResultSelected(result: SearchResult): void {
+    const id = result.documentId;
+    let type: string;
+    if (result.type === 'AGGREGAZIONE_DOCUMENTALE') {
+      type = 'AGGREGATE';
+    } else if (
+      result.type === 'DOCUMENTO_INFORMATICO' ||
+      result.type === 'DOCUMENTO_AMMINISTRATIVO_INFORMATICO'
+    ) {
+      type = 'DOCUMENT';
+    } else {
+      console.warn('Unknown result type:', result.type);
+      return;
+    }
+
+    this.router.navigate(['/detail/', type, id]);
   }
 }

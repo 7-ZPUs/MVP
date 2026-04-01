@@ -134,19 +134,13 @@
 
       @if (!state().loading && state().results.length > 0) {
         <div>
-          <h2 style="margin-top: 0; color: #1e293b; font-size: 1.25rem">
+          <h2 style="margin-top: 0; color: #1e293b; font-size: 1.25rem; margin-bottom: 1rem">
             Trovati {{ state().results.length }} risultati
           </h2>
-          <pre
-            style="
-              background: white;
-              padding: 1rem;
-              border: 1px solid #e2e8f0;
-              border-radius: 6px;
-              overflow-x: auto;
-            "
-            >{{ state().results | json }}</pre
-          >
+          <app-search-results
+            [results]="state().results"
+            (resultSelected)="onResultSelected($event)"
+          ></app-search-results>
         </div>
       }
 

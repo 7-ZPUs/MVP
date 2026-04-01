@@ -14,7 +14,7 @@
           *ngFor="let res of results"
           class="result-row"
           style="border-bottom: 1px solid #e2e8f0; cursor: pointer"
-          (click)="onSelect(res.documentId)"
+          (click)="onSelect(res)"
         >
           <td style="padding: 0.75rem">{{ res.name }}</td>
           <td style="padding: 0.75rem">{{ res.type }}</td>

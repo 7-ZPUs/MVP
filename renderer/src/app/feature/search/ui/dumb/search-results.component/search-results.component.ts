@@ -13,9 +13,9 @@ export class SearchResultsComponent {
   @Input() results: SearchResult[] = [];
   @Input() emptyMessage: string = 'Nessun risultato trovato per la ricerca corrente.';
 
-  @Output() resultSelected = new EventEmitter<string>();
+  @Output() resultSelected = new EventEmitter<SearchResult>();
 
-  public onSelect(documentId: string): void {
-    this.resultSelected.emit(documentId);
+  public onSelect(selectedResult: SearchResult): void {
+    this.resultSelected.emit(selectedResult);
   }
 }
