@@ -6,6 +6,7 @@
   "scripts": {
     "setup:download-models": "ts-node --project tsconfig.json core/src/scripts/download-models.ts",
     "copy:models": "cpx \"core/src/models/**/*\" dist/core/src/models",
+    "prestart": "electron-rebuild -f -w better-sqlite3",
     "build:core": "tsc --project tsconfig.core.json && npm run copy:models",
     "build:renderer": "cd renderer && npx ng build",
     "build:main": "tsc --project tsconfig.json",
