@@ -17,7 +17,7 @@ describe("DocumentDAO", () => {
 
   beforeEach(() => {
     db = createTestDb();
-    dao = new DocumentDAO({ db } as unknown as DatabaseProvider);
+    dao = new DocumentDAO({ getDb: () => db } as unknown as DatabaseProvider);
 
     const dipId = Number(
       db
@@ -29,8 +29,14 @@ describe("DocumentDAO", () => {
         .prepare(
           "INSERT INTO document_class (dip_id, uuid, dipUuid, integrity_status, name, timestamp) VALUES (?, ?, ?, ?, ?, ?)",
         )
-        .run(dipId, "dc-doc-uuid", "dip-doc-uuid", "UNKNOWN", "Classe", "2026-01-01")
-        .lastInsertRowid,
+        .run(
+          dipId,
+          "dc-doc-uuid",
+          "dip-doc-uuid",
+          "UNKNOWN",
+          "Classe",
+          "2026-01-01",
+        ).lastInsertRowid,
     );
     processId = Number(
       db

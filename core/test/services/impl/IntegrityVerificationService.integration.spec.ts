@@ -42,7 +42,7 @@ type Repositories = {
 };
 
 function buildSystem(db: Database.Database, hashingService: IHashingService) {
-  const dbProvider = { db } as unknown as DatabaseProvider;
+  const dbProvider = { getDb: () => db } as unknown as DatabaseProvider;
 
   const repos: Repositories = {
     dipRepo: new DipRepository(new DipDAO(dbProvider)),

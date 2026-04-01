@@ -13,7 +13,7 @@ export class SqliteTransactionManager implements ITransactionManager {
   ) {}
 
   async runInTransaction<T>(work: () => Promise<T>): Promise<T> {
-    const db = this.dbProvider.db;
+    const db = this.dbProvider.getDb();
     db.exec("BEGIN IMMEDIATE TRANSACTION");
     try {
       const result = await work();

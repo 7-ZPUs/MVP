@@ -1,4 +1,5 @@
 import { inject, injectable } from "tsyringe";
+import { createHash } from "node:crypto";
 import { IntegrityStatusEnum } from "../../value-objects/IntegrityStatusEnum";
 import { IHashingService } from "../IHashingService";
 import {
@@ -25,30 +26,11 @@ export class HashingService implements IHashingService {
 
   private async checkHash(filePath: string): Promise<string> {
     const byteStream = await this.packageReader.readFileBytes(filePath);
-    const chunks: Buffer[] = [];
+    const hash = createHash("sha256");
+
     for await (const chunk of byteStream) {
-      chunks.push(typeof chunk === "string" ? Buffer.from(chunk) : chunk);
+      hash.update(typeof chunk === "string" ? Buffer.from(chunk) : chunk);
     }
-    const bytes = Buffer.concat(chunks);
-    const arrayBuffer = bytes.buffer.slice(
-      bytes.byteOffset,
-      bytes.byteOffset + bytes.byteLength,
-    );
-
-    const calculatedHash = await this.calculateHash(arrayBuffer);
-
-    return calculatedHash;
-  }
-
-  private async calculateHash(buffer: ArrayBuffer): Promise<string> {
-    const hashBuffer = await crypto.subtle.digest("SHA-256", buffer);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-
-    let binaryString = "";
-    for (const element of hashArray) {
-      binaryString += String.fromCodePoint(element);
-    }
-
-    return btoa(binaryString);
+    return hash.digest("base64");
   }
 }

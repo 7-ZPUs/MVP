@@ -21,7 +21,7 @@ export class ProcessDAO implements IProcessDAO {
     @inject(DATABASE_PROVIDER_TOKEN)
     private readonly dbProvider: DatabaseProvider,
   ) {
-    this.db = dbProvider.db;
+    this.db = dbProvider.getDb();
   }
 
   private rowToEntity(row: ProcessPersistenceRow): Process {
@@ -56,6 +56,16 @@ export class ProcessDAO implements IProcessDAO {
         ProcessPersistenceRow
       >("SELECT id, document_class_id as documentClassId, uuid, integrity_status as integrityStatus FROM process WHERE integrity_status = ? ORDER BY id")
       .all(status);
+    return rows.map((r) => this.rowToEntity(r));
+  }
+
+  searchProcesses(uuid: string): Process[]{
+    const rows = this.db
+      .prepare<
+        [string],
+        ProcessPersistenceRow
+      >("SELECT id, document_class_id as documentClassId, uuid, integrity_status as integrityStatus FROM process WHERE uuid LIKE ? ORDER BY id")
+      .all(`%${uuid}%`);
     return rows.map((r) => this.rowToEntity(r));
   }
 

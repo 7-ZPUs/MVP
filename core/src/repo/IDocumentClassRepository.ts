@@ -4,9 +4,7 @@ import { IntegrityStatusEnum } from "../value-objects/IntegrityStatusEnum";
 export const DOCUMENT_CLASS_REPOSITORY_TOKEN = Symbol(
   "IDocumentClassRepository",
 );
-export const DOCUMENT_CLASS_REPOSITORY_TOKEN = Symbol(
-  "IDocumentClassRepository",
-);
+
 
 export interface IDocumentClassRepository {
   getById(id: number): DocumentClass | null;

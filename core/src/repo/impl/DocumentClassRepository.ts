@@ -29,11 +29,11 @@ export class DocumentClassRepository implements IDocumentClassRepository {
     return this.dao.save(documentClass);
   }
 
-  search(query: string): DocumentClass[] | null {
-    return this.dao.search(query);
-  }
-
   updateIntegrityStatus(id: number, status: IntegrityStatusEnum): void {
     return this.dao.updateIntegrityStatus(id, status);
+  }
+
+  searchDocumentalClasses(name: string): DocumentClass[] {
+    return this.dao.search(name);
   }
 }

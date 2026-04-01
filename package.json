@@ -46,10 +46,11 @@
     "@types/node": "^20.19.37",
     "@vitest/coverage-v8": "^1.6.1",
     "cpx": "^1.5.0",
+    "defaults": "^3.0.0",
     "electron": "^30.0.0",
     "electron-rebuild": "^3.2.9",
-    "ts-node": "^10.9.2",
     "eslint": "^10.0.3",
+    "ts-node": "^10.9.2",
     "typescript": "^5.4.5",
     "vitest": "^1.6.1"
   }

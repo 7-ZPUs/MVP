@@ -18,7 +18,7 @@ export class DipDAO implements IDipDAO {
     @inject(DATABASE_PROVIDER_TOKEN)
     private readonly dbProvider: DatabaseProvider,
   ) {
-    this.db = dbProvider.db;
+    this.db = dbProvider.getDb();
   }
 
   getById(id: number): Dip | null {

@@ -20,7 +20,7 @@ export class DocumentClassDAO implements IDocumentClassDAO {
     @inject(DATABASE_PROVIDER_TOKEN)
     private readonly dbProvider: DatabaseProvider,
   ) {
-    this.db = dbProvider.db;
+    this.db = dbProvider.getDb();
   }
 
   private rowToEntity(row: DocumentClassPersistenceRow): DocumentClass {
@@ -98,18 +98,16 @@ export class DocumentClassDAO implements IDocumentClassDAO {
     return saved;
   }
 
-  search(query: string): DocumentClass[] | null {
+  search(name: string): DocumentClass[] {
     const result = this.db
       .prepare<[string], DocumentClassPersistenceRow>(
         `SELECT id, dip_id as dipId, uuid, integrity_status as integrityStatus, name, timestamp 
                  FROM document_class 
                  WHERE name LIKE ?`,
       )
-      .all(`%${query}%`);
+      .all(`%${name}%`);
 
-    return result.length > 0
-      ? result.map((row) => this.rowToEntity(row))
-      : null;
+    return result.map((row) => this.rowToEntity(row));
   }
 
   updateIntegrityStatus(id: number, status: IntegrityStatusEnum): void {

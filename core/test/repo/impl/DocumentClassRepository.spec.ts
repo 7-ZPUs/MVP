@@ -96,9 +96,11 @@ describe("DocumentClassRepository", () => {
       ])
       .mockReturnValueOnce(null);
 
-    const found = repo.search("Verbali");
-    const notFound = repo.search("inesistente");
+    const found = repo.searchDocumentalClasses("Verbali");
+    const notFound = repo.searchDocumentalClasses("inesistente");
 
+    expect(dao.search).toHaveBeenCalledWith("Verbali");
+    expect(dao.search).toHaveBeenCalledWith("inesistente");
     expect(found).not.toBeNull();
     expect(found?.[0].getName()).toContain("Verbali");
     expect(notFound).toBeNull();

@@ -26,7 +26,7 @@ describe("IndexDip", () => {
 
   beforeEach(() => {
     db = new Database(":memory:");
-    const dbProvider = { db } as unknown as DatabaseProvider;
+    const dbProvider = { getDb: () => db } as unknown as DatabaseProvider;
     const schema = readFileSync("db/schema.sql", "utf-8");
     db.exec(schema);
 

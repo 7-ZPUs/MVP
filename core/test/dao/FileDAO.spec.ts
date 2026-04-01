@@ -16,7 +16,7 @@ describe("FileDAO", () => {
 
   beforeEach(() => {
     db = createTestDb();
-    dao = new FileDAO({ db } as unknown as DatabaseProvider);
+    dao = new FileDAO({ getDb: () => db } as unknown as DatabaseProvider);
 
     const seed = seedHierarchy(db);
     documentUuid = seed.documentUuid;

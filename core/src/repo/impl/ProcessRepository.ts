@@ -34,25 +34,6 @@ export class ProcessRepository implements IProcessRepository {
   }
 
   searchProcesses(uuid: string): Process[] {
-    const rows = this.db
-      .prepare<[string], ProcessRow>(
-        `SELECT id,
-                        document_class_id as documentClassId,
-                        uuid,
-                        integrity_status as integrityStatus
-                FROM process
-                WHERE uuid LIKE ?`,
-      )
-      .all(`%${uuid}%`);
-
-    return rows.map((row) => {
-      const metadata = loadMetadata(
-        this.db,
-        METADATA_TABLE,
-        METADATA_FK,
-        row.id,
-      );
-      return Process.fromDB(row, metadata);
-    });
+    return this.dao.searchProcesses(uuid);
   }
 }

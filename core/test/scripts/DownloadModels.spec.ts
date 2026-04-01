@@ -14,7 +14,7 @@ vi.mock('http',  () => ({ get: vi.fn() }));
 import * as fs    from 'fs';
 import * as https from 'https';
 import * as http  from 'http';
-import { downloadFile, ensureDirectories } from '../../../src/scripts/download-models';
+import { downloadFile, ensureDirectories } from '../../src/scripts/download-models';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 

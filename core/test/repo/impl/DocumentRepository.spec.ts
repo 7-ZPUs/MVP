@@ -13,6 +13,9 @@ describe("DocumentRepository", () => {
     getByStatus: ReturnType<typeof vi.fn>;
     save: ReturnType<typeof vi.fn>;
     updateIntegrityStatus: ReturnType<typeof vi.fn>;
+    searchDocument: ReturnType<typeof vi.fn>;
+    searchDocumentSemantic: ReturnType<typeof vi.fn>;
+    getIndexedDocumentsCount: ReturnType<typeof vi.fn>;
   };
   let repo: DocumentRepository;
 
@@ -23,6 +26,9 @@ describe("DocumentRepository", () => {
       getByStatus: vi.fn(),
       save: vi.fn(),
       updateIntegrityStatus: vi.fn(),
+      searchDocument: vi.fn(),
+      searchDocumentSemantic: vi.fn(),
+      getIndexedDocumentsCount: vi.fn(),
     };
     repo = new DocumentRepository(dao as unknown as DocumentDAO);
   });
@@ -139,5 +145,52 @@ describe("DocumentRepository", () => {
 
     expect(dao.getById).toHaveBeenCalledWith(999);
     expect(result).toBeNull();
+  });
+
+  it("searchDocument delega al DAO con i filtri", () => {
+    dao.searchDocument.mockReturnValue([]);
+
+    const emptyFilters = {
+      common: {
+        chiaveDescrittiva: {} as any,
+        classificazione: {} as any,
+        conservazione: {} as any,
+        note: {} as any,
+        tipoDocumento: {} as any,
+      },
+      diDai: {},
+      aggregate: {},
+      subject: {},
+      custom: {},
+    };
+    const results = repo.searchDocument(emptyFilters as any);
+
+    expect(dao.searchDocument).toHaveBeenCalledWith(emptyFilters);
+    expect(results).toEqual([]);
+  });
+
+  it("searchDocumentSemantic delega al DAO", async () => {
+    const semantic = [
+      {
+        document: new Document("doc-uuid", metadata, "proc-uuid"),
+        score: 0.8,
+      },
+    ];
+    const queryVector = new Float32Array([0.01, 0.02, 0.03]);
+    dao.searchDocumentSemantic.mockResolvedValue(semantic);
+
+    const result = await repo.searchDocumentSemantic(queryVector);
+
+    expect(dao.searchDocumentSemantic).toHaveBeenCalledWith(queryVector);
+    expect(result).toEqual(semantic);
+  });
+
+  it("getIndexedDocumentsCount delega al DAO", () => {
+    dao.getIndexedDocumentsCount.mockReturnValue(42);
+
+    const count = repo.getIndexedDocumentsCount();
+
+    expect(dao.getIndexedDocumentsCount).toHaveBeenCalledTimes(1);
+    expect(count).toBe(42);
   });
 });

@@ -1,28 +1,31 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+
+const { mockDb, mockCtor, mockHomedir, mockMkdirSync } = vi.hoisted(() => ({
+  mockDb: {
+    pragma: vi.fn(),
+    loadExtension: vi.fn(),
+  },
+  mockCtor: vi.fn(),
+  mockHomedir: vi.fn(),
+  mockMkdirSync: vi.fn(),
+}));
+
+vi.mock("better-sqlite3", () => ({
+  default: mockCtor.mockImplementation(() => mockDb),
+}));
+
+vi.mock("node:os", () => ({
+  homedir: mockHomedir,
+}));
+
+vi.mock("node:fs", () => ({
+  mkdirSync: mockMkdirSync,
+}));
+
 import { DatabaseProvider } from "../../../src/repo/impl/DatabaseProvider";
 import Database from "better-sqlite3";
 import * as os from "node:os";
 import * as fs from "node:fs";
-
-vi.mock("better-sqlite3", () => {
-  return {
-    default: vi.fn().mockImplementation(() => ({
-      pragma: vi.fn(),
-    })),
-  };
-});
-
-vi.mock("node:os", () => {
-  return {
-    homedir: vi.fn(),
-  };
-});
-
-vi.mock("node:fs", () => {
-  return {
-    mkdirSync: vi.fn(),
-  };
-});
 
 describe("DatabaseProvider", () => {
   beforeEach(() => {
@@ -37,7 +40,7 @@ describe("DatabaseProvider", () => {
     const dbPath = "/custom/path/to/db.sqlite";
     const provider = new DatabaseProvider(dbPath);
 
-    const db = provider.db;
+    const db = provider.getDb();
 
     expect(fs.mkdirSync).toHaveBeenCalledWith("/custom/path/to", {
       recursive: true,
@@ -55,14 +58,8 @@ describe("DatabaseProvider", () => {
     vi.mocked(os.homedir).mockReturnValue(mockHomeDir);
 
     const provider = new DatabaseProvider();
-    const db = provider.db;
+    const db = provider.getDb();
 
-    // It creates the parent directory first...
-    expect(fs.mkdirSync).toHaveBeenCalledWith("/home/user/.dip-viewer", {
-      recursive: true,
-    });
-
-    // ...then creates the file directory (which is the same)
     expect(fs.mkdirSync).toHaveBeenCalledWith("/home/user/.dip-viewer", {
       recursive: true,
     });
@@ -79,10 +76,10 @@ describe("DatabaseProvider", () => {
   // expected_value: returns the same db instance on subsequent calls
   it("TU-F-browsing-43: db should return the same db instance on subsequent calls", () => {
     const dbPath = "/custom/path/to/db.sqlite";
-    const provider = new DatabaseProvider(dbPath);
 
-    const db1 = provider.db;
-    const db2 = provider.db;
+    const provider = new DatabaseProvider(dbPath);
+    const db1 = provider.getDb();
+    const db2 = provider.getDb();
 
     expect(Database).toHaveBeenCalledTimes(1);
     expect(db1).toBe(db2);

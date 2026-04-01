@@ -1,8 +1,7 @@
 import type { Document } from "../entity/Document";
 import { IntegrityStatusEnum } from "../value-objects/IntegrityStatusEnum";
-import { SearchFilters } from "../../../shared/domain/metadata/search.models";
+import { SearchFilters } from "../../../shared/domain/metadata";
 
-export const DOCUMENTO_REPOSITORY_TOKEN = Symbol("IDocumentRepository");
 export const DOCUMENTO_REPOSITORY_TOKEN = Symbol("IDocumentRepository");
 
 export interface IDocumentRepository {
@@ -17,7 +16,7 @@ export interface IDocumentRepository {
   searchDocument(filters: SearchFilters): Document[];
 
   searchDocumentSemantic(
-    query: string,
+    queryVector: Float32Array,
   ): Promise<Array<{ document: Document; score: number }>>;
 
   getIndexedDocumentsCount(): number;

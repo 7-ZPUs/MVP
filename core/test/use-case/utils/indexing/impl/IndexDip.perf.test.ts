@@ -62,7 +62,7 @@ describe("IndexDip use-case performance", () => {
         path.join(process.cwd(), "db/schema.sql"),
         "utf-8",
       );
-      const db = dbProvider.db;
+      const db = dbProvider.getDb();
       db.exec(schema);
 
       const packageReader = new LocalPackageReaderAdapter(
@@ -99,7 +99,7 @@ describe("IndexDip use-case performance", () => {
       durationsMs.push(end - start);
 
       // Cleanup
-      dbProvider.db.close();
+      dbProvider.getDb().close();
       if (i === runs - 1) {
         fs.copyFileSync(dbPath, path.join(process.cwd(), "perf-dip-viewer.db"));
       }

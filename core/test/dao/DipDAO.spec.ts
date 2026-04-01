@@ -14,7 +14,7 @@ describe("DipDAO", () => {
 
   beforeEach(() => {
     db = createTestDb();
-    dao = new DipDAO({ db } as unknown as DatabaseProvider);
+    dao = new DipDAO({ getDb: () => db } as unknown as DatabaseProvider);
   });
 
   afterEach(() => {

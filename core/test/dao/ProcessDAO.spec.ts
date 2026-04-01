@@ -17,7 +17,7 @@ describe("ProcessDAO", () => {
 
   beforeEach(() => {
     db = createTestDb();
-    dao = new ProcessDAO({ db } as unknown as DatabaseProvider);
+    dao = new ProcessDAO({ getDb: () => db } as unknown as DatabaseProvider);
 
     const dipId = Number(
       db

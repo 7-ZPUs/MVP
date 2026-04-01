@@ -23,6 +23,7 @@ import { DocumentClassDAO } from "../../../../../src/dao/DocumentClassDAO";
 import { DocumentDAO } from "../../../../../src/dao/DocumentDAO";
 import { ProcessDAO } from "../../../../../src/dao/ProcessDAO";
 import { readFileSync } from "node:fs";
+import { nukeTestDb } from "../../../../dao/helpers/testDb";
 
 // ---------------------------------------------------------------------------
 // Realistic DiP index XML — one DocumentClass, one AiP, two Documents
@@ -170,7 +171,8 @@ describe("Index use-case integration tests", () => {
 
     dbProvider = new DatabaseProvider(dbPath);
     const schema = readFileSync("db/schema.sql", "utf-8");
-    dbProvider.db.exec(schema);
+    nukeTestDb(dbProvider.getDb());
+    dbProvider.getDb().exec(schema);
 
     const packageReader = new LocalPackageReaderAdapter(
       new XmlDipParser(),
@@ -182,6 +184,7 @@ describe("Index use-case integration tests", () => {
     documentClassRepository = new DocumentClassRepository(
       new DocumentClassDAO(dbProvider),
     );
+
     processRepository = new ProcessRepository(new ProcessDAO(dbProvider));
     documentRepository = new DocumentRepository(new DocumentDAO(dbProvider));
     fileRepository = new FileRepository(new FileDAO(dbProvider));
@@ -200,7 +203,7 @@ describe("Index use-case integration tests", () => {
   });
 
   afterAll(async () => {
-    dbProvider?.db.close();
+    dbProvider?.getDb().close();
     await fs.rm(testHomeDir, { recursive: true, force: true });
   });
 

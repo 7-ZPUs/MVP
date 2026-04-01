@@ -17,7 +17,7 @@ export class FileDAO implements IFileDAO {
     @inject(DATABASE_PROVIDER_TOKEN)
     private readonly dbProvider: DatabaseProvider,
   ) {
-    this.db = dbProvider.db;
+    this.db = dbProvider.getDb();
   }
 
   private rowEntity(row: FilePersistenceRow): File {

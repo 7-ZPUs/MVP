@@ -17,8 +17,10 @@ describe("DocumentClassDAO", () => {
 
   beforeEach(() => {
     db = createTestDb();
-    dao = new DocumentClassDAO({ db } as unknown as DatabaseProvider);
-    dipDao = new DipDAO({ db } as unknown as DatabaseProvider);
+    dao = new DocumentClassDAO({
+      getDb: () => db,
+    } as unknown as DatabaseProvider);
+    dipDao = new DipDAO({ getDb: () => db } as unknown as DatabaseProvider);
 
     db.prepare("INSERT INTO dip (uuid, integrity_status) VALUES (?, ?)").run(
       "dip-uuid",
@@ -83,7 +85,7 @@ describe("DocumentClassDAO", () => {
     expect(dao.getByDipId(dipId)).toHaveLength(2);
     expect(dao.getByStatus(IntegrityStatusEnum.VALID)).toHaveLength(1);
     expect(dao.search("Contr")).toHaveLength(1);
-    expect(dao.search("NON-EXISTING")).toBeNull();
+    expect(dao.search("NON-EXISTING")).toHaveLength(0);
   });
 
   it("computes aggregated integrity status", () => {

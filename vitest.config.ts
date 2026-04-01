@@ -16,10 +16,12 @@ export default defineConfig({
       reporter: ["text", "lcov"],
       include: [
         "core/**/impl/**/*.ts",
+        "core/src/dao/**/*.ts",
+        "core/src/ipc/**/*.ts",
         "core/entity/**/*.ts",
         "core/dto/**/*.ts",
       ],
-      exclude: ["**/*.d.ts"],
+      exclude: ["**/*.d.ts", "core/src/models"],
       reportsDirectory: "./coverage/core",
     },
     testTimeout: 30_000, // per i test di integrazione con il modello

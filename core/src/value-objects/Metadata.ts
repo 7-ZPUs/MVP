@@ -18,7 +18,7 @@ export class Metadata {
    */
 
   public findNodeByName(name: string): Metadata | null {
-    if (this.name === name) {
+    if (this.name.toLowerCase() === name.toLowerCase()) {
       return this;
     }
 
