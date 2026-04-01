@@ -68,7 +68,7 @@ export class DipTree {
                     depth,
                     hasChildren: node.hasChildren,
                     isLoading: this.loadingNodes.has(nodeId),
-                    isExpanded: false,
+                    isExpanded: this.expandedIds.has(nodeId),
                     childrenError: state.nodeChildrenErrors.get(nodeId),
                 });
         

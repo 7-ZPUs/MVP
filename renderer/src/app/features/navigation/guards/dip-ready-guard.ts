@@ -1,8 +1,11 @@
 import { inject } from '@angular/core';
-import { CanActivateFn } from '@angular/router';
+import { CanActivateFn, Router } from '@angular/router';
 import { DipFacade } from '../service/dip-facade';
 
 export const dipReadyGuard: CanActivateFn = () => {
   const dipFacade = inject(DipFacade);
-  return dipFacade.getState()().phase === 'ready';
+  const router = inject(Router);
+
+  //TODO abbiamo effettivamente una pagina di loading? altrimenti va tolto
+  return dipFacade.getState()().phase === 'ready' ? true : router.parseUrl('/loading');
 };
