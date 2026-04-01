@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { HashingService } from "../../../src/services/impl/HashingService";
-import { Readable } from "stream";
+import { Readable } from "node:stream";
 
 describe("HashingService", () => {
   it("TU-S-browsing-57: checkFileIntegrity() should return VALID for a file with correct hash", async () => {

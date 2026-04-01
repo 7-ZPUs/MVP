@@ -9,6 +9,21 @@ import { IntegrityStatusEnum } from "../../src/value-objects/IntegrityStatusEnum
 import { Metadata, MetadataType } from "../../src/value-objects/Metadata";
 import { createTestDb } from "./helpers/testDb";
 
+function buildMetadata(title: string): Metadata {
+  return new Metadata(
+    "Documento",
+    [
+      new Metadata("Titolo", title, MetadataType.STRING),
+      new Metadata(
+        "Soggetto",
+        [new Metadata("Nome", "Mario", MetadataType.STRING)],
+        MetadataType.COMPOSITE,
+      ),
+    ],
+    MetadataType.COMPOSITE,
+  );
+}
+
 describe("DocumentDAO", () => {
   let db: Database.Database;
   let dao: DocumentDAO;
@@ -51,21 +66,6 @@ describe("DocumentDAO", () => {
   afterEach(() => {
     db.close();
   });
-
-  function buildMetadata(title: string): Metadata {
-    return new Metadata(
-      "Documento",
-      [
-        new Metadata("Titolo", title, MetadataType.STRING),
-        new Metadata(
-          "Soggetto",
-          [new Metadata("Nome", "Mario", MetadataType.STRING)],
-          MetadataType.COMPOSITE,
-        ),
-      ],
-      MetadataType.COMPOSITE,
-    );
-  }
 
   it("saves and retrieves document with metadata tree", () => {
     const entity = new Document("doc-a", buildMetadata("A"), processUuid);

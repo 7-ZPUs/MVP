@@ -15,7 +15,6 @@ vi.mock("@xenova/transformers", () => ({
 
 import { IDocumentRepository } from "../../../src/repo/IDocumentRepository";
 import { IWordEmbedding } from "../../../src/repo/IWordEmbedding";
-import { Document } from "../../../src/entity/Document";
 import { SearchSemanticUC } from "../../../src/use-case/document/impl/SearchSemanticUC";
 import { DocumentMapper } from "../../../src/dao/mappers/DocumentMapper";
 import { MetadataType } from "../../../src/value-objects/Metadata";
@@ -72,7 +71,7 @@ describe("SearchSemanticUC — calcolo score", () => {
       searchDocumentSemantic: vi
         .fn()
         .mockResolvedValue([
-          { document: makeDocument("uuid-perfect", "esatto.pdf"), score: 1.0 },
+          { document: makeDocument("uuid-perfect", "esatto.pdf"), score: 1 },
         ]),
     };
 
@@ -82,7 +81,7 @@ describe("SearchSemanticUC — calcolo score", () => {
     );
     const results = await uc.execute("query esatta");
 
-    expect(results[0].score).toBe(1.0);
+    expect(results[0].score).toBe(1);
   });
 
   // Score minimo: distanza 1 → score 0.0 (documento completamente diverso)
@@ -91,7 +90,7 @@ describe("SearchSemanticUC — calcolo score", () => {
       searchDocumentSemantic: vi.fn().mockResolvedValue([
         {
           document: makeDocument("uuid-none", "irrilevante.pdf"),
-          score: 0.0,
+          score: 0,
         },
       ]),
     };
@@ -102,7 +101,7 @@ describe("SearchSemanticUC — calcolo score", () => {
     );
     const results = await uc.execute("query senza match");
 
-    expect(results[0].score).toBe(0.0);
+    expect(results[0].score).toBe(0);
   });
 
   // I risultati devono preservare l'ordine per score decrescente
@@ -224,8 +223,8 @@ describe("SearchSemanticUC — calcolo score", () => {
     const results = await uc.execute("range check");
 
     results.forEach((r) => {
-      expect(r.score).toBeGreaterThanOrEqual(0.0);
-      expect(r.score).toBeLessThanOrEqual(1.0);
+      expect(r.score).toBeGreaterThanOrEqual(0);
+      expect(r.score).toBeLessThanOrEqual(1);
     });
   });
 });

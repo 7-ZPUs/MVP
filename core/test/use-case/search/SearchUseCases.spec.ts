@@ -3,7 +3,6 @@ import { SearchDocumentsUC } from "../../../src/use-case/document/impl/SearchDoc
 import { SearchSemanticUC } from "../../../src/use-case/document/impl/SearchSemanticUC";
 import { IDocumentRepository } from "../../../src/repo/IDocumentRepository";
 import { IWordEmbedding } from "../../../src/repo/IWordEmbedding";
-import { Document } from "../../../src/entity/Document";
 import { SearchFilters } from "../../../../shared/domain/metadata/search.models";
 import { DocumentMapper } from "../../../src/dao/mappers/DocumentMapper";
 import { MetadataType } from "../../../src/value-objects/Metadata";
@@ -325,8 +324,8 @@ describe("SearchSemanticUC", () => {
   // Score al limite: 0.0 e 1.0 sono valori validi
   it("gestisce correttamente score ai valori limite (0.0 e 1.0)", async () => {
     const docs = [
-      { document: makeDocument("uuid-max", []), score: 1.0 },
-      { document: makeDocument("uuid-min", []), score: 0.0 },
+      { document: makeDocument("uuid-max", []), score: 1 },
+      { document: makeDocument("uuid-min", []), score: 0 },
     ];
     (repo.searchDocumentSemantic as ReturnType<typeof vi.fn>).mockResolvedValue(
       docs,
@@ -335,8 +334,8 @@ describe("SearchSemanticUC", () => {
     const uc = new SearchSemanticUC(repo as IDocumentRepository, aiAdapter);
     const results = await uc.execute("limiti");
 
-    expect(results[0].score).toBe(1.0);
-    expect(results[1].score).toBe(0.0);
+    expect(results[0].score).toBe(1);
+    expect(results[1].score).toBe(0);
   });
 
   // Metadati assenti nella ricerca semantica

@@ -483,7 +483,7 @@ describe("Index use-case integration tests", () => {
 
       const childBool = metadata
         .findNodeByName("compositeField")
-        ?.getChildren()[1]; //TODO: fix generazione metadata quando ci sono attributi
+        ?.getChildren()[1];
       expect(childBool).toBeDefined();
       expect(childBool?.getType()).toBe(MetadataType.BOOLEAN);
       expect(childBool?.getStringValue()).toBe("true");

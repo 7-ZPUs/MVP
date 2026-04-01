@@ -42,7 +42,7 @@ export function nukeTestDb(db: Database.Database): void {
     : null;
 
   for (const { name } of tables) {
-    const escapedName = name.replace(/"/g, '""');
+    const escapedName = name.replaceAll('"', '""');
     db.prepare(`DELETE FROM "${escapedName}"`).run();
     resetSeqStmt?.run(name);
   }

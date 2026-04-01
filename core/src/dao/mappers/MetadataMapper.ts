@@ -36,9 +36,9 @@ export class MetadataMapper {
     return {
       name: metadata.getName(),
       value:
-        metadata.getType() !== MetadataType.COMPOSITE
-          ? metadata.getStringValue()
-          : metadata.getChildren().map((child) => this.toDTO(child)),
+        metadata.getType() === MetadataType.COMPOSITE
+          ? metadata.getChildren().map((child) => this.toDTO(child))
+          : metadata.getStringValue(),
       type: metadata.getType(),
     };
   }
@@ -118,10 +118,10 @@ export class MetadataMapper {
   }
 
   static flatten(metadata: Metadata): Metadata[] {
-    if (metadata.getType() !== MetadataType.COMPOSITE) {
-      return [metadata];
-    } else {
+    if (metadata.getType() === MetadataType.COMPOSITE) {
       return metadata.getChildren().flatMap((child) => this.flatten(child));
+    } else {
+      return [metadata];
     }
   }
 }
