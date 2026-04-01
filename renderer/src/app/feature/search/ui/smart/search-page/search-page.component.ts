@@ -7,8 +7,8 @@ import {
   SearchQuery,
   ValidationResult,
   PartialSearchFilters,
-} from '../../../../../../../../shared/metadata';
-import { SearchQueryType } from '../../../../../../../../shared/metadata/search.enum';
+} from '../../../../../../../../shared/domain/metadata';
+import { SearchQueryType } from '../../../../../../../../shared/domain/metadata/search.enum';
 import { IFilterValidator } from '../../../../validation/contracts/filter-validator.interface';
 
 @Component({
@@ -70,7 +70,7 @@ export class SearchPageComponent implements OnInit {
     const validationErrors = this.state().validationErrors;
     this.externalValidation = {
       isValid: validationErrors.size === 0,
-      errors: validationErrors,
+      errors: new Map(Array.from(validationErrors.entries()).map(([key, value]) => [key, [value]])),
     };
   }
 

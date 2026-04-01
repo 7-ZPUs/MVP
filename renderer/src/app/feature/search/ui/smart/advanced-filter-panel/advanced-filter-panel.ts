@@ -21,7 +21,7 @@ import {
   SubjectCriteria,
   ValidationError,
   PartialSearchFilters,
-} from '../../../../../../../../shared/metadata';
+} from '../../../../../../../../shared/domain/metadata';
 
 import { CommonFiltersComponent } from '../../dumb/common-filters.component/common-filters.component';
 import { DiDaiFiltersComponent } from '../../dumb/di-dai-filters.component/di-dai-filters.component';
@@ -163,7 +163,7 @@ export class AdvancedFilterPanelComponent implements OnInit, OnChanges {
   }
 
   private validateAndEmit(formValues: any): void {
-    const partialFilters: PartialSearchFilters = {
+    const partialSearchFilters: PartialSearchFilters = {
       common: formValues.common,
       diDai: formValues.diDai,
       aggregate: formValues.aggregate,
@@ -171,13 +171,13 @@ export class AdvancedFilterPanelComponent implements OnInit, OnChanges {
     };
 
     if (this.validator) {
-      this.currentValidationResult = this.validator(partialFilters);
+      this.currentValidationResult = this.validator(partialSearchFilters);
       this.validationResult.emit(this.currentValidationResult);
     }
 
     const fullFilters: SearchFilters = {
       ...this.filters,
-      ...partialFilters,
+      ...partialSearchFilters,
     };
     this.filtersChanged.emit(fullFilters);
   }

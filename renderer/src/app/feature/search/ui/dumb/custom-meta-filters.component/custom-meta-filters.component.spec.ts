@@ -4,7 +4,7 @@ import { By } from '@angular/platform-browser';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 import { CustomMetaFiltersComponent } from './custom-meta-filters.component';
-import { ValidationResult, ValidationError } from '../../../../../../../../shared/metadata';
+import { ValidationResult, ValidationError } from '../../../../../../../../shared/domain/metadata';
 
 describe('CustomMetaFiltersComponent', () => {
   let component: CustomMetaFiltersComponent;

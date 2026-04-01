@@ -3,7 +3,7 @@ import { By } from '@angular/platform-browser';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 import { SearchResultsComponent } from './search-results.component';
-import { SearchResult } from '../../../../../../../../shared/metadata';
+import { SearchResult } from '../../../../../../../../shared/domain/metadata';
 
 describe('SearchResultsComponent', () => {
   let component: SearchResultsComponent;

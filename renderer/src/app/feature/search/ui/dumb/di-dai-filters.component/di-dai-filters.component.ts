@@ -15,7 +15,7 @@ import {
   DiDaiFilterValues,
   ValidationResult,
   ValidationError,
-} from '../../../../../../../../shared/metadata';
+} from '../../../../../../../../shared/domain/metadata';
 
 // Importa le tue enumerazioni. Aggiusta il path se necessario.
 import {
@@ -24,7 +24,7 @@ import {
   FlowType,
   RegisterType,
   ModificationType,
-} from '../../../../../../../../shared/metadata/search.enum';
+} from '../../../../../../../../shared/domain/metadata/search.enum';
 
 @Component({
   selector: 'app-di-dai-filters',

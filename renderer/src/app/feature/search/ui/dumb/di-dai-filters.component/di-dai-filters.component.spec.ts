@@ -8,7 +8,7 @@ import { DiDaiFiltersComponent } from './di-dai-filters.component';
 import {
   RegisterType,
   ModificationType,
-} from '../../../../../../../../shared/metadata/search.enum';
+} from '../../../../../../../../shared/domain/metadata/search.enum';
 
 describe('DiDaiFiltersComponent', () => {
   let component: DiDaiFiltersComponent;

@@ -5,7 +5,7 @@ import { By } from '@angular/platform-browser';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 import { AdvancedFilterPanelComponent } from './advanced-filter-panel';
-import { SearchFilters, ValidationResult } from '../../../../../../../../shared/metadata';
+import { SearchFilters, ValidationResult } from '../../../../../../../../shared/domain/metadata';
 
 describe('AdvancedFilterPanelComponent', () => {
   let component: AdvancedFilterPanelComponent;

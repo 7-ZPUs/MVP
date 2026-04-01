@@ -1,6 +1,6 @@
 import { InjectionToken, Signal } from '@angular/core';
 import { Observable } from 'rxjs';
-import { SemanticIndexState } from '../../../../../../shared/metadata/semantic-filter-models';
+import { SemanticIndexState } from '../../../../../../shared/domain/metadata/semantic-filter-models';
 
 export interface ISemanticIndexStatus {
   getStatus(): Signal<SemanticIndexState>;

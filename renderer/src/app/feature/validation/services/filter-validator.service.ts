@@ -7,7 +7,7 @@ import {
   PartialSearchFilters,
   ValidationResult,
   ValidationError,
-} from '../../../../../../shared/metadata';
+} from '../../../../../../shared/domain/metadata';
 
 import { RegistryContradictionValidationStrategy } from '../strategies/registry-contradiction-validation.strategy';
 import { FormationModeContradictionStrategy } from '../strategies/formation-mode-contradiction.strategy';

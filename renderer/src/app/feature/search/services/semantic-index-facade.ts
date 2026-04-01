@@ -4,8 +4,8 @@ import {
   IIndexingChannel,
   INDEXING_CHANNEL_TOKEN,
 } from '../contracts/semantic-index.interface';
-import { SemanticIndexState } from '../../../../../../shared/metadata/semantic-filter-models';
-import { IndexingStatus } from '../../../../../../shared/metadata/search.enum';
+import { SemanticIndexState } from '../../../../../../shared/domain/metadata/semantic-filter-models';
+import { IndexingStatus } from '../../../../../../shared/domain/metadata/search.enum';
 
 @Injectable({ providedIn: 'root' })
 export class SemanticIndexFacade implements ISemanticIndexStatus {
