@@ -11,4 +11,5 @@ export interface IProcessRepository {
   save(process: Process): Process;
 
   updateIntegrityStatus(id: number, status: IntegrityStatusEnum): void;
+  searchProcesses(uuid: string): Process[];
 }

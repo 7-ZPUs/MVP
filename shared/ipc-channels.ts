@@ -13,8 +13,12 @@ export const IpcChannels = {
   PACKAGE_CLOSE: "package:close",
 
   // ----- Search -----
-  SEARCH_FULLTEXT: "search:fulltext",
-  SEARCH_SEMANTIC: "search:semantic",
+  SEARCH_FULLTEXT:     'ipc:search:text',
+  SEARCH_SEMANTIC:     'ipc:search:semantic',
+  SEARCH_CLASSES:      'search:classes', // obsoleto
+  SEARCH_PROCESSES:    'search:processes', // obsoleto
+  SEARCH_DOCUMENTS:    'ipc:search:advanced',
+  SEARCH_GET_AI_STATE: 'ipc:indexing:status',
 
   // ----- Integrity -----
   INTEGRITY_VERIFY: "integrity:verify",
@@ -46,9 +50,15 @@ export const IpcChannels = {
   BROWSE_GET_DOCUMENT_CLASS_BY_ID: "browse:get-document-class-by-id",
 
   // ----- Browse: Dip -----
-  BROWSE_GET_DIP_BY_ID: "browse:get-dip-by-id",
-  BROWSE_GET_DIP_BY_STATUS: "browse:get-dip-by-status",
-  BROWSE_GET_DIP_BY_DOCUMENT_CLASS: "browse:get-dip-by-document-class",
+  BROWSE_GET_DIP_BY_ID: 'browse:get-dip-by-id',
+  BROWSE_GET_DIP_BY_STATUS: 'browse:get-dip-by-status',
+  BROWSE_GET_DIP_BY_DOCUMENT_CLASS: 'browse:get-dip-by-document-class',
+
+  // ----- File viewer -----
+  FILE_OPEN_EXTERNAL: 'file:open-external',
+  FILE_DOWNLOAD:      'file:download',
+  FILE_PRINT:         'file:print',
+
 } as const;
 
 export type IpcChannel = (typeof IpcChannels)[keyof typeof IpcChannels];

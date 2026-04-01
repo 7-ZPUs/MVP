@@ -15,18 +15,9 @@
     "resolveJsonModule": true,
     "declaration": true,
     "declarationMap": true,
-    "sourceMap": true
+    "sourceMap": true,
+    "types": ["vitest/globals", "node"]
   },
-  "include": [
-    "main.ts",
-    "core/src/**/*",
-    "shared/**/*",
-    "**/*.spec.ts",
-    "**/*.test.ts",
-    "core/test/unit/indexing/IndexDip.old",
-    "core/test/unit/indexing/PackageReaderPort.test.old",
-    "core/test/domain/dip-index-parsing.old",
-    "core/test/dao/helpers/testDb.ts"
-  ],
-  "exclude": ["node_modules", "dist", "renderer", "coverage"]
+  "include": ["main.ts", "core/src/**/*", "shared/**/*", "core/src/preload.ts"],
+  "exclude": ["node_modules", "dist", "**/*.spec.ts", "**/*.test.ts", "core/src/scripts/**/*"]
 }

@@ -14,28 +14,19 @@ export const DATABASE_PROVIDER_TOKEN = Symbol("DatabaseProvider");
 @injectable()
 export class DatabaseProvider {
   private _db: Database.Database | null = null;
-  private readonly _dbPath: string | undefined;
 
-  constructor(dbPath?: string) {
-    this._dbPath = dbPath;
-  }
-
-  public get db(): Database.Database {
+  public async getDb(): Promise<Database.Database> {
     if (!this._db) {
-      let dbPath: string;
-      if (typeof this._dbPath === "string") {
-        dbPath = this._dbPath;
-      } else {
-        const dir = path.join(os.homedir(), ".dip-viewer");
-        fs.mkdirSync(dir, { recursive: true });
-        dbPath = path.join(dir, "dip-viewer.db");
-      }
-      const dir = path.dirname(dbPath);
+      const dir = path.join(os.homedir(), ".dip-viewer");
       fs.mkdirSync(dir, { recursive: true });
+      const dbPath = path.join(dir, "dip-viewer.db");
 
       this._db = new Database(dbPath);
       this._db.pragma("journal_mode = WAL");
       this._db.pragma("foreign_keys = ON");
+      const sqliteVss = await import("sqlite-vss");
+      sqliteVss.load(this._db);
+      return this._db;
     }
     return this._db;
   }

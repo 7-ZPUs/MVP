@@ -1,0 +1,57 @@
+<fieldset class="filter-fieldset subject-wizard">
+  <legend>Filtri Soggetto</legend>
+
+  <div *ngIf="currentStep() === 1" class="wizard-step slide-in">
+    <h4>1. Seleziona il Ruolo</h4>
+    <div class="button-grid">
+      <button type="button" class="btn-choice" (click)="setRole(RoleType.AUTORE)">
+        Produttore
+      </button>
+      <button type="button" class="btn-choice" (click)="setRole(RoleType.DESTINATARIO)">
+        Destinatario
+      </button>
+      <button type="button" class="btn-choice" (click)="setRole(RoleType.OPERATORE)">
+        Responsabile
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="currentStep() === 2" class="wizard-step slide-in">
+    <h4>2. Seleziona il Tipo di Soggetto ({{ selectedRole() }})</h4>
+    <div class="button-grid">
+      <button type="button" class="btn-choice" (click)="setType(SubjType.PAI)">
+        PAI (Amm. Interna)
+      </button>
+      <button type="button" class="btn-choice" (click)="setType(SubjType.PAE)">
+        PAE (Amm. Esterna)
+      </button>
+      <button type="button" class="btn-choice" (click)="setType(SubjType.PG)">
+        PG (Persona Giuridica)
+      </button>
+      <button type="button" class="btn-choice" (click)="setType(SubjType.PF)">
+        PF (Persona Fisica)
+      </button>
+    </div>
+    <div class="wizard-actions mt-2">
+      <button type="button" class="btn-outline" (click)="prevStep()">← Indietro</button>
+    </div>
+  </div>
+
+  <div *ngIf="currentStep() === 3" class="wizard-step slide-in">
+    <h4>3. Dettagli ({{ selectedRole() }} - {{ selectedType() }})</h4>
+
+    <app-subject-detail-form
+      [subjectType]="selectedType()"
+      [details]="currentDetails()"
+      (detailsChanged)="onDetailsChanged($event)"
+    >
+    </app-subject-detail-form>
+
+    <div class="wizard-actions mt-3">
+      <button type="button" class="btn-outline" (click)="prevStep()">← Cambia Tipo</button>
+      <button type="button" class="btn-outline text-danger" (click)="reset()">
+        Rimuovi Soggetto
+      </button>
+    </div>
+  </div>
+</fieldset>
