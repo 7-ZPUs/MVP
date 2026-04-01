@@ -1,63 +1,156 @@
-import { Injectable } from "@angular/core";
+import { Injectable, inject } from "@angular/core";
+import { IpcCacheService } from "../../../shared/service/ipc-cache.service";
+import { IpcErrorHandlerService } from "../../../shared/service/ipc-error-handler.service";
 import { DipTreeNode } from "../contracts/dip-tree-node";
-import { NodeId } from "../domain/types";
+import { ELECTRON_CONTEXT_BRIDGE_TOKEN } from "../../../shared/contracts";
+import { IpcChannels } from "../../../../../../shared/ipc-channels";
+import { DipDTO } from "../../../../../../shared/dto/DipDTO";
+import { DocumentClassDTO } from "../../../../../../shared/dto/DocumentClassDTO";
+import { DocumentDTO } from "../../../../../../shared/dto/DocumentDTO";
+import { FileDTO } from "../../../../../../shared/dto/FileDTO";
+import { ProcessDTO } from "../../../../../../shared/dto/ProcessDTO";
 
 @Injectable({ providedIn: 'root' })
 export class IpcGateway {
+  private readonly TTL = 600_000;
+  private readonly bridge = inject(ELECTRON_CONTEXT_BRIDGE_TOKEN);
+  private readonly cache = inject(IpcCacheService);
+  private readonly errorHandler = inject(IpcErrorHandlerService);
 
-  async loadChildren(nodeId: NodeId): Promise<DipTreeNode[]> {
+  /**
+   * Entry point unico per DipFacade.
+   * Sceglie il canale giusto in base al tipo del nodo padre.
+   */
+  async getChildren(parent: DipTreeNode): Promise<DipTreeNode[]> {
+    switch (parent.type) {
 
-    // ⏱ Simula latenza
-    await this.delay(500);
+      case 'dip':
+        return this.getDocumentClasses(parent.id);
 
-    // 💥 Simula errore casuale (30%)
-    if (Math.random() < 0.3) {
-      throw new Error('Simulated load error');
+      case 'documentClass':
+        return this.getProcesses(parent.id);
+
+      case 'process':
+        return this.getDocuments(parent.id);
+
+      case 'document':
+        return this.getFiles(parent.id);
+
+      case 'file':
+        // i file sono foglie — non hanno figli
+        return [];
     }
+  }
 
-    // 🌱 ROOT NODES
-    if (nodeId === 'root') {
-      return [
-        { id: 'c1', name: 'Class A', type: 'class', hasChildren: true, isLoading: false},
-        { id: 'p1', name: 'Process X', type: 'process', hasChildren: true, isLoading: false },
-        { id: 'd1', name: 'Document 1', type: 'document', hasChildren: false, isLoading: false },
-      ];
-    }
+  // ── DIP ────────────────────────────────────────────────────
 
-    // 🌿 CHILDREN
-    return [
-      {
-        id: `${nodeId}-1`,
-        name: `Child 1 of ${nodeId}`,
-        type: 'document',
-        hasChildren: false,
-        isLoading: false,
-      },
-      {
-        id: `${nodeId}-2`,
-        name: `Child 2 of ${nodeId}`,
-        type: 'process',
+  async getRootDip(dipId: number): Promise<DipTreeNode> {
+    return this.invokeWithCache(
+      IpcChannels.BROWSE_GET_DIP_BY_ID,
+      { id: dipId },
+      this.TTL,
+      `dip:${dipId}`,
+      (dto: DipDTO): DipTreeNode => ({
+        id: dto.id,
+        name: `DIP ${dto.uuid}`,
+        type: 'dip',
         hasChildren: true,
-        isLoading: false,
-      }
-    ];
+      })
+    );
   }
 
-  // Stub per ora
-  async getClasses(): Promise<any[]> {
-    return [];
+  // ── DocumentClass ───────────────────────────────────────────
+
+  private async getDocumentClasses(dipId: number): Promise<DipTreeNode[]> {
+    return this.invokeWithCache(
+      IpcChannels.BROWSE_GET_DOCUMENT_CLASS_BY_DIP_ID,
+      { dipId },
+      this.TTL,
+      `documentClasses:${dipId}`,
+      (dtos: DocumentClassDTO[]): DipTreeNode[] =>
+        dtos.map(dto => ({
+          id: dto.id,
+          name: dto.uuid,
+          type: 'documentClass',
+          hasChildren: true,
+        }))
+    );
   }
 
-  async getProcesses(): Promise<any[]> {
-    return [];
+  // ── Process ─────────────────────────────────────────────────
+
+  private async getProcesses(documentClassId: number): Promise<DipTreeNode[]> {
+    return this.invokeWithCache(
+      IpcChannels.BROWSE_GET_PROCESS_BY_DOCUMENT_CLASS,
+      { documentClassId },
+      this.TTL,
+      `processes:${documentClassId}`,
+      (dtos: ProcessDTO[]): DipTreeNode[] =>
+        dtos.map(dto => ({
+          id: dto.id,
+          name: dto.uuid,
+          type: 'process',
+          hasChildren: true,
+          isLoading: false,
+        }))
+    );
   }
 
-  async getDocuments(): Promise<any[]> {
-    return [];
+  // ── Document ─────────────────────────────────────────────────
+
+  private async getDocuments(processId: number): Promise<DipTreeNode[]> {
+    return this.invokeWithCache(
+      IpcChannels.BROWSE_GET_DOCUMENTS_BY_PROCESS,
+      { processId },
+      this.TTL,
+      `documents:${processId}`,
+      (dtos: DocumentDTO[]): DipTreeNode[] =>
+        dtos.map(dto => ({
+          id: dto.id,
+          name: dto.uuid,
+          type: 'document',
+          hasChildren: true,   // ha sempre file
+        }))
+    );
   }
 
-  // helper
-  private delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+  // ── File ─────────────────────────────────────────────────────
+
+  private async getFiles(documentId: number): Promise<DipTreeNode[]> {
+    return this.invokeWithCache(
+      IpcChannels.BROWSE_GET_FILE_BY_DOCUMENT,
+      { documentId },
+      this.TTL,
+      `files:${documentId}`,
+      (dtos: FileDTO[]): DipTreeNode[] =>
+        dtos.map(dto => ({
+          id: dto.id,
+          name: dto.filename,
+          type: 'file',
+          hasChildren: false,  // foglia
+        }))
+    );
+  }
+
+  // ── Infrastruttura ────────────────────────────────────────────
+
+  private async invokeWithCache<TDto, TResult>(
+    channel: string,
+    payload: unknown,
+    ttl: number,
+    cacheKey: string,
+    mapper: (dto: TDto) => TResult
+  ): Promise<TResult> {
+    const cached = this.cache.get<TResult>(cacheKey);
+    if (cached !== null) return cached;
+
+    try {
+      const dto = await this.bridge.invoke<TDto>(channel, payload);
+      const result = mapper(dto);
+      this.cache.set(cacheKey, result, ttl);
+      return result;
+    } catch (raw) {
+      throw this.errorHandler.handle(raw);
+    }
   }
 }

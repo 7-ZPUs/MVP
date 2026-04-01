@@ -11,11 +11,10 @@ describe('DipTreeNodeComponent', () => {
   let fixture: ComponentFixture<DipTreeNodeComponent>;
 
   const mockNode: DipTreeNode = {
-    id: 'node-1',
+    id: 1,
     name: 'Test Node',
-    type: 'class',
+    type: 'document',
     hasChildren: true,
-    isLoading: false,
   };
 
   const createFlatNode = (overrides = {}): FlatNode => ({

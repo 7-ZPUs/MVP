@@ -3,6 +3,7 @@ import { FlatNode } from "../../contracts/flat-node";
 import { DipTreeNode } from "../../contracts/dip-tree-node";
 import { CommonModule } from "@angular/common";
 import { InlineErrorComponent } from "./inline-error.component";
+import { NodeId } from "../../domain/types";
 
 @Component({
     selector: 'app-dip-tree-node',
@@ -12,7 +13,7 @@ import { InlineErrorComponent } from "./inline-error.component";
 })
 export class DipTreeNodeComponent {
     @Input() flatNode!: FlatNode;
-    @Output() toggle = new EventEmitter<string>();
+    @Output() toggle = new EventEmitter<NodeId>();
     @Output() nodeSelected = new EventEmitter<DipTreeNode>();
 
     public onToggle(event: MouseEvent): void {

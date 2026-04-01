@@ -1,0 +1,14 @@
+<span
+class="badge"
+[ngClass]="config.cssClass"
+[attr.role]="'img'"
+[attr.aria-label]="config.ariaLabel"
+>
+<!-- Icona: WCAG 1.4.1 – aria-hidden, non unico segnale -->
+<span class="badge__icon material-icons" aria-hidden="true">
+  {{ config.icon }}
+</span>
+<!-- Testo sempre visibile -->
+<span class="badge__label">{{ config.label }}</span>
+</span>
+`

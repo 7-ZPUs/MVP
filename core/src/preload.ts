@@ -1,11 +1,20 @@
 import { contextBridge, ipcRenderer } from "electron";
 
-// Expose a safe API to the renderer process
 contextBridge.exposeInMainWorld("electronAPI", {
-  send: (channel: string, data: any) => {
-    ipcRenderer.send(channel, data);
-  },
-  receive: (channel: string, func: (...args: any[]) => void) => {
-    ipcRenderer.on(channel, (event, ...args) => func(...args));
+  invoke: (channel: string, data: any) => {
+    const validChannels = [
+      "ipc:search:text",
+      "ipc:search:semantic",
+      "ipc:search:advanced",
+      "ipc:indexing:status",
+    ];
+
+    if (validChannels.includes(channel)) {
+      return ipcRenderer.invoke(channel, data);
+    } else {
+      return Promise.reject(
+        new Error(`Canale IPC non autorizzato: ${channel}`),
+      );
+    }
   },
 });

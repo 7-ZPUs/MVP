@@ -1,6 +1,6 @@
 <cdk-virtual-scroll-viewport itemSize="48">
   <app-dip-tree-node
-      *cdkVirtualFor="let flat of flatNodes"
+      *cdkVirtualFor="let flat of flatNodes()"
       [flatNode]="flat"
       (toggle)="toggleNode(flat.node.id)"
       (select)="selectNode(flat.node)">
