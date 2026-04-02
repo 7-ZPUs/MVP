@@ -13,7 +13,7 @@ import { IPackageReaderPort } from "../../../../src/repo/IPackageReaderPort";
 import { ExportFileUC } from "../../../../src/use-case/file/impl/ExportFileUC";
 import { Readable } from "node:stream";
 import { FileMapper } from "../../../../src/dao/mappers/FileMapper";
-import { ExportResult } from "../../../../src/value-objects/ExportResult";
+import { ExportResult } from "../../../../../shared/domain/ExportResult";
 
 describe("File use-cases", () => {
   // identifier: TU-S-browsing-96
