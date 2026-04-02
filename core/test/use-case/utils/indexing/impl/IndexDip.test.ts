@@ -10,7 +10,6 @@ import { DocumentRepository } from "../../../../../src/repo/impl/DocumentReposit
 import { FileRepository } from "../../../../../src/repo/impl/FileRepository";
 import { LocalPackageReaderAdapter } from "../../../../../src/repo/impl/LocalPackageReaderAdapter";
 import { XmlDipParser } from "../../../../../src/repo/impl/utils/XmlDipParser";
-import { DatabaseProvider } from "../../../../../src/repo/impl/DatabaseProvider";
 import { IFileSystemProvider } from "../../../../../src/repo/impl/utils/IFileSystemProvider";
 import { DipDAO } from "../../../../../src/dao/DipDAO";
 import { DocumentClassDAO } from "../../../../../src/dao/DocumentClassDAO";
@@ -26,19 +25,16 @@ describe("IndexDip", () => {
 
   beforeEach(() => {
     db = new Database(":memory:");
-    const dbProvider = { getDb: () => db } as unknown as DatabaseProvider;
     const schema = readFileSync("db/schema.sql", "utf-8");
     db.exec(schema);
 
-    const dipRepository = new DipRepository(new DipDAO(dbProvider));
+    const dipRepository = new DipRepository(new DipDAO(db));
     const documentClassRepository = new DocumentClassRepository(
-      new DocumentClassDAO(dbProvider),
+      new DocumentClassDAO(db),
     );
-    const processRepository = new ProcessRepository(new ProcessDAO(dbProvider));
-    const documentRepository = new DocumentRepository(
-      new DocumentDAO(dbProvider),
-    );
-    const fileRepository = new FileRepository(new FileDAO(dbProvider));
+    const processRepository = new ProcessRepository(new ProcessDAO(db));
+    const documentRepository = new DocumentRepository(new DocumentDAO(db));
+    const fileRepository = new FileRepository(new FileDAO(db));
 
     const parser = new XmlDipParser();
     fileSystemProvider = {

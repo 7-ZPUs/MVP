@@ -38,51 +38,49 @@ import { IpcChannels } from "../../../shared/ipc-channels";
 export class BrowsingIpcAdapter {
   static register(ipcMain: IpcMain): void {
     // ---- Documento use cases ----
-    const getDocByIdUC = container.resolve<IGetDocumentByIdUC>(
+    const getDocByIdUC: IGetDocumentByIdUC = container.resolve<IGetDocumentByIdUC>(
       DocumentoUC.GET_BY_ID,
     );
-    const getDocByProcessUC = container.resolve<IGetDocumentByProcessUC>(
+    const getDocByProcessUC: IGetDocumentByProcessUC = container.resolve<IGetDocumentByProcessUC>(
       DocumentoUC.GET_BY_PROCESS,
     );
-    const getDocByStatusUC = container.resolve<IGetDocumentByStatusUC>(
+    const getDocByStatusUC: IGetDocumentByStatusUC = container.resolve<IGetDocumentByStatusUC>(
       DocumentoUC.GET_BY_STATUS,
     );
 
     // ---- File use cases ----
-    const getFileByIdUC = container.resolve<IGetFileByIdUC>(FileUC.GET_BY_ID);
-    const getFileByDocUC = container.resolve<IGetFileByDocumentUC>(
+    const getFileByIdUC: IGetFileByIdUC = container.resolve<IGetFileByIdUC>(FileUC.GET_BY_ID);
+    const getFileByDocUC: IGetFileByDocumentUC = container.resolve<IGetFileByDocumentUC>(
       FileUC.GET_BY_DOCUMENT,
     );
-    const getFileByStatusUC = container.resolve<IGetFileByStatusUC>(
+    const getFileByStatusUC: IGetFileByStatusUC = container.resolve<IGetFileByStatusUC>(
       FileUC.GET_BY_STATUS,
     );
 
     // ---- Process use cases ----
-    const getProcessByIdUC = container.resolve<IGetProcessByIdUC>(
+    const getProcessByIdUC: IGetProcessByIdUC = container.resolve<IGetProcessByIdUC>(
       ProcessUC.GET_BY_ID,
     );
-    const getProcessByStatusUC = container.resolve<IGetProcessByStatusUC>(
+    const getProcessByStatusUC: IGetProcessByStatusUC = container.resolve<IGetProcessByStatusUC>(
       ProcessUC.GET_BY_STATUS,
     );
-    const getProcessByDocumentClassUC =
-      container.resolve<IGetProcessByDocumentClassUC>(
-        ProcessUC.GET_BY_DOCUMENT_CLASS,
-      );
+    const getProcessByDocumentClassUC: IGetProcessByDocumentClassUC = container.resolve<IGetProcessByDocumentClassUC>(
+      ProcessUC.GET_BY_DOCUMENT_CLASS,
+    );
 
     // ---- DocumentClass use cases ----
-    const getDocClassByDipIdUC = container.resolve<IGetDocumentClassByDipIdUC>(
+    const getDocClassByDipIdUC: IGetDocumentClassByDipIdUC = container.resolve<IGetDocumentClassByDipIdUC>(
       DocumentClassUC.GET_BY_DIP_ID,
     );
-    const getDocClassByStatusUC =
-      container.resolve<IGetDocumentClassByStatusUC>(
-        DocumentClassUC.GET_BY_STATUS,
-      );
-    const getDocClassByIdUC = container.resolve<IGetDocumentClassByIdUC>(
+    const getDocClassByStatusUC: IGetDocumentClassByStatusUC = container.resolve<IGetDocumentClassByStatusUC>(
+      DocumentClassUC.GET_BY_STATUS,
+    );
+    const getDocClassByIdUC: IGetDocumentClassByIdUC = container.resolve<IGetDocumentClassByIdUC>(
       DocumentClassUC.GET_BY_ID,
     );
 
-    const getDipByIdUC = container.resolve<IGetDipByIdUC>(DipUC.GET_BY_ID);
-    const getDipByStatusUC = container.resolve<IGetDipByStatusUC>(
+    const getDipByIdUC: IGetDipByIdUC = container.resolve<IGetDipByIdUC>(DipUC.GET_BY_ID);
+    const getDipByStatusUC: IGetDipByStatusUC = container.resolve<IGetDipByStatusUC>(
       DipUC.GET_BY_STATUS,
     );
 

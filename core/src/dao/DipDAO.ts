@@ -3,23 +3,16 @@ import Database from "better-sqlite3";
 
 import { Dip } from "../entity/Dip";
 import { IntegrityStatusEnum } from "../value-objects/IntegrityStatusEnum";
-import {
-  DATABASE_PROVIDER_TOKEN,
-  DatabaseProvider,
-} from "../repo/impl/DatabaseProvider";
 import { DipMapper, DipPersistenceRow } from "./mappers/DipMapper";
 import { IDipDAO } from "./IDipDAO";
+import { SQLITE_DB_TOKEN } from "../../../db/DatabaseBootstrap";
 
 @injectable()
 export class DipDAO implements IDipDAO {
-  private readonly db: Database.Database;
-
   constructor(
-    @inject(DATABASE_PROVIDER_TOKEN)
-    private readonly dbProvider: DatabaseProvider,
-  ) {
-    this.db = dbProvider.getDb();
-  }
+    @inject(SQLITE_DB_TOKEN)
+    private readonly db: Database.Database,
+  ) {}
 
   getById(id: number): Dip | null {
     const row = this.db

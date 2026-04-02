@@ -1,0 +1,3 @@
+- Rivedere injection nei DAO -> IDatabaseProvider, non DatabaseProvider
+- Rivedere negli ipc il fatto che usiamo container.resolve, invece che iniettare nel costruttore
+- Rivedere chiamate alla ricerca, binding dei filtri e il fatto che la stringa non deve essere contenuta 1:1, ma può essere una parte del valore (es. "nome" può generare come risultato "nomeDelDocumento")

@@ -10,10 +10,7 @@
  */
 import { inject, injectable } from "tsyringe";
 import Database from "better-sqlite3";
-import {
-  DATABASE_PROVIDER_TOKEN,
-  DatabaseProvider,
-} from "../repo/impl/DatabaseProvider";
+import { SQLITE_DB_TOKEN } from "../../../db/DatabaseBootstrap";
 import {
   DocumentMapper,
   DocumentPersistenceRow,
@@ -29,14 +26,10 @@ const METADATA_FK = "document_id";
 
 @injectable()
 export class DocumentDAO implements IDocumentDAO {
-  private readonly db: Database.Database;
-
   constructor(
-    @inject(DATABASE_PROVIDER_TOKEN)
-    private readonly dbProvider: DatabaseProvider,
-  ) {
-    this.db = dbProvider.getDb();
-  }
+    @inject(SQLITE_DB_TOKEN)
+    private readonly db: Database.Database,
+  ) {}
 
   // -------------------------------------------------------------------------
   // Private helpers
@@ -86,12 +79,35 @@ export class DocumentDAO implements IDocumentDAO {
     return rows.map((r) => this.rowToEntity(r));
   }
 
+  documentTypeToMetaKey(tipoDocumento: string): string | null {
+    switch (tipoDocumento) {
+      case "DOCUMENTO INFORMATICO":
+        return "DocumentoInformatico";
+      case "DOCUMENTO AMMINISTRATIVO INFORMATICO":
+        return "DocumentoAmministrativoInformatico";
+      case "AGGREGAZIONE DOCUMENTALE":
+        return "AggregazioneDocumentale";
+      default:
+        return null;
+    }
+  }
+
   searchDocument(filters: SearchFilters): Document[] {
     const conditions: string[] = [];
     const values: unknown[] = [];
+    const documentTypes = [
+      "DocumentoInformatico",
+      "DocumentoAmministrativoInformatico",
+      "AggregazioneDocumentale",
+    ];
 
     const addMeta = (key: string, value: unknown) => {
-      if (value === null || value === undefined) return;
+      if (
+        value === null ||
+        value === undefined ||
+        (!documentTypes.includes(key) && value === "")
+      )
+        return;
       conditions.push(`
             EXISTS (
                 SELECT 1 FROM document_metadata
@@ -106,9 +122,8 @@ export class DocumentDAO implements IDocumentDAO {
     // --- common ---
     const c = filters.common;
     if (c) {
-      addMeta("TipologiaDocumentale", c.tipoDocumento);
       addMeta("Note", c.note);
-      addMeta("ChiaveDescrittiva", c.chiaveDescrittiva?.oggetto);
+      addMeta("Oggetto", c.chiaveDescrittiva?.oggetto);
       addMeta("ParoleChiave", c.chiaveDescrittiva?.paroleChiave);
       addMeta("IndiceDiClassificazione", c.classificazione?.codice);
       addMeta("Descrizione", c.classificazione?.descrizione);
@@ -169,6 +184,13 @@ export class DocumentDAO implements IDocumentDAO {
     // --- custom ---
     if (filters.customMeta) {
       addMeta(filters.customMeta.field, filters.customMeta.value);
+    }
+
+    if (c.tipoDocumento) {
+      addMeta(
+        this.documentTypeToMetaKey(c.tipoDocumento) || "",
+        "",
+      );
     }
 
     if (conditions.length === 0) return [];

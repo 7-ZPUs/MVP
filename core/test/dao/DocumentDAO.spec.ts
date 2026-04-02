@@ -4,7 +4,6 @@ import Database from "better-sqlite3";
 
 import { DocumentDAO } from "../../src/dao/DocumentDAO";
 import { Document } from "../../src/entity/Document";
-import { DatabaseProvider } from "../../src/repo/impl/DatabaseProvider";
 import { IntegrityStatusEnum } from "../../src/value-objects/IntegrityStatusEnum";
 import { Metadata, MetadataType } from "../../src/value-objects/Metadata";
 import { createTestDb } from "./helpers/testDb";
@@ -32,7 +31,7 @@ describe("DocumentDAO", () => {
 
   beforeEach(() => {
     db = createTestDb();
-    dao = new DocumentDAO({ getDb: () => db } as unknown as DatabaseProvider);
+    dao = new DocumentDAO(db);
 
     const dipId = Number(
       db

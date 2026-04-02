@@ -4,12 +4,6 @@ import { container } from "tsyringe";
 // ---- Services ----
 import { HASHING_SERVICE_TOKEN } from "./services/IHashingService";
 
-// ---- Database provider ----
-import {
-  DATABASE_PROVIDER_TOKEN,
-  DatabaseProvider,
-} from "./repo/impl/DatabaseProvider";
-
 // ---- AI adapter ----
 import { WORD_EMBEDDING_PORT_TOKEN } from "./repo/IWordEmbedding";
 import { WordEmbedding } from "./repo/impl/WordEmbedding";
@@ -94,9 +88,6 @@ container.register(PACKAGE_READER_PORT_TOKEN, {
 container.register(EXPORT_TOKEN, {
   useClass: LocalExportPort,
 });
-container.register(DATABASE_PROVIDER_TOKEN, {
-  useClass: DatabaseProvider,
-});
 container.register(TRANSACTION_MANAGER_TOKEN, {
   useClass: SqliteTransactionManager,
 });
@@ -118,7 +109,6 @@ container.register(DIP_PARSER_TOKEN, { useClass: XmlDipParser });
 
 // Services
 container.registerSingleton(WORD_EMBEDDING_PORT_TOKEN, WordEmbedding);
-container.registerSingleton(DATABASE_PROVIDER_TOKEN, DatabaseProvider);
 container.register(HASHING_SERVICE_TOKEN, { useClass: HashingService });
 
 // Repositories

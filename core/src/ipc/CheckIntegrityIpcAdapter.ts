@@ -30,27 +30,27 @@ import { IpcChannels } from '../../../shared/ipc-channels';
 export class CheckIntegrityIpcAdapter {
     static register(ipcMain: IpcMain): void {
         // ---- Documento use case ----
-        const checkDocumentIntegrityUC = container.resolve<ICheckDocumentIntegrityStatusUC>(
+        const checkDocumentIntegrityUC: ICheckDocumentIntegrityStatusUC = container.resolve<ICheckDocumentIntegrityStatusUC>(
             DocumentoUC.CHECK_INTEGRITY_STATUS
         );
 
         // ---- File use case ----
-        const checkFileIntegrityUC = container.resolve<ICheckFileIntegrityStatusUC>(
+        const checkFileIntegrityUC: ICheckFileIntegrityStatusUC = container.resolve<ICheckFileIntegrityStatusUC>(
             FileUC.CHECK_INTEGRITY_STATUS
         );
 
         // ---- Process use case ----
-        const checkProcessIntegrityUC = container.resolve<ICheckProcessIntegrityStatusUC>(
+        const checkProcessIntegrityUC: ICheckProcessIntegrityStatusUC = container.resolve<ICheckProcessIntegrityStatusUC>(
             ProcessUC.CHECK_INTEGRITY_STATUS
         );
 
         // ---- DocumentClass use case ----
-        const checkDocumentClassIntegrityUC = container.resolve<ICheckDocumentClassIntegrityStatusUC>(
+        const checkDocumentClassIntegrityUC: ICheckDocumentClassIntegrityStatusUC = container.resolve<ICheckDocumentClassIntegrityStatusUC>(
             DocumentClassUC.CHECK_INTEGRITY_STATUS
         );
 
         // ---- Dip use case ----
-        const checkDipIntegrityUC = container.resolve<ICheckDipIntegrityStatusUC>(
+        const checkDipIntegrityUC: ICheckDipIntegrityStatusUC = container.resolve<ICheckDipIntegrityStatusUC>(
             DipUC.CHECK_INTEGRITY_STATUS
         );
 

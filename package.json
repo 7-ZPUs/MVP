@@ -6,7 +6,10 @@
   "scripts": {
     "setup:download-models": "ts-node --project tsconfig.json core/src/scripts/download-models.ts",
     "copy:models": "cpx \"core/src/models/**/*\" dist/core/src/models",
-    "prestart": "electron-rebuild -f -w better-sqlite3",
+    "rebuild:native:electron": "electron-rebuild -f -w better-sqlite3",
+    "rebuild:native:node": "npm rebuild better-sqlite3 --build-from-source",
+    "env:electron": "npm run rebuild:native:electron",
+    "env:node": "npm run rebuild:native:node",
     "build:core": "tsc --project tsconfig.core.json && npm run copy:models",
     "build:renderer": "cd renderer && npx ng build",
     "build:main": "tsc --project tsconfig.json",
@@ -38,7 +41,7 @@
     "reflect-metadata": "^0.2.2",
     "sharp": "^0.34.5",
     "sqlite-vss": "^0.1.2",
-    "tsyringe": "^4.8.0"
+    "tsyringe": "^4.10.0"
   },
   "devDependencies": {
     "@angular/cli": "^21.2.5",

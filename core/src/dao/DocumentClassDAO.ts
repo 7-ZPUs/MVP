@@ -1,9 +1,6 @@
 import { inject, injectable } from "tsyringe";
 import Database from "better-sqlite3";
-import {
-  DATABASE_PROVIDER_TOKEN,
-  DatabaseProvider,
-} from "../repo/impl/DatabaseProvider";
+import { SQLITE_DB_TOKEN } from "../../../db/DatabaseBootstrap";
 import { DocumentClass } from "../entity/DocumentClass";
 import {
   DocumentClassMapper,
@@ -14,14 +11,10 @@ import { IDocumentClassDAO } from "./IDocumentClassDAO";
 
 @injectable()
 export class DocumentClassDAO implements IDocumentClassDAO {
-  private readonly db: Database.Database;
-
   constructor(
-    @inject(DATABASE_PROVIDER_TOKEN)
-    private readonly dbProvider: DatabaseProvider,
-  ) {
-    this.db = dbProvider.getDb();
-  }
+    @inject(SQLITE_DB_TOKEN)
+    private readonly db: Database.Database,
+  ) {}
 
   private rowToEntity(row: DocumentClassPersistenceRow): DocumentClass {
     return DocumentClassMapper.fromPersistence(row);

@@ -1,9 +1,6 @@
 import Database from "better-sqlite3";
 import { injectable, inject } from "tsyringe";
-import {
-  DATABASE_PROVIDER_TOKEN,
-  DatabaseProvider,
-} from "../repo/impl/DatabaseProvider";
+import { SQLITE_DB_TOKEN } from "../../../db/DatabaseBootstrap";
 import { FilePersistenceRow, FileMapper } from "./mappers/FileMapper";
 import { File } from "../entity/File";
 import { IntegrityStatusEnum } from "../value-objects/IntegrityStatusEnum";
@@ -11,14 +8,10 @@ import { IFileDAO } from "./IFileDAO";
 
 @injectable()
 export class FileDAO implements IFileDAO {
-  private readonly db: Database.Database;
-
   constructor(
-    @inject(DATABASE_PROVIDER_TOKEN)
-    private readonly dbProvider: DatabaseProvider,
-  ) {
-    this.db = dbProvider.getDb();
-  }
+    @inject(SQLITE_DB_TOKEN)
+    private readonly db: Database.Database,
+  ) {}
 
   private rowEntity(row: FilePersistenceRow): File {
     return FileMapper.fromPersistence(row);

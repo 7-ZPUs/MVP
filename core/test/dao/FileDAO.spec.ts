@@ -4,7 +4,6 @@ import Database from "better-sqlite3";
 
 import { FileDAO } from "../../src/dao/FileDAO";
 import { File } from "../../src/entity/File";
-import { DatabaseProvider } from "../../src/repo/impl/DatabaseProvider";
 import { IntegrityStatusEnum } from "../../src/value-objects/IntegrityStatusEnum";
 import { createTestDb, seedHierarchy } from "./helpers/testDb";
 
@@ -16,7 +15,7 @@ describe("FileDAO", () => {
 
   beforeEach(() => {
     db = createTestDb();
-    dao = new FileDAO({ getDb: () => db } as unknown as DatabaseProvider);
+    dao = new FileDAO(db);
 
     const seed = seedHierarchy(db);
     documentUuid = seed.documentUuid;

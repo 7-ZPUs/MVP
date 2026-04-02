@@ -59,22 +59,22 @@ const emptyFilters: SearchFilters = {
 
 export class SearchIpcAdapter {
   static register(ipcMain: IpcMain): void {
-    const searchClassesUC = container.resolve<ISearchDocumentalClassUC>(
+    const searchClassesUC: ISearchDocumentalClassUC = container.resolve<ISearchDocumentalClassUC>(
       DocumentClassUC.SEARCH_BY_DOCUMENTAL_CLASS_NAME,
     );
-    const searchProcessiUC = container.resolve<ISearchProcessUC>(
+    const searchProcessiUC: ISearchProcessUC = container.resolve<ISearchProcessUC>(
       ProcessUC.SEARCH_BY_PROCESS_UUID,
     );
-    const searchDocumentsUC = container.resolve<ISearchDocumentsUC>(
+    const searchDocumentsUC: ISearchDocumentsUC = container.resolve<ISearchDocumentsUC>(
       DocumentoUC.SEARCH_BY_FILTERS,
     );
-    const searchSemanticUC = container.resolve<ISearchSemanticUC>(
+    const searchSemanticUC: ISearchSemanticUC = container.resolve<ISearchSemanticUC>(
       DocumentoUC.SEARCH_SEMANTIC,
     );
-    const aiAdapter = container.resolve<IWordEmbedding>(
+    const aiAdapter: IWordEmbedding = container.resolve<IWordEmbedding>(
       WORD_EMBEDDING_PORT_TOKEN,
     );
-    const documentRepo = container.resolve<IDocumentRepository>(
+    const documentRepo: IDocumentRepository = container.resolve<IDocumentRepository>(
       DOCUMENTO_REPOSITORY_TOKEN,
     );
 

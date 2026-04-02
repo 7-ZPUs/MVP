@@ -1,9 +1,6 @@
 import Database from "better-sqlite3";
 import { injectable, inject } from "tsyringe";
-import {
-  DATABASE_PROVIDER_TOKEN,
-  DatabaseProvider,
-} from "../repo/impl/DatabaseProvider";
+import { SQLITE_DB_TOKEN } from "../../../db/DatabaseBootstrap";
 import { Process } from "../entity/Process";
 import { IntegrityStatusEnum } from "../value-objects/IntegrityStatusEnum";
 import { ProcessMapper, ProcessPersistenceRow } from "./mappers/ProcessMapper";
@@ -15,14 +12,10 @@ const METADATA_FK = "process_id";
 
 @injectable()
 export class ProcessDAO implements IProcessDAO {
-  private readonly db: Database.Database;
-
   constructor(
-    @inject(DATABASE_PROVIDER_TOKEN)
-    private readonly dbProvider: DatabaseProvider,
-  ) {
-    this.db = dbProvider.getDb();
-  }
+    @inject(SQLITE_DB_TOKEN)
+    private readonly db: Database.Database,
+  ) {}
 
   private rowToEntity(row: ProcessPersistenceRow): Process {
     const metadata = loadMetadata(this.db, METADATA_TABLE, METADATA_FK, row.id);
@@ -59,7 +52,7 @@ export class ProcessDAO implements IProcessDAO {
     return rows.map((r) => this.rowToEntity(r));
   }
 
-  searchProcesses(uuid: string): Process[]{
+  searchProcesses(uuid: string): Process[] {
     const rows = this.db
       .prepare<
         [string],

@@ -1,11 +1,32 @@
 import Database from "better-sqlite3";
 import { existsSync, readFileSync, rmSync } from "node:fs";
 import path from "node:path";
-import { inject } from "tsyringe";
+import { container, inject } from "tsyringe";
 import {
   INDEX_DIP_TOKEN,
   IIndexDip,
 } from "../core/src/use-case/utils/indexing/IIndexDip";
+
+export const SQLITE_DB_TOKEN = Symbol("SqliteDatabase");
+
+function sqliteVssPackageName(
+  platformName: NodeJS.Platform,
+  archName: string,
+): string {
+  const osName = platformName === "win32" ? "windows" : platformName;
+  return `sqlite-vss-${osName}-${archName}`;
+}
+
+function loadSqliteVssExtensions(db: Database.Database): void {
+  const packageName = sqliteVssPackageName(process.platform, process.arch);
+  const packageJsonPath = require.resolve(`${packageName}/package.json`);
+  const packageDir = path.dirname(packageJsonPath);
+  const vectorPath = path.join(packageDir, "lib", "vector0");
+  const vssPath = path.join(packageDir, "lib", "vss0");
+
+  db.loadExtension(vectorPath);
+  db.loadExtension(vssPath);
+}
 
 export class ApplicationBootstrapAdapter {
   constructor(
@@ -15,7 +36,8 @@ export class ApplicationBootstrapAdapter {
 
   async bootstrap(dipPath: string): Promise<void> {
     const appBasePath = this.getApplicationBasePath();
-    this.bootstrapDatabase(appBasePath);
+    const dbPath = this.bootstrapDatabase(appBasePath);
+    this.registerRuntimeDatabase(dbPath);
 
     const resolvedDipPath = path.resolve(dipPath);
     if (!existsSync(resolvedDipPath)) {
@@ -25,7 +47,7 @@ export class ApplicationBootstrapAdapter {
     await this.indexDip.execute(resolvedDipPath);
   }
 
-  bootstrapDatabase(appBasePath: string): void {
+  bootstrapDatabase(appBasePath: string): string {
     const schemaPath = path.join(appBasePath, "db", "schema.sql");
     const dbPath = path.join(appBasePath, "dip-viewer.db");
 
@@ -37,6 +59,24 @@ export class ApplicationBootstrapAdapter {
     db.exec(schema);
     db.close();
     console.log(`[BOOTSTRAP] Database bootstrapped successfully at ${dbPath}.`);
+    return dbPath;
+  }
+
+  private registerRuntimeDatabase(dbPath: string): void {
+    const db = new Database(dbPath);
+    db.pragma("journal_mode = WAL");
+    db.pragma("foreign_keys = ON");
+
+    try {
+      loadSqliteVssExtensions(db);
+    } catch (error) {
+      console.warn(
+        "[BOOTSTRAP] sqlite-vss extensions not loaded; vector search disabled:",
+        error instanceof Error ? error.message : String(error),
+      );
+    }
+
+    container.register(SQLITE_DB_TOKEN, { useValue: db });
   }
 
   private getApplicationBasePath(): string {

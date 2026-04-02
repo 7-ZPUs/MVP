@@ -7,7 +7,7 @@ import { FileUC }             from '../use-case/file/tokens';
 
 export class FileViewerIpcAdapter {
     static register(ipcMain: IpcMain): void {
-        const exportFileUC = container.resolve<IExportFileUC>(FileUC.EXPORT_FILE);
+        const exportFileUC: IExportFileUC = container.resolve<IExportFileUC>(FileUC.EXPORT_FILE);
 
         // non ha UC dedicati, perché è una semplice operazione di sistema che non coinvolge la logica di dominio
         ipcMain.handle(IpcChannels.FILE_OPEN_EXTERNAL, async (_event, filePath: string) => {

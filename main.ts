@@ -3,7 +3,7 @@
  *
  * Responsibilities:
  *  1. Bootstrap the DI container (side-effectful imports, reflect-metadata).
- *  2. Initialise the database (async, via DatabaseProvider.init()).
+ *  2. Initialise the database (async, via ApplicationBootstrapAdapter).
  *  3. Register all IPC adapters so that renderer IPC calls are handled.
  *  4. Create the BrowserWindow.
  *
@@ -20,7 +20,6 @@ import { app, BrowserWindow, ipcMain } from "electron";
 import { existsSync, readdirSync } from "node:fs";
 import * as path from "node:path";
 import { ApplicationBootstrapAdapter } from "./db/DatabaseBootstrap";
-import { DATABASE_PROVIDER_PATH_TOKEN } from "./core/src/repo/impl/DatabaseProvider";
 import {
   INDEX_DIP_TOKEN,
   IIndexDip,
@@ -124,12 +123,6 @@ function exportDb(dstPath: string): void {
 (async () => {
   await app.whenReady();
 
-  // Ensure all DAOs/repositories use the same DB file created by bootstrap.
-  const appDbPath = path.resolve(process.cwd(), "dip-viewer.db");
-  container.register(DATABASE_PROVIDER_PATH_TOKEN, {
-    useValue: appDbPath,
-  });
-
   console.warn("[BOOTSTRAP] NODE_ENV =", process.env["NODE_ENV"]);
   const lazyIndexDip: IIndexDip = {
     execute: (dipPath: string) =>
@@ -141,13 +134,13 @@ function exportDb(dstPath: string): void {
     performance.mark("bootstrap-start");
     await bootstrapAdapter.bootstrap(dipPath);
     performance.mark("bootstrap-end");
-    performance.measure(
-      "DIP indexing",
-      "bootstrap-start",
-      "bootstrap-end",
+    performance.measure("DIP indexing", "bootstrap-start", "bootstrap-end");
+    console.warn(
+      "[BOOTSTRAP] DIP indexing completed successfully in",
+      performance.getEntriesByName("DIP indexing")[0].duration,
+      "ms.",
     );
-    console.warn("[BOOTSTRAP] DIP indexing completed successfully in", performance.getEntriesByName("DIP indexing")[0].duration, "ms.");
-    if(process.env["NODE_ENV"] === "development"){
+    if (process.env["NODE_ENV"] === "development") {
       exportDb("/workspaces/MVP/dip-viewer-exported.db");
     }
   } catch (error) {

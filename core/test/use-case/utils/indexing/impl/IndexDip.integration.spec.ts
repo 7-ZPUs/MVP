@@ -13,7 +13,6 @@ import { DocumentClassRepository } from "../../../../../src/repo/impl/DocumentCl
 import { ProcessRepository } from "../../../../../src/repo/impl/ProcessRepository";
 import { DocumentRepository } from "../../../../../src/repo/impl/DocumentRepository";
 import { FileRepository } from "../../../../../src/repo/impl/FileRepository";
-import { DatabaseProvider } from "../../../../../src/repo/impl/DatabaseProvider";
 import { IntegrityStatusEnum } from "../../../../../src/value-objects/IntegrityStatusEnum";
 import { MetadataType } from "../../../../../src/value-objects/Metadata";
 import { Document } from "../../../../../src/entity/Document";
@@ -24,6 +23,7 @@ import { DocumentDAO } from "../../../../../src/dao/DocumentDAO";
 import { ProcessDAO } from "../../../../../src/dao/ProcessDAO";
 import { readFileSync } from "node:fs";
 import { nukeTestDb } from "../../../../dao/helpers/testDb";
+import Database from "better-sqlite3";
 
 // ---------------------------------------------------------------------------
 // Realistic DiP index XML — one DocumentClass, one AiP, two Documents
@@ -156,7 +156,7 @@ async function setupRealisticDip(baseDir: string): Promise<string> {
 // ---------------------------------------------------------------------------
 describe("Index use-case integration tests", () => {
   let testHomeDir: string;
-  let dbProvider: DatabaseProvider;
+  let db: Database.Database;
   let dipRepository: DipRepository;
   let documentClassRepository: DocumentClassRepository;
   let processRepository: ProcessRepository;
@@ -169,10 +169,10 @@ describe("Index use-case integration tests", () => {
     const dbPath = path.join(testHomeDir, ".dip-viewer", "dip-viewer.db");
     await fs.mkdir(path.dirname(dbPath), { recursive: true });
 
-    dbProvider = new DatabaseProvider(dbPath);
+    db = new Database(dbPath);
     const schema = readFileSync("db/schema.sql", "utf-8");
-    nukeTestDb(dbProvider.getDb());
-    dbProvider.getDb().exec(schema);
+    nukeTestDb(db);
+    db.exec(schema);
 
     const packageReader = new LocalPackageReaderAdapter(
       new XmlDipParser(),
@@ -180,14 +180,14 @@ describe("Index use-case integration tests", () => {
       new DataMapper(),
     );
 
-    dipRepository = new DipRepository(new DipDAO(dbProvider));
+    dipRepository = new DipRepository(new DipDAO(db));
     documentClassRepository = new DocumentClassRepository(
-      new DocumentClassDAO(dbProvider),
+      new DocumentClassDAO(db),
     );
 
-    processRepository = new ProcessRepository(new ProcessDAO(dbProvider));
-    documentRepository = new DocumentRepository(new DocumentDAO(dbProvider));
-    fileRepository = new FileRepository(new FileDAO(dbProvider));
+    processRepository = new ProcessRepository(new ProcessDAO(db));
+    documentRepository = new DocumentRepository(new DocumentDAO(db));
+    fileRepository = new FileRepository(new FileDAO(db));
 
     const useCase = new IndexDip(
       packageReader,
@@ -203,7 +203,7 @@ describe("Index use-case integration tests", () => {
   });
 
   afterAll(async () => {
-    dbProvider?.getDb().close();
+    db?.close();
     await fs.rm(testHomeDir, { recursive: true, force: true });
   });
 

@@ -16,6 +16,7 @@ import { IFilterValidator } from '../../../../validation/contracts/filter-valida
   standalone: true,
   imports: [AdvancedFilterPanelComponent, JsonPipe],
   templateUrl: './search-page.html',
+  styleUrl: './search-page.scss',
 })
 export class SearchPageComponent implements OnInit {
   protected readonly searchFacade = inject(SearchFacade);
