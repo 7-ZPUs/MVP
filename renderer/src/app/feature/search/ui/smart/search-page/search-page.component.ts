@@ -99,19 +99,22 @@ export class SearchPageComponent implements OnInit {
 
   public onResultSelected(result: SearchResult): void {
     const id = result.documentId;
-    let type: string;
-    if (result.type === 'AGGREGAZIONE_DOCUMENTALE') {
-      type = 'AGGREGATE';
-    } else if (
-      result.type === 'DOCUMENTO_INFORMATICO' ||
-      result.type === 'DOCUMENTO_AMMINISTRATIVO_INFORMATICO'
-    ) {
-      type = 'DOCUMENT';
-    } else {
-      console.warn('Unknown result type:', result.type);
+
+    const routingMap: Record<string, string> = {
+      'AGGREGAZIONE_DOCUMENTALE': 'AGGREGATE',
+      'DOCUMENTO_INFORMATICO': 'DOCUMENT',
+      'DOCUMENTO_AMMINISTRATIVO_INFORMATICO': 'DOCUMENT',
+      'PROCESSO': 'PROCESS',
+      'CLASSE_DOCUMENTALE': 'CLASS'
+    };
+    
+    const targetRoute = routingMap[result.type];
+
+    if (!targetRoute) {
+      console.warn(`Tipo di documento sconosciuto: ${result.type}. Impossibile determinare la rotta di destinazione.`);
       return;
     }
-
-    this.router.navigate(['/detail/', type, id]);
+        
+    this.router.navigate(['/detail/', targetRoute, id]);
   }
 }

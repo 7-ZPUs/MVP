@@ -16,7 +16,7 @@ export class SearchDocumentsUC implements ISearchDocumentsUC {
         return results.map((document) => {
             const metadata = document.getMetadata();
             return {
-                documentId: document.getUuid(),
+                documentId: String(document.getId()),
                 name:  metadata.findNodeByName('NomeDelDocumento')?.getStringValue()  ?? '',
                 type:  metadata.findNodeByName('tipoDocumento')?.getStringValue() ?? '',
                 score: null,

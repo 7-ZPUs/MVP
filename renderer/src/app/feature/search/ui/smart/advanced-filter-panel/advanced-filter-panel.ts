@@ -29,6 +29,7 @@ import { DiDaiFiltersComponent } from '../../dumb/di-dai-filters.component/di-da
 import { AggregateFiltersComponent } from '../../dumb/aggregate-filters.component/aggregate-filters.component';
 import { CustomMetaFiltersComponent } from '../../dumb/custom-meta-filters.component/custom-meta-filters.component';
 import { SubjectFiltersComponent } from '../../dumb/subject-filters.component/subject-filters.component';
+import { FilterRulesManager, FilterUIState } from './filter-rules.manager';
 
 @Component({
   selector: 'app-advanced-filter-panel',
@@ -84,8 +85,12 @@ export class AdvancedFilterPanelComponent implements OnInit, OnChanges {
 
   public panelForm!: FormGroup;
 
-  public disableDiDai = false;
-  public disableAggregate = false;
+  public uiState: FilterUIState = {
+    disableAggregate: false,
+    disableDiDai: false,
+    motivoBloccoAggregate: '',
+    motivoBloccoDiDai: '',
+  };
 
   constructor(private readonly fb: FormBuilder) {}
 
@@ -99,23 +104,13 @@ export class AdvancedFilterPanelComponent implements OnInit, OnChanges {
     });
 
     this.panelForm.valueChanges.subscribe((values) => {
-      const tipoDocumento = values.common?.tipoDocumento;
-      const isDiDaiRelevant = tipoDocumento === DocumentType.DOCUMENTO_AMMINISTRATIVO_INFORMATICO || tipoDocumento === DocumentType.DOCUMENTO_INFORMATICO;
-      const isAggregateRelevant = tipoDocumento === DocumentType.AGGREGAZIONE_DOCUMENTALE;
-
-      const hasDiDaiValues = Object.keys(values.diDai || {}).length > 0;
-      const hasAggregateValues = Object.keys(values.aggregate || {}).length > 0;
-
-      this.disableAggregate = isAggregateRelevant || hasDiDaiValues;
-      this.disableDiDai = isDiDaiRelevant || hasAggregateValues;
-
+      this.uiState = FilterRulesManager.calculateUIState(values);
       this.validateAndEmit(values);
     });
   }
 
   public ngOnChanges(changes: SimpleChanges): void {
-    if (changes['externalValidation']?.currentValue?.isValid 
-      === false) {
+    if (changes['externalValidation']?.currentValue?.isValid === false) {
       this.isExpanded = true;
     }
   }

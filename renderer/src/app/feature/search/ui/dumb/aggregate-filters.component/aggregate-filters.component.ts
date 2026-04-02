@@ -33,6 +33,7 @@ export class AggregateFiltersComponent implements OnChanges, OnDestroy {
   @Input() filters: AggregateFilterValues = {} as AggregateFilterValues;
   @Input() validationResult: ValidationResult | null = null;
   @Input() disabled: boolean = false;
+  @Input() disabledReason: string = '';
 
   @Output() filtersChanged = new EventEmitter<AggregateFilterValues>();
 

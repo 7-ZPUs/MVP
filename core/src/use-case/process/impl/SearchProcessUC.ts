@@ -14,13 +14,13 @@ export class SearchProcessUC implements ISearchProcessUC {
 
     async execute(uuid: string): Promise<SearchResult[]> {
         const result = this.repo.searchProcesses(uuid);
-        return result.map( (process) => {
+        return result.map((process) => {
             const metadata = process.getMetadata();
             return {
-                documentId: String(process.getId() ?? ''),
-                name:  metadata.findNodeByName('NomeDelDocumento')?.getStringValue()  ?? '',
-                type:  metadata.findNodeByName('tipoDocumento')?.getStringValue() ?? '',
-                score : null,
+                documentId: process.getId.toString(),
+                name: metadata.findNodeByName('name')?.getStringValue() ?? '',
+                type: metadata.findNodeByName('type')?.getStringValue() ?? '',
+                score: null,
             };
         });
     }
