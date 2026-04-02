@@ -51,7 +51,7 @@ const emptyFilters: SearchFilters = {
     procedimento: null,
     assegnazione: null,
   },
-  subject: null,
+  subject: [],
   customMeta: null,
 };
 

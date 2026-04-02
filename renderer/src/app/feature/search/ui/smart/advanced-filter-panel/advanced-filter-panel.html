@@ -86,7 +86,7 @@
 
       <div class="filter-section" style="margin-bottom: 1.5rem">
         <app-subject-filters
-          [subject]="filters.subject || null"
+          [subject]="filters.subject || []"
           [validationResult]="effectiveValidationResult"
           (subjectChanged)="onSubjectChanged($event)"
         >

@@ -100,7 +100,7 @@ export class AdvancedFilterPanelComponent implements OnInit, OnChanges {
       diDai: [this.filters?.diDai || {}],
       aggregate: [this.filters?.aggregate || {}],
       customMeta: [this.filters?.customMeta || null],
-      subject: [this.filters?.subject || null],
+      subject: [this.filters?.subject || []],
     });
 
     this.panelForm.valueChanges.subscribe((values) => {
@@ -139,7 +139,7 @@ export class AdvancedFilterPanelComponent implements OnInit, OnChanges {
     this.panelForm.patchValue({ customMeta: entries }, { emitEvent: true });
   }
 
-  public onSubjectChanged(subject: SubjectCriteria): void {
+  public onSubjectChanged(subject: SubjectCriteria[]): void {
     const updatedFilters = { ...this.filters, subject };
     this.filtersChanged.emit(updatedFilters);
   }
