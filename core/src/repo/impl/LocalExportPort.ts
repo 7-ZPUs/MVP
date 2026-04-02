@@ -1,5 +1,5 @@
 import { injectable } from "tsyringe";
-import { ExportResult } from "../../value-objects/ExportResult";
+import { ExportResult } from "../../../../shared/domain/ExportResult";
 import { IExportPort } from "../IExportPort";
 import { createWriteStream } from "node:fs";
 import { pipeline } from "node:stream/promises";
