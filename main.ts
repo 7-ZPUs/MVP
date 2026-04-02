@@ -53,7 +53,7 @@ function createWindow(): BrowserWindow {
     },
   });
   // In development load the Angular dev server; in production load the built index.
-  if (process.env["NODE_ENV"] === "development") {
+  if (process.env["SERVE_FRONTEND"] === "true") {
     win.loadURL("http://localhost:4200");
   } else {
     // Angular builds to dist/renderer/browser/ (outputPath set in renderer/angular.json)
@@ -141,13 +141,13 @@ function exportDb(dstPath: string): void {
     performance.mark("bootstrap-start");
     await bootstrapAdapter.bootstrap(dipPath);
     performance.mark("bootstrap-end");
-    performance.measure(
-      "DIP indexing",
-      "bootstrap-start",
-      "bootstrap-end",
+    performance.measure("DIP indexing", "bootstrap-start", "bootstrap-end");
+    console.warn(
+      "[BOOTSTRAP] DIP indexing completed successfully in",
+      performance.getEntriesByName("DIP indexing")[0].duration,
+      "ms.",
     );
-    console.warn("[BOOTSTRAP] DIP indexing completed successfully in", performance.getEntriesByName("DIP indexing")[0].duration, "ms.");
-    if(process.env["NODE_ENV"] === "development"){
+    if (process.env["NODE_ENV"] === "development") {
       exportDb("/workspaces/MVP/dip-viewer-exported.db");
     }
   } catch (error) {
@@ -158,7 +158,7 @@ function exportDb(dstPath: string): void {
   }
 
   // Register all IPC adapters before creating the window
-  BrowsingIpcAdapter.register(ipcMain);
+  BrowsingIpcAdapter.register(ipcMain, dipPath);
   CheckIntegrityIpcAdapter.register(ipcMain);
   SearchIpcAdapter.register(ipcMain);
   FileViewerIpcAdapter.register(ipcMain);

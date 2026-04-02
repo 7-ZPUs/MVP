@@ -42,7 +42,6 @@ export interface ChiaveDescrittivaDTO {
   paroleChiave?: string; // Fino a 5 parole [cite: 35, 36]
 }
 
-// Semplificazione dei Soggetti per l'esempio (L'XSD ha molte varianti PF, PG, ecc.) [cite: 18, 19, 20]
 export interface SoggettoDTO {
   tipoRuolo: string;
   denominazione?: string;
@@ -63,7 +62,11 @@ export interface DocumentIndexEntryDTO {
   impronta?: string; // Base64 [cite: 43]
 }
 
-// --- ROOT DTO DELL'AGGREGAZIONE (FASCICOLO) ---
+export interface CustomMetadataEntry {
+  nome: string;
+  valore: string;
+}
+
 export interface AggregateDetailDTO {
   idAgg: IdAggDTO; // [cite: 14]
   tipologiaFascicolo?: TipologiaFascicoloEnum; // [cite: 14]
@@ -78,6 +81,7 @@ export interface AggregateDetailDTO {
   posizioneFisicaAggregazioneDocumentale?: string; // [cite: 15]
   tempoDiConservazione?: number; // [cite: 16]
   note?: string; // [cite: 16]
+  customMetadata?: CustomMetadataEntry[]; // ADDED NEW CATCH-ALL METADATA
 
   // Tabella laterale visiva
   indiceDocumenti: DocumentIndexEntryDTO[]; // [cite: 15]

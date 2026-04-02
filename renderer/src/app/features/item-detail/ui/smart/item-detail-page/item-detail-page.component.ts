@@ -114,7 +114,7 @@ import { DocumentIndexComponent } from '../../../../aggregate/components/documen
         overflow: hidden;
       }
       .left-panel {
-        width: 400px;
+        width: 1700px;
         flex-shrink: 0;
         background: white;
         z-index: 10;

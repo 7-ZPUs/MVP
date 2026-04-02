@@ -36,7 +36,7 @@ import { DipUC } from "../use-case/dip/token";
 import { IpcChannels } from "../../../shared/ipc-channels";
 
 export class BrowsingIpcAdapter {
-  static register(ipcMain: IpcMain): void {
+  static register(ipcMain: IpcMain, dipPath: string = process.cwd()): void {
     // ---- Documento use cases ----
     const getDocByIdUC = container.resolve<IGetDocumentByIdUC>(
       DocumentoUC.GET_BY_ID,
@@ -124,6 +124,23 @@ export class BrowsingIpcAdapter {
       const file = getFileByIdUC.execute(id);
       return file ? EntityToDtoConverter.fileToDto(file) : null;
     });
+
+    ipcMain.handle(
+      IpcChannels.BROWSE_GET_FILE_BUFFER_BY_ID,
+      (_event, id: number) => {
+        const file = getFileByIdUC.execute(id);
+        if (!file) return null;
+        const fs = require("fs");
+        const path = require("path");
+        try {
+          const absolutePath = path.resolve(dipPath, file.getPath());
+          return fs.readFileSync(absolutePath);
+        } catch (err) {
+          console.error("Error reading file buffer", err);
+          return null;
+        }
+      },
+    );
 
     ipcMain.handle(
       IpcChannels.BROWSE_GET_FILE_BY_DOCUMENT,

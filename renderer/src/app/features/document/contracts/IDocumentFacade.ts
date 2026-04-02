@@ -3,7 +3,7 @@ import { DocumentState } from '../domain/document.models';
 
 export interface IDocumentFacade {
   getState(): Signal<DocumentState>;
-  loadDocument(id: string): void;
+  loadDocument(id: string): Promise<void>;
   getFileBlob(documentId: string): Promise<Uint8Array | null>;
 }
 
