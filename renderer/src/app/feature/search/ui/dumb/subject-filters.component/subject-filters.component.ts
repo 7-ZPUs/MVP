@@ -12,7 +12,6 @@ import { SubjectDetailFormComponent } from '../subject-detail-form.component/sub
 
 import {
   SubjectCriteria,
-  ISubjectDetailStrategy,
 } from '../../../../../../../../shared/domain/metadata/search-subject-filters-models';
 import { SubjectRoleType, SubjectType } from '../../../../../../../../shared/domain/metadata/search.enum';
 import { ValidationResult } from '../../../../../../../../shared/domain/metadata';
@@ -32,7 +31,7 @@ export class SubjectFiltersComponent implements OnChanges {
 
   public subjectsList = signal<SubjectCriteria[]>([]);
 
-  public currentStep = signal<0 | 1 | 2 | 3>(1);
+  public currentStep = signal<0 | 1 | 2 | 3>(0);
   public selectedRole = signal<SubjectRoleType | null>(null);
   public selectedType = signal<SubjectType | null>(null);
   public currentDetails = signal<any | null>(null);

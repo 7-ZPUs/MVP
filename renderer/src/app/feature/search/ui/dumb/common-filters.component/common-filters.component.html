@@ -1,142 +1,79 @@
-<div
-  class="common-filters-container"
-  [formGroup]="form"
-  style="display: flex; flex-direction: column; gap: 0.5rem"
->
-  <details
-    class="filter-accordion"
-    closed
-    style="border: 1px solid #cbd5e1; border-radius: 6px; padding: 0.5rem; background: white"
-  >
-    <summary style="font-weight: bold; cursor: pointer; padding: 0.5rem; user-select: none">
-      Dati Generali
-    </summary>
+<div class="common-filters-container" [formGroup]="form">
+  
+  <details class="filter-accordion" closed>
+    <summary>Dati Generali</summary>
 
-    <div style="padding: 1rem 0.5rem 0 0.5rem; border-top: 1px solid #e2e8f0; margin-top: 0.5rem">
-      <div class="form-row" style="display: flex; gap: 1rem; margin-bottom: 1rem">
-        <div class="form-group" style="flex: 1">
-          <label style="display: block; font-size: 0.875rem; margin-bottom: 0.25rem"
-            >Tipo Documento</label
-          >
-          <select
-            formControlName="tipoDocumento"
-            style="width: 100%; padding: 0.4rem; border: 1px solid #cbd5e1; border-radius: 4px"
-          >
+    <div class="accordion-content">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="tipoDoc">Tipo Documento</label>
+          <select id="tipoDoc" formControlName="tipoDocumento">
             <option [ngValue]="null">Tutti i tipi</option>
             <option *ngFor="let t of documentTypes" [ngValue]="t">{{ t }}</option>
           </select>
         </div>
-        <div class="form-group" style="flex: 1" formGroupName="conservazione">
-          <label style="display: block; font-size: 0.875rem; margin-bottom: 0.25rem"
-            >Anni di Conservazione (9999 = Perenne)</label
-          >
-          <input
-            type="number"
-            formControlName="valore"
-            style="width: 100%; padding: 0.4rem; border: 1px solid #cbd5e1; border-radius: 4px"
-          />
+        <div class="form-group">
+          <label for="anniConservazione">Anni di Conservazione (9999 = Perenne)</label>
+          <input id="anniConservazione" type="number" formControlName="valore" />
         </div>
       </div>
-      <div class="form-row" style="display: flex; gap: 1rem; margin-bottom: 1rem">
-        <div class="form-group" style="flex: 1">
-          <label style="display: block; font-size: 0.875rem; margin-bottom: 0.25rem">Note</label>
-          <input
-            type="text"
-            formControlName="note"
-            style="width: 100%; padding: 0.4rem; border: 1px solid #cbd5e1; border-radius: 4px"
-          />
+      <div class="form-row">
+        <div class="form-group">
+          <label for="noteFilter">Note</label>
+          <input id="noteFilter" type="text" formControlName="note" />
         </div>
       </div>
     </div>
   </details>
 
-  <details
-    class="filter-accordion"
-    closed
-    style="border: 1px solid #cbd5e1; border-radius: 6px; padding: 0.5rem; background: white"
-  >
-    <summary style="font-weight: bold; cursor: pointer; padding: 0.5rem; user-select: none">
-      Chiave Descrittiva
-    </summary>
+  <details class="filter-accordion" closed>
+    <summary>Chiave Descrittiva</summary>
 
-    <div
-      formGroupName="chiaveDescrittiva"
-      style="padding: 1rem 0.5rem 0 0.5rem; border-top: 1px solid #e2e8f0; margin-top: 0.5rem"
-    >
-      <div class="form-row" style="display: flex; gap: 1rem; margin-bottom: 1rem">
-        <div class="form-group" style="flex: 1">
-          <label style="display: block; font-size: 0.875rem; margin-bottom: 0.25rem">Oggetto</label>
+    <div formGroupName="chiaveDescrittiva" class="accordion-content">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="oggettoFilter">Oggetto</label>
           <input
+            id="oggettoFilter"
             type="text"
             formControlName="oggetto"
-            style="width: 100%; padding: 0.4rem; border: 1px solid #cbd5e1; border-radius: 4px"
             [attr.aria-invalid]="!!getError('chiaveDescrittiva.oggetto')"
           />
-          <div
-            *ngIf="getError('chiaveDescrittiva.oggetto') as err"
-            class="validation-error"
-            style="color: #dc2626; font-size: 0.75rem; margin-top: 0.25rem"
-          >
+          <div *ngIf="getError('chiaveDescrittiva.oggetto') as err" class="validation-error">
             {{ err.message }}
           </div>
         </div>
-        <div class="form-group" style="flex: 1">
-          <label style="display: block; font-size: 0.875rem; margin-bottom: 0.25rem"
-            >Parole Chiave</label
-          >
-          <input
-            type="text"
-            formControlName="paroleChiave"
-            style="width: 100%; padding: 0.4rem; border: 1px solid #cbd5e1; border-radius: 4px"
-          />
+        <div class="form-group">
+          <label for="paroleChiaveFilter">Parole Chiave</label>
+          <input id="paroleChiaveFilter" type="text" formControlName="paroleChiave" />
         </div>
       </div>
     </div>
   </details>
 
-  <details
-    class="filter-accordion"
-    closed
-    style="border: 1px solid #cbd5e1; border-radius: 6px; padding: 0.5rem; background: white"
-  >
-    <summary style="font-weight: bold; cursor: pointer; padding: 0.5rem; user-select: none">
-      Classificazione
-    </summary>
+  <details class="filter-accordion" closed>
+    <summary>Classificazione</summary>
 
-    <div
-      formGroupName="classificazione"
-      style="padding: 1rem 0.5rem 0 0.5rem; border-top: 1px solid #e2e8f0; margin-top: 0.5rem"
-    >
-      <div class="form-row" style="display: flex; gap: 1rem; margin-bottom: 1rem">
-        <div class="form-group" style="flex: 1">
-          <label style="display: block; font-size: 0.875rem; margin-bottom: 0.25rem"
-            >Codice Classificazione</label
-          >
+    <div formGroupName="classificazione" class="accordion-content">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="codiceClass">Codice Classificazione</label>
           <input
+            id="codiceClass"
             type="text"
             formControlName="codice"
-            style="width: 100%; padding: 0.4rem; border: 1px solid #cbd5e1; border-radius: 4px"
             [attr.aria-invalid]="!!getError('classificazione.codice')"
           />
-          <div
-            *ngIf="getError('classificazione.codice') as err"
-            class="validation-error"
-            style="color: #dc2626; font-size: 0.75rem; margin-top: 0.25rem"
-          >
+          <div *ngIf="getError('classificazione.codice') as err" class="validation-error">
             {{ err.message }}
           </div>
         </div>
-        <div class="form-group" style="flex: 1">
-          <label style="display: block; font-size: 0.875rem; margin-bottom: 0.25rem"
-            >Descrizione</label
-          >
-          <input
-            type="text"
-            formControlName="descrizione"
-            style="width: 100%; padding: 0.4rem; border: 1px solid #cbd5e1; border-radius: 4px"
-          />
+        <div class="form-group">
+          <label for="descrizioneClass">Descrizione</label>
+          <input id="descrizioneClass" type="text" formControlName="descrizione" />
         </div>
       </div>
     </div>
   </details>
+  
 </div>

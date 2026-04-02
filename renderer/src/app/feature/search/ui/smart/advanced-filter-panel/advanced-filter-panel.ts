@@ -22,7 +22,6 @@ import {
   ValidationError,
   PartialSearchFilters,
 } from '../../../../../../../../shared/domain/metadata';
-import { DocumentType } from '../../../../../../../../shared/domain/metadata/search.enum';
 
 import { CommonFiltersComponent } from '../../dumb/common-filters.component/common-filters.component';
 import { DiDaiFiltersComponent } from '../../dumb/di-dai-filters.component/di-dai-filters.component';
@@ -44,6 +43,7 @@ import { FilterRulesManager, FilterUIState } from './filter-rules.manager';
     SubjectFiltersComponent,
   ],
   templateUrl: './advanced-filter-panel.html',
+  styleUrl: './advanced-filter-panel.scss',
 })
 export class AdvancedFilterPanelComponent implements OnInit, OnChanges {
   @Input() validator?: FilterValidatorFn;
@@ -51,6 +51,8 @@ export class AdvancedFilterPanelComponent implements OnInit, OnChanges {
   private _filters!: SearchFilters;
   @Input()
   set filters(value: SearchFilters) {
+    if (!value) return;
+
     this._filters = value;
     if (this.panelForm && value) {
       const isReset =
@@ -58,7 +60,8 @@ export class AdvancedFilterPanelComponent implements OnInit, OnChanges {
         Object.keys(value.diDai || {}).length === 0 &&
         Object.keys(value.aggregate || {}).length === 0 &&
         value.customMeta === null &&
-        value.subject === null;
+        value.subject?.length === 0;
+
       if (isReset) {
         this.panelForm.reset({}, { emitEvent: false });
         this.subjectResetCounter++;
@@ -74,7 +77,6 @@ export class AdvancedFilterPanelComponent implements OnInit, OnChanges {
   @Output() filtersChanged = new EventEmitter<SearchFilters>();
   @Output() filtersSubmit = new EventEmitter<SearchFilters>();
   @Output() validationResult = new EventEmitter<ValidationResult>();
-  // filterAdded e filterRemoved sembrano non usati nell'HTML, ma li lasciamo se servono altrove
   @Output() filterAdded = new EventEmitter<CustomFilterValues>();
   @Output() filterRemoved = new EventEmitter<string>();
   @Output() filtersReset = new EventEmitter<void>();
@@ -188,6 +190,7 @@ export class AdvancedFilterPanelComponent implements OnInit, OnChanges {
     const fullFilters: SearchFilters = {
       ...this.filters,
       ...partialSearchFilters,
+      subject: this.filters.subject || []
     };
     this.filtersChanged.emit(fullFilters);
   }

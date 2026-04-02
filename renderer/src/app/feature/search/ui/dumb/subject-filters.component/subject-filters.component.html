@@ -1,20 +1,19 @@
 <fieldset class="filter-fieldset subject-wizard">
   <legend>Filtri Soggetto</legend>
 
-  <div *ngIf="subjectsList().length > 0" style="margin-bottom: 1rem;">
-    <div *ngFor="let subj of subjectsList(); let i = index" 
-         style="display: flex; justify-content: space-between; background: #f8fafc; border: 1px solid #e2e8f0; padding: 0.75rem; border-radius: 6px; margin-bottom: 0.5rem; align-items: center;">
+  <div *ngIf="subjectsList().length > 0" class="subject-list">
+    <div *ngFor="let subj of subjectsList(); let i = index" class="subject-list-item">
       <div>
-        <strong>{{ subj.role }}</strong> <span style="color: #64748b; font-size: 0.9em;">({{ subj.type }})</span>
+        <strong>{{ subj.role }}</strong> <span class="subject-type">({{ subj.type }})</span>
       </div>
-      <button type="button" (click)="removeSubject(i)" style="background: none; border: none; color: #ef4444; cursor: pointer; font-weight: bold;">
+      <button type="button" (click)="removeSubject(i)" class="btn-remove-text">
         ✕ Rimuovi
       </button>
     </div>
   </div>
 
   <div *ngIf="currentStep() === 0">
-    <button type="button" class="btn-outline" (click)="startWizard()" style="width: 100%; border: 1px dashed #cbd5e1; padding: 0.75rem;">
+    <button type="button" class="btn-outline btn-dashed" (click)="startWizard()">
       + Aggiungi nuovo Soggetto
     </button>
   </div>
@@ -31,7 +30,7 @@
       <button type="button" class="btn-choice" (click)="setRole(RoleType.RGD)">Resp. Gestione Documentale</button>
       <button type="button" class="btn-choice" (click)="setRole(RoleType.RSP)">Resp. Servizio Protocollo</button>
     </div>
-    <div class="wizard-actions mt-2">
+    <div class="wizard-actions">
       <button type="button" class="btn-outline text-danger" (click)="resetWizard()">Annulla</button>
     </div>
   </div>
@@ -44,7 +43,7 @@
       <button type="button" class="btn-choice" (click)="setType(SubjType.PG)">PG (Persona Giuridica)</button>
       <button type="button" class="btn-choice" (click)="setType(SubjType.PF)">PF (Persona Fisica)</button>
     </div>
-    <div class="wizard-actions mt-2">
+    <div class="wizard-actions">
       <button type="button" class="btn-outline" (click)="prevStep()">← Indietro</button>
       <button type="button" class="btn-outline text-danger" (click)="resetWizard()">Annulla</button>
     </div>
@@ -60,14 +59,12 @@
     >
     </app-subject-detail-form>
 
-    <div class="wizard-actions mt-3" style="display: flex; gap: 0.5rem; justify-content: space-between;">
-      <div>
+    <div class="wizard-actions flex-between">
+      <div class="action-group">
         <button type="button" class="btn-outline" (click)="prevStep()">← Cambia Tipo</button>
         <button type="button" class="btn-outline text-danger" (click)="resetWizard()">Annulla</button>
       </div>
-      <button type="button" class="btn-primary" (click)="addSubjectToList()" 
-              [disabled]="!currentDetails()" 
-              style="background: #3b82f6; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer;">
+      <button type="button" class="btn-primary" (click)="addSubjectToList()" [disabled]="!currentDetails()">
         + Aggiungi all'elenco
       </button>
     </div>
