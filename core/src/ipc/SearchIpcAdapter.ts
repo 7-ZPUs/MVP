@@ -19,8 +19,6 @@ import { ProcessUC } from "../use-case/process/token";
 import { DocumentoUC } from "../use-case/document/tokens";
 import { WORD_EMBEDDING_PORT_TOKEN } from "../repo/IWordEmbedding";
 import { DOCUMENTO_REPOSITORY_TOKEN } from "../repo/IDocumentRepository";
-import { DocumentClassMapper } from "../dao/mappers/DocumentClassMapper";
-import { ProcessMapper } from "../dao/mappers/ProcessMapper";
 import { SearchFilters, SearchQuery } from "../../../shared/domain/metadata";
 
 // Filtri vuoti usati come base per la ricerca full-text
@@ -84,14 +82,12 @@ export class SearchIpcAdapter {
         name,
       );
       return searchClassesUC
-        .execute(name ?? "")
-        .map((dc) => DocumentClassMapper.toDTO(dc));
+        .execute(name ?? "");
     });
 
     ipcMain.handle(IpcChannels.SEARCH_PROCESSES, (_event, uuid?: string) => {
       return searchProcessiUC
-        .execute(uuid ?? "")
-        .map((p) => ProcessMapper.toDTO(p));
+        .execute(uuid ?? "");
     });
 
     // Ricerca avanzata con filtri strutturati
@@ -116,12 +112,10 @@ export class SearchIpcAdapter {
         switch (query.type) {
           case SearchQueryType.PROCESS_ID:
             return searchProcessiUC
-              .execute(query.text)
-              .map((p) => ProcessMapper.toDTO(p));
+              .execute(query.text);
           case SearchQueryType.CLASS_NAME:
             return searchClassesUC
-              .execute(query.text)
-              .map((dc) => DocumentClassMapper.toDTO(dc));
+              .execute(query.text);
           case SearchQueryType.FREE:
           default: {
             const filters: SearchFilters = {

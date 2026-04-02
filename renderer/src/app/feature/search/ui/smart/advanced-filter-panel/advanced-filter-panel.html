@@ -52,7 +52,8 @@
 
       <div class="filter-section" style="margin-bottom: 1.5rem">
         <h4 style="margin-bottom: 0.5rem; color: #334155">Dati Documento (DiDai)</h4>
-        <app-di-dai-filters
+        <app-di-dai-filters 
+          [disabled]="disableDiDai"
           [filters]="$any(filters.diDai || {})"
           [validationResult]="effectiveValidationResult"
           (filtersChanged)="onDiDaiFiltersChanged($event)"
@@ -63,6 +64,7 @@
       <div class="filter-section" style="margin-bottom: 1.5rem">
         <h4 style="margin-bottom: 0.5rem; color: #334155">Dati di Aggregazione</h4>
         <app-aggregate-filters
+          [disabled]="disableAggregate"
           [filters]="$any(filters.aggregate || {})"
           [validationResult]="effectiveValidationResult"
           (filtersChanged)="onAggregateFiltersChanged($event)"

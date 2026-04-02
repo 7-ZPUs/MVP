@@ -22,6 +22,7 @@ import {
   ValidationError,
   PartialSearchFilters,
 } from '../../../../../../../../shared/domain/metadata';
+import { DocumentType } from '../../../../../../../../shared/domain/metadata/search.enum';
 
 import { CommonFiltersComponent } from '../../dumb/common-filters.component/common-filters.component';
 import { DiDaiFiltersComponent } from '../../dumb/di-dai-filters.component/di-dai-filters.component';
@@ -83,6 +84,9 @@ export class AdvancedFilterPanelComponent implements OnInit, OnChanges {
 
   public panelForm!: FormGroup;
 
+  public disableDiDai = false;
+  public disableAggregate = false;
+
   constructor(private readonly fb: FormBuilder) {}
 
   public ngOnInit(): void {
@@ -95,12 +99,23 @@ export class AdvancedFilterPanelComponent implements OnInit, OnChanges {
     });
 
     this.panelForm.valueChanges.subscribe((values) => {
+      const tipoDocumento = values.common?.tipoDocumento;
+      const isDiDaiRelevant = tipoDocumento === DocumentType.DOCUMENTO_AMMINISTRATIVO_INFORMATICO || tipoDocumento === DocumentType.DOCUMENTO_INFORMATICO;
+      const isAggregateRelevant = tipoDocumento === DocumentType.AGGREGAZIONE_DOCUMENTALE;
+
+      const hasDiDaiValues = Object.keys(values.diDai || {}).length > 0;
+      const hasAggregateValues = Object.keys(values.aggregate || {}).length > 0;
+
+      this.disableAggregate = isAggregateRelevant || hasDiDaiValues;
+      this.disableDiDai = isDiDaiRelevant || hasAggregateValues;
+
       this.validateAndEmit(values);
     });
   }
 
   public ngOnChanges(changes: SimpleChanges): void {
-    if (changes['externalValidation']?.currentValue?.isValid === false) {
+    if (changes['externalValidation']?.currentValue?.isValid 
+      === false) {
       this.isExpanded = true;
     }
   }
