@@ -153,3 +153,6 @@ coverage/
 #vscode
 
 .vscode/
+
+#dip test
+resources
