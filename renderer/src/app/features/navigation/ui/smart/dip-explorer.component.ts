@@ -3,9 +3,9 @@ import { DipFacade } from "../../services/dip-facade";
 import { DipTree } from "./dip-tree.component";
 import { DipTreeNode } from "../../contracts/dip-tree-node";
 import { InlineErrorComponent } from "../dumb/inline-error.component";
-import { AsyncStateWrapperComponent } from "../dumb/async-state-wrapper-component";
+import { AsyncStateWrapperComponent } from "../dumb/async-state-wrapper.component";
 import { CommonModule } from "@angular/common";
-import { EmptyStateComponent } from "../dumb/empty-state.component";
+import { EmptyStateComponent } from "../../../../shared/ui/dumb/empty-state.component/empty-state.component";
 
 @Component ({
     selector: 'app-dip-explorer',

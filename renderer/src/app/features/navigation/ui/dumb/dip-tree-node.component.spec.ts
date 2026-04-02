@@ -115,15 +115,6 @@ describe('DipTreeNodeComponent', () => {
     expect(spinner).toBeFalsy();
   });
 
-
-  /*it('dovrebbe mostrare inline error se childrenError esiste', () => {
-    component.flatNode.childrenError = 'Errore!';
-    fixture.detectChanges();
-  
-    const error = fixture.nativeElement.querySelector('app-inline-error');
-    expect(error).toBeTruthy();
-  });*/
-  
   it('non dovrebbe mostrare inline error se non c’è errore', () => {
     setup({ childrenError: undefined });
   
