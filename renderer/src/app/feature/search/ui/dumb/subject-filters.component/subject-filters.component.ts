@@ -16,6 +16,8 @@ import {
 import { SubjectRoleType, SubjectType } from '../../../../../../../../shared/domain/metadata/search.enum';
 import { ValidationResult } from '../../../../../../../../shared/domain/metadata';
 
+type WizardStep = 0 | 1 | 2 | 3;
+
 @Component({
   selector: 'app-subject-filters',
   standalone: true,
@@ -31,7 +33,8 @@ export class SubjectFiltersComponent implements OnChanges {
 
   public subjectsList = signal<SubjectCriteria[]>([]);
 
-  public currentStep = signal<0 | 1 | 2 | 3>(0);
+  public currentStep = signal(0); 
+  
   public selectedRole = signal<SubjectRoleType | null>(null);
   public selectedType = signal<SubjectType | null>(null);
   public currentDetails = signal<any | null>(null);
@@ -41,7 +44,7 @@ export class SubjectFiltersComponent implements OnChanges {
 
   public ngOnChanges(changes: SimpleChanges): void {
     if (changes['resetCounter'] && !changes['resetCounter'].firstChange) {
-     this.resetWizard();
+      this.resetWizard();
       this.subjectsList.set([]);
     }
 
@@ -67,12 +70,12 @@ export class SubjectFiltersComponent implements OnChanges {
 
   public nextStep(): void {
     const step = this.currentStep();
-    if (step < 3) this.currentStep.set((step + 1) as 0 | 1 | 2 | 3);
+    if (step < 3) this.currentStep.set((step + 1) as WizardStep);
   }
 
   public prevStep(): void {
     const step = this.currentStep();
-    if (step > 1) this.currentStep.set((step - 1) as 0 | 1 | 2 | 3);
+    if (step > 1) this.currentStep.set((step - 1) as WizardStep);
   }
 
   public startWizard(): void {
@@ -96,8 +99,8 @@ export class SubjectFiltersComponent implements OnChanges {
       const updatedList = [...this.subjectsList(), newSubject];
       
       this.subjectsList.set(updatedList);
-      this.subjectChanged.emit(updatedList); // Emette tutto l'array al padre!
-      this.resetWizard(); // Nasconde il wizard
+      this.subjectChanged.emit(updatedList);
+      this.resetWizard();
     }
   }
 

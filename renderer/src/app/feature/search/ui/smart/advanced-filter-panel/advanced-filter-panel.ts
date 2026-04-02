@@ -48,30 +48,48 @@ import { FilterRulesManager, FilterUIState } from './filter-rules.manager';
 export class AdvancedFilterPanelComponent implements OnInit, OnChanges {
   @Input() validator?: FilterValidatorFn;
   @Input() externalValidation: ValidationResult | null = null;
-  private _filters!: SearchFilters;
+  
+  private _filters: SearchFilters = {
+    common: {},
+    diDai: {},
+    aggregate: {},
+    customMeta: null,
+    subject: []
+  } as any;
+
   @Input()
   set filters(value: SearchFilters) {
-    if (!value) return;
+    const incoming = value || {} as any;
 
-    this._filters = value;
-    if (this.panelForm && value) {
+    const safeFilters = {
+      ...incoming,
+      common: incoming.common || {},
+      diDai: incoming.diDai || {},
+      aggregate: incoming.aggregate || {},
+      subject: incoming.subject || []
+    };
+
+    this._filters = safeFilters;
+
+    if (this.panelForm) {
       const isReset =
-        Object.keys(value.common || {}).length === 0 &&
-        Object.keys(value.diDai || {}).length === 0 &&
-        Object.keys(value.aggregate || {}).length === 0 &&
-        value.customMeta === null &&
-        value.subject?.length === 0;
+        Object.keys(safeFilters.common).length === 0 &&
+        Object.keys(safeFilters.diDai).length === 0 &&
+        Object.keys(safeFilters.aggregate).length === 0 &&
+        safeFilters.customMeta === null &&
+        safeFilters.subject.length === 0;
 
       if (isReset) {
         this.panelForm.reset({}, { emitEvent: false });
         this.subjectResetCounter++;
       } else {
-        this.panelForm.patchValue(value, { emitEvent: false });
+        this.panelForm.patchValue(safeFilters, { emitEvent: false });
       }
     }
   }
+
   get filters(): SearchFilters {
-    return this._filters;
+    return this._filters || ({ subject: [] } as any);
   }
 
   @Output() filtersChanged = new EventEmitter<SearchFilters>();
@@ -98,11 +116,11 @@ export class AdvancedFilterPanelComponent implements OnInit, OnChanges {
 
   public ngOnInit(): void {
     this.panelForm = this.fb.group({
-      common: [this.filters?.common || {}],
-      diDai: [this.filters?.diDai || {}],
-      aggregate: [this.filters?.aggregate || {}],
-      customMeta: [this.filters?.customMeta || null],
-      subject: [this.filters?.subject || []],
+      common: [this.filters.common],
+      diDai: [this.filters.diDai],
+      aggregate: [this.filters.aggregate],
+      customMeta: [this.filters.customMeta],
+      subject: [this.filters.subject],
     });
 
     this.panelForm.valueChanges.subscribe((values) => {
@@ -121,7 +139,6 @@ export class AdvancedFilterPanelComponent implements OnInit, OnChanges {
     if (this.externalValidation?.isValid === false) {
       return this.externalValidation;
     }
-
     return this.currentValidationResult || this.externalValidation;
   }
 
@@ -147,7 +164,7 @@ export class AdvancedFilterPanelComponent implements OnInit, OnChanges {
   }
 
   public onFieldValidationError(field: string, error: ValidationError | null): void {
-    // Riservato per logiche future
+    // Riservato
   }
 
   public togglePanel(): void {
@@ -170,7 +187,7 @@ export class AdvancedFilterPanelComponent implements OnInit, OnChanges {
   public onReset(): void {
     this.panelForm.reset();
     this.subjectResetCounter++;
-    this.currentValidationResult = null; // Resetta anche gli errori visivi
+    this.currentValidationResult = null;
     this.filtersReset.emit();
   }
 
@@ -187,10 +204,12 @@ export class AdvancedFilterPanelComponent implements OnInit, OnChanges {
       this.validationResult.emit(this.currentValidationResult);
     }
 
+    const safeCurrentFilters = this.filters || ({} as any);
+
     const fullFilters: SearchFilters = {
-      ...this.filters,
+      ...safeCurrentFilters,
       ...partialSearchFilters,
-      subject: this.filters.subject || []
+      subject: safeCurrentFilters.subject || []
     };
     this.filtersChanged.emit(fullFilters);
   }
