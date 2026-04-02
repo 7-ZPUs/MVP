@@ -15,13 +15,13 @@ import {
   AggregateFilterValues,
   ValidationResult,
   ValidationError,
-} from '../../../../../../../../shared/metadata';
+} from '../../../../../../../../shared/domain/metadata';
 import {
   AggregationType,
   FascicoloType,
   ProcedimentoFaseType,
   AssegnazioneType,
-} from '../../../../../../../../shared/metadata/search.enum';
+} from '../../../../../../../../shared/domain/metadata/search.enum';
 
 @Component({
   selector: 'app-aggregate-filters',

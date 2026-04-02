@@ -1,5 +1,10 @@
-export const HASHING_SERVICE_TOKEN = Symbol('IHashingService');
+import { IntegrityStatusEnum } from "../value-objects/IntegrityStatusEnum";
+
+export const HASHING_SERVICE_TOKEN = Symbol("IHashingService");
 
 export interface IHashingService {
-    calcolaHash(buffer: ArrayBuffer): Promise<string>;
+  checkFileIntegrity(
+    filePath: string,
+    expectedHash: string,
+  ): Promise<IntegrityStatusEnum>;
 }

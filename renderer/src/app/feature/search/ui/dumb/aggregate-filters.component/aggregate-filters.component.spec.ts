@@ -8,7 +8,7 @@ import { AggregateFiltersComponent } from './aggregate-filters.component';
 import {
   AggregationType,
   ProcedimentoFaseType,
-} from '../../../../../../../../shared/metadata/search.enum';
+} from '../../../../../../../../shared/domain/metadata/search.enum';
 
 describe('AggregateFiltersComponent', () => {
   let component: AggregateFiltersComponent;

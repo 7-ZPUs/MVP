@@ -3,7 +3,6 @@ import { container } from "tsyringe";
 
 // ---- Services ----
 import { HASHING_SERVICE_TOKEN } from "./services/IHashingService";
-import { CryptoHashingService } from "./services/impl/CryptoHashingService";
 
 // ---- Database provider ----
 import {
@@ -26,13 +25,22 @@ import { DOCUMENT_CLASS_REPOSITORY_TOKEN } from "./repo/IDocumentClassRepository
 import { DocumentClassRepository } from "./repo/impl/DocumentClassRepository";
 import { DIP_REPOSITORY_TOKEN } from "./repo/IDipRepository";
 import { DipRepository } from "./repo/impl/DipRepository";
+import { DIP_DAO_TOKEN } from "./dao/IDipDAO";
+import { DOCUMENT_CLASS_DAO_TOKEN } from "./dao/IDocumentClassDAO";
+import { DOCUMENT_DAO_TOKEN } from "./dao/IDocumentDAO";
+import { FILE_DAO_TOKEN } from "./dao/IFileDAO";
+import { PROCESS_DAO_TOKEN } from "./dao/IProcessDAO";
+import { DipDAO } from "./dao/DipDAO";
+import { DocumentClassDAO } from "./dao/DocumentClassDAO";
+import { DocumentDAO } from "./dao/DocumentDAO";
+import { FileDAO } from "./dao/FileDAO";
+import { ProcessDAO } from "./dao/ProcessDAO";
 
 // ---- Documento use cases ----
 import { DocumentoUC } from "./use-case/document/tokens";
 import { GetDocumentByIdUC } from "./use-case/document/impl/GetDocumentByIdUC";
 import { GetDocumentByProcessUC } from "./use-case/document/impl/GetDocumentByProcessUC";
 import { GetDocumentByStatusUC } from "./use-case/document/impl/GetDocumentByStatusUC";
-import { CreateDocumentUC } from "./use-case/document/impl/CreateDocumentUC";
 import { CheckDocumentIntegrityStatusUC } from "./use-case/document/impl/CheckDocumentIntegrityStatusUC";
 import { SearchDocumentsUC } from "./use-case/document/impl/SearchDocumentsUC";
 import { SearchSemanticUC } from "./use-case/document/impl/SearchSemanticUC";
@@ -44,40 +52,79 @@ import { GetFileByDocumentUC } from "./use-case/file/impl/GetFileByDocumentUC";
 import { GetFileByStatusUC } from "./use-case/file/impl/GetFileByStatusUC";
 import { CheckFileIntegrityStatusUC } from "./use-case/file/impl/CheckFileIntegrityStatusUC";
 import { ExportFileUC } from "./use-case/file/impl/ExportFileUC";
-import { PrintFileUC } from "./use-case/file/impl/PrintFileUC";
 
 // ---- Process use cases ----
 import { ProcessUC } from "./use-case/process/token";
 import { GetProcessByStatusUC } from "./use-case/process/impl/GetProcessByStatus";
 import { GetProcessByIdUC } from "./use-case/process/impl/GetProcessByIdUC";
 import { GetProcessByDocumentClassUC } from "./use-case/process/impl/GetProcessByDocumentClassUC";
-import { CreateProcessUC } from "./use-case/process/impl/CreateProcessUC";
 import { CheckProcessIntegrityStatusUC } from "./use-case/process/impl/CheckProcessIntegrityStatusUC";
-import { CreateFileUC } from "./use-case/file/impl/CreateFileUC";
-import { SearchProcessUC } from "./use-case/process/impl/SearchProcessUC";
-
-// ---- DocumentClass use cases ----
 import { DocumentClassUC } from "./use-case/classe-documentale/tokens";
+import { SearchProcessUC } from "./use-case/process/impl/SearchProcessUC";
 import { SearchDocumentalClassUC } from "./use-case/classe-documentale/impl/SearchDocumentalClassUC";
 import { GetDocumentClassByDipIdUC } from "./use-case/classe-documentale/impl/GetDocumentClassByDipUC";
 import { GetDocumentClassByStatusUC } from "./use-case/classe-documentale/impl/GetDocumentClassByStatusUC";
 import { GetDocumentClassByIdUC } from "./use-case/classe-documentale/impl/GetDocumentClassByIdUC";
-import { CreateDocumentClassUC } from "./use-case/classe-documentale/impl/CreateDocumentClassUC";
 import { CheckDocumentClassIntegrityStatusUC } from "./use-case/classe-documentale/impl/CheckDocumentClassIntegrityStatusUC";
-
-// ---- Dip use cases ----
 import { DipUC } from "./use-case/dip/token";
 import { GetDipByIdUC } from "./use-case/dip/impl/GetDipByIdUC";
 import { GetDipByStatusUC } from "./use-case/dip/impl/GetDipByStatusUC";
-import { CreateDipUC } from "./use-case/dip/impl/CreateDipUC";
 import { CheckDipIntegrityStatusUC } from "./use-case/dip/impl/CheckDipIntegrityStatusUC";
+import { PACKAGE_READER_PORT_TOKEN } from "./repo/IPackageReaderPort";
+import { LocalPackageReaderAdapter } from "./repo/impl/LocalPackageReaderAdapter";
+import { EXPORT_TOKEN } from "./repo/IExportPort";
+import { LocalExportPort } from "./repo/impl/LocalExportPort";
+import { DATA_MAPPER_TOKEN } from "./repo/impl/utils/IDataMapper";
+import { DataMapper } from "./repo/impl/utils/DataMapper";
+import { FILE_SYSTEM_PROVIDER_TOKEN } from "./repo/impl/utils/IFileSystemProvider";
+import { FileSystemProvider } from "./repo/impl/utils/FileSystemProvider";
+import { DIP_PARSER_TOKEN } from "./repo/impl/utils/IDipParser";
+import { XmlDipParser } from "./repo/impl/utils/XmlDipParser";
+import { TRANSACTION_MANAGER_TOKEN } from "./repo/ITransactionManager";
+import { SqliteTransactionManager } from "./repo/impl/SqliteTransactionManager";
+import { HashingService } from "./services/impl/HashingService";
+import { INTEGRITY_VERIFICATION_SERVICE_TOKEN } from "./services/IIntegrityVerificationService";
+import { IntegrityVerificationService } from "./services/impl/IntegrityVerificationService";
+import { INDEX_DIP_TOKEN } from "./use-case/utils/indexing/IIndexDip";
+import { IndexDip } from "./use-case/utils/indexing/impl/IndexDip";
+
+container.register(PACKAGE_READER_PORT_TOKEN, {
+  useClass: LocalPackageReaderAdapter,
+});
+container.register(EXPORT_TOKEN, {
+  useClass: LocalExportPort,
+});
+container.register(DATABASE_PROVIDER_TOKEN, {
+  useClass: DatabaseProvider,
+});
+container.register(TRANSACTION_MANAGER_TOKEN, {
+  useClass: SqliteTransactionManager,
+});
+container.register(HASHING_SERVICE_TOKEN, {
+  useClass: HashingService,
+});
+container.register(INTEGRITY_VERIFICATION_SERVICE_TOKEN, {
+  useClass: IntegrityVerificationService,
+});
+container.register(INDEX_DIP_TOKEN, {
+  useClass: IndexDip,
+});
+
+container.register(DATA_MAPPER_TOKEN, { useClass: DataMapper });
+container.register(FILE_SYSTEM_PROVIDER_TOKEN, {
+  useClass: FileSystemProvider,
+});
+container.register(DIP_PARSER_TOKEN, { useClass: XmlDipParser });
 
 // Services
-container.registerSingleton(DATABASE_PROVIDER_TOKEN, DatabaseProvider);
 container.registerSingleton(WORD_EMBEDDING_PORT_TOKEN, WordEmbedding);
-container.register(HASHING_SERVICE_TOKEN, { useClass: CryptoHashingService });
+container.registerSingleton(DATABASE_PROVIDER_TOKEN, DatabaseProvider);
+container.register(HASHING_SERVICE_TOKEN, { useClass: HashingService });
 
 // Repositories
+container.register(DOCUMENTO_REPOSITORY_TOKEN, {
+  useClass: DocumentRepository,
+});
 container.register(DOCUMENTO_REPOSITORY_TOKEN, {
   useClass: DocumentRepository,
 });
@@ -86,7 +133,17 @@ container.register(PROCESS_REPOSITORY_TOKEN, { useClass: ProcessRepository });
 container.register(DOCUMENT_CLASS_REPOSITORY_TOKEN, {
   useClass: DocumentClassRepository,
 });
+container.register(DOCUMENT_CLASS_REPOSITORY_TOKEN, {
+  useClass: DocumentClassRepository,
+});
 container.register(DIP_REPOSITORY_TOKEN, { useClass: DipRepository });
+
+// DAOs
+container.register(DIP_DAO_TOKEN, { useClass: DipDAO });
+container.register(DOCUMENT_CLASS_DAO_TOKEN, { useClass: DocumentClassDAO });
+container.register(DOCUMENT_DAO_TOKEN, { useClass: DocumentDAO });
+container.register(FILE_DAO_TOKEN, { useClass: FileDAO });
+container.register(PROCESS_DAO_TOKEN, { useClass: ProcessDAO });
 
 // Documento use cases
 container.register(DocumentoUC.GET_BY_ID, { useClass: GetDocumentByIdUC });
@@ -96,7 +153,6 @@ container.register(DocumentoUC.GET_BY_PROCESS, {
 container.register(DocumentoUC.GET_BY_STATUS, {
   useClass: GetDocumentByStatusUC,
 });
-container.register(DocumentoUC.CREATE, { useClass: CreateDocumentUC });
 container.register(DocumentoUC.CHECK_INTEGRITY_STATUS, {
   useClass: CheckDocumentIntegrityStatusUC,
 });
@@ -109,12 +165,10 @@ container.register(DocumentoUC.SEARCH_SEMANTIC, { useClass: SearchSemanticUC });
 container.register(FileUC.GET_BY_ID, { useClass: GetFileByIdUC });
 container.register(FileUC.GET_BY_DOCUMENT, { useClass: GetFileByDocumentUC });
 container.register(FileUC.GET_BY_STATUS, { useClass: GetFileByStatusUC });
-container.register(FileUC.CREATE, { useClass: CreateFileUC });
 container.register(FileUC.CHECK_INTEGRITY_STATUS, {
   useClass: CheckFileIntegrityStatusUC,
 });
 container.register(FileUC.EXPORT_FILE, { useClass: ExportFileUC });
-container.register(FileUC.PRINT_FILE, { useClass: PrintFileUC });
 
 // Process use cases
 container.register(ProcessUC.GET_BY_STATUS, { useClass: GetProcessByStatusUC });
@@ -122,7 +176,6 @@ container.register(ProcessUC.GET_BY_ID, { useClass: GetProcessByIdUC });
 container.register(ProcessUC.GET_BY_DOCUMENT_CLASS, {
   useClass: GetProcessByDocumentClassUC,
 });
-container.register(ProcessUC.CREATE, { useClass: CreateProcessUC });
 container.register(ProcessUC.CHECK_INTEGRITY_STATUS, {
   useClass: CheckProcessIntegrityStatusUC,
 });
@@ -140,7 +193,6 @@ container.register(DocumentClassUC.GET_BY_STATUS, {
 container.register(DocumentClassUC.GET_BY_ID, {
   useClass: GetDocumentClassByIdUC,
 });
-container.register(DocumentClassUC.CREATE, { useClass: CreateDocumentClassUC });
 container.register(DocumentClassUC.CHECK_INTEGRITY_STATUS, {
   useClass: CheckDocumentClassIntegrityStatusUC,
 });
@@ -151,9 +203,8 @@ container.register(DocumentClassUC.SEARCH_BY_DOCUMENTAL_CLASS_NAME, {
 // Dip use cases
 container.register(DipUC.GET_BY_ID, { useClass: GetDipByIdUC });
 container.register(DipUC.GET_BY_STATUS, { useClass: GetDipByStatusUC });
-container.register(DipUC.CREATE, { useClass: CreateDipUC });
 container.register(DipUC.CHECK_INTEGRITY_STATUS, {
   useClass: CheckDipIntegrityStatusUC,
 });
 
-export { container };
+export { container } from "tsyringe";

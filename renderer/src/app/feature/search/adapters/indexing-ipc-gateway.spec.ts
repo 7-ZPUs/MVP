@@ -14,7 +14,7 @@ import {
   CACHE_SERVICE_TOKEN,
   ERROR_HANDLER_TOKEN,
 } from '../../../shared/contracts';
-import { SearchQueryType } from '../../../../../../shared/metadata/search.enum';
+import { SearchQueryType } from '../../../../../../shared/domain/metadata/search.enum';
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 

@@ -3,8 +3,8 @@ import {
   PartialSearchFilters,
   ValidationError,
   AggregateFilterValues,
-} from '../../../../../../shared/metadata';
-import { AggregationType, FascicoloType } from '../../../../../../shared/metadata/search.enum';
+} from '../../../../../../shared/domain/metadata';
+import { AggregationType, FascicoloType } from '../../../../../../shared/domain/metadata/search.enum';
 
 export class AggregationContradictionStrategy implements IFilterValidationStrategy {
   public validate(filters: PartialSearchFilters): Map<string, ValidationError[]> {

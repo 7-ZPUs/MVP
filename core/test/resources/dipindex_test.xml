@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DiPIndex>
+    <PackageInfo>
+        <ProcessUUID>test-dip-uuid-1234</ProcessUUID>
+    </PackageInfo>
+    <PackageContent>
+        <DiPDocuments>
+            <DocumentClass name="Class1" uuid="class-1">
+                <AiP uuid="aip-1">
+                    <AiPRoot>./class-1/aip-1</AiPRoot>
+                    <Document uuid="doc-1">
+                        <DocumentPath>./documents/doc-1</DocumentPath>
+                        <Files FilesCount="2">
+                            <Metadata uuid="meta-1">./meta.xml</Metadata>
+                            <Primary uuid="prim-1">./primary.pdf</Primary>
+                        </Files>
+                    </Document>
+                </AiP>
+            </DocumentClass>
+            <DocumentClass name="Class2" uuid="class-2">
+                <AiP uuid="aip-2">
+                    <AiPRoot>./class-2/aip-2</AiPRoot>
+                    <Document uuid="doc-2">
+                        <DocumentPath>./documents/doc-2</DocumentPath>
+                        <Files FilesCount="4">
+                            <Metadata uuid="meta-2">./meta2.xml</Metadata>
+                            <Primary uuid="prim-2">./primary2.pdf</Primary>
+                            <Attachments uuid="att-1">./att1.pdf</Attachments>
+                            <Attachments uuid="att-2">./att2.pdf</Attachments>
+                        </Files>
+                    </Document>
+                </AiP>
+                <AiP uuid="aip-3">
+                    <AiPRoot>./class-2/aip-3</AiPRoot>
+                    <Document uuid="doc-3">
+                        <DocumentPath>./documents/doc-3</DocumentPath>
+                        <Files FilesCount="2">
+                            <Metadata uuid="meta-3">./meta3.xml</Metadata>
+                            <Primary uuid="prim-3">./primary3.pdf</Primary>
+                        </Files>
+                    </Document>
+                </AiP>
+            </DocumentClass>
+        </DiPDocuments>
+    </PackageContent>
+</DiPIndex>

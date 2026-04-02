@@ -1,0 +1,56 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.IpcChannels = void 0;
+/**
+ * All IPC channel name constants shared between the Main and Renderer processes.
+ *
+ * Convention: `<domain>:<action>`
+ *
+ * Add a new constant here whenever a new IPC channel is introduced. Never use
+ * raw string literals for channel names outside this file.
+ */
+exports.IpcChannels = {
+  // ----- Package management -----
+  PACKAGE_OPEN: "package:open",
+  PACKAGE_LIST: "package:list",
+  PACKAGE_CLOSE: "package:close",
+  // ----- Search -----
+  SEARCH_FULLTEXT: "ipc:search:text",
+  SEARCH_SEMANTIC: "ipc:search:semantic",
+  SEARCH_CLASSES: "search:classes",
+  SEARCH_PROCESSES: "search:processes",
+  SEARCH_DOCUMENTS: "ipc:search:advanced",
+  SEARCH_GET_AI_STATE: "ipc:indexing:status",
+  // ----- Integrity -----
+  INTEGRITY_VERIFY: "integrity:verify",
+  CHECK_DOCUMENT_INTEGRITY_STATUS: "check-integrity:document",
+  CHECK_FILE_INTEGRITY_STATUS: "check-integrity:file",
+  CHECK_PROCESS_INTEGRITY_STATUS: "check-integrity:process",
+  CHECK_DOCUMENT_CLASS_INTEGRITY_STATUS: "check-integrity:document-class",
+  CHECK_DIP_INTEGRITY_STATUS: "check-integrity:dip",
+  // ----- Browse: Documento -----
+  BROWSE_GET_DOCUMENT_BY_ID: "browse:get-document-by-id",
+  BROWSE_GET_DOCUMENTS_BY_PROCESS: "browse:get-documents-by-process",
+  BROWSE_GET_DOCUMENTS_BY_STATUS: "browse:get-documents-by-status",
+  // ----- Browse: File -----
+  BROWSE_GET_FILE_BY_ID: "browse:get-file-by-id",
+  BROWSE_GET_FILE_BY_DOCUMENT: "browse:get-file-by-document",
+  BROWSE_GET_FILE_BY_STATUS: "browse:get-file-by-status",
+  // ----- Browse: Process -----
+  BROWSE_GET_PROCESS_BY_ID: "browse:get-process-by-id",
+  BROWSE_GET_PROCESS_BY_STATUS: "browse:get-process-by-status",
+  BROWSE_GET_PROCESS_BY_DOCUMENT_CLASS: "browse:get-process-by-document-class",
+  // ----- Browse: DocumentClass -----
+  BROWSE_GET_DOCUMENT_CLASS_BY_DIP_ID: "browse:get-document-class-by-dip-id",
+  BROWSE_GET_DOCUMENT_CLASS_BY_STATUS: "browse:get-document-class-by-status",
+  BROWSE_GET_DOCUMENT_CLASS_BY_ID: "browse:get-document-class-by-id",
+  // ----- Browse: Dip -----
+  BROWSE_GET_DIP_BY_ID: "browse:get-dip-by-id",
+  BROWSE_GET_DIP_BY_STATUS: "browse:get-dip-by-status",
+  BROWSE_GET_DIP_BY_DOCUMENT_CLASS: "browse:get-dip-by-document-class",
+  // ----- File viewer -----
+  FILE_OPEN_EXTERNAL: "file:open-external",
+  FILE_DOWNLOAD: "file:download",
+  FILE_PRINT: "file:print",
+};
+//# sourceMappingURL=ipc-channels.js.map

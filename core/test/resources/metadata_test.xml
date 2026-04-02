@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document>
+    <DocumentoInformatico>
+        <IdDoc>
+            <ImprontaCrittograficaDelDocumento>
+                <Impronta>abc123hashValue=</Impronta>
+                <Algoritmo>SHA-256</Algoritmo>
+            </ImprontaCrittograficaDelDocumento>
+            <Identificativo>12345</Identificativo>
+        </IdDoc>
+        <Riservato>true</Riservato>
+        <TempoDiConservazione>10</TempoDiConservazione>
+        <Soggetti>
+            <Ruolo>
+                <Tipo>Autore</Tipo>
+            </Ruolo>
+            <Ruolo>
+                <Tipo>Destinatario</Tipo>
+            </Ruolo>
+        </Soggetti>
+        <Titolo>Documento di test</Titolo>
+    </DocumentoInformatico>
+</Document>

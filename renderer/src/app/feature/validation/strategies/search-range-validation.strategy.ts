@@ -1,5 +1,5 @@
 import { IFilterValidationStrategy } from '../contracts/filter-validator.interface';
-import { PartialSearchFilters, ValidationError } from '../../../../../../shared/metadata';
+import { PartialSearchFilters, ValidationError } from '../../../../../../shared/domain/metadata';
 
 export class SearchRangeValidationStrategy implements IFilterValidationStrategy {
   public validate(filters: PartialSearchFilters): Map<string, ValidationError[]> {

@@ -2,8 +2,8 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { Subject } from 'rxjs';
 import { SemanticIndexFacade } from './semantic-index-facade';
 import { IIndexingChannel, INDEXING_CHANNEL_TOKEN } from '../contracts/semantic-index.interface';
-import { SemanticIndexState } from '../../../../../../shared/metadata/semantic-filter-models';
-import { IndexingStatus } from '../../../../../../shared/metadata/search.enum';
+import { SemanticIndexState } from '../../../../../../shared/domain/metadata/semantic-filter-models';
+import { IndexingStatus } from '../../../../../../shared/domain/metadata/search.enum';
 import { TestBed } from '@angular/core/testing';
 
 describe('SemanticIndexFacade', () => {

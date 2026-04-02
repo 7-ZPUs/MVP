@@ -3,7 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { By } from '@angular/platform-browser';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { FilterValueInputComponent } from './filter-value-input.component';
-import { FilterFieldType } from '../../../../../../../../shared/metadata/search.enum';
+import { FilterFieldType } from '../../../../../../../../shared/domain/metadata/search.enum';
 
 describe('FilterValueInputComponent', () => {
   let component: FilterValueInputComponent;

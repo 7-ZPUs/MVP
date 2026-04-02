@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { DateTimeCoherenceValidationStrategy } from './date-time-coherence-validation.strategy';
-import { PartialSearchFilters } from '../../../../../../shared/metadata';
+import { PartialSearchFilters } from '../../../../../../shared/domain/metadata';
 
 describe('DateTimeCoherenceValidationStrategy', () => {
   let strategy: DateTimeCoherenceValidationStrategy;

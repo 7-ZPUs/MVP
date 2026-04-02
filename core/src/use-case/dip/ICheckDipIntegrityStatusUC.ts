@@ -1,5 +1,5 @@
 import { IntegrityStatusEnum } from '../../value-objects/IntegrityStatusEnum';
 
 export interface ICheckDipIntegrityStatusUC {
-    execute(dipId: number): IntegrityStatusEnum;
+    execute(dipId: number): Promise<IntegrityStatusEnum>;
 }
