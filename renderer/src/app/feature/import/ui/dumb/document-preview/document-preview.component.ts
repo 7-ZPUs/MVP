@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule }     from '@angular/common';
-import { DipTreeNode, Documento } from '../../domain/models';
+import { DipTreeNode, Documento } from '../../../domain/models';
 
 const SUPPORTED_PREVIEW_FORMATS = ['pdf', 'png', 'jpg', 'jpeg', 'tiff'];
 

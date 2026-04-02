@@ -1,0 +1,50 @@
+@if (phase === ExportPhase.SUCCESS && result) {
+  <div class="result-box result-success"
+       role="status"
+       aria-live="polite"
+       aria-atomic="true"
+       [attr.aria-label]="successMessage">
+    <span class="icon" aria-hidden="true">✓</span>
+    <div class="result-body">
+      <span class="result-title">{{ successMessage }}</span>
+      @if (result.failedCount > 0) {
+        <span class="result-sub" role="alert" aria-live="assertive">
+          {{ result.failedCount }} elementi non salvati
+        </span>
+      }
+    </div>
+  </div>
+}
+
+@if (phase === ExportPhase.ERROR && error) {
+  <div class="result-box result-error"
+       role="alert"
+       aria-live="assertive"
+       aria-atomic="true"
+       [attr.aria-label]="'Errore: ' + error.message">
+    <span class="icon" aria-hidden="true">✕</span>
+    <div class="result-body">
+      <span class="result-title">{{ error.message }}</span>
+      @if (error.recoverable) {
+        <button class="retry-btn"
+                aria-label="Riprova l'operazione"
+                (click)="retry.emit()">
+          Riprova
+        </button>
+      }
+    </div>
+  </div>
+}
+
+@if (phase === ExportPhase.UNAVAILABLE && error) {
+  <div class="result-box result-warning"
+       role="status"
+       aria-live="polite"
+       aria-atomic="true"
+       [attr.aria-label]="'Operazione non disponibile: ' + error.message">
+    <span class="icon" aria-hidden="true">⚠</span>
+    <div class="result-body">
+      <span class="result-title">{{ error.message }}</span>
+    </div>
+  </div>
+}

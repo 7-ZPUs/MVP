@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { DipTreeNode }  from '../../domain/models';
-import { NodeType }     from '../../domain/enums';
+import { DipTreeNode }  from '../../../domain/models';
+import { NodeType }     from '../../../domain/enums';
  
 @Component({
   selector:   'app-dip-tree-node',

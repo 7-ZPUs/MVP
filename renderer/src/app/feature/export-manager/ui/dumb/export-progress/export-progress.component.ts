@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule }     from '@angular/common';
-import { OutputContext }    from '../../domain/enums';
+import { OutputContext }    from '../../../domain/enums';
  
 @Component({
   selector:   'app-export-progress',

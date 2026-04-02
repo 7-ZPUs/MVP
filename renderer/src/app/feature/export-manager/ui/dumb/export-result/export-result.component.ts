@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule }   from '@angular/common';
-import { ExportResult, ExportError } from '../../domain/models';
-import { ExportPhase, OutputContext } from '../../domain/enums';
+import { ExportResult, ExportError } from '../../../domain/models';
+import { ExportPhase, OutputContext } from '../../../domain/enums';
  
 @Component({
   selector:   'app-export-result',

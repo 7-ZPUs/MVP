@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule }  from '@angular/common';
-import { DipTreeNode }   from '../../../import/domain/models';
+import { DipTreeNode }   from '../../../../import/domain/models';
  
 @Component({
   selector:   'app-document-actions',
