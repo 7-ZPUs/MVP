@@ -8,10 +8,12 @@ import { SearchResult } from '../../../../../../../../shared/domain/metadata';
   standalone: true,
   imports: [CommonModule, EmptyStateComponent],
   templateUrl: './search-results.component.html',
+  styleUrl: './search-results.component.scss'
 })
 export class SearchResultsComponent {
   @Input() results: SearchResult[] = [];
   @Input() emptyMessage: string = 'Nessun risultato trovato per la ricerca corrente.';
+  @Input() isSemanticSearch: boolean = false;
 
   @Output() resultSelected = new EventEmitter<SearchResult>();
 

@@ -10,14 +10,15 @@ import {
   ValidationResult,
   PartialSearchFilters,
 } from '../../../../../../../../shared/domain/metadata';
-import { SearchQueryType } from '../../../../../../../../shared/domain/metadata/search.enum';
 import { IFilterValidator } from '../../../../validation/contracts/filter-validator.interface';
+import { SearchBarComponent } from '../../dumb/search-bar.component/search-bar.component';
 
 @Component({
   selector: 'app-search-page',
   standalone: true,
-  imports: [AdvancedFilterPanelComponent, SearchResultsComponent],
+  imports: [AdvancedFilterPanelComponent, SearchResultsComponent, SearchBarComponent],
   templateUrl: './search-page.html',
+  styleUrl: './search-page.scss'
 })
 export class SearchPageComponent implements OnInit {
   protected readonly searchFacade = inject(SearchFacade);
@@ -27,21 +28,23 @@ export class SearchPageComponent implements OnInit {
 
   constructor(@Inject('IFilterValidator') private readonly filterValidator: IFilterValidator) {}
 
-  public ngOnInit(): void {}
-
-  public onSearchTextChanged(event: Event): void {
-    const text = (event.target as HTMLInputElement).value;
-    this.searchFacade.setQuery({ ...this.state().query, text });
+  public ngOnInit(): void {
+    const currentState = this.state();
+    
+    if (!currentState.filters || currentState.filters.subject === undefined) {
+    
+      this.searchFacade.setFilters({
+        common: currentState.filters?.common || {},
+        diDai: currentState.filters?.diDai || {},
+        aggregate: currentState.filters?.aggregate || {},
+        customMeta: currentState.filters?.customMeta || null,
+        subject: [], 
+      } as any);
+    }
   }
 
-  public onSearchTypeChanged(event: Event): void {
-    const type = (event.target as HTMLSelectElement).value as SearchQueryType;
-    this.searchFacade.setQuery({ ...this.state().query, type });
-  }
-
-  public onSemanticToggle(event: Event): void {
-    const useSemanticSearch = (event.target as HTMLInputElement).checked;
-    this.searchFacade.setQuery({ ...this.state().query, useSemanticSearch });
+ public onQueryChanged(query: SearchQuery): void {
+    this.searchFacade.setQuery(query);
   }
 
   public onFiltersChanged(filters: SearchFilters): void {
@@ -83,7 +86,7 @@ export class SearchPageComponent implements OnInit {
       diDai: {},
       aggregate: {},
       customMeta: null,
-      subject: null,
+      subject: [],
     } as any);
 
     this.externalValidation = null;

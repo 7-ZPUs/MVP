@@ -1,79 +1,15 @@
-<div
-  class="search-page-layout"
-  style="display: flex; flex-direction: column; height: 100vh; background: #f8fafc"
->
-  <header
-    style="
-      padding: 1rem 1.5rem;
-      background: white;
-      border-bottom: 1px solid #e2e8f0;
-      display: flex;
-      gap: 1rem;
-      align-items: center;
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-      z-index: 10;
-    "
-  >
-    <input
-      type="text"
-      [value]="state().query.text"
-      (input)="onSearchTextChanged($event)"
-      (keyup.enter)="onSearchRequested()"
-      placeholder="Cerca per testo, classe, processo..."
-      style="
-        flex: 1;
-        padding: 0.6rem;
-        border: 1px solid #cbd5e1;
-        border-radius: 4px;
-        font-size: 1rem;
-      "
-    />
-
-    <select
-      [value]="state().query.type"
-      (change)="onSearchTypeChanged($event)"
-      style="padding: 0.6rem; border: 1px solid #cbd5e1; border-radius: 4px; background: white"
-    >
-      <option value="FREE">Ricerca Libera (Nome?)</option>
-      <option value="PROCESS">Per Processo</option>
-      <option value="CLASS">Per Classe Documentale</option>
-    </select>
-
-    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer">
-      <input
-        type="checkbox"
-        [checked]="state().query.useSemanticSearch"
-        (change)="onSemanticToggle($event)"
-      />
-      Ricerca Semantica
-    </label>
-
-    <button
-      (click)="onSearchRequested()"
-      style="
-        padding: 0.6rem 1.5rem;
-        background: #0f172a;
-        color: white;
-        border: none;
-        border-radius: 4px;
-        font-weight: bold;
-        cursor: pointer;
-      "
-    >
-      🔍 Cerca
-    </button>
-  </header>
-
-  <div class="main-content" style="display: flex; flex: 1; overflow: hidden">
-    <aside
-      style="
-        width: 380px;
-        background: white;
-        border-right: 1px solid #e2e8f0;
-        overflow-y: auto;
-        padding: 1rem;
-      "
-    >
+<div class="search-page-layout">
+  
+  <app-search-bar
+    [query]="state().query"
+    [isSearching]="state().loading"
+    (queryChanged)="onQueryChanged($event)"
+    (searchRequested)="onSearchRequested()">
+  </app-search-bar>
+  
+  <div class="main-content">
+    
+    <aside class="sidebar">
       <app-advanced-filter-panel
         [filters]="state().filters"
         [validator]="validateFilters"
@@ -86,47 +22,20 @@
       </app-advanced-filter-panel>
     </aside>
 
-    <main style="flex: 1; padding: 2rem; overflow-y: auto">
+    <main class="content-area">
       @if (state().loading) {
-        <div style="display: flex; align-items: center; gap: 1rem; color: #475569">
-          <span
-            style="
-              display: inline-block;
-              width: 24px;
-              height: 24px;
-              border: 3px solid #cbd5e1;
-              border-top-color: #3b82f6;
-              border-radius: 50%;
-              animation: spin 1s linear infinite;
-            "
-          ></span>
+        <div class="loading-container">
+          <span class="spinner"></span>
           Ricerca in corso...
         </div>
       }
 
       @if (state().error; as err) {
-        <div
-          style="
-            background: #fee2e2;
-            border: 1px solid #f87171;
-            color: #991b1b;
-            padding: 1rem;
-            border-radius: 6px;
-          "
-        >
-          <strong>Si è verificato un errore:</strong> {{ err.message }}
-          <button
-            (click)="searchFacade.retry()"
-            style="
-              margin-left: 1rem;
-              padding: 0.4rem 0.8rem;
-              background: #ef4444;
-              color: white;
-              border: none;
-              border-radius: 4px;
-              cursor: pointer;
-            "
-          >
+        <div class="error-banner">
+          <div>
+            <strong>Si è verificato un errore:</strong> {{ err.message }}
+          </div>
+          <button class="btn-retry" (click)="searchFacade.retry()">
             Riprova
           </button>
         </div>
@@ -134,31 +43,22 @@
 
       @if (!state().loading && state().results.length > 0) {
         <div>
-          <h2 style="margin-top: 0; color: #1e293b; font-size: 1.25rem; margin-bottom: 1rem">
+          <h2 class="page-title">
             Trovati {{ state().results.length }} risultati
           </h2>
           <app-search-results
             [results]="state().results"
+            [isSemanticSearch]="state().query.useSemanticSearch"
             (resultSelected)="onResultSelected($event)"
           ></app-search-results>
         </div>
       }
 
-      @if (
-        !state().loading && state().results.length === 0 && !state().error && state().query.text
-      ) {
-        <div style="text-align: center; color: #64748b; margin-top: 3rem">
+      @if (!state().loading && state().results.length === 0 && !state().error && state().query.text) {
+        <div class="empty-state">
           Nessun risultato trovato per la tua ricerca. Prova ad alleggerire i filtri.
         </div>
       }
     </main>
   </div>
 </div>
-
-<style>
-  @keyframes spin {
-    to {
-      transform: rotate(360deg);
-    }
-  }
-</style>
