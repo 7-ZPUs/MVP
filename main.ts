@@ -148,7 +148,7 @@ function exportDb(dstPath: string): void {
     );
     console.warn("[BOOTSTRAP] DIP indexing completed successfully in", performance.getEntriesByName("DIP indexing")[0].duration, "ms.");
     if(process.env["NODE_ENV"] === "development"){
-      exportDb("/workspaces/MVP/dip-viewer-exported.db");
+      //exportDb("/workspaces/MVP/dip-viewer-exported.db");
     }
   } catch (error) {
     console.warn(

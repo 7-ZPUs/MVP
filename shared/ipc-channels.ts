@@ -48,14 +48,8 @@ export const IpcChannels = {
   BROWSE_GET_DOCUMENT_BY_ID: "browse:get-document-by-id",
   BROWSE_GET_DOCUMENTS_BY_PROCESS: "browse:get-documents-by-process",
   BROWSE_GET_DOCUMENTS_BY_STATUS: "browse:get-documents-by-status",
-  BROWSE_GET_DOCUMENT_BY_ID: "browse:get-document-by-id",
-  BROWSE_GET_DOCUMENTS_BY_PROCESS: "browse:get-documents-by-process",
-  BROWSE_GET_DOCUMENTS_BY_STATUS: "browse:get-documents-by-status",
 
   // ----- Browse: File -----
-  BROWSE_GET_FILE_BY_ID: "browse:get-file-by-id",
-  BROWSE_GET_FILE_BY_DOCUMENT: "browse:get-file-by-document",
-  BROWSE_GET_FILE_BY_STATUS: "browse:get-file-by-status",
   BROWSE_GET_FILE_BY_ID: "browse:get-file-by-id",
   BROWSE_GET_FILE_BY_DOCUMENT: "browse:get-file-by-document",
   BROWSE_GET_FILE_BY_STATUS: "browse:get-file-by-status",
@@ -64,14 +58,8 @@ export const IpcChannels = {
   BROWSE_GET_PROCESS_BY_ID: "browse:get-process-by-id",
   BROWSE_GET_PROCESS_BY_STATUS: "browse:get-process-by-status",
   BROWSE_GET_PROCESS_BY_DOCUMENT_CLASS: "browse:get-process-by-document-class",
-  BROWSE_GET_PROCESS_BY_ID: "browse:get-process-by-id",
-  BROWSE_GET_PROCESS_BY_STATUS: "browse:get-process-by-status",
-  BROWSE_GET_PROCESS_BY_DOCUMENT_CLASS: "browse:get-process-by-document-class",
 
   // ----- Browse: DocumentClass -----
-  BROWSE_GET_DOCUMENT_CLASS_BY_DIP_ID: "browse:get-document-class-by-dip-id",
-  BROWSE_GET_DOCUMENT_CLASS_BY_STATUS: "browse:get-document-class-by-status",
-  BROWSE_GET_DOCUMENT_CLASS_BY_ID: "browse:get-document-class-by-id",
   BROWSE_GET_DOCUMENT_CLASS_BY_DIP_ID: "browse:get-document-class-by-dip-id",
   BROWSE_GET_DOCUMENT_CLASS_BY_STATUS: "browse:get-document-class-by-status",
   BROWSE_GET_DOCUMENT_CLASS_BY_ID: "browse:get-document-class-by-id",
