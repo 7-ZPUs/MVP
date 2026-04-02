@@ -7,6 +7,8 @@ import { TelemetryService } from '../../../shared/infrastructure/telemetry.servi
 import { IpcErrorHandlerService } from '../../../shared/infrastructure/ipc-error-handler.service';
 import { IPC_GATEWAY_TOKEN, IIpcGateway } from '../../../shared/interfaces/ipc-gateway.interfaces';
 import { TelemetryMetric } from '../../../shared/domain';
+import { mapProcessDtoToAggregateDetail } from '../mappers/aggregate.mapper';
+import { IpcChannels } from '../../../../../../shared/ipc-channels';
 
 @Injectable() // Injectable senza 'root' perché verrà fornito dalle rotte
 export class AggregateFacade implements IAggregateFacade {
@@ -51,10 +53,14 @@ export class AggregateFacade implements IAggregateFacade {
 
       // 2. Chiamata IPC (Cache Miss)
       // Nota: Il payload e il channel esatti dipenderanno dal tuo contratto backend
-      const rawData = await this.ipcGateway.invoke('ipc:aggregate:get', id, null);
+      const rawData = await this.ipcGateway.invoke(
+        IpcChannels.BROWSE_GET_PROCESS_BY_ID,
+        Number(id),
+        null,
+      );
 
       // Qui ipotizziamo che il gateway restituisca già l'oggetto formattato o che tu faccia un mapping
-      const aggregateDetail = rawData as AggregateDetailDTO;
+      const aggregateDetail = mapProcessDtoToAggregateDetail(rawData);
 
       // 3. Salvataggio in Cache
       this.cache.set(cacheKey, aggregateDetail, this.CACHE_TTL_MS);

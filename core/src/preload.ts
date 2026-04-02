@@ -2,14 +2,15 @@ import { contextBridge, ipcRenderer } from "electron";
 
 contextBridge.exposeInMainWorld("electronAPI", {
   invoke: (channel: string, data: any) => {
-    const validChannels = [
-      "ipc:search:text",
-      "ipc:search:semantic",
-      "ipc:search:advanced",
-      "ipc:indexing:status",
-    ];
+    // Allows searching channels, browse channels, and file channels.
+    const isValid =
+      channel.startsWith("ipc:search:") ||
+      channel.startsWith("browse:") ||
+      channel.startsWith("file:") ||
+      channel.startsWith("check-integrity:") ||
+      channel === "ipc:indexing:status";
 
-    if (validChannels.includes(channel)) {
+    if (isValid) {
       return ipcRenderer.invoke(channel, data);
     } else {
       return Promise.reject(

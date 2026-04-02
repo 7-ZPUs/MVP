@@ -7,6 +7,7 @@ import { IpcErrorHandlerService } from '../../../shared/infrastructure/ipc-error
 import { IPC_GATEWAY_TOKEN, IIpcGateway } from '../../../shared/interfaces/ipc-gateway.interfaces';
 import { TelemetryMetric } from '../../../shared/domain';
 import { IpcChannels } from '../../../../../../shared/ipc-channels';
+import { mapDocumentDtoToDetail } from '../mappers/document.mapper';
 
 @Injectable()
 export class DocumentFacade implements IDocumentFacade {
@@ -53,8 +54,12 @@ export class DocumentFacade implements IDocumentFacade {
       }
 
       // Chiamata IPC se non in cache
-      const rawData = await this.ipcGateway.invoke(IpcChannels.BROWSE_GET_DOCUMENT_BY_ID, id, null);
-      const documentDetail = rawData as DocumentDetail;
+      const rawData = await this.ipcGateway.invoke(
+        IpcChannels.BROWSE_GET_DOCUMENT_BY_ID,
+        Number(id),
+        null,
+      );
+      const documentDetail = mapDocumentDtoToDetail(rawData);
 
       // Salvataggio e aggiornamento stato
       this.cache.set(cacheKey, documentDetail, this.CACHE_TTL_METADATA_MS);
@@ -79,13 +84,34 @@ export class DocumentFacade implements IDocumentFacade {
         return cachedBlob;
       }
 
-      // Chiamata IPC
+      // Passaggio 1: Trovare l'ID del File associato a questo Documento
+      const files = (await this.ipcGateway.invoke(
+        IpcChannels.BROWSE_GET_FILE_BY_DOCUMENT,
+        Number(documentId),
+        null,
+      )) as { id: number; isMain: boolean }[];
+
+      if (!files || files.length === 0) {
+        throw new Error('Nessun file associato a questo documento.');
+      }
+
+      // Prendiamo il file principale, altrimenti il primo
+      const mainFile = files.find((f) => f.isMain) || files[0];
+
+      // Passaggio 2: Chiamata IPC per ricevere il buffer
       const rawBlob = await this.ipcGateway.invoke(
-        IpcChannels.BROWSE_GET_FILE_BY_ID, // o BROWSE_GET_FILE_BY_ID
-        documentId,
+        IpcChannels.BROWSE_GET_FILE_BUFFER_BY_ID,
+        mainFile.id,
         null,
       );
-      const blob = rawBlob as Uint8Array;
+
+      if (!rawBlob) {
+        throw new Error(
+          'Impossibile caricare il contenuto del file. Il file potrebbe non esistere sul disco.',
+        );
+      }
+
+      const blob = rawBlob instanceof Uint8Array ? rawBlob : Uint8Array.from(rawBlob as any);
 
       // Salvataggio Blob in cache (Solo 1 min per non intasare la RAM)
       this.cache.set(cacheKey, blob, this.CACHE_TTL_BLOB_MS);

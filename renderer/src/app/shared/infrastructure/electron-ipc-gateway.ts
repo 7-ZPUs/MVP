@@ -19,81 +19,52 @@ export class ElectronIpcGateway implements IIpcGateway {
     console.warn(`[ElectronIpcGateway] MOCKING invoke for channel: ${channel}`);
     return new Promise<T>((resolve) => {
       setTimeout(() => {
-        if (channel === IpcChannels.BROWSE_GET_DOCUMENT_BY_ID) {
+        if (channel === IpcChannels.BROWSE_GET_PROCESS_BY_ID) {
           resolve({
-            aggregateId: String(payload),
+            id: Number(payload),
+            uuid: 'mock-process-uuid',
+            integrityStatus: 'VALID',
             metadata: {
-              tipo: 'Fascicolo',
-              id: String(payload),
-              tipologiaFascicolo: 'Procedimento',
-              assegnazione: 'Ufficio HR',
-              dateApertura: '2023-01-01',
-              progressivo: '123',
-              posizioneFisica: 'Archivio 1',
-              idPrimaria: 'ID-PRIM',
-              conservazione: '10 anni',
+              name: 'Metadata',
+              type: 'Object',
+              value: [
+                { name: 'Oggetto', type: 'String', value: 'Fascicolo di Gara Mock' },
+                { name: 'TipologiaDocumentale', type: 'String', value: 'Bando' },
+                { name: 'IndiceDiClassificazione', type: 'String', value: '1.2.3' },
+              ],
             },
-            documentIndex: [{ tipo: 'Principale', identificativo: 'DOC-1' }],
           } as any as T);
           return;
         }
 
         if (channel === IpcChannels.BROWSE_GET_DOCUMENT_BY_ID) {
           resolve({
-            documentId: String(payload),
-            fileName: 'documento.pdf',
-            mimeType: 'PDF',
+            id: Number(payload),
+            processId: 1,
+            uuid: 'mock-doc-uuid',
+            integrityStatus: 'VALID',
             metadata: {
-              nome: 'Documento di Test',
-              descrizione: 'Un documento mockato',
-              tipoDocumentale: 'Circolare',
-              modalitaFormazione: 'Nativa digitale',
-              riservatezza: 'Nessuna',
-              versione: '1.0',
-            },
-            registration: {
-              flusso: 'E',
-              tipoRegistro: 'Predefinito',
-              data: '2023-01-01',
-              numero: '001',
-              codice: 'A',
-            },
-            classification: {
-              indice: '1.2.3',
-              descrizione: 'Test',
-              uriPiano: '/uri',
-            },
-            format: {
-              tipo: 'PDF',
-              prodotto: 'Word',
-              versione: '1.0',
-              produttore: 'Microsoft',
-            },
-            verification: {
-              firmaDigitale: 'Valida',
-              sigillo: 'N/A',
-              marcaturaTemporale: 'Presente',
-              conformitaCopie: 'N/A',
-            },
-            attachments: {
-              numero: 0,
-            },
-            changeTracking: {
-              tipo: 'Creazione',
-              soggetto: 'Admin',
-              data: '2023-01-01',
-              idVersionePrecedente: '',
-            },
-            aipInfo: {
-              classeDocumentale: 'A',
-              uuid: 'AIP-1',
-            },
-            conservationProcess: {
-              processo: 'P1',
-              sessione: 'S1',
-              dataInizio: '2023-02-01',
+              name: 'Metadata',
+              type: 'Object',
+              value: [
+                { name: 'Nome', type: 'String', value: 'Determina di Approvazione.pdf' },
+                { name: 'Oggetto', type: 'String', value: 'Approvazione Bando' },
+                { name: 'TipologiaDocumentale', type: 'String', value: 'Determina' },
+              ],
             },
           } as any as T);
+          return;
+        }
+
+        if (channel === IpcChannels.BROWSE_GET_FILE_BY_DOCUMENT) {
+          resolve([
+            { id: 999, documentId: Number(payload), isMain: true, filename: 'test.pdf' },
+          ] as any as T);
+          return;
+        }
+
+        if (channel === IpcChannels.BROWSE_GET_FILE_BUFFER_BY_ID) {
+          resolve(new Uint8Array([37, 80, 68, 70, 45]) as any as T); // Minimal `%PDF-` buffer signature back as a binary
           return;
         }
 

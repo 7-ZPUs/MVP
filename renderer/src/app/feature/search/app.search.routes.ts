@@ -1,7 +1,4 @@
 import { Routes } from '@angular/router';
-import { SearchPageComponent } from './ui/smart/search-page/search-page.component'; // Aggiusta questo path!
+import { SearchPageComponent } from './ui/smart/search-page/search-page.component';
 
-export const routes: Routes = [
-  { path: '', redirectTo: 'search', pathMatch: 'full' },
-  { path: 'search', component: SearchPageComponent },
-];
+export const routes: Routes = [{ path: '', component: SearchPageComponent }];
