@@ -1,5 +1,5 @@
 import { inject, Component } from "@angular/core";
-import { DipFacade } from "../../service/dip-facade";
+import { DipFacade } from "../../services/dip-facade";
 import { DipTree } from "./dip-tree.component";
 import { DipTreeNode } from "../../contracts/dip-tree-node";
 import { InlineErrorComponent } from "../dumb/inline-error.component";

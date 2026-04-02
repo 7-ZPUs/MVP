@@ -1,6 +1,6 @@
 import { Injectable, inject } from "@angular/core";
-import { IpcCacheService } from "../../../shared/service/ipc-cache.service";
-import { IpcErrorHandlerService } from "../../../shared/service/ipc-error-handler.service";
+import { IpcCacheService } from "../../../shared/services/ipc-cache.service";
+import { IpcErrorHandlerService } from "../../../shared/services/ipc-error-handler.service";
 import { DipTreeNode } from "../contracts/dip-tree-node";
 import { ELECTRON_CONTEXT_BRIDGE_TOKEN } from "../../../shared/contracts";
 import { IpcChannels } from "../../../../../../shared/ipc-channels";

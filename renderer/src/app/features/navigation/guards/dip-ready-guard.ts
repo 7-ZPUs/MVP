@@ -1,6 +1,6 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
-import { DipFacade } from '../service/dip-facade';
+import { DipFacade } from '../services/dip-facade';
 
 export const dipReadyGuard: CanActivateFn = () => {
   const dipFacade = inject(DipFacade);

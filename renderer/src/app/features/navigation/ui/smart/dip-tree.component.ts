@@ -2,7 +2,7 @@ import {
     Component, Input, Output, EventEmitter,
     inject, computed, signal
   } from "@angular/core";
-  import { DipFacade } from "../../service/dip-facade";
+  import { DipFacade } from "../../services/dip-facade";
   import { DipTreeNode } from "../../contracts/dip-tree-node";
   import { FlatNode } from "../../contracts/flat-node";
   import { CommonModule } from "@angular/common";

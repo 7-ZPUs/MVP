@@ -1,6 +1,6 @@
 import { Injectable, signal, Signal, WritableSignal, inject } from "@angular/core";
 import { IpcGateway } from "./ipc-gateway";
-import { IpcErrorHandlerService } from "../../../shared/service/ipc-error-handler.service";
+import { IpcErrorHandlerService } from "../../../shared/services/ipc-error-handler.service";
 import { DipTreeNode } from "../contracts/dip-tree-node";
 import { AppError } from "../../../shared/domain";
 import { NodeId } from "../domain/types";
