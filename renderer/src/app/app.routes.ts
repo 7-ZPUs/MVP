@@ -9,6 +9,8 @@ export const routes: Routes = [
         canActivate: [dipReadyGuard],
     },
 
+    //TODO aggiungere le altre rotte
+
     {
         path: '',
         redirectTo: 'dip',

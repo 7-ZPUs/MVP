@@ -1,0 +1,28 @@
+<!-- LOADING -->
+<ng-container *ngIf="state().phase !== 'ready'; else ready">
+    <div class="loading">
+      Caricamento DIP...
+    </div>
+  </ng-container>
+  
+  <!-- READY -->
+  <ng-template #ready>
+    <header class="toolbar">
+      <h1>DIP Explorer</h1>
+    </header>
+  
+    <div class="layout">
+      <!-- SIDEBAR -->
+      <aside class="sidebar">
+        <app-dip-tree
+          [rootNodes]="rootNodes"
+          (nodeSelected)="onNodeSelected($event)">
+        </app-dip-tree>
+      </aside>
+  
+      <!-- CONTENT -->
+      <main class="content">
+        <router-outlet></router-outlet>
+      </main>
+    </div>
+  </ng-template>
