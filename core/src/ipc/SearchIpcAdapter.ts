@@ -22,40 +22,7 @@ import { DOCUMENTO_REPOSITORY_TOKEN } from "../repo/IDocumentRepository";
 import { DocumentClassMapper } from "../dao/mappers/DocumentClassMapper";
 import { ProcessMapper } from "../dao/mappers/ProcessMapper";
 import { SearchFilters, SearchQuery } from "../../../shared/domain/metadata";
-
-// Filtri vuoti usati come base per la ricerca full-text
-const emptyFilters: SearchFilters = {
-  common: {
-    chiaveDescrittiva: null,
-    classificazione: null,
-    conservazione: null,
-    note: null,
-    tipoDocumento: null,
-  },
-  diDai: {
-    nome: null,
-    versione: null,
-    idPrimario: null,
-    tipologia: null,
-    modalitaFormazione: null,
-    riservatezza: null,
-    identificativoFormato: null,
-    verifica: null,
-    registrazione: null,
-    tracciatureModifiche: null,
-  },
-  aggregate: {
-    tipoAggregazione: null,
-    idAggregazione: null,
-    tipoFascicolo: null,
-    dataApertura: null,
-    dataChiusura: null,
-    procedimento: null,
-    assegnazione: null,
-  },
-  subject: null,
-  customMeta: null,
-};
+import { MetadataKeyMapper } from "../dao/mappers/MetadataKeyMapper";
 
 export class SearchIpcAdapter {
   static register(ipcMain: IpcMain): void {
@@ -98,7 +65,11 @@ export class SearchIpcAdapter {
     ipcMain.handle(
       IpcChannels.SEARCH_DOCUMENTS,
       (_event, filters: SearchFilters) => {
-        return searchDocumentsUC.execute(filters);
+        const mappedFilters: SearchFilters = {
+          filters: MetadataKeyMapper.mapFilters(filters.filters),
+          subject: filters.subject,
+        };
+        return searchDocumentsUC.execute(mappedFilters);
       },
     );
 
@@ -125,10 +96,14 @@ export class SearchIpcAdapter {
           case SearchQueryType.FREE:
           default: {
             const filters: SearchFilters = {
-              ...emptyFilters,
-              diDai: { ...emptyFilters.diDai, nome: query.text },
+              filters: [{ key: "nome", value: query.text }],
+              subject: null,
             };
-            return searchDocumentsUC.execute(filters);
+            const mappedFilters = {
+              filters: MetadataKeyMapper.mapFilters(filters.filters),
+              subject: filters.subject,
+            };
+            return searchDocumentsUC.execute(mappedFilters);
           }
         }
       },

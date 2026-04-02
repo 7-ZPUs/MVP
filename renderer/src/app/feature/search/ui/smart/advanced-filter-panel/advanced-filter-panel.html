@@ -43,7 +43,7 @@
       <div class="filter-section" style="margin-bottom: 1.5rem">
         <h4 style="margin-bottom: 0.5rem; color: #334155">Comuni</h4>
         <app-common-filters
-          [filters]="$any(filters.common || {})"
+          [filters]="panelForm.value.common || {}"
           [validationResult]="effectiveValidationResult"
           (filtersChanged)="onCommonFiltersChanged($event)"
         >
@@ -53,7 +53,7 @@
       <div class="filter-section" style="margin-bottom: 1.5rem">
         <h4 style="margin-bottom: 0.5rem; color: #334155">Dati Documento (DiDai)</h4>
         <app-di-dai-filters
-          [filters]="$any(filters.diDai || {})"
+          [filters]="panelForm.value.diDai || {}"
           [validationResult]="effectiveValidationResult"
           (filtersChanged)="onDiDaiFiltersChanged($event)"
         >
@@ -63,7 +63,7 @@
       <div class="filter-section" style="margin-bottom: 1.5rem">
         <h4 style="margin-bottom: 0.5rem; color: #334155">Dati di Aggregazione</h4>
         <app-aggregate-filters
-          [filters]="$any(filters.aggregate || {})"
+          [filters]="panelForm.value.aggregate || {}"
           [validationResult]="effectiveValidationResult"
           (filtersChanged)="onAggregateFiltersChanged($event)"
         >
@@ -73,7 +73,7 @@
       <div class="filter-section" style="margin-bottom: 1.5rem">
         <h4 style="margin-bottom: 0.5rem; color: #334155">Metadati Personalizzati</h4>
         <app-custom-meta-filters
-          [filters]="filters.customMeta || null"
+          [filters]="panelForm.value.customMeta || null"
           [validationResult]="effectiveValidationResult"
           (filtersChanged)="onEntriesChanged($event)"
         >

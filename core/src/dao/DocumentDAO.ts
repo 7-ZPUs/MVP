@@ -79,18 +79,7 @@ export class DocumentDAO implements IDocumentDAO {
     return rows.map((r) => this.rowToEntity(r));
   }
 
-  documentTypeToMetaKey(tipoDocumento: string): string | null {
-    switch (tipoDocumento) {
-      case "DOCUMENTO INFORMATICO":
-        return "DocumentoInformatico";
-      case "DOCUMENTO AMMINISTRATIVO INFORMATICO":
-        return "DocumentoAmministrativoInformatico";
-      case "AGGREGAZIONE DOCUMENTALE":
-        return "AggregazioneDocumentale";
-      default:
-        return null;
-    }
-  }
+
 
   searchDocument(filters: SearchFilters): Document[] {
     const conditions: string[] = [];
@@ -113,85 +102,20 @@ export class DocumentDAO implements IDocumentDAO {
                 SELECT 1 FROM document_metadata
                 WHERE document_id = document.id
                 AND name = ?
-                AND value = ?
+            AND value = ? COLLATE NOCASE
             )
         `);
       values.push(key, String(value));
     };
 
-    // --- common ---
-    const c = filters.common;
-    if (c) {
-      addMeta("Note", c.note);
-      addMeta("Oggetto", c.chiaveDescrittiva?.oggetto);
-      addMeta("ParoleChiave", c.chiaveDescrittiva?.paroleChiave);
-      addMeta("IndiceDiClassificazione", c.classificazione?.codice);
-      addMeta("Descrizione", c.classificazione?.descrizione);
-      addMeta("TempoDiConservazione", c.conservazione?.valore);
+    if (filters.filters) {
+      for (const filter of filters.filters) {
+        addMeta(filter.key, filter.value);
+      }
     }
 
-    // --- diDai ---
-    const d = filters.diDai;
-    if (d) {
-      addMeta("NomeDelDocumento", d.nome);
-      addMeta("VersioneDelDocumento", d.versione);
-      addMeta("IdIdentificativoDocumentoPrimario", d.idPrimario);
-      addMeta("TipologiaDocumentale", d.tipologia);
-      addMeta("ModalitaDiFormazione", d.modalitaFormazione);
-      addMeta("Riservato", d.riservatezza);
-      addMeta("Formato", d.identificativoFormato?.formato);
-      addMeta("NomeProdotto", d.identificativoFormato?.nomeProdottoCreazione);
-      addMeta(
-        "VersioneProdotto",
-        d.identificativoFormato?.versioneProdottoCreazione,
-      );
-      addMeta(
-        "Produttore",
-        d.identificativoFormato?.produttoreProdottoCreazione,
-      );
-      addMeta("FirmatoDigitalmente", d.verifica?.formatoDigitalmente);
-      addMeta("SigillatoElettronicamente", d.verifica?.sigillatoElettr);
-      addMeta("MarcaturaTemporale", d.verifica?.marcaturaTemporale);
-      addMeta(
-        "ConformitaCopieImmagineSuSupportoInformatico",
-        d.verifica?.conformitaCopie,
-      );
-      addMeta("TipologiaDiFlusso", d.registrazione?.tipologiaFlusso);
-      addMeta("TipoRegistro", d.registrazione?.tipologiaRegistro);
-      addMeta("DataRegistrazioneDocumento", d.registrazione?.dataRegistrazione);
-      addMeta(
-        "NumeroRegistrazioneDocumento",
-        d.registrazione?.numeroRegistrazione,
-      );
-      addMeta("CodiceRegistro", d.registrazione?.codiceRegistro);
-    }
-
-    // --- aggregate ---
-    const a = filters.aggregate;
-    if (a) {
-      addMeta("TipoAggregazione", a.tipoAggregazione);
-      addMeta("IdAggregazione", a.idAggregazione);
-      addMeta("TipoAgg", a.tipoFascicolo);
-      addMeta("DataApertura", a.dataApertura);
-      addMeta("DataChiusura", a.dataChiusura);
-      addMeta("Oggetto", a.procedimento?.materia);
-      addMeta("Denominazione", a.procedimento?.denominazioneProcedimento);
-      addMeta("TipoRuolo", a.assegnazione?.tipoAssegnazione);
-      addMeta("DataInizioAssegnazione", a.assegnazione?.dataInizioAssegn);
-      addMeta("DataFineAssegnazione", a.assegnazione?.dataFineAssegn);
-    }
-
-    // --- custom ---
-    if (filters.customMeta) {
-      addMeta(filters.customMeta.field, filters.customMeta.value);
-    }
-
-    if (c.tipoDocumento) {
-      addMeta(
-        this.documentTypeToMetaKey(c.tipoDocumento) || "",
-        "",
-      );
-    }
+    // Qui andrebbe gestito il subject se necessario dal database
+    // per ora manteniamo la logica precedente intatta se il DB lo cercava, ma il DB prima non cercava il subject apparentemente (non gestito nel vecchio codice).
 
     if (conditions.length === 0) return [];
 

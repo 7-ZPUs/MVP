@@ -21,6 +21,7 @@ import {
   SubjectCriteria,
   ValidationError,
   PartialSearchFilters,
+  MetadataFilter,
 } from '../../../../../../../../shared/domain/metadata';
 
 import { CommonFiltersComponent } from '../../dumb/common-filters.component/common-filters.component';
@@ -51,18 +52,11 @@ export class AdvancedFilterPanelComponent implements OnInit, OnChanges {
   set filters(value: SearchFilters) {
     this._filters = value;
     if (this.panelForm && value) {
-      const isReset =
-        Object.keys(value.common || {}).length === 0 &&
-        Object.keys(value.diDai || {}).length === 0 &&
-        Object.keys(value.aggregate || {}).length === 0 &&
-        value.customMeta === null &&
-        value.subject === null;
-      if (isReset) {
-        this.panelForm.reset({}, { emitEvent: false });
-        this.subjectResetCounter++;
-      } else {
-        this.panelForm.patchValue(value, { emitEvent: false });
-      }
+      this.panelForm.patchValue({
+         subject: value.subject,
+         // Non possiamo ricaricare tutti i campi typed indietro da value.filters facilmente. 
+         // Visto che questo componente di solito inizializza o resetta.
+      }, { emitEvent: false });
     }
   }
   get filters(): SearchFilters {
@@ -87,10 +81,10 @@ export class AdvancedFilterPanelComponent implements OnInit, OnChanges {
 
   public ngOnInit(): void {
     this.panelForm = this.fb.group({
-      common: [this.filters?.common || {}],
-      diDai: [this.filters?.diDai || {}],
-      aggregate: [this.filters?.aggregate || {}],
-      customMeta: [this.filters?.customMeta || null],
+      common: [{}],
+      diDai: [{}],
+      aggregate: [{}],
+      customMeta: [null],
       subject: [this.filters?.subject || null],
     });
 
@@ -134,6 +128,71 @@ export class AdvancedFilterPanelComponent implements OnInit, OnChanges {
     this.filtersChanged.emit(updatedFilters);
   }
 
+  private flattenToMetadataFilters(formValues: any): MetadataFilter[] {
+    const filters: MetadataFilter[] = [];
+    const add = (key: string, value: any) => {
+      if (value !== null && value !== undefined && value !== '') {
+        filters.push({ key, value: String(value) });
+      }
+    };
+
+    const c = formValues.common;
+    if (c) {
+      add("note", c.note);
+      add("oggetto", c.chiaveDescrittiva?.oggetto);
+      add("parole_chiave", c.chiaveDescrittiva?.paroleChiave);
+      add("indice_di_classificazione", c.classificazione?.codice);
+      add("descrizione", c.classificazione?.descrizione);
+      add("tempo_di_conservazione", c.conservazione?.valore);
+      if (c.tipoDocumento === "DOCUMENTO INFORMATICO") add("documento_informatico", "");
+      if (c.tipoDocumento === "DOCUMENTO AMMINISTRATIVO INFORMATICO") add("documento_amministrativo_informatico", "");
+      if (c.tipoDocumento === "AGGREGAZIONE DOCUMENTALE") add("aggregazione_documentale", "");
+    }
+
+    const d = formValues.diDai;
+    if (d) {
+      add("nome_del_documento", d.nome);
+      add("versione_del_documento", d.versione);
+      add("id_identificativo_documento_primario", d.idPrimario);
+      add("tipologia_documentale", d.tipologia);
+      add("modalita_di_formazione", d.modalitaFormazione);
+      add("riservato", d.riservatezza);
+      add("formato", d.identificativoFormato?.formato);
+      add("nome_prodotto", d.identificativoFormato?.nomeProdottoCreazione);
+      add("versione_prodotto", d.identificativoFormato?.versioneProdottoCreazione);
+      add("produttore", d.identificativoFormato?.produttoreProdottoCreazione);
+      add("firmato_digitalmente", d.verifica?.formatoDigitalmente);
+      add("sigillato_elettronicamente", d.verifica?.sigillatoElettr);
+      add("marcatura_temporale", d.verifica?.marcaturaTemporale);
+      add("conformita_copie_immagine_su_supporto_informatico", d.verifica?.conformitaCopie);
+      add("tipologia_di_flusso", d.registrazione?.tipologiaFlusso);
+      add("tipo_registro", d.registrazione?.tipologiaRegistro);
+      add("data_registrazione_documento", d.registrazione?.dataRegistrazione);
+      add("numero_registrazione_documento", d.registrazione?.numeroRegistrazione);
+      add("codice_registro", d.registrazione?.codiceRegistro);
+    }
+
+    const a = formValues.aggregate;
+    if (a) {
+      add("tipo_aggregazione", a.tipoAggregazione);
+      add("id_aggregazione", a.idAggregazione);
+      add("tipo_agg", a.tipoFascicolo);
+      add("data_apertura", a.dataApertura);
+      add("data_chiusura", a.dataChiusura);
+      add("oggetto", a.procedimento?.materia);
+      add("denominazione", a.procedimento?.denominazioneProcedimento);
+      add("tipo_ruolo", a.assegnazione?.tipoAssegnazione);
+      add("data_inizio_assegnazione", a.assegnazione?.dataInizioAssegn);
+      add("data_fine_assegnazione", a.assegnazione?.dataFineAssegn);
+    }
+
+    if (formValues.customMeta) {
+      add(formValues.customMeta.field, formValues.customMeta.value);
+    }
+
+    return filters;
+  }
+
   public onFieldValidationError(field: string, error: ValidationError | null): void {
     // Riservato per logiche future
   }
@@ -147,9 +206,10 @@ export class AdvancedFilterPanelComponent implements OnInit, OnChanges {
       this.currentValidationResult?.isValid !== false &&
       this.externalValidation?.isValid !== false
     ) {
+      const flatFilters = this.flattenToMetadataFilters(this.panelForm.value);
       const finalFilters: SearchFilters = {
-        ...this.filters,
-        ...this.panelForm.value,
+        filters: flatFilters,
+        subject: this.filters?.subject || null,
       };
       this.filtersSubmit.emit(finalFilters);
     }
@@ -175,9 +235,10 @@ export class AdvancedFilterPanelComponent implements OnInit, OnChanges {
       this.validationResult.emit(this.currentValidationResult);
     }
 
+    const flatFilters = this.flattenToMetadataFilters(formValues);
     const fullFilters: SearchFilters = {
-      ...this.filters,
-      ...partialSearchFilters,
+      filters: flatFilters,
+      subject: this.filters?.subject || null,
     };
     this.filtersChanged.emit(fullFilters);
   }

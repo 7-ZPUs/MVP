@@ -12,12 +12,14 @@ export interface SearchQuery {
   useSemanticSearch: boolean;
 }
 
+export interface MetadataFilter {
+  key: string;
+  value: string | null;
+}
+
 export interface SearchFilters {
-  common: CommonFilterValues;
-  diDai: DiDaiFilterValues;
-  aggregate: AggregateFilterValues;
+  filters: MetadataFilter[];
   subject: SubjectCriteria | null;
-  customMeta: CustomFilterValues | null;
 }
 
 export interface PartialSearchFilters {
