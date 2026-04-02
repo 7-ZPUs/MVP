@@ -4,6 +4,22 @@
   [formGroup]="form"
   style="display: flex; flex-direction: column; gap: 0.5rem"
 >
+@if (disabled && disabledReason) {
+    <div style="
+      background-color: #f8fafc; 
+      border: 1px solid #cbd5e1; 
+      color: #64748b; 
+      padding: 0.75rem; 
+      border-radius: 6px; 
+      margin-bottom: 1rem; 
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    ">
+      <span>ℹ️</span> {{ disabledReason }}
+    </div>
+  }
   <details
     class="filter-accordion"
     closed
