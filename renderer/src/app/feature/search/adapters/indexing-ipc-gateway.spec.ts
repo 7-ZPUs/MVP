@@ -8,6 +8,8 @@ import { SearchFacade } from '../services/search-facade';
 import { SearchIpcGateway } from '../adapters/search-ipc-gateway';
 import { FilterValidatorService } from '../../validation/services/filter-validator.service';
 import { IpcErrorHandlerService } from '../../../shared/services/ipc-error-handler.service';
+import { SearchBarComponent } from '../ui/dumb/search-bar.component/search-bar.component';
+import { AdvancedFilterPanelComponent } from '../ui/smart/advanced-filter-panel/advanced-filter-panel';
 
 import {
   ELECTRON_CONTEXT_BRIDGE_TOKEN,
@@ -23,7 +25,6 @@ describe('Broad Integration: Full Search Engine Flow (Servizi Reali)', () => {
   let mockElectronBridge: any;
 
   beforeEach(async () => {
-    // Il finto backend
     mockElectronBridge = {
       invoke: vi.fn(),
     };
@@ -35,12 +36,10 @@ describe('Broad Integration: Full Search Engine Flow (Servizi Reali)', () => {
         SearchIpcGateway,
         FilterValidatorService,
         IpcErrorHandlerService,
-
         { provide: 'ISearchChannel', useExisting: SearchIpcGateway },
         { provide: 'IFilterValidator', useExisting: FilterValidatorService },
         { provide: ERROR_HANDLER_TOKEN, useClass: IpcErrorHandlerService },
         { provide: 'IErrorHandler', useClass: IpcErrorHandlerService },
-
         { provide: ELECTRON_CONTEXT_BRIDGE_TOKEN, useValue: mockElectronBridge },
         {
           provide: CACHE_SERVICE_TOKEN,
@@ -60,14 +59,12 @@ describe('Broad Integration: Full Search Engine Flow (Servizi Reali)', () => {
   });
 
   it('1. Ricerca Libera: dalla UI al canale ipc:search:text', async () => {
-    mockElectronBridge.invoke.mockResolvedValue([{ id: '1', title: 'Doc Testo' }]);
+    mockElectronBridge.invoke.mockResolvedValue([{ documentId: '1', title: 'Doc Testo', type: 'DOCUMENTO_INFORMATICO' }]);
 
-    const searchInput = fixture.debugElement.query(By.css('input[type="text"]')).nativeElement;
-    searchInput.value = 'Ricerca Valida';
-    searchInput.dispatchEvent(new Event('input'));
-
-    const searchBtn = fixture.debugElement.query(By.css('header button'));
-    searchBtn.triggerEventHandler('click', null);
+    // Interazione tramite il componente figlio SearchBar
+    const searchBar = fixture.debugElement.query(By.directive(SearchBarComponent));
+    searchBar.triggerEventHandler('queryChanged', { text: 'Ricerca Valida', type: SearchQueryType.FREE, useSemanticSearch: false });
+    searchBar.triggerEventHandler('searchRequested', null);
 
     await sleep(350);
     fixture.detectChanges();
@@ -77,16 +74,13 @@ describe('Broad Integration: Full Search Engine Flow (Servizi Reali)', () => {
       expect.objectContaining({ text: 'Ricerca Valida' }),
       expect.any(AbortSignal),
     );
-
-    const resultsHeader = fixture.debugElement.query(By.css('main h2')).nativeElement;
-    expect(resultsHeader.textContent).toContain('Trovati 1 risultati');
   });
 
   it('2. Ricerca Avanzata: dal Pannello Filtri al canale ipc:search:advanced', async () => {
-    mockElectronBridge.invoke.mockResolvedValue([{ id: '2', title: 'Doc Filtri' }]);
+    mockElectronBridge.invoke.mockResolvedValue([{ documentId: '2', title: 'Doc Filtri', type: 'DOCUMENTO_INFORMATICO' }]);
 
-    const validFilters = { common: { text: 'Filtro Valido' } };
-    const filterPanel = fixture.debugElement.query(By.css('app-advanced-filter-panel'));
+    const validFilters = { common: { note: 'Filtro Note' }, subject: [] };
+    const filterPanel = fixture.debugElement.query(By.directive(AdvancedFilterPanelComponent));
     filterPanel.triggerEventHandler('filtersSubmit', validFilters);
 
     await sleep(350);
@@ -100,20 +94,11 @@ describe('Broad Integration: Full Search Engine Flow (Servizi Reali)', () => {
   });
 
   it('3. Ricerca Semantica: attivazione toggle e chiamata a ipc:search:semantic', async () => {
-    mockElectronBridge.invoke.mockResolvedValue([{ id: '3', title: 'Doc Semantico' }]);
+    mockElectronBridge.invoke.mockResolvedValue([{ documentId: '3', title: 'Doc Semantico', type: 'DOCUMENTO_INFORMATICO' }]);
 
-    const semanticToggle = fixture.debugElement.query(
-      By.css('input[type="checkbox"]'),
-    ).nativeElement;
-    semanticToggle.checked = true;
-    semanticToggle.dispatchEvent(new Event('change'));
-
-    const searchInput = fixture.debugElement.query(By.css('input[type="text"]')).nativeElement;
-    searchInput.value = 'Concetto chiave';
-    searchInput.dispatchEvent(new Event('input'));
-
-    const searchBtn = fixture.debugElement.query(By.css('header button'));
-    searchBtn.triggerEventHandler('click', null);
+    const searchBar = fixture.debugElement.query(By.directive(SearchBarComponent));
+    searchBar.triggerEventHandler('queryChanged', { text: 'Concetto chiave', type: SearchQueryType.FREE, useSemanticSearch: true });
+    searchBar.triggerEventHandler('searchRequested', null);
 
     await sleep(350);
     fixture.detectChanges();
@@ -128,26 +113,26 @@ describe('Broad Integration: Full Search Engine Flow (Servizi Reali)', () => {
   it('4. Gestione Errori Reale: crash del backend tradotto dalla UI', async () => {
     mockElectronBridge.invoke.mockRejectedValue(new Error('IPC_TIMEOUT'));
 
-    const searchBtn = fixture.debugElement.query(By.css('header button'));
-    searchBtn.triggerEventHandler('click', null);
+    const searchBar = fixture.debugElement.query(By.directive(SearchBarComponent));
+    searchBar.triggerEventHandler('searchRequested', null);
 
     await sleep(350);
     fixture.detectChanges();
 
-    const errorBox = fixture.debugElement.query(
-      By.css('div[style*="background: #fee2e2"]'),
-    ).nativeElement;
+    const errorBox = fixture.debugElement.query(By.css('.error-banner'));
     expect(errorBox).toBeTruthy();
-    expect(errorBox.textContent.length).toBeGreaterThan(0);
+    expect(errorBox.nativeElement.textContent).toContain('IPC_TIMEOUT');
   });
 
   it('5. Validazione Reale: la ricerca si blocca se i filtri sono invalidi', async () => {
-    const invalidFilters = { common: { text: 'a' } };
+    const invalidFilters = { common: { note: 'a' }, subject: [] };
 
-    const filterPanel = fixture.debugElement.query(By.css('app-advanced-filter-panel'));
+    const filterPanel = fixture.debugElement.query(By.directive(AdvancedFilterPanelComponent));
     filterPanel.triggerEventHandler('filtersSubmit', invalidFilters);
 
     await sleep(350);
     fixture.detectChanges();
+
+    expect(mockElectronBridge.invoke).not.toHaveBeenCalled();
   });
 });

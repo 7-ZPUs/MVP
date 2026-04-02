@@ -71,13 +71,12 @@ export class SearchPageComponent implements OnInit {
   }
 
   public onAdvancedSearchRequested(filters: SearchFilters): void {
+   const validation = this.filterValidator.validate(filters as unknown as PartialSearchFilters);
+    this.externalValidation = validation;
+    if (!validation.isValid) {
+      return;
+    }
     this.searchFacade.searchAdvanced(filters);
-
-    const validationErrors = this.state().validationErrors;
-    this.externalValidation = {
-      isValid: validationErrors.size === 0,
-      errors: new Map(Array.from(validationErrors.entries()).map(([key, value]) => [key, [value]])),
-    };
   }
 
   public onFiltersReset(): void {

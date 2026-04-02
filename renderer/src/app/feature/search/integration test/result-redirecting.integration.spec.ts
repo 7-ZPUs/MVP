@@ -87,7 +87,9 @@ describe('SearchPageComponent - Integrazione e Navigazione', () => {
 
     expect(navigateSpy).not.toHaveBeenCalled();
     expect(warnSpy).toHaveBeenCalledTimes(1);
-    expect(warnSpy).toHaveBeenCalledWith('Unknown result type:', 'TIPO_NON_MAPPATO');
+    expect(warnSpy).toHaveBeenCalledWith(
+      'Tipo di documento sconosciuto: TIPO_NON_MAPPATO. Impossibile determinare la rotta di destinazione.'
+    );
   });
 
 

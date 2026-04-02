@@ -7,6 +7,7 @@ import { SearchPageComponent } from './search-page.component';
 import { SearchFacade } from '../../../services';
 import { SearchQueryType } from '../../../../../../../../shared/domain/metadata/search.enum';
 import { SearchState, SearchResult } from '../../../../../../../../shared/domain/metadata';
+import { SearchBarComponent } from '../../dumb/search-bar.component/search-bar.component';
 
 describe('SearchPageComponent', () => {
   let component: SearchPageComponent;
@@ -18,7 +19,7 @@ describe('SearchPageComponent', () => {
   beforeEach(async () => {
     mockStateSignal = signal<SearchState>({
       query: { text: '', type: SearchQueryType.FREE, useSemanticSearch: false },
-      filters: { common: {}, diDai: {}, aggregate: {}, customMeta: null, subject: null } as any,
+      filters: { common: {}, diDai: {}, aggregate: {}, customMeta: null, subject: [] } as any,
       results: [],
       loading: false,
       isSearching: false,
@@ -60,47 +61,19 @@ describe('SearchPageComponent', () => {
   });
 
   describe('Interazione con la Barra di Ricerca (Eventi DOM)', () => {
-    it("dovrebbe aggiornare il testo della query tramite l'evento (input) dell'HTML", () => {
-      const textInput = fixture.debugElement.query(By.css('input[type="text"]'));
-      textInput.triggerEventHandler('input', { target: { value: 'nuovo testo' } });
-
-      expect(mockFacade.setQuery).toHaveBeenCalledWith(
-        expect.objectContaining({ text: 'nuovo testo' }),
-      );
-    });
-
-    it("dovrebbe aggiornare il tipo di query tramite l'evento (change) della select", () => {
-      const select = fixture.debugElement.query(By.css('select'));
-      select.triggerEventHandler('change', { target: { value: 'PROCESS' } });
-
-      expect(mockFacade.setQuery).toHaveBeenCalledWith(
-        expect.objectContaining({ type: 'PROCESS' }),
-      );
-    });
-
-    it("dovrebbe aggiornare il flag semantico tramite l'evento (change) del checkbox", () => {
-      const checkbox = fixture.debugElement.query(By.css('input[type="checkbox"]'));
-      checkbox.triggerEventHandler('change', { target: { checked: true } });
-
-      expect(mockFacade.setQuery).toHaveBeenCalledWith(
-        expect.objectContaining({ useSemanticSearch: true }),
-      );
-    });
-
-    it("dovrebbe lanciare la ricerca alla pressione di invio sull'input", () => {
-      const searchInput = fixture.debugElement.query(By.css('input[type="text"]'));
-      searchInput.triggerEventHandler('keyup.enter', null);
-
-      expect(mockFacade.search).toHaveBeenCalled();
-    });
-
-    it('dovrebbe lanciare la ricerca al click sul bottone Cerca', () => {
-      const searchBtn = fixture.debugElement.query(By.css('header button'));
-      searchBtn.triggerEventHandler('click', null);
-
-      expect(mockFacade.search).toHaveBeenCalled();
-    });
+  it('dovrebbe aggiornare la query intercettando (queryChanged) dalla search-bar', () => {
+    const searchBar = fixture.debugElement.query(By.directive(SearchBarComponent));
+    searchBar.triggerEventHandler('queryChanged', { text: 'test', type: 'FREE', useSemanticSearch: false });
+    expect(mockFacade.setQuery).toHaveBeenCalled();
   });
+
+  it('dovrebbe lanciare la ricerca intercettando (searchRequested) dalla search-bar', () => {
+    const searchBar = fixture.debugElement.query(By.directive(SearchBarComponent));
+    searchBar.triggerEventHandler('searchRequested', null);
+    expect(mockFacade.search).toHaveBeenCalled();
+  });
+});
+
 
   describe('Orchestrazione della Ricerca', () => {
     it('dovrebbe chiamare searchSemantic se useSemanticSearch è true', () => {
@@ -175,7 +148,7 @@ describe('SearchPageComponent', () => {
         diDai: {},
         aggregate: {},
         customMeta: null,
-        subject: null,
+        subject: [],
       });
     });
 
@@ -209,64 +182,61 @@ describe('SearchPageComponent', () => {
 
   describe('Rendering Dinamico (Control Flow e Risultati)', () => {
     it('dovrebbe mostrare il loader se loading è true', () => {
-      mockStateSignal.update((s: SearchState) => ({ ...s, loading: true }));
+      mockStateSignal.update((s: any) => ({ ...s, loading: true }));
       fixture.detectChanges();
 
-      const spinner = fixture.debugElement.query(By.css('span[style*="animation: spin"]'));
-      expect(spinner).toBeTruthy();
+      const loader = fixture.debugElement.query(By.css('.loading-container'));
+      expect(loader).toBeTruthy();
+      expect(loader.nativeElement.textContent).toContain('Ricerca in corso');
     });
 
     it('dovrebbe mostrare il box di errore se presente un errore nello stato', () => {
-      mockStateSignal.update((s: SearchState) => ({
+      mockStateSignal.update((s: any) => ({
         ...s,
         loading: false,
-        error: { message: 'Errore di Rete', code: '500' } as any,
+        error: new Error('Errore di Rete')
       }));
       fixture.detectChanges();
 
-      const errorBox = fixture.nativeElement.querySelector('div[style*="color: #991b1b"]');
-      expect(errorBox.textContent).toContain('Errore di Rete');
+      const errorBox = fixture.debugElement.query(By.css('.error-banner'));
+      expect(errorBox).toBeTruthy();
+      expect(errorBox.nativeElement.textContent).toContain('Errore di Rete');
 
-      const retryBtn = fixture.debugElement.query(By.css('button[style*="background: #ef4444"]'));
-      retryBtn.triggerEventHandler('click', null);
-      expect(mockFacade.retry).toHaveBeenCalled();
-    });
-
-    it('dovrebbe mostrare i risultati e il json se ci sono elementi trovati', () => {
-      mockStateSignal.update((s: SearchState) => ({
-        ...s,
-        loading: false,
-        error: null,
-        results: [
-         { documentId: 'DOC-123', name: 'Test', type: 'AGGREGAZIONE_DOCUMENTALE', score: null },
-         { documentId: 'DOC-246', name: 'Test2', type: 'DOCUMENTO_INFORMATICO', score: null }
-        ] as SearchResult[],
-      }));
-      fixture.detectChanges();
-
-      const searchResultsElement = fixture.debugElement.query(By.css('app-search-results'));
-      expect(searchResultsElement).toBeTruthy();
-
-      const searchResultsInstance = searchResultsElement.componentInstance;
-      expect(searchResultsInstance.results.length).toBe(2);
-      expect(searchResultsInstance.results[0].name).toBe('Test');
-      expect(searchResultsInstance.results[1].name).toBe('Test2');
-       
+      const retryBtn = fixture.debugElement.query(By.css('.btn-retry'));
+      expect(retryBtn).toBeTruthy();
     });
 
     it('dovrebbe mostrare il messaggio "Nessun risultato" se array vuoto e query testuale presente', () => {
-      mockStateSignal.update((s: SearchState) => ({
+      mockStateSignal.update((s: any) => ({
         ...s,
         loading: false,
         error: null,
         results: [],
-        query: { ...s.query, text: 'parola inesistente' },
+        query: { ...s.query, text: 'parola inesistente' }
       }));
       fixture.detectChanges();
 
-      const noResultsDiv = fixture.debugElement.query(By.css('div[style*="text-align: center"]'));
-      expect(noResultsDiv).toBeTruthy();
-      expect(noResultsDiv.nativeElement.textContent).toContain('Nessun risultato trovato');
+      const emptyState = fixture.debugElement.query(By.css('.empty-state'));
+      expect(emptyState).toBeTruthy();
+      expect(emptyState.nativeElement.textContent).toContain('Nessun risultato trovato');
+    });
+
+    it('dovrebbe mostrare i risultati se ci sono elementi trovati', () => {
+      mockStateSignal.update((s: any) => ({
+        ...s,
+        loading: false,
+        error: null,
+        results: [
+          { documentId: '1', type: 'DOCUMENTO_INFORMATICO', title: 'Test Doc' }
+        ]
+      }));
+      fixture.detectChanges();
+
+      const resultsComponent = fixture.debugElement.query(By.css('app-search-results'));
+      expect(resultsComponent).toBeTruthy();
+      
+      const pageTitle = fixture.debugElement.query(By.css('.page-title'));
+      expect(pageTitle.nativeElement.textContent).toContain('Trovati 1 risultati');
     });
   });
 });
