@@ -1,0 +1,131 @@
+.search-results-wrapper {
+  .table-container {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  }
+
+  .results-table {
+    width: 100%;
+    text-align: left;
+    border-collapse: collapse;
+
+    th {
+      background-color: #f8fafc;
+      color: #475569;
+      font-weight: 600;
+      font-size: 0.875rem;
+      padding: 1rem;
+      border-bottom: 2px solid #e2e8f0;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    td {
+      padding: 1rem;
+      vertical-align: middle;
+      border-bottom: 1px solid #f1f5f9;
+      color: #334155;
+    }
+
+    .result-row {
+      transition: all 0.2s ease-in-out;
+      cursor: pointer;
+
+      &:hover {
+        background-color: #f1f6ff;
+        
+        td { border-bottom-color: #dbeafe; }
+        
+        .btn-open {
+          background-color: #2563eb;
+          color: white;
+          border-color: #2563eb;
+        }
+      }
+
+      &:last-child td {
+        border-bottom: none;
+      }
+    }
+
+    /* Stili per celle specifiche */
+    .name-cell {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+
+      .document-name {
+        font-weight: 600;
+        color: #0f172a;
+        font-size: 1rem;
+      }
+
+      .document-id {
+        font-size: 0.75rem;
+        color: #64748b;
+        font-family: monospace;
+      }
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      background-color: #f1f5f9;
+      color: #475569;
+
+      /* Colori specifici dinamici basati sul tipo */
+      &.documento_informatico, &.documento_amministrativo_informatico {
+        background-color: #dbeafe;
+        color: #1e40af;
+      }
+      &.aggregazione_documentale {
+        background-color: #fef3c7;
+        color: #92400e;
+      }
+      &.processo {
+        background-color: #dcfce7;
+        color: #166534;
+      }
+      &.classe_documentale {
+        background-color: #f3e8ff;
+        color: #6b21a8;
+      }
+    }
+
+    .score-badge {
+      font-family: monospace;
+      background: #f8fafc;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      border: 1px solid #e2e8f0;
+      color: #475569;
+    }
+
+    .actions-cell {
+      text-align: right;
+      width: 100px;
+    }
+
+    .btn-open {
+      padding: 0.4rem 1rem;
+      border-radius: 6px;
+      border: 1px solid #cbd5e1;
+      background-color: white;
+      color: #475569;
+      font-weight: 600;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: all 0.2s;
+
+      &:active {
+        transform: scale(0.95);
+      }
+    }
+  }
+}

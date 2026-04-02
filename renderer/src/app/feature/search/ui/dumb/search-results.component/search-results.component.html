@@ -1,38 +1,50 @@
 <div class="search-results-wrapper">
-  <ng-container *ngIf="results && results.length > 0; else emptyTpl">
-    <table class="results-table" style="width: 100%; text-align: left; border-collapse: collapse">
-      <thead>
-        <tr style="border-bottom: 2px solid #e2e8f0">
-          <th style="padding: 0.75rem">Nome Documento</th>
-          <th style="padding: 0.75rem">Tipo</th>
-          <th style="padding: 0.75rem">Score</th>
-          <th style="padding: 0.75rem">Azioni</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr
-          *ngFor="let res of results"
-          class="result-row"
-          style="border-bottom: 1px solid #e2e8f0; cursor: pointer"
-          (click)="onSelect(res)"
-        >
-        <td style="padding: 0.75rem">
-         <pre style="font-size: 10px">{{ res | json }}</pre>
-        </td>
-          <td style="padding: 0.75rem">{{ res.name }}</td>
-          <td style="padding: 0.75rem">{{ res.type }}</td>
-          <td style="padding: 0.75rem">
-            {{ res.score !== null ? (res.score | number: '1.0-2') : '-' }}
-          </td>
-          <td style="padding: 0.75rem">
-            <button type="button" class="btn-open">Apri</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </ng-container>
-
-  <ng-template #emptyTpl>
+  @if (results && results.length > 0) {
+    <div class="table-container">
+      <table class="results-table">
+        <thead>
+          <tr>
+            <th>Documento</th>
+            <th>Tipologia</th>
+            @if (isSemanticSearch) {
+              <th>Score AI</th>
+            }
+            <th class="actions-cell">Azioni</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (res of results; track res.documentId) {
+            <tr class="result-row" (click)="onSelect(res)">
+              
+              <td class="name-cell">
+                <span class="document-name">{{ res.name || 'Senza titolo' }}</span>
+                <span class="document-id">ID: {{ res.documentId }}</span>
+              </td>
+              
+              <td>
+                <span class="badge" [class]="res.type | lowercase">{{ res.type }}</span>
+              </td>
+              
+              @if (isSemanticSearch) {
+                <td>
+                  @if (res.score !== null && res.score !== undefined) {
+                    <span class="score-badge">{{ res.score | number: '1.0-2' }}</span>
+                  } @else {
+                    <span class="score-empty">-</span>
+                  }
+                </td>
+              }
+              
+              <td class="actions-cell">
+                <button type="button" class="btn-open">Apri</button>
+              </td>
+              
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  } @else {
     <app-empty-state [message]="emptyMessage"></app-empty-state>
-  </ng-template>
+  }
 </div>
