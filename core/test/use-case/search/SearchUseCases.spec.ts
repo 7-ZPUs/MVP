@@ -3,7 +3,7 @@ import { SearchDocumentsUC } from "../../../src/use-case/document/impl/SearchDoc
 import { SearchSemanticUC } from "../../../src/use-case/document/impl/SearchSemanticUC";
 import { IDocumentRepository } from "../../../src/repo/IDocumentRepository";
 import { IWordEmbedding } from "../../../src/repo/IWordEmbedding";
-import { SearchFilters } from "../../../../shared/domain/metadata/search.models";
+import { SearchDocumentsQuery } from "../../../src/entity/search/SearchQuery.model";
 import { DocumentMapper } from "../../../src/dao/mappers/DocumentMapper";
 import { MetadataType } from "../../../src/value-objects/Metadata";
 
@@ -42,38 +42,10 @@ const makeDocument = (
 };
 
 // Filtri vuoti — nessun campo attivo
-const emptyFilters: SearchFilters = {
-  common: {
-    chiaveDescrittiva: null,
-    classificazione: null,
-    conservazione: null,
-    note: null,
-    tipoDocumento: null,
-  },
-  diDai: {
-    nome: null,
-    versione: null,
-    idPrimario: null,
-    tipologia: null,
-    modalitaFormazione: null,
-    riservatezza: null,
-    identificativoFormato: null,
-    verifica: null,
-    registrazione: null,
-    tracciatureModifiche: null,
-  },
-  aggregate: {
-    tipoAggregazione: null,
-    idAggregazione: null,
-    tipoFascicolo: null,
-    dataApertura: null,
-    dataChiusura: null,
-    procedimento: null,
-    assegnazione: null,
-  },
-  subject: null,
-  custom: null,
-};
+const emptyFilters = new SearchDocumentsQuery({
+  logicOperator: "AND",
+  items: [],
+});
 
 // ─── SearchDocumentsUC ───────────────────────────────────────────────────────
 
@@ -96,11 +68,9 @@ describe("SearchDocumentsUC", () => {
     const results = await uc.execute(emptyFilters);
 
     expect(results).toHaveLength(1);
-    expect(results[0].documentId).toBe("uuid-1");
-    expect(results[0].name).toBe("fattura.pdf");
-    expect(results[0].type).toBe("DOCUMENTO INFORMATICO");
-    // La ricerca testuale non produce score
-    expect(results[0].score).toBeNull();
+    expect(results[0].getUuid()).toBe("uuid-1");
+    expect(results[0].getMetadata().findNodeByName("nome")?.getStringValue()).toBe("fattura.pdf");
+    expect(results[0].getMetadata().findNodeByName("tipoDocumento")?.getStringValue()).toBe("DOCUMENTO INFORMATICO");
   });
 
   // Il repo non trova documenti corrispondenti
@@ -121,21 +91,20 @@ describe("SearchDocumentsUC", () => {
     const uc = new SearchDocumentsUC(repo as IDocumentRepository);
     const results = await uc.execute(emptyFilters);
 
-    expect(results[0].name).toBe("");
-    expect(results[0].type).toBe("");
+    expect(results[0].getMetadata().findNodeByName("nome")).toBeNull();
+    expect(results[0].getMetadata().findNodeByName("tipoDocumento")).toBeNull();
   });
 
   // I filtri devono essere passati intatti al repository
   it("passa i filtri al repository senza modificarli", async () => {
     (repo.searchDocument as ReturnType<typeof vi.fn>).mockReturnValue([]);
 
-    const filters: SearchFilters = {
-      ...emptyFilters,
-      common: {
-        ...emptyFilters.common,
-        tipoDocumento: "DOCUMENTO INFORMATICO" as any,
-      },
-    };
+    const filters = new SearchDocumentsQuery({
+      logicOperator: "AND",
+      items: [
+        { path: "tipoDocumento", operator: "EQ", value: "DOCUMENTO INFORMATICO" }
+      ]
+    });
 
     const uc = new SearchDocumentsUC(repo as IDocumentRepository);
     await uc.execute(filters);
@@ -156,13 +125,11 @@ describe("SearchDocumentsUC", () => {
     const results = await uc.execute(emptyFilters);
 
     expect(results).toHaveLength(3);
-    expect(results.map((r) => r.documentId)).toEqual([
+    expect(results.map((r) => r.getUuid())).toEqual([
       "uuid-a",
       "uuid-b",
       "uuid-c",
     ]);
-    // Tutti i risultati testuali hanno score null
-    results.forEach((r) => expect(r.score).toBeNull());
   });
 
   // Solo il metadato 'nome' deve essere usato per il campo name
@@ -178,8 +145,8 @@ describe("SearchDocumentsUC", () => {
     const uc = new SearchDocumentsUC(repo as IDocumentRepository);
     const results = await uc.execute(emptyFilters);
 
-    expect(results[0].name).toBe("contratto.pdf");
-    expect(results[0].type).toBe("DOCUMENTO AMMINISTRATIVO INFORMATICO");
+    expect(results[0].getMetadata().findNodeByName("nome")?.getStringValue()).toBe("contratto.pdf");
+    expect(results[0].getMetadata().findNodeByName("tipoDocumento")?.getStringValue()).toBe("DOCUMENTO AMMINISTRATIVO INFORMATICO");
   });
 
   it("usa il primo metadato corrispondente quando ci sono duplicati (nome/tipoDocumento)", async () => {
@@ -194,9 +161,8 @@ describe("SearchDocumentsUC", () => {
     const uc = new SearchDocumentsUC(repo as IDocumentRepository);
     const results = await uc.execute(emptyFilters);
 
-    expect(results[0].name).toBe("primo-nome.pdf");
-    expect(results[0].type).toBe("TIPO-1");
-    expect(results[0].score).toBeNull();
+    expect(results[0].getMetadata().findNodeByName("nome")?.getStringValue()).toBe("primo-nome.pdf");
+    expect(results[0].getMetadata().findNodeByName("tipoDocumento")?.getStringValue()).toBe("TIPO-1");
   });
 
   it("propaga errori del repository durante la ricerca normale", async () => {

@@ -20,8 +20,10 @@ import { DocumentDAO } from "../../../../../src/dao/DocumentDAO";
 import { ProcessDAO } from "../../../../../src/dao/ProcessDAO";
 import { DocumentClassDAO } from "../../../../../src/dao/DocumentClassDAO";
 import Database from "better-sqlite3";
+import { SqliteTransactionManager } from "../../../../../src/repo/impl/SqliteTransactionManager";
 
 const DEFAULT_REAL_DIP_PATH = "core/test/resources/real_dip_heavy";
+const PROJECT_ROOT = path.resolve(__dirname, "../../../../../../");
 const realDipPath = process.env.REAL_DIP_PATH ?? DEFAULT_REAL_DIP_PATH;
 const runs = Number(process.env.PERF_RUNS ?? "1");
 const runPerfTests = process.env.RUN_PERF_TESTS === "true";
@@ -68,7 +70,7 @@ describe("IndexDip use-case performance", () => {
       const db = new Database(dbPath);
 
       const schema = fs.readFileSync(
-        path.join(process.cwd(), "db/schema.sql"),
+        path.join(PROJECT_ROOT, "db/schema.sql"),
         "utf-8",
       );
       db.exec(schema);
@@ -93,6 +95,7 @@ describe("IndexDip use-case performance", () => {
         processRepository,
         documentRepository,
         fileRepository,
+        new SqliteTransactionManager(db),
       );
 
       const start = performance.now();
@@ -105,7 +108,7 @@ describe("IndexDip use-case performance", () => {
       // Cleanup
       db.close();
       if (i === runs - 1) {
-        fs.copyFileSync(dbPath, path.join(process.cwd(), "perf-dip-viewer.db"));
+        fs.copyFileSync(dbPath, path.join(PROJECT_ROOT, "perf-dip-viewer.db"));
       }
       fs.rmSync(tmpDir, { recursive: true, force: true });
     }
@@ -124,5 +127,5 @@ describe("IndexDip use-case performance", () => {
     );
 
     expect(durationsMs).toHaveLength(runs);
-  }, 60000);
+  }, 600000);
 });

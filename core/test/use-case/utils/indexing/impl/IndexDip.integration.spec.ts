@@ -24,6 +24,7 @@ import { ProcessDAO } from "../../../../../src/dao/ProcessDAO";
 import { readFileSync } from "node:fs";
 import { nukeTestDb } from "../../../../dao/helpers/testDb";
 import Database from "better-sqlite3";
+import { SqliteTransactionManager } from "../../../../../src/repo/impl/SqliteTransactionManager";
 
 // ---------------------------------------------------------------------------
 // Realistic DiP index XML — one DocumentClass, one AiP, two Documents
@@ -196,6 +197,7 @@ describe("Index use-case integration tests", () => {
       processRepository,
       documentRepository,
       fileRepository,
+      new SqliteTransactionManager(db),
     );
 
     const result = await useCase.execute(mockDipPath);

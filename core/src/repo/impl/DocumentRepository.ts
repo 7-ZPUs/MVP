@@ -6,7 +6,7 @@ import type { IDocumentRepository } from "../IDocumentRepository";
 
 import { DOCUMENT_DAO_TOKEN } from "../../dao/IDocumentDAO";
 import { DocumentDAO } from "../../dao/DocumentDAO";
-import { SearchFilters } from "../../../../shared/domain/metadata";
+import { SearchDocumentsQuery } from "../../entity/search/SearchQuery.model";
 
 const METADATA_TABLE = "document_metadata";
 const METADATA_FK = "document_id";
@@ -38,7 +38,7 @@ export class DocumentRepository implements IDocumentRepository {
     return this.dao.updateIntegrityStatus(id, status);
   }
 
-  searchDocument(filters: SearchFilters): Document[] {
+  searchDocument(filters: SearchDocumentsQuery): Document[] {
     return this.dao.searchDocument(filters);
   }
 

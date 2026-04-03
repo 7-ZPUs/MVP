@@ -1,6 +1,6 @@
 import type { Document } from "../entity/Document";
+import { SearchDocumentsQuery } from "../entity/search/SearchQuery.model";
 import { IntegrityStatusEnum } from "../value-objects/IntegrityStatusEnum";
-import { SearchFilters } from "../../../shared/domain/metadata";
 
 export const DOCUMENTO_REPOSITORY_TOKEN = Symbol("IDocumentRepository");
 
@@ -13,7 +13,7 @@ export interface IDocumentRepository {
 
   updateIntegrityStatus(id: number, status: IntegrityStatusEnum): void;
 
-  searchDocument(filters: SearchFilters): Document[];
+  searchDocument(filters: SearchDocumentsQuery): Document[];
 
   searchDocumentSemantic(
     queryVector: Float32Array,

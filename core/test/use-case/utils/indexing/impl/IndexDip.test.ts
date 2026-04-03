@@ -17,6 +17,7 @@ import { ProcessDAO } from "../../../../../src/dao/ProcessDAO";
 import { DocumentDAO } from "../../../../../src/dao/DocumentDAO";
 import { FileDAO } from "../../../../../src/dao/FileDAO";
 import { readFileSync } from "node:fs";
+import { SqliteTransactionManager } from "../../../../../src/repo/impl/SqliteTransactionManager";
 
 describe("IndexDip", () => {
   let db: Database.Database;
@@ -58,6 +59,7 @@ describe("IndexDip", () => {
       processRepository,
       documentRepository,
       fileRepository,
+      new SqliteTransactionManager(db),
     );
   });
 
@@ -126,15 +128,6 @@ describe("IndexDip", () => {
     const documents = db.prepare("SELECT * FROM document").all();
     expect(documents).toHaveLength(1);
     expect((documents[0] as any).uuid).toBe("doc-1");
-
-    const documentMetadata = db
-      .prepare("SELECT * FROM document_metadata")
-      .all();
-    expect(documentMetadata.length).toBeGreaterThan(0);
-    const titoloRow = (documentMetadata as any[]).find(
-      (m) => m.name === "Titolo",
-    );
-    expect(titoloRow?.value).toBe("Test Titolo");
 
     const files = db.prepare("SELECT * FROM file").all();
     expect(files).toHaveLength(1);

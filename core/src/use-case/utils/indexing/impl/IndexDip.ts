@@ -21,6 +21,10 @@ import {
   FILE_REPOSITORY_TOKEN,
 } from "../../../../repo/IFileRepository";
 import {
+  ITransactionManager,
+  TRANSACTION_MANAGER_TOKEN,
+} from "../../../../repo/ITransactionManager";
+import {
   IDipRepository,
   DIP_REPOSITORY_TOKEN,
 } from "../../../../repo/IDipRepository";
@@ -46,14 +50,18 @@ export class IndexDip implements IIndexDip {
     private readonly documentRepository: IDocumentRepository,
     @inject(FILE_REPOSITORY_TOKEN)
     private readonly fileRepository: IFileRepository,
+    @inject(TRANSACTION_MANAGER_TOKEN)
+    private readonly transactionManager: ITransactionManager,
   ) {}
   public async execute(dipPath: string): Promise<IndexResult> {
-    await this.indexDip(dipPath);
-    await this.indexDocumentClasses(dipPath);
-    await this.indexProcesses(dipPath);
-    await this.indexDocuments(dipPath);
-    await this.indexFiles(dipPath);
-    return { success: true };
+    return this.transactionManager.runInTransaction(async () => {
+      await this.indexDip(dipPath);
+      await this.indexDocumentClasses(dipPath);
+      await this.indexProcesses(dipPath);
+      await this.indexDocuments(dipPath);
+      await this.indexFiles(dipPath);
+      return { success: true };
+    });
   }
 
   private async indexDip(dipPath: string): Promise<IndexResult> {

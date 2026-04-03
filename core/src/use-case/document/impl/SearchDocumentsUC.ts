@@ -4,10 +4,18 @@ import {
   IDocumentRepository,
   DOCUMENTO_REPOSITORY_TOKEN,
 } from "../../../repo/IDocumentRepository";
-import {
-  SearchFilters,
-  SearchResult,
-} from "../../../../../shared/domain/metadata";
+import { SearchDocumentsQuery } from "../../../entity/search/SearchQuery.model";
+import { Document } from "../../../entity/Document";
+
+export interface MetadataCondition {
+  key: string;
+  value: string | null;
+}
+
+export interface MetadataGroupCondition {
+  operator: "AND" | "OR";
+  conditions: Array<MetadataCondition | MetadataGroupCondition>;
+}
 
 @injectable()
 export class SearchDocumentsUC implements ISearchDocumentsUC {
@@ -16,25 +24,8 @@ export class SearchDocumentsUC implements ISearchDocumentsUC {
     private readonly documentRepo: IDocumentRepository,
   ) {}
 
-  async execute(filters: SearchFilters): Promise<SearchResult[]> {
+  async execute(filters: SearchDocumentsQuery): Promise<Document[]> {
     const results = this.documentRepo.searchDocument(filters);
-    return results.map((document) => {
-      const metadata = document.getMetadata();
-      const name =
-        metadata.findNodeByName("nome")?.getStringValue() ??
-        metadata.findNodeByName("NomeDelDocumento")?.getStringValue() ??
-        "";
-      const type =
-        metadata.findNodeByName("tipoDocumento")?.getStringValue() ??
-        metadata.findNodeByName("TipologiaDocumentale")?.getStringValue() ??
-        "";
-
-      return {
-        documentId: document.getUuid(),
-        name,
-        type,
-        score: null,
-      };
-    });
+    return results;
   }
 }

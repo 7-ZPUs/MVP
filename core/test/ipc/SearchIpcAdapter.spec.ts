@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { SearchFilters } from "../../../shared/domain/metadata/search.models";
+import { SearchRequestDTO } from "../../../shared/domain/metadata/search.models";
+import { SearchDocumentsQuery } from "../../src/entity/search/SearchQuery.model";
 
 vi.mock("electron", () => ({
   app: { isPackaged: false },
@@ -224,40 +225,38 @@ describe("SearchIpcAdapter", () => {
 
   // ─── SEARCH_DOCUMENTS ─────────────────────────────────────────────────────
 
-  it("SEARCH_DOCUMENTS chiama execute con i filtri e ritorna SearchResult[]", async () => {
-    const expectedResults = [
-      {
-        documentId: "uuid-1",
-        name: "doc.pdf",
-        type: "DOCUMENTO INFORMATICO",
-        score: null,
-      },
-    ];
-    searchDocumentsUC.execute.mockResolvedValue(expectedResults);
+  it("SEARCH_DOCUMENTS chiama execute e propaga i risultati", async () => {
+    const doc = makeDocument("uuid-1", [{ name: "nome", value: "doc.pdf" }]);
+    searchDocumentsUC.execute.mockResolvedValue([doc]);
 
-    const filters = {
-      common: null,
-      diDai: null,
-      aggregate: null,
-      subject: null,
-      custom: null,
+    const filters: SearchRequestDTO = {
+      filter: {
+        logicOperator: "AND",
+        items: [{ path: "NomeDelDocumento", operator: "EQ", value: "test" }]
+      }
     };
     const result = await ipcMain.invoke(IpcChannels.SEARCH_DOCUMENTS, filters);
 
-    expect(searchDocumentsUC.execute).toHaveBeenCalledWith(filters);
-    expect(result).toEqual(expectedResults);
+    expect(searchDocumentsUC.execute).toHaveBeenCalled();
+    expect(result).toEqual([doc]);
   });
 
   it("SEARCH_DOCUMENTS ritorna array vuoto se nessun documento trovato", async () => {
     searchDocumentsUC.execute.mockResolvedValue([]);
-    const result = await ipcMain.invoke(IpcChannels.SEARCH_DOCUMENTS, {});
+    const filters: SearchRequestDTO = {
+      filter: { logicOperator: "AND", items: [{ path: "X", operator: "EQ", value: "Y" }] }
+    };
+    const result = await ipcMain.invoke(IpcChannels.SEARCH_DOCUMENTS, filters);
     expect(result).toEqual([]);
   });
 
   it("SEARCH_DOCUMENTS propaga rejection della use-case", async () => {
     searchDocumentsUC.execute.mockRejectedValue(new Error("documents failed"));
+    const filters: SearchRequestDTO = {
+      filter: { logicOperator: "AND", items: [{ path: "X", operator: "EQ", value: "Y" }] }
+    };
     await expect(
-      ipcMain.invoke(IpcChannels.SEARCH_DOCUMENTS, {}),
+      ipcMain.invoke(IpcChannels.SEARCH_DOCUMENTS, filters),
     ).rejects.toThrow("documents failed");
   });
 
@@ -328,20 +327,17 @@ describe("SearchIpcAdapter", () => {
     };
     await ipcMain.invoke(IpcChannels.SEARCH_FULLTEXT, query);
 
-    const calledFilters = searchDocumentsUC.execute.mock
-      .calls[0][0] as SearchFilters;
-    expect(calledFilters.diDai?.nome).toBe("fattura.pdf");
+    const calledQuery = searchDocumentsUC.execute.mock
+      .calls[0][0] as SearchDocumentsQuery;
+    expect(calledQuery.filter.items[0]).toEqual({
+      path: "NomeDelDocumento",
+      operator: "LIKE",
+      value: "%fattura.pdf%",
+    });
   });
 
-  it("SEARCH_FULLTEXT ritorna SearchResult[] dal searchDocumentsUC", async () => {
-    const expectedResults = [
-      {
-        documentId: "uuid-1",
-        name: "fattura.pdf",
-        type: "DOCUMENTO INFORMATICO",
-        score: null,
-      },
-    ];
+  it("SEARCH_FULLTEXT ritorna Document[] dal searchDocumentsUC", async () => {
+    const expectedResults = [ makeDocument("uuid-1", []) ];
     searchDocumentsUC.execute.mockResolvedValue(expectedResults);
 
     const query = {

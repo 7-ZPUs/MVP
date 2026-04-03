@@ -1,32 +1,55 @@
-import { CommonFilterValues } from './search-common-filters-models';
-import { DiDaiFilterValues } from './search-diDai-filters-models';
-import { AggregateFilterValues } from './search-aggregate-filters-models';
-import { SubjectCriteria } from './search-subject-filters-models';
-import { SearchQueryType } from './search.enum';
-import { AppError } from '../error.models';
-import { CustomFilterValues } from './search-custom-filters-models';
+import { SearchQueryType } from "./search.enum";
+import { AppError } from "../error.models";
+import { z } from 'zod';
+
+// Regex di sicurezza per il path
+const PathRegex = /^[a-zA-Z0-9_]+(\.[a-zA-Z0-9_]+)*$/;
+
+/**
+ * Schema e DTO della singola condizione
+ */
+export const SearchConditionSchema = z.object({
+  path: z.string().regex(PathRegex, "Il path deve essere in una dot-notation valida"),
+  operator: z.enum(['EQ', 'GT', 'LT', 'LIKE', 'IN', 'ELEM_MATCH']),
+  value: z.any(),
+});
+
+export type SearchConditionDTO = z.infer<typeof SearchConditionSchema>;
+
+/**
+ * Definizione del tipo ricorsivo per TypeScript
+ */
+export type SearchGroupDTO = {
+  logicOperator: 'AND' | 'OR';
+  items: Array<SearchGroupDTO | SearchConditionDTO>;
+};
+
+/**
+ * Schema Zod ricorsivo
+ */
+export const SearchGroupSchema: z.ZodType<SearchGroupDTO> = z.lazy(() =>
+  z.object({
+    logicOperator: z.enum(['AND', 'OR']),
+    items: z.array(
+      z.union([SearchConditionSchema, SearchGroupSchema])
+    ).min(1, "Un gruppo deve contenere almeno un elemento"),
+  })
+);
+
+/**
+ * Schema della richiesta principale. 
+ * Ora accetta SOLO l'albero dei filtri. Nessuna pagina/limite.
+ */
+export const SearchRequestSchema = z.object({
+  filter: SearchGroupSchema,
+});
+
+export type SearchRequestDTO = z.infer<typeof SearchRequestSchema>;
 
 export interface SearchQuery {
   text: string;
   type: SearchQueryType;
   useSemanticSearch: boolean;
-}
-
-export interface MetadataFilter {
-  key: string;
-  value: string | null;
-}
-
-export interface SearchFilters {
-  filters: MetadataFilter[];
-  subject: SubjectCriteria | null;
-}
-
-export interface PartialSearchFilters {
-  common: CommonFilterValues;
-  diDai: DiDaiFilterValues;
-  aggregate: AggregateFilterValues;
-  customMeta: CustomFilterValues | null;
 }
 
 export interface SearchResult {
