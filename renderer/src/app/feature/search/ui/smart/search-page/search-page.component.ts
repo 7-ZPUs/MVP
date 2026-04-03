@@ -1,44 +1,54 @@
 import { Component, inject, OnInit, Inject } from '@angular/core';
-import { JsonPipe } from '@angular/common';
+import { Router } from '@angular/router';
 import { SearchFacade } from '../../../services';
 import { AdvancedFilterPanelComponent } from '../advanced-filter-panel/advanced-filter-panel';
+import { SearchResultsComponent } from '../../dumb/search-results.component/search-results.component';
 import {
   SearchFilters,
+  SearchResult,
   SearchQuery,
   ValidationResult,
   PartialSearchFilters,
 } from '../../../../../../../../shared/domain/metadata';
-import { SearchQueryType } from '../../../../../../../../shared/domain/metadata/search.enum';
 import { IFilterValidator } from '../../../../validation/contracts/filter-validator.interface';
+import { SearchBarComponent } from '../../dumb/search-bar.component/search-bar.component';
+import {
+  buildDetailRoute,
+  mapSearchResultTypeToDetailItemType,
+} from '../../../../../features/navigation/domain/navigation-routing';
 
 @Component({
   selector: 'app-search-page',
   standalone: true,
-  imports: [AdvancedFilterPanelComponent, JsonPipe],
+  imports: [AdvancedFilterPanelComponent, SearchResultsComponent, SearchBarComponent],
   templateUrl: './search-page.html',
+  styleUrl: './search-page.scss'
 })
 export class SearchPageComponent implements OnInit {
   protected readonly searchFacade = inject(SearchFacade);
+  protected readonly router = inject(Router);
   public readonly state = this.searchFacade.getState();
   public externalValidation: ValidationResult | null = null;
 
   constructor(@Inject('IFilterValidator') private readonly filterValidator: IFilterValidator) {}
 
-  public ngOnInit(): void {}
-
-  public onSearchTextChanged(event: Event): void {
-    const text = (event.target as HTMLInputElement).value;
-    this.searchFacade.setQuery({ ...this.state().query, text });
+  public ngOnInit(): void {
+    const currentState = this.state();
+    
+    if (!currentState.filters || currentState.filters.subject === undefined) {
+    
+      this.searchFacade.setFilters({
+        common: currentState.filters?.common || {},
+        diDai: currentState.filters?.diDai || {},
+        aggregate: currentState.filters?.aggregate || {},
+        customMeta: currentState.filters?.customMeta || null,
+        subject: [], 
+      } as any);
+    }
   }
 
-  public onSearchTypeChanged(event: Event): void {
-    const type = (event.target as HTMLSelectElement).value as SearchQueryType;
-    this.searchFacade.setQuery({ ...this.state().query, type });
-  }
-
-  public onSemanticToggle(event: Event): void {
-    const useSemanticSearch = (event.target as HTMLInputElement).checked;
-    this.searchFacade.setQuery({ ...this.state().query, useSemanticSearch });
+ public onQueryChanged(query: SearchQuery): void {
+    this.searchFacade.setQuery(query);
   }
 
   public onFiltersChanged(filters: SearchFilters): void {
@@ -65,13 +75,12 @@ export class SearchPageComponent implements OnInit {
   }
 
   public onAdvancedSearchRequested(filters: SearchFilters): void {
+   const validation = this.filterValidator.validate(filters as unknown as PartialSearchFilters);
+    this.externalValidation = validation;
+    if (!validation.isValid) {
+      return;
+    }
     this.searchFacade.searchAdvanced(filters);
-
-    const validationErrors = this.state().validationErrors;
-    this.externalValidation = {
-      isValid: validationErrors.size === 0,
-      errors: new Map(Array.from(validationErrors.entries()).map(([key, value]) => [key, [value]])),
-    };
   }
 
   public onFiltersReset(): void {
@@ -80,7 +89,7 @@ export class SearchPageComponent implements OnInit {
       diDai: {},
       aggregate: {},
       customMeta: null,
-      subject: null,
+      subject: [],
     } as any);
 
     this.externalValidation = null;
@@ -92,5 +101,19 @@ export class SearchPageComponent implements OnInit {
 
   public onLiveValidationChanged(result: ValidationResult): void {
     this.externalValidation = result;
+  }
+
+  public onResultSelected(result: SearchResult): void {
+    const id = result.documentId;
+
+    const targetItemType = mapSearchResultTypeToDetailItemType(result.type);
+    if (!targetItemType) {
+      console.warn(
+        `Tipo di documento non ancora supportato in navigazione: ${result.type}. Impossibile determinare la rotta di destinazione.`,
+      );
+      return;
+    }
+
+    void this.router.navigate(buildDetailRoute(targetItemType, id));
   }
 }

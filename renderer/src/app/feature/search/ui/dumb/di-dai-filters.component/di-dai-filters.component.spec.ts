@@ -165,6 +165,7 @@ describe('DiDaiFiltersComponent', () => {
   });
 
   it('dovrebbe innescare i metodi di tracciatura cliccando fisicamente i bottoni nel template HTML', async () => {
+    // Cerchiamo il bottone "Aggiungi" e lo clicchiamo
     const buttons = fixture.debugElement.queryAll(By.css('button'));
     const addBtn = buttons.find((b) => b.nativeElement.textContent.includes('+ Aggiungi'));
 
@@ -176,11 +177,10 @@ describe('DiDaiFiltersComponent', () => {
 
     expect(component.tracciatureFormArray.length).toBe(1);
 
-    const updatedButtons = fixture.debugElement.queryAll(By.css('button'));
-    const removeBtn = updatedButtons.find((b) => b.nativeElement.textContent.includes('✕ Rimuovi'));
+    const removeBtn = fixture.debugElement.query(By.css('.btn-remove-item'));
 
     expect(removeBtn).toBeTruthy();
-    removeBtn?.triggerEventHandler('click', null);
+    removeBtn.triggerEventHandler('click', null);
 
     fixture.detectChanges();
 

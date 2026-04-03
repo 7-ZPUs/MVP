@@ -1,0 +1,13 @@
+<ng-container *ngIf="loading; else notLoading">
+    <ng-content select="[loading]"></ng-content>
+  </ng-container>
+  
+  <ng-template #notLoading>
+    <ng-container *ngIf="error; else contentTpl">
+      <ng-content select="[error]"></ng-content>
+    </ng-container>
+  </ng-template>
+  
+  <ng-template #contentTpl>
+    <ng-content select="[content]"></ng-content>
+  </ng-template>

@@ -9,6 +9,7 @@ import { MetadataType } from "../../../src/value-objects/Metadata";
 
 // Costruisce un Document già persistito con metadati opzionali
 const makeDocument = (
+  id: number,
   uuid: string,
   metadata: { name: string; value: string }[] = [],
 ) => {
@@ -31,7 +32,7 @@ const makeDocument = (
 
   return DocumentMapper.fromPersistence(
     {
-      id: 1,
+      id,
       uuid,
       integrityStatus: "UNKNOWN",
       processId: 1,
@@ -86,8 +87,8 @@ describe("SearchDocumentsUC", () => {
 
   // Caso nominale: un documento con metadati completi
   it("mappa correttamente uuid, nome e tipoDocumento nel SearchResult", async () => {
-    const doc = makeDocument("uuid-1", [
-      { name: "nome", value: "fattura.pdf" },
+    const doc = makeDocument(1, "uuid-1", [
+      { name: "NomeDelDocumento", value: "fattura.pdf" },
       { name: "tipoDocumento", value: "DOCUMENTO INFORMATICO" },
     ]);
     (repo.searchDocument as ReturnType<typeof vi.fn>).mockReturnValue([doc]);
@@ -96,7 +97,7 @@ describe("SearchDocumentsUC", () => {
     const results = await uc.execute(emptyFilters);
 
     expect(results).toHaveLength(1);
-    expect(results[0].documentId).toBe("uuid-1");
+    expect(results[0].documentId).toBe("1");
     expect(results[0].name).toBe("fattura.pdf");
     expect(results[0].type).toBe("DOCUMENTO INFORMATICO");
     // La ricerca testuale non produce score
@@ -115,7 +116,7 @@ describe("SearchDocumentsUC", () => {
 
   // Metadati assenti: i campi devono degradare a stringa vuota
   it("usa stringa vuota per name e type se i metadati sono assenti", async () => {
-    const doc = makeDocument("uuid-2", []);
+    const doc = makeDocument(2, "uuid-2", []);
     (repo.searchDocument as ReturnType<typeof vi.fn>).mockReturnValue([doc]);
 
     const uc = new SearchDocumentsUC(repo as IDocumentRepository);
@@ -146,9 +147,9 @@ describe("SearchDocumentsUC", () => {
   // Più documenti: tutti devono essere mappati
   it("mappa correttamente più documenti restituiti dal repository", async () => {
     const docs = [
-      makeDocument("uuid-a", [{ name: "nome", value: "a.pdf" }]),
-      makeDocument("uuid-b", [{ name: "nome", value: "b.pdf" }]),
-      makeDocument("uuid-c", [{ name: "nome", value: "c.pdf" }]),
+      makeDocument(11, "uuid-a", [{ name: "NomeDelDocumento", value: "a.pdf" }]),
+      makeDocument(12, "uuid-b", [{ name: "NomeDelDocumento", value: "b.pdf" }]),
+      makeDocument(13, "uuid-c", [{ name: "NomeDelDocumento", value: "c.pdf" }]),
     ];
     (repo.searchDocument as ReturnType<typeof vi.fn>).mockReturnValue(docs);
 
@@ -157,9 +158,9 @@ describe("SearchDocumentsUC", () => {
 
     expect(results).toHaveLength(3);
     expect(results.map((r) => r.documentId)).toEqual([
-      "uuid-a",
-      "uuid-b",
-      "uuid-c",
+      "11",
+      "12",
+      "13",
     ]);
     // Tutti i risultati testuali hanno score null
     results.forEach((r) => expect(r.score).toBeNull());
@@ -167,9 +168,9 @@ describe("SearchDocumentsUC", () => {
 
   // Solo il metadato 'nome' deve essere usato per il campo name
   it("ignora metadati con chiavi diverse da nome e tipoDocumento", async () => {
-    const doc = makeDocument("uuid-3", [
+    const doc = makeDocument(3, "uuid-3", [
       { name: "autore", value: "Mario Rossi" },
-      { name: "nome", value: "contratto.pdf" },
+      { name: "NomeDelDocumento", value: "contratto.pdf" },
       { name: "tipoDocumento", value: "DOCUMENTO AMMINISTRATIVO INFORMATICO" },
       { name: "classificazione", value: "1.2.3" },
     ]);
@@ -183,9 +184,9 @@ describe("SearchDocumentsUC", () => {
   });
 
   it("usa il primo metadato corrispondente quando ci sono duplicati (nome/tipoDocumento)", async () => {
-    const doc = makeDocument("uuid-dup-normal", [
-      { name: "nome", value: "primo-nome.pdf" },
-      { name: "nome", value: "secondo-nome.pdf" },
+    const doc = makeDocument(4, "uuid-dup-normal", [
+      { name: "NomeDelDocumento", value: "primo-nome.pdf" },
+      { name: "NomeDelDocumento", value: "secondo-nome.pdf" },
       { name: "tipoDocumento", value: "TIPO-1" },
       { name: "tipoDocumento", value: "TIPO-2" },
     ]);
@@ -228,7 +229,7 @@ describe("SearchSemanticUC", () => {
 
   // Caso nominale: un documento con score alto
   it("mappa correttamente uuid, nome, tipo e score nel SearchResult", async () => {
-    const doc = makeDocument("uuid-s1", [
+    const doc = makeDocument(21, "uuid-s1", [
       { name: "nome", value: "contratto.pdf" },
       { name: "tipoDocumento", value: "DOCUMENTO AMMINISTRATIVO INFORMATICO" },
     ]);
@@ -240,7 +241,7 @@ describe("SearchSemanticUC", () => {
     const results = await uc.execute("contratto");
 
     expect(results).toHaveLength(1);
-    expect(results[0].documentId).toBe("uuid-s1");
+    expect(results[0].documentId).toBe("21");
     expect(results[0].name).toBe("contratto.pdf");
     expect(results[0].type).toBe("DOCUMENTO AMMINISTRATIVO INFORMATICO");
     expect(results[0].score).toBe(0.92);
@@ -248,7 +249,7 @@ describe("SearchSemanticUC", () => {
 
   // Score deve essere un numero reale, mai null
   it("lo score semantico è sempre un numero, mai null", async () => {
-    const doc = makeDocument("uuid-s2", []);
+    const doc = makeDocument(22, "uuid-s2", []);
     (repo.searchDocumentSemantic as ReturnType<typeof vi.fn>).mockResolvedValue(
       [{ document: doc, score: 0.75 }],
     );
@@ -291,19 +292,19 @@ describe("SearchSemanticUC", () => {
   it("preserva l'ordine dei risultati restituito dal repository", async () => {
     const docs = [
       {
-        document: makeDocument("uuid-high", [
+        document: makeDocument(31, "uuid-high", [
           { name: "nome", value: "alto.pdf" },
         ]),
         score: 0.95,
       },
       {
-        document: makeDocument("uuid-mid", [
+        document: makeDocument(32, "uuid-mid", [
           { name: "nome", value: "medio.pdf" },
         ]),
         score: 0.78,
       },
       {
-        document: makeDocument("uuid-low", [
+        document: makeDocument(33, "uuid-low", [
           { name: "nome", value: "basso.pdf" },
         ]),
         score: 0.61,
@@ -324,8 +325,8 @@ describe("SearchSemanticUC", () => {
   // Score al limite: 0.0 e 1.0 sono valori validi
   it("gestisce correttamente score ai valori limite (0.0 e 1.0)", async () => {
     const docs = [
-      { document: makeDocument("uuid-max", []), score: 1 },
-      { document: makeDocument("uuid-min", []), score: 0 },
+      { document: makeDocument(41, "uuid-max", []), score: 1 },
+      { document: makeDocument(42, "uuid-min", []), score: 0 },
     ];
     (repo.searchDocumentSemantic as ReturnType<typeof vi.fn>).mockResolvedValue(
       docs,
@@ -340,7 +341,7 @@ describe("SearchSemanticUC", () => {
 
   // Metadati assenti nella ricerca semantica
   it("usa stringa vuota per name e type se i metadati sono assenti", async () => {
-    const doc = makeDocument("uuid-empty", []);
+    const doc = makeDocument(43, "uuid-empty", []);
     (repo.searchDocumentSemantic as ReturnType<typeof vi.fn>).mockResolvedValue(
       [{ document: doc, score: 0.88 }],
     );
@@ -354,7 +355,7 @@ describe("SearchSemanticUC", () => {
   });
 
   it("usa il primo metadato corrispondente quando ci sono duplicati", async () => {
-    const doc = makeDocument("uuid-dup", [
+    const doc = makeDocument(44, "uuid-dup", [
       { name: "nome", value: "primo.pdf" },
       { name: "nome", value: "secondo.pdf" },
       { name: "tipoDocumento", value: "TIPO-1" },

@@ -1,0 +1,56 @@
+<div
+  class="tree-node"
+  [class.tree-node-selected]="flatNode.isSelected"
+  [style.padding-left.px]="12 + flatNode.depth * 16"
+  role="treeitem"
+  [attr.aria-expanded]="flatNode.hasChildren ? flatNode.isExpanded : null"
+  [attr.aria-busy]="flatNode.isLoading"
+  tabindex="0"
+  (click)="onClick()"
+  (keydown.enter)="onClick()"
+  (keydown.space)="onClick()"
+  (keydown)="onKeydown($event)"
+>
+  <!-- Icona espansione/collasso solo se ha figli -->
+  <button
+    *ngIf="flatNode.hasChildren"
+    type="button"
+    class="toggle-icon"
+    [disabled]="flatNode.isLoading"
+    [attr.aria-label]="flatNode.isExpanded ? 'Comprimi nodo' : 'Espandi nodo'"
+    (click)="onToggle($event)"
+  >
+    <ng-container *ngIf="flatNode.isLoading; else expandIcon"
+      ><span class="spinner">⏳</span></ng-container
+    >
+    <ng-template #expandIcon>{{ flatNode.isExpanded ? '▼' : '▶' }}</ng-template>
+  </button>
+
+  <span *ngIf="!flatNode.hasChildren" class="leaf-placeholder"></span>
+
+  <!-- Titolo del nodo -->
+  <span class="node-name">
+    {{ flatNode.node.name }}
+  </span>
+
+  <!-- Badge di verifica (UC-4)
+    <app-verification-badge 
+        *ngIf="flatNode.node.verificationStatus" 
+        [status]="flatNode.node.verificationStatus">
+    </app-verification-badge> -->
+
+  <!-- Timestamp (UC-5) 
+    <app-timestamp-label 
+        *ngIf="flatNode.timestamp" 
+        [timestamp]="flatNode.timestamp">
+    </app-timestamp-label>-->
+
+  <!-- InlineError se c'è un errore (DIP_CHILDREN_LOAD_ERROR) -->
+  <app-inline-error
+    *ngIf="flatNode.childrenError"
+    class="node-error"
+    [error]="flatNode.childrenError"
+    (retry)="onRetry()"
+  >
+  </app-inline-error>
+</div>

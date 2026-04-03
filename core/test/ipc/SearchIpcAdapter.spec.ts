@@ -14,13 +14,6 @@ vi.mock("tsyringe", () => ({
 import { container } from "tsyringe";
 import { SearchIpcAdapter } from "../../src/ipc/SearchIpcAdapter";
 import { IpcChannels } from "../../../shared/ipc-channels";
-import { DocumentClass } from "../../src/entity/DocumentClass";
-import { Process } from "../../src/entity/Process";
-import { Document } from "../../src/entity/Document";
-import { DocumentClassMapper } from "../../src/dao/mappers/DocumentClassMapper";
-import { ProcessMapper } from "../../src/dao/mappers/ProcessMapper";
-import { DocumentMapper } from "../../src/dao/mappers/DocumentMapper";
-import { MetadataType } from "../../src/value-objects/Metadata";
 
 const makeIpcMain = () => {
   const handlers = new Map<string, Function>();
@@ -34,69 +27,6 @@ const makeIpcMain = () => {
       return handler({} /* _event */, ...args);
     },
   };
-};
-
-const makeDocumentClass = (id: number, name: string) =>
-  DocumentClassMapper.fromPersistence({
-    id,
-    dipId: 1,
-    dipUuid: "dip-uuid",
-    uuid: `uuid-dc-${id}`,
-    name,
-    timestamp: "2026-01-01",
-    integrityStatus: "UNKNOWN",
-  });
-
-const makeProcess = (id: number, uuid: string) =>
-  ProcessMapper.fromPersistence(
-    {
-      id,
-      documentClassId: 1,
-      documentClassUuid: "dc-uuid",
-      uuid,
-      integrityStatus: "UNKNOWN",
-    },
-    [
-      {
-        id: 1,
-        parent_id: null,
-        name: "root",
-        value: "",
-        type: MetadataType.COMPOSITE,
-      },
-    ],
-  );
-
-const makeDocument = (
-  uuid: string,
-  metadata: { name: string; value: string }[] = [],
-) => {
-  const rows = [
-    {
-      id: 1,
-      parent_id: null,
-      name: "root",
-      value: "",
-      type: MetadataType.COMPOSITE,
-    },
-    ...metadata.map((m, idx) => ({
-      id: idx + 2,
-      parent_id: 1,
-      name: m.name,
-      value: m.value,
-      type: MetadataType.STRING,
-    })),
-  ];
-  return DocumentMapper.fromPersistence(
-    {
-      id: 1,
-      uuid,
-      integrityStatus: "UNKNOWN",
-      processId: 1,
-      processUuid: "proc-uuid",
-    },
-    rows,
-  );
 };
 
 describe("SearchIpcAdapter", () => {
@@ -113,8 +43,8 @@ describe("SearchIpcAdapter", () => {
 
     (container.resolve as ReturnType<typeof vi.fn>).mockReset();
 
-    searchClassesUC = { execute: vi.fn().mockReturnValue([]) };
-    searchProcessiUC = { execute: vi.fn().mockReturnValue([]) };
+    searchClassesUC = { execute: vi.fn().mockResolvedValue([]) };
+    searchProcessiUC = { execute: vi.fn().mockResolvedValue([]) };
     searchDocumentsUC = { execute: vi.fn().mockResolvedValue([]) };
     searchSemanticUC = { execute: vi.fn().mockResolvedValue([]) };
     aiAdapter = { isInitialized: vi.fn().mockReturnValue(false) };
@@ -148,9 +78,16 @@ describe("SearchIpcAdapter", () => {
 
   // ─── SEARCH_CLASSES ───────────────────────────────────────────────────────
 
-  it("SEARCH_CLASSES chiama execute con il nome e ritorna i DTO", async () => {
-    const dc = makeDocumentClass(1, "Contratti");
-    searchClassesUC.execute.mockReturnValue([dc]);
+  it("SEARCH_CLASSES chiama execute con il nome e ritorna SearchResult[]", async () => {
+    const expectedResults = [
+      {
+        documentId: "1",
+        name: "Contratti",
+        type: "",
+        score: null,
+      },
+    ];
+    searchClassesUC.execute.mockResolvedValue(expectedResults);
 
     const result = await ipcMain.invoke(
       IpcChannels.SEARCH_CLASSES,
@@ -158,7 +95,7 @@ describe("SearchIpcAdapter", () => {
     );
 
     expect(searchClassesUC.execute).toHaveBeenCalledWith("Contratti");
-    expect(result).toEqual([DocumentClassMapper.toDTO(dc)]);
+    expect(result).toEqual(expectedResults);
   });
 
   it("SEARCH_CLASSES usa stringa vuota se il nome non è fornito", async () => {
@@ -167,7 +104,7 @@ describe("SearchIpcAdapter", () => {
   });
 
   it("SEARCH_CLASSES ritorna array vuoto se nessuna classe trovata", async () => {
-    searchClassesUC.execute.mockReturnValue([]);
+    searchClassesUC.execute.mockResolvedValue([]);
     const result = await ipcMain.invoke(
       IpcChannels.SEARCH_CLASSES,
       "inesistente",
@@ -176,9 +113,7 @@ describe("SearchIpcAdapter", () => {
   });
 
   it("SEARCH_CLASSES propaga eccezioni della use-case", async () => {
-    searchClassesUC.execute.mockImplementation(() => {
-      throw new Error("classes failed");
-    });
+    searchClassesUC.execute.mockRejectedValue(new Error("classes failed"));
     await expect(
       ipcMain.invoke(IpcChannels.SEARCH_CLASSES, "Contratti"),
     ).rejects.toThrow("classes failed");
@@ -186,9 +121,16 @@ describe("SearchIpcAdapter", () => {
 
   // ─── SEARCH_PROCESSES ─────────────────────────────────────────────────────
 
-  it("SEARCH_PROCESSES chiama execute con uuid e ritorna i DTO", async () => {
-    const proc = makeProcess(1, "proc-uuid-abc");
-    searchProcessiUC.execute.mockReturnValue([proc]);
+  it("SEARCH_PROCESSES chiama execute con uuid e ritorna SearchResult[]", async () => {
+    const expectedResults = [
+      {
+        documentId: "1",
+        name: "",
+        type: "",
+        score: null,
+      },
+    ];
+    searchProcessiUC.execute.mockResolvedValue(expectedResults);
 
     const result = await ipcMain.invoke(
       IpcChannels.SEARCH_PROCESSES,
@@ -196,7 +138,7 @@ describe("SearchIpcAdapter", () => {
     );
 
     expect(searchProcessiUC.execute).toHaveBeenCalledWith("proc-uuid-abc");
-    expect(result).toEqual([ProcessMapper.toDTO(proc)]);
+    expect(result).toEqual(expectedResults);
   });
 
   it("SEARCH_PROCESSES usa stringa vuota se uuid non è fornito", async () => {
@@ -205,7 +147,7 @@ describe("SearchIpcAdapter", () => {
   });
 
   it("SEARCH_PROCESSES ritorna array vuoto se nessun processo trovato", async () => {
-    searchProcessiUC.execute.mockReturnValue([]);
+    searchProcessiUC.execute.mockResolvedValue([]);
     const result = await ipcMain.invoke(
       IpcChannels.SEARCH_PROCESSES,
       "uuid-inesistente",
@@ -214,9 +156,7 @@ describe("SearchIpcAdapter", () => {
   });
 
   it("SEARCH_PROCESSES propaga eccezioni della use-case", async () => {
-    searchProcessiUC.execute.mockImplementation(() => {
-      throw new Error("processes failed");
-    });
+    searchProcessiUC.execute.mockRejectedValue(new Error("processes failed"));
     await expect(
       ipcMain.invoke(IpcChannels.SEARCH_PROCESSES, "uuid-1"),
     ).rejects.toThrow("processes failed");

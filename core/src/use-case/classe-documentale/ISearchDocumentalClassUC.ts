@@ -1,5 +1,5 @@
-import { DocumentClass } from '../../entity/DocumentClass';
+import { SearchResult } from '../../../../shared/domain/metadata';
 
 export interface ISearchDocumentalClassUC {
-    execute(name: string): DocumentClass[];
+    execute(name: string): Promise<SearchResult[]>;
 }

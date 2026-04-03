@@ -168,11 +168,12 @@ describe("BrowsingIpcAdapter", () => {
     expect(resolveMock).toHaveBeenCalledWith(DipUC.GET_BY_ID);
     expect(resolveMock).toHaveBeenCalledWith(DipUC.GET_BY_STATUS);
 
-    expect(handleMock).toHaveBeenCalledTimes(14);
+    expect(handleMock).toHaveBeenCalledTimes(15);
     expect(handlers.has(IpcChannels.BROWSE_GET_DOCUMENT_BY_ID)).toBe(true);
     expect(handlers.has(IpcChannels.BROWSE_GET_DOCUMENTS_BY_PROCESS)).toBe(true);
     expect(handlers.has(IpcChannels.BROWSE_GET_DOCUMENTS_BY_STATUS)).toBe(true);
     expect(handlers.has(IpcChannels.BROWSE_GET_FILE_BY_ID)).toBe(true);
+    expect(handlers.has(IpcChannels.BROWSE_GET_FILE_BUFFER_BY_ID)).toBe(true);
     expect(handlers.has(IpcChannels.BROWSE_GET_FILE_BY_DOCUMENT)).toBe(true);
     expect(handlers.has(IpcChannels.BROWSE_GET_FILE_BY_STATUS)).toBe(true);
     expect(handlers.has(IpcChannels.BROWSE_GET_PROCESS_BY_ID)).toBe(true);

@@ -5,6 +5,8 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 import { SearchPageComponent } from '../ui/smart/search-page/search-page.component';
 import { SearchIpcGateway } from '../adapters/search-ipc-gateway';
+import { SearchBarComponent } from '../ui/dumb/search-bar.component/search-bar.component';
+import { SearchResultsComponent } from '../ui/dumb/search-results.component/search-results.component';
 
 import {
   ELECTRON_CONTEXT_BRIDGE_TOKEN,
@@ -12,6 +14,7 @@ import {
   ERROR_HANDLER_TOKEN,
 } from '../../../shared/contracts';
 import { SearchFacade } from '../services';
+import { SearchQueryType } from '../../../../../../shared/domain/metadata/search.enum';
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -69,60 +72,68 @@ describe('Integration: Search Flow (UI -> Facade -> IPC Gateway)', () => {
 
   it('Flusso Completo: dalla digitazione in UI, al bridge IPC, al rendering dei risultati', async () => {
     const mockBackendResults = [
-      { id: 'DOC-01', title: 'Fascicolo di Prova', type: 'PDF' },
-      { id: 'DOC-02', title: 'Relazione Tecnica', type: 'DOCX' },
+      { documentId: 'DOC-01', title: 'Fascicolo di Prova', type: 'AGGREGAZIONE_DOCUMENTALE' },
+      { documentId: 'DOC-02', title: 'Relazione Tecnica', type: 'DOCUMENTO_INFORMATICO' },
     ];
     mockElectronBridge.invoke.mockResolvedValue(mockBackendResults);
 
-    const searchInput = fixture.debugElement.query(
-      By.css('input[placeholder*="Cerca"]'),
-    ).nativeElement;
-    searchInput.value = 'Prova integrazione';
-    searchInput.dispatchEvent(new Event('input'));
-
-    const searchBtn = fixture.debugElement.query(By.css('header button'));
-    searchBtn.triggerEventHandler('click', null);
+    // Interazione tramite il componente figlio SearchBar (pattern corretto per componenti smart-dumb)
+    const searchBar = fixture.debugElement.query(By.directive(SearchBarComponent));
+    
+    // Simula la digitazione dell'utente
+    searchBar.triggerEventHandler('queryChanged', { 
+      text: 'Prova integrazione', 
+      type: SearchQueryType.FREE, 
+      useSemanticSearch: false 
+    });
+    
+    // Simula l'invio della ricerca
+    searchBar.triggerEventHandler('searchRequested', null);
 
     await sleep(350);
     fixture.detectChanges();
 
+    // Verifica che la chiamata al bridge IPC sia avvenuta con i parametri corretti
     expect(mockElectronBridge.invoke).toHaveBeenCalledWith(
       'ipc:search:text',
       expect.objectContaining({ text: 'Prova integrazione' }),
       expect.any(AbortSignal),
     );
 
-    const resultsHeader = fixture.debugElement.query(By.css('main h2')).nativeElement;
+    // Verifica il rendering dei risultati tramite la nuova classe semantica
+    const resultsHeader = fixture.debugElement.query(By.css('.page-title')).nativeElement;
     expect(resultsHeader.textContent).toContain('Trovati 2 risultati');
+
+    const resultsComponent = fixture.debugElement.query(By.directive(SearchResultsComponent));
+    expect(resultsComponent).toBeTruthy();
   });
 
   it('Flusso di Errore: dal crash IPC alla visualizzazione del banner di errore in UI', async () => {
     const backendError = new Error('Connessione al database locale fallita');
     mockElectronBridge.invoke.mockRejectedValue(backendError);
 
-    const searchInput = fixture.debugElement.query(
-      By.css('input[placeholder*="Cerca"]'),
-    ).nativeElement;
-    searchInput.value = 'Test errore';
-    searchInput.dispatchEvent(new Event('input'));
-
-    const searchBtn = fixture.debugElement.query(By.css('header button'));
-    searchBtn.triggerEventHandler('click', null);
+    const searchBar = fixture.debugElement.query(By.directive(SearchBarComponent));
+    
+    searchBar.triggerEventHandler('queryChanged', { 
+      text: 'Test errore', 
+      type: SearchQueryType.FREE, 
+      useSemanticSearch: false 
+    });
+    
+    searchBar.triggerEventHandler('searchRequested', null);
 
     await sleep(350);
     fixture.detectChanges();
 
     expect(mockElectronBridge.invoke).toHaveBeenCalled();
 
-    const errorBox = fixture.debugElement.query(
-      By.css('div[style*="background: #fee2e2"]'),
-    ).nativeElement;
+    // Verifica la comparsa del banner usando la classe corretta .error-banner
+    const errorBox = fixture.debugElement.query(By.css('.error-banner')).nativeElement;
     expect(errorBox).toBeTruthy();
     expect(errorBox.textContent).toContain('Connessione al database locale fallita');
 
-    const retryBtn = fixture.debugElement.query(
-      By.css('button[style*="background: #ef4444"]'),
-    ).nativeElement;
+    // Verifica la presenza del tasto Riprova usando la classe corretta .btn-retry
+    const retryBtn = fixture.debugElement.query(By.css('.btn-retry')).nativeElement;
     expect(retryBtn.textContent).toContain('Riprova');
   });
 });

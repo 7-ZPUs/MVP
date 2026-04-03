@@ -25,9 +25,8 @@ describe('SubjectDetailFormComponent', () => {
     expect(component).toBeTruthy();
     expect(component.fields.length).toBe(0);
 
-    const fallbackDiv = fixture.debugElement.query(By.css('div[style*="font-style: italic"]'));
-    expect(fallbackDiv).toBeTruthy();
-    expect(fallbackDiv.nativeElement.textContent).toContain('Seleziona una tipologia');
+    const renderedText = fixture.nativeElement.textContent;
+    expect(renderedText).toContain('Seleziona una tipologia');
   });
 
   describe('Ricostruzione Dinamica (Strategy Pattern)', () => {

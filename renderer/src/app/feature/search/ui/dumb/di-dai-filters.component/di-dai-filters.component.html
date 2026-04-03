@@ -1,144 +1,83 @@
-<div
-  class="didai-filters-container"
-  [formGroup]="form"
-  style="display: flex; flex-direction: column; gap: 0.5rem"
->
-  <details
-    class="filter-accordion"
-    closed
-    style="border: 1px solid #cbd5e1; border-radius: 6px; padding: 0.5rem; background: white"
-  >
-    <summary style="font-weight: bold; cursor: pointer; padding: 0.5rem; user-select: none">
-      Registrazione
-    </summary>
+<fieldset [disabled]="disabled" class="didai-filters-container filter-fieldset" [formGroup]="form">
+  
+  @if (disabled && disabledReason) {
+    <div class="info-banner">
+      <span>ℹ️</span> {{ disabledReason }}
+    </div>
+  }
+  
+  <details class="filter-accordion" closed>
+    <summary>Registrazione</summary>
 
-    <div
-      formGroupName="registrazione"
-      style="padding: 1rem 0.5rem 0 0.5rem; border-top: 1px solid #e2e8f0; margin-top: 0.5rem"
-    >
-      <div class="form-row" style="display: flex; gap: 1rem; margin-bottom: 1rem">
-        <div class="form-group" style="flex: 1">
-          <label style="display: block; font-size: 0.875rem; margin-bottom: 0.25rem"
-            >Tipologia Flusso</label
-          >
-          <select
-            formControlName="tipologiaFlusso"
-            style="width: 100%; padding: 0.4rem; border: 1px solid #cbd5e1; border-radius: 4px"
-          >
+    <div formGroupName="registrazione" class="accordion-content">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="tipoFlusso">Tipologia Flusso</label>
+          <select id="tipoFlusso" formControlName="tipologiaFlusso">
             <option [ngValue]="null">Tutti</option>
             <option *ngFor="let f of flowTypes" [ngValue]="f">{{ f }}</option>
           </select>
         </div>
-        <div class="form-group" style="flex: 1">
-          <label style="display: block; font-size: 0.875rem; margin-bottom: 0.25rem"
-            >Tipologia Registro</label
-          >
-          <select
-            formControlName="tipologiaRegistro"
-            style="width: 100%; padding: 0.4rem; border: 1px solid #cbd5e1; border-radius: 4px"
-          >
+        <div class="form-group">
+          <label for="tipoRegistro">Tipologia Registro</label>
+          <select id="tipoRegistro" formControlName="tipologiaRegistro">
             <option [ngValue]="null">Tutti</option>
             <option *ngFor="let r of registerTypes" [ngValue]="r">{{ r }}</option>
           </select>
         </div>
       </div>
 
-      <div class="form-row" style="display: flex; gap: 1rem; margin-bottom: 1rem">
-        <div class="form-group" style="flex: 1">
-          <label style="display: block; font-size: 0.875rem; margin-bottom: 0.25rem"
-            >Data Registrazione</label
-          >
+      <div class="form-row">
+        <div class="form-group">
+          <label for="dataRegistrazione">Data Registrazione</label>
           <input
+            id="dataRegistrazione"
             type="date"
             formControlName="dataRegistrazione"
-            style="width: 100%; padding: 0.4rem; border: 1px solid #cbd5e1; border-radius: 4px"
             [attr.aria-invalid]="!!getError('registrazione.dataRegistrazione')"
           />
-          <div
-            *ngIf="getError('registrazione.dataRegistrazione') as err"
-            class="validation-error"
-            style="color: #dc2626; font-size: 0.75rem; margin-top: 0.25rem"
-          >
+          <div *ngIf="getError('registrazione.dataRegistrazione') as err" class="validation-error">
             {{ err.message }}
           </div>
         </div>
-        <div class="form-group" style="flex: 1">
-          <label style="display: block; font-size: 0.875rem; margin-bottom: 0.25rem"
-            >Ora Registrazione</label
-          >
-          <input
-            type="time"
-            formControlName="oraRegistrazione"
-            style="width: 100%; padding: 0.4rem; border: 1px solid #cbd5e1; border-radius: 4px"
-          />
+        <div class="form-group">
+          <label for="oraRegistrazione">Ora Registrazione</label>
+          <input id="oraRegistrazione" type="time" formControlName="oraRegistrazione" />
         </div>
       </div>
 
-      <div class="form-row" style="display: flex; gap: 1rem; margin-bottom: 1rem">
-        <div class="form-group" style="flex: 1">
-          <label style="display: block; font-size: 0.875rem; margin-bottom: 0.25rem"
-            >Numero Registrazione</label
-          >
-          <input
-            type="number"
-            formControlName="numeroRegistrazione"
-            style="width: 100%; padding: 0.4rem; border: 1px solid #cbd5e1; border-radius: 4px"
-          />
+      <div class="form-row">
+        <div class="form-group">
+          <label for="numRegistrazione">Numero Registrazione</label>
+          <input id="numRegistrazione" type="number" formControlName="numeroRegistrazione" />
         </div>
-        <div class="form-group" style="flex: 1">
-          <label style="display: block; font-size: 0.875rem; margin-bottom: 0.25rem"
-            >Codice Registro</label
-          >
-          <input
-            type="text"
-            formControlName="codiceRegistro"
-            style="width: 100%; padding: 0.4rem; border: 1px solid #cbd5e1; border-radius: 4px"
-          />
+        <div class="form-group">
+          <label for="codRegistrazione">Codice Registro</label>
+          <input id="codRegistrazione" type="text" formControlName="codiceRegistro" />
         </div>
       </div>
     </div>
   </details>
 
-  <details
-    class="filter-accordion"
-    style="border: 1px solid #cbd5e1; border-radius: 6px; padding: 0.5rem; background: white"
-  >
-    <summary style="font-weight: bold; cursor: pointer; padding: 0.5rem; user-select: none">
-      Dati Base (DiDai)
-    </summary>
+  <details class="filter-accordion">
+    <summary>Dati Base (DiDai)</summary>
 
-    <div style="padding: 1rem 0.5rem 0 0.5rem; border-top: 1px solid #e2e8f0; margin-top: 0.5rem">
-      <div class="form-row" style="display: flex; gap: 1rem; margin-bottom: 1rem">
-        <div class="form-group" style="flex: 1">
-          <label style="display: block; font-size: 0.875rem; margin-bottom: 0.25rem"
-            >Tipologia (Stringa)</label
-          >
-          <input
-            type="text"
-            formControlName="tipologia"
-            style="width: 100%; padding: 0.4rem; border: 1px solid #cbd5e1; border-radius: 4px"
-          />
+    <div class="accordion-content">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="tipologiaDidai">Tipologia (Stringa)</label>
+          <input id="tipologiaDidai" type="text" formControlName="tipologia" />
         </div>
-        <div class="form-group" style="flex: 1">
-          <label style="display: block; font-size: 0.875rem; margin-bottom: 0.25rem"
-            >Modalità Formazione</label
-          >
-          <select
-            formControlName="modalitaFormazione"
-            style="width: 100%; padding: 0.4rem; border: 1px solid #cbd5e1; border-radius: 4px"
-          >
+        <div class="form-group">
+          <label for="modFormazione">Modalità Formazione</label>
+          <select id="modFormazione" formControlName="modalitaFormazione">
             <option [ngValue]="null">Tutte</option>
             <option *ngFor="let m of didaiFormations" [ngValue]="m">{{ m }}</option>
           </select>
         </div>
-        <div class="form-group" style="flex: 1">
-          <label style="display: block; font-size: 0.875rem; margin-bottom: 0.25rem"
-            >Riservatezza</label
-          >
-          <select
-            formControlName="riservatezza"
-            style="width: 100%; padding: 0.4rem; border: 1px solid #cbd5e1; border-radius: 4px"
-          >
+        <div class="form-group">
+          <label for="riservatezzaDidai">Riservatezza</label>
+          <select id="riservatezzaDidai" formControlName="riservatezza">
             <option [ngValue]="null">Tutti</option>
             <option [ngValue]="true">Sì</option>
             <option [ngValue]="false">No</option>
@@ -146,284 +85,147 @@
         </div>
       </div>
 
-      <div class="form-row" style="display: flex; gap: 1rem; margin-bottom: 1rem">
-        <div class="form-group" style="flex: 1">
-          <label style="display: block; font-size: 0.875rem; margin-bottom: 0.25rem">Nome</label>
-          <input
-            type="text"
-            formControlName="nome"
-            style="width: 100%; padding: 0.4rem; border: 1px solid #cbd5e1; border-radius: 4px"
-          />
+      <div class="form-row">
+        <div class="form-group">
+          <label for="nomeDidai">Nome</label>
+          <input id="nomeDidai" type="text" formControlName="nome" />
         </div>
-        <div class="form-group" style="flex: 1">
-          <label style="display: block; font-size: 0.875rem; margin-bottom: 0.25rem"
-            >Versione</label
-          >
-          <input
-            type="text"
-            formControlName="versione"
-            style="width: 100%; padding: 0.4rem; border: 1px solid #cbd5e1; border-radius: 4px"
-          />
+        <div class="form-group">
+          <label for="versioneDidai">Versione</label>
+          <input id="versioneDidai" type="text" formControlName="versione" />
         </div>
-        <div class="form-group" style="flex: 1">
-          <label style="display: block; font-size: 0.875rem; margin-bottom: 0.25rem"
-            >ID Primario</label
-          >
-          <input
-            type="text"
-            formControlName="idPrimario"
-            style="width: 100%; padding: 0.4rem; border: 1px solid #cbd5e1; border-radius: 4px"
-          />
+        <div class="form-group">
+          <label for="idPrimarioDidai">ID Primario</label>
+          <input id="idPrimarioDidai" type="text" formControlName="idPrimario" />
         </div>
       </div>
     </div>
   </details>
 
-  <details
-    class="filter-accordion"
-    style="border: 1px solid #cbd5e1; border-radius: 6px; padding: 0.5rem; background: white"
-  >
-    <summary style="font-weight: bold; cursor: pointer; padding: 0.5rem; user-select: none">
-      Identificativo Formato
-    </summary>
+  <details class="filter-accordion">
+    <summary>Identificativo Formato</summary>
 
-    <div
-      formGroupName="identificativoFormato"
-      style="padding: 1rem 0.5rem 0 0.5rem; border-top: 1px solid #e2e8f0; margin-top: 0.5rem"
-    >
-      <div class="form-row" style="display: flex; gap: 1rem; margin-bottom: 1rem">
-        <div class="form-group" style="flex: 1">
-          <label style="display: block; font-size: 0.875rem; margin-bottom: 0.25rem"
-            >Formato (AGID)</label
-          >
-          <select
-            formControlName="formato"
-            style="width: 100%; padding: 0.4rem; border: 1px solid #cbd5e1; border-radius: 4px"
-          >
+    <div formGroupName="identificativoFormato" class="accordion-content">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="formatoAgid">Formato (AGID)</label>
+          <select id="formatoAgid" formControlName="formato">
             <option [ngValue]="null">Tutti</option>
             <option *ngFor="let a of agidFormats" [ngValue]="a">{{ a }}</option>
           </select>
         </div>
-        <div class="form-group" style="flex: 1">
-          <label style="display: block; font-size: 0.875rem; margin-bottom: 0.25rem"
-            >Nome Prodotto Creazione</label
-          >
-          <input
-            type="text"
-            formControlName="nomeProdottoCreazione"
-            style="width: 100%; padding: 0.4rem; border: 1px solid #cbd5e1; border-radius: 4px"
-          />
+        <div class="form-group">
+          <label for="nomeProdCreazione">Nome Prodotto Creazione</label>
+          <input id="nomeProdCreazione" type="text" formControlName="nomeProdottoCreazione" />
         </div>
       </div>
 
-      <div class="form-row" style="display: flex; gap: 1rem; margin-bottom: 1rem">
-        <div class="form-group" style="flex: 1">
-          <label style="display: block; font-size: 0.875rem; margin-bottom: 0.25rem"
-            >Versione Prodotto</label
-          >
-          <input
-            type="text"
-            formControlName="versioneProdottoCreazione"
-            style="width: 100%; padding: 0.4rem; border: 1px solid #cbd5e1; border-radius: 4px"
-          />
+      <div class="form-row">
+        <div class="form-group">
+          <label for="versioneProdCreazione">Versione Prodotto</label>
+          <input id="versioneProdCreazione" type="text" formControlName="versioneProdottoCreazione" />
         </div>
-        <div class="form-group" style="flex: 1">
-          <label style="display: block; font-size: 0.875rem; margin-bottom: 0.25rem"
-            >Produttore Prodotto</label
-          >
-          <input
-            type="text"
-            formControlName="produttoreProdottoCreazione"
-            style="width: 100%; padding: 0.4rem; border: 1px solid #cbd5e1; border-radius: 4px"
-          />
+        <div class="form-group">
+          <label for="produttoreProdCreazione">Produttore Prodotto</label>
+          <input id="produttoreProdCreazione" type="text" formControlName="produttoreProdottoCreazione" />
         </div>
       </div>
     </div>
   </details>
 
-  <details
-    class="filter-accordion"
-    style="border: 1px solid #cbd5e1; border-radius: 6px; padding: 0.5rem; background: white"
-  >
-    <summary style="font-weight: bold; cursor: pointer; padding: 0.5rem; user-select: none">
-      Dati Verifica
-    </summary>
+  <details class="filter-accordion">
+    <summary>Dati Verifica & Tracciature</summary>
 
-    <div
-      formGroupName="verifica"
-      style="padding: 1rem 0.5rem 0 0.5rem; border-top: 1px solid #e2e8f0; margin-top: 0.5rem"
-    >
-      <div class="form-row" style="display: flex; gap: 1rem; margin-bottom: 1rem">
-        <div class="form-group" style="flex: 1">
-          <label style="display: block; font-size: 0.875rem; margin-bottom: 0.25rem"
-            >Formato Digitalmente</label
-          >
-          <select
-            formControlName="formatoDigitalmente"
-            style="width: 100%; padding: 0.4rem; border: 1px solid #cbd5e1; border-radius: 4px"
-          >
-            <option [ngValue]="null">Tutti</option>
-            <option [ngValue]="true">Sì</option>
-            <option [ngValue]="false">No</option>
-          </select>
+    <div class="accordion-content">
+      <div formGroupName="verifica">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="formatoDig">Formato Digitalmente</label>
+            <select id="formatoDig" formControlName="formatoDigitalmente">
+              <option [ngValue]="null">Tutti</option>
+              <option [ngValue]="true">Sì</option>
+              <option [ngValue]="false">No</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="sigillatoElettr">Sigillato Elettronicamente</label>
+            <select id="sigillatoElettr" formControlName="sigillatoElettr">
+              <option [ngValue]="null">Tutti</option>
+              <option [ngValue]="true">Sì</option>
+              <option [ngValue]="false">No</option>
+            </select>
+          </div>
         </div>
-        <div class="form-group" style="flex: 1">
-          <label style="display: block; font-size: 0.875rem; margin-bottom: 0.25rem"
-            >Sigillato Elettronicamente</label
-          >
-          <select
-            formControlName="sigillatoElettr"
-            style="width: 100%; padding: 0.4rem; border: 1px solid #cbd5e1; border-radius: 4px"
-          >
-            <option [ngValue]="null">Tutti</option>
-            <option [ngValue]="true">Sì</option>
-            <option [ngValue]="false">No</option>
-          </select>
-        </div>
-      </div>
 
-      <div class="form-row" style="display: flex; gap: 1rem; margin-bottom: 1rem">
-        <div class="form-group" style="flex: 1">
-          <label style="display: block; font-size: 0.875rem; margin-bottom: 0.25rem"
-            >Marcatura Temporale</label
-          >
-          <select
-            formControlName="marcaturaTemporale"
-            style="width: 100%; padding: 0.4rem; border: 1px solid #cbd5e1; border-radius: 4px"
-          >
-            <option [ngValue]="null">Tutti</option>
-            <option [ngValue]="true">Sì</option>
-            <option [ngValue]="false">No</option>
-          </select>
-        </div>
-        <div class="form-group" style="flex: 1">
-          <label style="display: block; font-size: 0.875rem; margin-bottom: 0.25rem"
-            >Conformità Copie</label
-          >
-          <select
-            formControlName="conformitaCopie"
-            style="width: 100%; padding: 0.4rem; border: 1px solid #cbd5e1; border-radius: 4px"
-          >
-            <option [ngValue]="null">Tutti</option>
-            <option [ngValue]="true">Sì</option>
-            <option [ngValue]="false">No</option>
-          </select>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="marcaturaTemp">Marcatura Temporale</label>
+            <select id="marcaturaTemp" formControlName="marcaturaTemporale">
+              <option [ngValue]="null">Tutti</option>
+              <option [ngValue]="true">Sì</option>
+              <option [ngValue]="false">No</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="confCopie">Conformità Copie</label>
+            <select id="confCopie" formControlName="conformitaCopie">
+              <option [ngValue]="null">Tutti</option>
+              <option [ngValue]="true">Sì</option>
+              <option [ngValue]="false">No</option>
+            </select>
+          </div>
         </div>
       </div>
-    </div>
 
-    <summary style="font-weight: bold; cursor: pointer; padding: 0.5rem; user-select: none">
-      Tracciature Modifiche
-    </summary>
-
-    <div style="padding: 1rem 0.5rem 0 0.5rem; border-top: 1px solid #e2e8f0; margin-top: 0.5rem">
-      <div formArrayName="tracciatureModifiche">
-        <div
-          *ngFor="let tracciatura of tracciatureFormArray.controls; let i = index"
-          [formGroupName]="i"
-          style="
-            border: 1px dashed #94a3b8;
-            border-radius: 4px;
-            padding: 1rem;
-            margin-bottom: 1rem;
-            position: relative;
-            background-color: #f8fafc;
-          "
-        >
-          <button
-            type="button"
-            (click)="removeTracciatura(i)"
-            style="
-              position: absolute;
-              top: 0.5rem;
-              right: 0.5rem;
-              background: none;
-              border: none;
-              color: #dc2626;
-              font-weight: bold;
-              cursor: pointer;
-              padding: 0.25rem;
-            "
-          >
-            ✕ Rimuovi
-          </button>
-
+      <div class="nested-section" style="margin-top: 1.5rem;">
+        <h5 class="nested-title">Tracciature Modifiche</h5>
+        <div formArrayName="tracciatureModifiche">
           <div
-            class="form-row"
-            style="display: flex; gap: 1rem; margin-bottom: 1rem; margin-top: 0.5rem"
+            *ngFor="let tracciatura of tracciatureFormArray.controls; let i = index"
+            [formGroupName]="i"
+            class="dynamic-form-item"
           >
-            <div class="form-group" style="flex: 1">
-              <label style="display: block; font-size: 0.875rem; margin-bottom: 0.25rem"
-                >Tipo Modifica</label
-              >
-              <select
-                formControlName="tipoModifica"
-                style="width: 100%; padding: 0.4rem; border: 1px solid #cbd5e1; border-radius: 4px"
-              >
-                <option [ngValue]="null">Tutte</option>
-                <option *ngFor="let t of modificationTypes" [ngValue]="t">{{ t }}</option>
-              </select>
+            <button type="button" (click)="removeTracciatura(i)" class="btn-remove-item">✕</button>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label [for]="'tipoModifica_' + i">Tipo Modifica</label>
+                <select [id]="'tipoModifica_' + i" formControlName="tipoModifica">
+                  <option [ngValue]="null">Tutte</option>
+                  <option *ngFor="let t of modificationTypes" [ngValue]="t">{{ t }}</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label [for]="'dataModifica_' + i">Data Modifica</label>
+                <input
+                  [id]="'dataModifica_' + i"
+                  type="date"
+                  formControlName="dataModifica"
+                  [attr.aria-invalid]="!!getTracciaturaError(i, 'dataModifica')"
+                />
+                <div *ngIf="getTracciaturaError(i, 'dataModifica') as err" class="validation-error">
+                  {{ err.message }}
+                </div>
+              </div>
             </div>
-            <div class="form-group" style="flex: 1">
-              <label style="display: block; font-size: 0.875rem; margin-bottom: 0.25rem"
-                >Data Modifica</label
-              >
-              <input
-                type="date"
-                formControlName="dataModifica"
-                style="width: 100%; padding: 0.4rem; border: 1px solid #cbd5e1; border-radius: 4px"
-                [attr.aria-invalid]="!!getTracciaturaError(i, 'dataModifica')"
-              />
-              <div
-                *ngIf="getTracciaturaError(i, 'dataModifica') as err"
-                class="validation-error"
-                style="color: #dc2626; font-size: 0.75rem; margin-top: 0.25rem"
-              >
-                {{ err.message }}
+
+            <div class="form-row">
+              <div class="form-group">
+                <label [for]="'oraModifica_' + i">Ora Modifica</label>
+                <input [id]="'oraModifica_' + i" type="time" formControlName="oraModifica" />
+              </div>
+              <div class="form-group">
+                <label [for]="'idVersionePrec_' + i">ID Versione Precedente</label>
+                <input [id]="'idVersionePrec_' + i" type="text" formControlName="idVersionePrec" />
               </div>
             </div>
           </div>
-
-          <div class="form-row" style="display: flex; gap: 1rem">
-            <div class="form-group" style="flex: 1">
-              <label style="display: block; font-size: 0.875rem; margin-bottom: 0.25rem"
-                >Ora Modifica</label
-              >
-              <input
-                type="time"
-                formControlName="oraModifica"
-                style="width: 100%; padding: 0.4rem; border: 1px solid #cbd5e1; border-radius: 4px"
-              />
-            </div>
-            <div class="form-group" style="flex: 1">
-              <label style="display: block; font-size: 0.875rem; margin-bottom: 0.25rem"
-                >ID Versione Precedente</label
-              >
-              <input
-                type="text"
-                formControlName="idVersionePrec"
-                style="width: 100%; padding: 0.4rem; border: 1px solid #cbd5e1; border-radius: 4px"
-              />
-            </div>
-          </div>
         </div>
-      </div>
 
-      <button
-        type="button"
-        (click)="addTracciatura()"
-        style="
-          padding: 0.5rem 1rem;
-          background-color: #3b82f6;
-          color: white;
-          border: none;
-          border-radius: 4px;
-          font-weight: 500;
-          cursor: pointer;
-        "
-      >
-        + Aggiungi Filtro Modifica
-      </button>
+        <button type="button" (click)="addTracciatura()" class="btn-outline">
+          + Aggiungi Filtro Modifica
+        </button>
+      </div>
     </div>
   </details>
-</div>
+</fieldset>

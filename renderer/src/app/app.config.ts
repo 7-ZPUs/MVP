@@ -1,5 +1,5 @@
 import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
-import { provideRouter, withHashLocation } from '@angular/router';
+import { provideRouter, withComponentInputBinding, withHashLocation } from '@angular/router';
 import { signal } from '@angular/core';
 import { routes } from './app.routes';
 
@@ -19,13 +19,14 @@ import { IpcCacheService } from './shared/services/ipc-cache.service';
 import { ElectronLoggingGateway } from './shared/services/electron-logging-gateway';
 import { SearchFacade } from './feature/search/services';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
+import { IPC_GATEWAY_TOKEN } from './shared/interfaces/ipc-gateway.interfaces';
+import { ElectronIpcGateway } from './shared/infrastructure/electron-ipc-gateway';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideAnimationsAsync(), // richiesto da @angular/cdk LiveAnnouncer
-    provideRouter(routes, withHashLocation()),
-
+    provideRouter(routes, withHashLocation(), withComponentInputBinding()),
     // Electron bridge
     {
       provide: ELECTRON_CONTEXT_BRIDGE_TOKEN,
@@ -72,5 +73,8 @@ export const appConfig: ApplicationConfig = {
 
     // Facade
     { provide: 'ISearchFacade', useClass: SearchFacade },
+
+    // IPC Gateway
+    { provide: IPC_GATEWAY_TOKEN, useClass: ElectronIpcGateway },
   ],
 };

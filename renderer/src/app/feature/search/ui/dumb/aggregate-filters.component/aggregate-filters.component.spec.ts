@@ -53,14 +53,20 @@ describe('AggregateFiltersComponent', () => {
     });
 
     it('dovrebbe innescare add/remove tramite i bottoni HTML per la copertura', async () => {
-      // 1. Click su Aggiungi
-      const addBtn = fixture.debugElement.query(By.css('button[type="button"]'));
-      addBtn.triggerEventHandler('click', null);
+      // 1. Cerchiamo il bottone "Aggiungi Fase" tramite la sua classe o il testo
+      const buttons = fixture.debugElement.queryAll(By.css('button'));
+      const addBtn = buttons.find(b => b.nativeElement.textContent.includes('+ Aggiungi Fase'));
+      
+      expect(addBtn).toBeTruthy();
+      addBtn?.triggerEventHandler('click', null);
       fixture.detectChanges();
 
       expect(component.fasiFormArray.length).toBe(1);
 
-      const removeBtn = fixture.debugElement.query(By.css('button[style*="color: #dc2626"]'));
+      // 2. Cerchiamo il bottone di rimozione tramite la nuova classe .btn-remove-item
+      const removeBtn = fixture.debugElement.query(By.css('.btn-remove-item'));
+      
+      expect(removeBtn).toBeTruthy();
       removeBtn.triggerEventHandler('click', null);
       fixture.detectChanges();
 

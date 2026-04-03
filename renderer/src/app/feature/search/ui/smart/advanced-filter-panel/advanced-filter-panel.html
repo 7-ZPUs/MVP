@@ -52,7 +52,9 @@
 
       <div class="filter-section" style="margin-bottom: 1.5rem">
         <h4 style="margin-bottom: 0.5rem; color: #334155">Dati Documento (DiDai)</h4>
-        <app-di-dai-filters
+        <app-di-dai-filters 
+          [disabled]="uiState.disableDiDai"
+          [disabledReason]="uiState.motivoBloccoDiDai" [filters]="$any(filters.diDai || {})"
           [filters]="$any(filters.diDai || {})"
           [validationResult]="effectiveValidationResult"
           (filtersChanged)="onDiDaiFiltersChanged($event)"
@@ -63,6 +65,8 @@
       <div class="filter-section" style="margin-bottom: 1.5rem">
         <h4 style="margin-bottom: 0.5rem; color: #334155">Dati di Aggregazione</h4>
         <app-aggregate-filters
+          [disabled]="uiState.disableAggregate"
+          [disabledReason]="uiState.motivoBloccoAggregate" [filters]="$any(filters.aggregate || {})"
           [filters]="$any(filters.aggregate || {})"
           [validationResult]="effectiveValidationResult"
           (filtersChanged)="onAggregateFiltersChanged($event)"
@@ -81,8 +85,9 @@
       </div>
 
       <div class="filter-section" style="margin-bottom: 1.5rem">
+        <h4 style="margin-bottom: 0.5rem; color: #334155">Soggetti</h4>
         <app-subject-filters
-          [subject]="filters.subject || null"
+          [subject]="filters.subject || []"
           [validationResult]="effectiveValidationResult"
           (subjectChanged)="onSubjectChanged($event)"
         >

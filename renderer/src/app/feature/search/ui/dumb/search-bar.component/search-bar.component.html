@@ -1,41 +1,49 @@
 <div class="search-bar-container">
-  <form [formGroup]="form" class="search-form">
-    <div class="search-input-group" style="display: flex; gap: 1rem; align-items: center">
+  <form [formGroup]="form" class="search-form" (ngSubmit)="onSubmit()">
+    
+    <div class="search-input-group">
       <input
         type="text"
         formControlName="text"
         placeholder="Inserisci testo di ricerca..."
         class="search-input"
-        style="flex: 1; padding: 0.5rem"
         [attr.aria-busy]="isSearching"
       />
-      <span *ngIf="isSearching" class="loading-spinner" aria-live="polite">
-        Ricerca in corso...
-      </span>
+      
+      @if (isSearching) {
+        <span class="loading-spinner" aria-live="polite">
+          Ricerca in corso...
+        </span>
+      }
+
+      <button type="submit" class="btn-search"  >
+        🔍 Cerca
+      </button>
     </div>
 
-    <div class="search-options" style="display: flex; gap: 1.5rem; margin-top: 1rem">
+    <div class="search-options">
       <label>
         <input type="radio" formControlName="type" [value]="QueryType.FREE" />
         Testo Libero
       </label>
 
-      <label>
-        <input type="radio" formControlName="type" [value]="QueryType.CLASS_NAME" />
+      <label [style.opacity]="isSemanticForced ? '0.5' : '1'" [style.cursor]="isSemanticForced ? 'not-allowed' : 'pointer'">
+        <input type="radio" formControlName="type" [value]="QueryType.CLASS_NAME" [attr.disabled]="isSemanticForced ? true : null"/>
         Nome Classe
       </label>
 
-      <label>
-        <input type="radio" formControlName="type" [value]="QueryType.PROCESS_ID" />
+      <label [style.opacity]="isSemanticForced ? '0.5' : '1'" [style.cursor]="isSemanticForced ? 'not-allowed' : 'pointer'">
+        <input type="radio" formControlName="type" [value]="QueryType.PROCESS_ID" [attr.disabled]="isSemanticForced ? true : null"/>
         ID Processo
       </label>
 
-      <div class="divider" style="border-left: 1px solid #ccc; margin: 0 0.5rem"></div>
+      <div class="divider"></div>
 
       <label class="semantic-toggle">
         <input type="checkbox" formControlName="useSemanticSearch" />
         Ricerca Semantica
       </label>
     </div>
+    
   </form>
 </div>

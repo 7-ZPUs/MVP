@@ -1,7 +1,8 @@
 import { inject, injectable } from 'tsyringe';
 import { ISearchProcessUC } from '../ISearchProcessUC';
 import { IProcessRepository, PROCESS_REPOSITORY_TOKEN } from '../../../repo/IProcessRepository';
-import { Process } from '../../../entity/Process';
+import { SearchResult } from '../../../../../shared/domain/metadata';
+
 
 @injectable()
 export class SearchProcessUC implements ISearchProcessUC {
@@ -10,7 +11,16 @@ export class SearchProcessUC implements ISearchProcessUC {
         private readonly repo: IProcessRepository
     ) {}
 
-    execute(uuid: string): Process[] {
-        return this.repo.searchProcesses(uuid);
+    async execute(uuid: string): Promise<SearchResult[]> {
+        const result = this.repo.searchProcesses(uuid);
+        return result.map((process) => {
+            const metadata = process.getMetadata();
+            return {
+                documentId: String(process.getId()),
+                name: metadata.findNodeByName('name')?.getStringValue() ?? '',
+                type: metadata.findNodeByName('type')?.getStringValue() ?? '',
+                score: null,
+            };
+        });
     }
 }
