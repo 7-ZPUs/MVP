@@ -1,4 +1,5 @@
 <div class="search-results-wrapper">
+  <app-export-page></app-export-page>
   @if (results && results.length > 0) {
     <div class="table-container">
       <table class="results-table">
@@ -34,9 +35,8 @@
                   }
                 </td>
               }
-              
-              <app-export-page
-              ></app-export-page>
+
+              <td class="actions-cell" (click)="$event.stopPropagation()"></td>
               
             </tr>
           }
