@@ -1,0 +1,15 @@
+<cdk-virtual-scroll-viewport itemSize="48">
+  <app-dip-tree-node
+      *cdkVirtualFor="let flat of flatNodes()"
+      [flatNode]="flat"
+      (toggle)="toggleNode(flat.node.id)"
+      (select)="selectNode(flat.node)">
+      
+      <app-inline-error
+          *ngIf="flat.childrenError"
+          [error]="flat.childrenError"
+          (retry)="toggleNode(flat.node.id)">
+      </app-inline-error>
+
+  </app-dip-tree-node>
+</cdk-virtual-scroll-viewport>

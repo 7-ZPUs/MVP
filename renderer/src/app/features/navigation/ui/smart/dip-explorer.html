@@ -1,0 +1,23 @@
+<app-async-state-wrapper
+  [loading]="state().phase !== 'ready'"
+  [error]="state().rootError ?? null"
+>
+  <div loading>
+    Caricamento...
+  </div>
+
+  <div error *ngIf="state().rootError as rootErr">
+    <app-inline-error [error]="rootErr" />
+  </div>
+
+
+  <div content>
+    <ng-container *ngIf="rootNodes.length > 0; else empty">
+      <app-dip-tree [rootNodes]="rootNodes" />
+    </ng-container>
+
+    <ng-template #empty>
+      <app-empty-state message="Nessun nodo disponibile" />
+    </ng-template>
+  </div>
+</app-async-state-wrapper>
