@@ -124,8 +124,13 @@ describe('Broad Integration: Full Search Engine Flow (Servizi Reali)', () => {
     expect(errorBox.nativeElement.textContent).toContain('IPC_TIMEOUT');
   });
 
-  it('5. Validazione Reale: la ricerca si blocca se i filtri sono invalidi', async () => {
+ it('5. Validazione Reale: la ricerca si blocca se i filtri sono invalidi', async () => {
     const invalidFilters = { common: { note: 'a' }, subject: [] };
+    const validator = TestBed.inject(FilterValidatorService);
+    vi.spyOn(validator, 'validate').mockReturnValue({
+      isValid: false,
+      errors: new Map([['common.note', [{ message: 'Troppo corto', code: 'ERR', field: '' }]]])
+    });
 
     const filterPanel = fixture.debugElement.query(By.directive(AdvancedFilterPanelComponent));
     filterPanel.triggerEventHandler('filtersSubmit', invalidFilters);
