@@ -7,6 +7,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
       "ipc:search:semantic",
       "ipc:search:advanced",
       "ipc:indexing:status",
+      "file:open-external",
+      "file:download"
     ];
 
     if (validChannels.includes(channel)) {

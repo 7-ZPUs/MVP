@@ -19,9 +19,9 @@ import { ExportProgressComponent } from '../../dumb/export-progress/export-progr
   selector: 'app-export-page',
   standalone: true,
   imports: [
-    CommonModule, 
-    DocumentActionsComponent, 
-    ExportResultComponent, 
+    CommonModule,
+    DocumentActionsComponent,
+    ExportResultComponent,
     ExportProgressComponent
   ],
   templateUrl: './export-page.component.html',
@@ -45,16 +45,16 @@ export class ExportPageComponent {
   reportId: string | null = null;
 
   constructor(
-    private readonly exportFacade: ExportFacade,
+    private readonly ExportFacade: ExportFacade,
     private readonly importFacade: ImportFacade,
   ) {
     // Colleghiamo i Signals del componente a quelli delle Facade
-    this.phase         = this.exportFacade.phase;
-    this.outputContext = this.exportFacade.outputContext;
-    this.result        = this.exportFacade.result;
-    this.progress      = this.exportFacade.progress;
-    this.error         = this.exportFacade.error;
-    this.loading       = this.exportFacade.loading;
+    this.phase = this.ExportFacade.phase;
+    this.outputContext = this.ExportFacade.outputContext;
+    this.result = this.ExportFacade.result;
+    this.progress = this.ExportFacade.progress;
+    this.error = this.ExportFacade.error;
+    this.loading = this.ExportFacade.loading;
     this.selectedDocument = this.importFacade.selectedDocument;
   }
 
@@ -78,28 +78,26 @@ export class ExportPageComponent {
   /** Gestisce il click sul tasto Salva */
   onExport(nodes: DipTreeNode[]): void {
     if (nodes.length === 1) {
-      this.exportFacade.exportDocument(nodes[0]);
+      this.ExportFacade.exportFile(nodes[0]);
     } else if (nodes.length > 1) {
-      this.exportFacade.exportDocuments(nodes);
+      this.ExportFacade.exportFiles(nodes); 
     }
   }
 
   /** Gestisce il click sul tasto Stampa */
   onPrint(nodes: DipTreeNode[]): void {
     if (nodes.length === 1) {
-      this.exportFacade.printDocument(nodes[0]);
-    } else if (nodes.length > 1) {
-      this.exportFacade.printDocuments(nodes);
+      this.ExportFacade.printDocument(nodes[0]);
     }
+    // nodes.length > 1 rimosso: printDocuments non esiste nel facade
   }
 
-  /** Gestisce l'esportazione del report PDF */
-  onExportReport(reportId: string): void {
-    this.exportFacade.exportReportPdf(reportId);
+  onExportReport(_reportId: string): void {
+    // non implementato: exportReportPdf non è disponibile nel facade
   }
 
   /** Resetta lo stato in caso di errore o per nuova operazione */
   onRetry(): void {
-    this.exportFacade.reset();
+    this.ExportFacade.reset();
   }
 }

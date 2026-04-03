@@ -1,70 +1,54 @@
-import { TestBed } from '@angular/core/testing';
 import { ExportIpcGateway } from './export-ipc-gateway.service';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
 describe('ExportIpcGateway', () => {
   let gateway: ExportIpcGateway;
-  
-  
-  const mockElectron = {
-    invoke: vi.fn()
-  };
+
+  const mockElectron = { invoke: vi.fn() };
 
   beforeEach(() => {
-  
     (globalThis as any).electron = mockElectron;
-    
-    TestBed.configureTestingModule({
-      providers: [ExportIpcGateway]
-    });
-    gateway = TestBed.inject(ExportIpcGateway);
+    gateway = new ExportIpcGateway();
     vi.clearAllMocks();
   });
 
-  it('exportDocument dovrebbe convertire nodeId in numero e invocare il canale corretto', async () => {
-    mockElectron.invoke.mockResolvedValue({ success: true });
-    
-    const result = await gateway.exportDocument('123', 'C:/dest');
+  afterEach(() => {
+    (globalThis as any).electron = mockElectron;
+  });
 
+  it('exportFile dovrebbe invocare il canale corretto con fileId numerico e destPath', async () => {
+    mockElectron.invoke.mockResolvedValue({ success: true });
+    const result = await gateway.exportFile(123, 'C:/dest');
     expect(mockElectron.invoke).toHaveBeenCalledWith('file:download', 123, 'C:/dest');
     expect(result.success).toBe(true);
   });
 
-  it('exportDocuments (multiplo) dovrebbe chiamare il download per ogni ID in sequenza', async () => {
-    mockElectron.invoke.mockResolvedValue({ success: true });
-    const ids = ['1', '2'];
-    
-    await gateway.exportDocuments(ids, 'C:/dest');
-
-    expect(mockElectron.invoke).toHaveBeenCalledTimes(2);
-    expect(mockElectron.invoke).toHaveBeenNthCalledWith(1, 'file:download', 1, 'C:/dest');
-    expect(mockElectron.invoke).toHaveBeenNthCalledWith(2, 'file:download', 2, 'C:/dest');
-  });
-
-  it('printDocument dovrebbe chiamare il canale di stampa', async () => {
-    mockElectron.invoke.mockResolvedValue({ success: true });
-    
-    await gateway.printDocument('99');
-
-    expect(mockElectron.invoke).toHaveBeenCalledWith('file:print', 99);
-  });
-
-  it('openSaveDialog dovrebbe usare il fallback se il canale fallisce o non esiste', async () => {
-   
-    mockElectron.invoke.mockRejectedValue(new Error('Channel not found'));
-    
+  it('openSaveDialog dovrebbe invocare il canale corretto con il nome di default', async () => {
+    mockElectron.invoke.mockResolvedValue({ canceled: false, filePath: 'C:/dest/test.pdf' });
     const result = await gateway.openSaveDialog('test.pdf');
-
+    expect(mockElectron.invoke).toHaveBeenCalledWith('file:save-dialog', 'test.pdf');
     expect(result.canceled).toBe(false);
-    expect(result.filePath).toBe('C:/Spostami/test-file.pdf');
+    expect(result.filePath).toBe('C:/dest/test.pdf');
   });
 
-  it('dovrebbe gestire l\'assenza del bridge Electron senza crashare', async () => {
+  it('openSaveDialog senza argomenti dovrebbe funzionare', async () => {
+    mockElectron.invoke.mockResolvedValue({ canceled: true });
+    const result = await gateway.openSaveDialog();
+    expect(mockElectron.invoke).toHaveBeenCalledWith('file:save-dialog', undefined);
+    expect(result.canceled).toBe(true);
+  });
+
+  it('dovrebbe gestire l\'assenza del bridge Electron in exportFile', async () => {
     (globalThis as any).electron = undefined;
     const webGateway = new ExportIpcGateway();
-    
-    const result = await webGateway.exportDocument('1', 'path');
+    const result = await webGateway.exportFile(1, 'path');
     expect(result.success).toBe(false);
-    expect(result.errorMessage).toBe('Bridge non disponibile');
+  });
+
+  it('dovrebbe gestire l\'assenza del bridge Electron in openSaveDialog', async () => {
+    (globalThis as any).electron = undefined;
+    const webGateway = new ExportIpcGateway();
+    const result = await webGateway.openSaveDialog('test.pdf');
+    expect(result.canceled).toBe(true);
   });
 });

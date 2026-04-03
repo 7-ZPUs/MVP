@@ -57,6 +57,7 @@ export const IpcChannels = {
   // ----- File viewer -----
   FILE_OPEN_EXTERNAL: 'file:open-external',
   FILE_DOWNLOAD:      'file:download',
+  FILE_SAVE_DIALOG:   'file:save-dialog',   // per aprire il merda di dialog
 
 } as const;
 

@@ -13,15 +13,16 @@ describe('ExportPageComponent', () => {
   let fixture: ComponentFixture<ExportPageComponent>;
   
 const mockExportFacade = {
-    phase: signal<ExportPhase>(ExportPhase.IDLE),
-    outputContext: signal<OutputContext | null>(null), // <--- QUI IL TRUCCO
-    result: signal<ExportResult | null>(null),
-    progress: signal<number>(0),
-    error: signal<ExportError | null>(null),
-    loading: signal<boolean>(false),
-    exportDocument: vi.fn(),
-    reset: vi.fn()
-  };
+    phase:         signal<ExportPhase>(ExportPhase.IDLE),
+    outputContext: signal<OutputContext | null>(null),
+    result:        signal<ExportResult | null>(null),
+    progress:      signal<number>(0),
+    error:         signal<ExportError | null>(null),
+    loading:       signal<boolean>(false),
+    exportFile:    vi.fn(),   // era exportDocument
+    exportFiles:   vi.fn(),   // aggiunto
+    reset:         vi.fn()
+};
   
   const mockImportFacade = {
     selectedDocument: signal(null)
@@ -51,11 +52,10 @@ const mockExportFacade = {
     expect(progressEl).not.toBeNull();
   });
 
-  it('dovrebbe chiamare exportDocument sulla Facade quando onExport viene attivato', () => {
+  it('dovrebbe chiamare exportFile sulla Facade quando onExport viene attivato', () => {
     const mockNode = { label: 'doc.pdf' } as any;
     component.onExport([mockNode]);
-    
-    expect(mockExportFacade.exportDocument).toHaveBeenCalledWith(mockNode);
+    expect(mockExportFacade.exportFile).toHaveBeenCalledWith(mockNode);
   });
 
   it('dovrebbe mostrare il risultato quando la fase non è IDLE o PROCESSING', () => {
