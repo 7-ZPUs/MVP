@@ -46,7 +46,7 @@ export class IpcGateway {
   async getRootDip(dipId: number): Promise<DipTreeNode> {
     return this.invokeWithCache(
       IpcChannels.BROWSE_GET_DIP_BY_ID,
-      { id: dipId },
+      dipId,
       this.TTL,
       `dip:${dipId}`,
       (dto: DipDTO): DipTreeNode => ({
@@ -63,7 +63,7 @@ export class IpcGateway {
   private async getDocumentClasses(dipId: number): Promise<DipTreeNode[]> {
     return this.invokeWithCache(
       IpcChannels.BROWSE_GET_DOCUMENT_CLASS_BY_DIP_ID,
-      { dipId },
+      dipId,
       this.TTL,
       `documentClasses:${dipId}`,
       (dtos: DocumentClassDTO[]): DipTreeNode[] =>
@@ -81,7 +81,7 @@ export class IpcGateway {
   private async getProcesses(documentClassId: number): Promise<DipTreeNode[]> {
     return this.invokeWithCache(
       IpcChannels.BROWSE_GET_PROCESS_BY_DOCUMENT_CLASS,
-      { documentClassId },
+      documentClassId,
       this.TTL,
       `processes:${documentClassId}`,
       (dtos: ProcessDTO[]): DipTreeNode[] =>
@@ -90,7 +90,6 @@ export class IpcGateway {
           name: dto.uuid,
           type: 'process',
           hasChildren: true,
-          isLoading: false,
         })),
     );
   }
@@ -100,7 +99,7 @@ export class IpcGateway {
   private async getDocuments(processId: number): Promise<DipTreeNode[]> {
     return this.invokeWithCache(
       IpcChannels.BROWSE_GET_DOCUMENTS_BY_PROCESS,
-      { processId },
+      processId,
       this.TTL,
       `documents:${processId}`,
       (dtos: DocumentDTO[]): DipTreeNode[] =>
@@ -118,7 +117,7 @@ export class IpcGateway {
   private async getFiles(documentId: number): Promise<DipTreeNode[]> {
     return this.invokeWithCache(
       IpcChannels.BROWSE_GET_FILE_BY_DOCUMENT,
-      { documentId },
+      documentId,
       this.TTL,
       `files:${documentId}`,
       (dtos: FileDTO[]): DipTreeNode[] =>

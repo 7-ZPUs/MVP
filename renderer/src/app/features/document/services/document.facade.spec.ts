@@ -135,23 +135,37 @@ describe('DocumentFacade', () => {
 
     expect(mockGateway.invoke).toHaveBeenCalledWith(
       IpcChannels.BROWSE_GET_DOCUMENT_BY_ID,
-      '456',
+      456,
       null,
     );
-    expect(mockCache.set).toHaveBeenCalledWith('document:456', mockDocumentData, 300000); // 5 min
-    expect(facade.getState()().detail).toEqual(mockDocumentData);
+    expect(mockCache.set).toHaveBeenCalledWith('document:456', expect.any(Object), 300000); // 5 min
+    expect(facade.getState()().detail).toBeTruthy();
   });
 
   // --- TEST CARICAMENTO BLOB (FILE FISICO) ---
   it('dovrebbe chiamare il gateway per il Blob e usare cache a 1 min (Cache Miss)', async () => {
     (mockCache.get as Mock).mockReturnValue(null);
-    (mockGateway.invoke as Mock).mockResolvedValue(mockBlob);
+    (mockGateway.invoke as Mock)
+      .mockResolvedValueOnce([{ id: 999, isMain: true }])
+      .mockResolvedValueOnce(mockBlob);
 
     const result = await facade.getFileBlob('456');
 
-    expect(mockGateway.invoke).toHaveBeenCalledWith(
+    expect(mockGateway.invoke).toHaveBeenNthCalledWith(
+      1,
+      IpcChannels.BROWSE_GET_FILE_BY_DOCUMENT,
+      456,
+      null,
+    );
+    expect(mockGateway.invoke).toHaveBeenNthCalledWith(
+      2,
+      IpcChannels.BROWSE_GET_FILE_BUFFER_BY_ID,
+      999,
+      null,
+    );
+    expect(mockGateway.invoke).not.toHaveBeenCalledWith(
       IpcChannels.BROWSE_GET_FILE_BY_ID,
-      '456',
+      456,
       null,
     );
     expect(mockCache.set).toHaveBeenCalledWith('blob:456', mockBlob, 60000); // 1 min

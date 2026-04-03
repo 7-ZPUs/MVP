@@ -3,13 +3,14 @@ import { IpcGateway } from "./ipc-gateway";
 import { DipTreeNode } from "../contracts/dip-tree-node";
 import { AppError } from "../../../shared/domain";
 import { NodeId } from "../domain/types";
+import { buildNodeKey, NodeKey } from "../domain/node-key";
 
 export interface DipState {
   phase: 'ready' | 'loading' | 'idle';
   rootNodes: DipTreeNode[];
-  nodeCache: Map<NodeId, DipTreeNode[]>;
-  loadingNodeIds: Set<NodeId>;           // caricamenti parziali per nodo
-  nodeChildrenErrors: Map<NodeId, AppError>;
+  nodeCache: Map<NodeKey, DipTreeNode[]>;
+  loadingNodeIds: Set<NodeKey>;           // caricamenti parziali per nodo
+  nodeChildrenErrors: Map<NodeKey, AppError>;
   rootError?: AppError;
 }
 
@@ -20,9 +21,9 @@ export class DipFacade {
   private readonly _state: WritableSignal<DipState> = signal({
     phase: 'idle',
     rootNodes: [],
-    nodeCache: new Map<NodeId, DipTreeNode[]>(),
-    loadingNodeIds: new Set<NodeId>(),
-    nodeChildrenErrors: new Map<NodeId, AppError>(),
+    nodeCache: new Map<NodeKey, DipTreeNode[]>(),
+    loadingNodeIds: new Set<NodeKey>(),
+    nodeChildrenErrors: new Map<NodeKey, AppError>(),
   });
 
   public getState(): Signal<DipState> {
@@ -54,35 +55,39 @@ export class DipFacade {
 
   // ── Children ──────────────────────────────────────────────
 
-  public async loadChildren(nodeId: NodeId): Promise<void> {
-    // 1. Trova il nodo intero (serve il type per il gateway)
-    const node = this.findNode(nodeId);
+  public async loadChildren(target: NodeId | DipTreeNode): Promise<void> {
+    // In produzione viene passato il nodo completo; il supporto per NodeId
+    // resta per compatibilita` con test legacy.
+    const node = typeof target === 'number' ? this.findNode(target) : target;
     if (!node) return;
+    const nodeKey = buildNodeKey(node);
 
     // 2. Segna il nodo come in caricamento (non tocca phase globale)
     this._state.update(s => ({
       ...s,
-      loadingNodeIds: new Set(s.loadingNodeIds).add(nodeId),
+      loadingNodeIds: new Set(s.loadingNodeIds).add(nodeKey),
       // rimuove eventuale errore precedente sullo stesso nodo
-      nodeChildrenErrors: new Map(
-        [...s.nodeChildrenErrors].filter(([id]) => id !== nodeId)
-      ),
+      nodeChildrenErrors: (() => {
+        const next = new Map(s.nodeChildrenErrors);
+        next.delete(nodeKey);
+        return next;
+      })(),
     }));
 
     try {
       const children: DipTreeNode[] = await this.ipcGateway.getChildren(node);
 
       this._state.update(s => {
-        const newCache = new Map(s.nodeCache).set(nodeId, children);
+        const newCache = new Map(s.nodeCache).set(nodeKey, children);
         const newLoading = new Set(s.loadingNodeIds);
-        newLoading.delete(nodeId);
+        newLoading.delete(nodeKey);
         return { ...s, nodeCache: newCache, loadingNodeIds: newLoading };
       });
     } catch (error) {
       this._state.update(s => {
         const newLoading = new Set(s.loadingNodeIds);
-        newLoading.delete(nodeId);
-        const newErrors = new Map(s.nodeChildrenErrors).set(nodeId, error as AppError);
+        newLoading.delete(nodeKey);
+        const newErrors = new Map(s.nodeChildrenErrors).set(nodeKey, error as AppError);
         return { ...s, loadingNodeIds: newLoading, nodeChildrenErrors: newErrors };
       });
     }

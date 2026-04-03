@@ -1,19 +1,16 @@
 <app-async-state-wrapper
-  [loading]="state().phase !== 'ready'"
+  [loading]="state().phase === 'loading'"
   [error]="state().rootError ?? null"
 >
-  <div loading>
-    Caricamento...
-  </div>
+  <div loading>Caricamento...</div>
 
   <div error *ngIf="state().rootError as rootErr">
     <app-inline-error [error]="rootErr" />
   </div>
 
-
   <div content>
     <ng-container *ngIf="rootNodes.length > 0; else empty">
-      <app-dip-tree [rootNodes]="rootNodes" />
+      <app-dip-tree [rootNodes]="rootNodes" (nodeSelected)="onNodeSelected($event)" />
     </ng-container>
 
     <ng-template #empty>

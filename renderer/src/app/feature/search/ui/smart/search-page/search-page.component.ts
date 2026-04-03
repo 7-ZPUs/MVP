@@ -12,6 +12,10 @@ import {
 } from '../../../../../../../../shared/domain/metadata';
 import { IFilterValidator } from '../../../../validation/contracts/filter-validator.interface';
 import { SearchBarComponent } from '../../dumb/search-bar.component/search-bar.component';
+import {
+  buildDetailRoute,
+  mapSearchResultTypeToDetailItemType,
+} from '../../../../../features/navigation/domain/navigation-routing';
 
 @Component({
   selector: 'app-search-page',
@@ -102,21 +106,14 @@ export class SearchPageComponent implements OnInit {
   public onResultSelected(result: SearchResult): void {
     const id = result.documentId;
 
-    const routingMap: Record<string, string> = {
-      'AGGREGAZIONE_DOCUMENTALE': 'AGGREGATE',
-      'DOCUMENTO_INFORMATICO': 'DOCUMENT',
-      'DOCUMENTO_AMMINISTRATIVO_INFORMATICO': 'DOCUMENT',
-      'PROCESSO': 'PROCESS',
-      'CLASSE_DOCUMENTALE': 'CLASS'
-    };
-    
-    const targetRoute = routingMap[result.type];
-
-    if (!targetRoute) {
-      console.warn(`Tipo di documento sconosciuto: ${result.type}. Impossibile determinare la rotta di destinazione.`);
+    const targetItemType = mapSearchResultTypeToDetailItemType(result.type);
+    if (!targetItemType) {
+      console.warn(
+        `Tipo di documento non ancora supportato in navigazione: ${result.type}. Impossibile determinare la rotta di destinazione.`,
+      );
       return;
     }
-        
-    this.router.navigate(['/detail/', targetRoute, id]);
+
+    void this.router.navigate(buildDetailRoute(targetItemType, id));
   }
 }

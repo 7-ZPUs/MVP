@@ -1,25 +1,20 @@
 import { Component, input, output, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { PdfViewerModule } from 'ng2-pdf-viewer'; // <-- Importiamo la libreria
 import { MimeType } from '../../domain/document.models';
 
 @Component({
   selector: 'app-preview-renderer',
   standalone: true,
-  imports: [CommonModule, PdfViewerModule], // <-- Aggiunto agli imports standalone
+  imports: [CommonModule],
   template: `
     <div class="renderer-container">
       @switch (mimeType()) {
         @case (MimeType.PDF) {
-          <pdf-viewer
-            [src]="src()"
-            [render-text]="true"
-            [original-size]="false"
-            [autoresize]="true"
-            [show-all]="true"
-            class="pdf-viewer"
-          >
-          </pdf-viewer>
+          <div class="pdf-wrapper">
+            <object [data]="blobUrl" type="application/pdf" class="pdf-viewer">
+              Anteprima PDF non disponibile.
+            </object>
+          </div>
         }
 
         @case (MimeType.IMAGE) {
@@ -55,6 +50,11 @@ import { MimeType } from '../../domain/document.models';
         width: 100%;
         height: 100%;
         display: block;
+      }
+
+      .pdf-wrapper {
+        width: 100%;
+        height: 100%;
       }
 
       .image-wrapper {
@@ -116,9 +116,9 @@ export class PreviewRendererComponent {
         if (type === MimeType.TEXT) {
           // Decodifica nativa per i file di testo
           this.textContent = new TextDecoder('utf-8').decode(data);
-        } else if (type === MimeType.IMAGE) {
-          // Creiamo il Blob URL SOLO per le immagini (il PDF ora mangia il Uint8Array nativo)
-          const blob = new Blob([new Uint8Array(data)], { type: 'image/png' }); // Semplificazione, idealmente dedotto dal backend
+        } else if (type === MimeType.IMAGE || type === MimeType.PDF) {
+          const mime = type === MimeType.PDF ? 'application/pdf' : 'image/png';
+          const blob = new Blob([new Uint8Array(data)], { type: mime });
           this.blobUrl = URL.createObjectURL(blob);
         }
       }

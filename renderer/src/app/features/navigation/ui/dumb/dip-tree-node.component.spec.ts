@@ -23,6 +23,7 @@ describe('DipTreeNodeComponent', () => {
     hasChildren: true,
     isLoading: false,
     isExpanded: false,
+    isSelected: false,
     ...overrides
   });
 
@@ -66,7 +67,7 @@ describe('DipTreeNodeComponent', () => {
     const button = fixture.nativeElement.querySelector('.toggle-icon');
     button.click();
   
-    expect(component.toggle.emit).toHaveBeenCalledWith(mockNode.id);
+    expect(component.toggle.emit).toHaveBeenCalledWith(mockNode);
   });
 
   it('dovrebbe chiamare stopPropagation su toggle', () => {

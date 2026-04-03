@@ -5,6 +5,7 @@ import { IpcGateway } from "./ipc-gateway";
 import { DipTreeNode } from "../contracts/dip-tree-node";
 import { AppError } from "../../../shared/domain";
 import { ErrorCode, ErrorCategory, ErrorSeverity } from "../../../shared/domain/error.enum";
+import { buildNodeKey } from "../domain/node-key";
 
 // ── Fixtures ──────────────────────────────────────────────────────────────────
 
@@ -16,7 +17,7 @@ const makeNode = (id: number, type: DipTreeNode['type'] = 'documentClass'): DipT
 });
 
 const makeError = (): AppError => ({
-  code: ErrorCode.DIP_CHILDREN_LOAD_ERROR,
+  code: ErrorCode.IPC_ERROR,
   message: 'Errore test',
   category: ErrorCategory.DOMAIN,
   severity: ErrorSeverity.ERROR,
@@ -30,6 +31,8 @@ const makeGatewayMock = () => ({
   getRootDip: vi.fn(),
   getChildren: vi.fn(),
 });
+
+const keyFor = (node: DipTreeNode) => buildNodeKey(node);
 
 // ── Suite ─────────────────────────────────────────────────────────────────────
 
@@ -206,11 +209,11 @@ describe('DipFacade', () => {
 
       let loadingDuringCall = false;
       gatewayMock.getChildren.mockImplementation(() => {
-        loadingDuringCall = facade.getState()().loadingNodeIds.has(1);
+        loadingDuringCall = facade.getState()().loadingNodeIds.has(keyFor(parent));
         return Promise.resolve([]);
       });
 
-      await facade.loadChildren(1);
+      await facade.loadChildren(parent);
 
       expect(loadingDuringCall).toBe(true);
     });
@@ -222,9 +225,9 @@ describe('DipFacade', () => {
       await facade.loadRootNodes(1);
       gatewayMock.getChildren.mockResolvedValue([]);
 
-      await facade.loadChildren(1);
+      await facade.loadChildren(parent);
 
-      expect(facade.getState()().loadingNodeIds.has(1)).toBe(false);
+      expect(facade.getState()().loadingNodeIds.has(keyFor(parent))).toBe(false);
     });
 
     it('aggiunge i figli alla nodeCache', async () => {
@@ -235,9 +238,9 @@ describe('DipFacade', () => {
       await facade.loadRootNodes(1);
       gatewayMock.getChildren.mockResolvedValue(children);
 
-      await facade.loadChildren(1);
+      await facade.loadChildren(parent);
 
-      expect(facade.getState()().nodeCache.get(1)).toEqual(children);
+      expect(facade.getState()().nodeCache.get(keyFor(parent))).toEqual(children);
     });
 
     it('rimuove l\'errore precedente sullo stesso nodo prima di ricaricare', async () => {
@@ -248,14 +251,14 @@ describe('DipFacade', () => {
 
       // primo caricamento fallisce
       gatewayMock.getChildren.mockRejectedValueOnce(makeError());
-      await facade.loadChildren(1);
-      expect(facade.getState()().nodeChildrenErrors.has(1)).toBe(true);
+      await facade.loadChildren(parent);
+      expect(facade.getState()().nodeChildrenErrors.has(keyFor(parent))).toBe(true);
 
       // secondo caricamento ha successo
       gatewayMock.getChildren.mockResolvedValue([makeNode(2)]);
-      await facade.loadChildren(1);
+      await facade.loadChildren(parent);
 
-      expect(facade.getState()().nodeChildrenErrors.has(1)).toBe(false);
+      expect(facade.getState()().nodeChildrenErrors.has(keyFor(parent))).toBe(false);
     });
 
     it('trova il nodo nella nodeCache (non solo in rootNodes)', async () => {
@@ -266,12 +269,12 @@ describe('DipFacade', () => {
       gatewayMock.getRootDip.mockResolvedValue(root);
       await facade.loadRootNodes(1);
       gatewayMock.getChildren.mockResolvedValueOnce([child]);
-      await facade.loadChildren(1);
+      await facade.loadChildren(root);
       gatewayMock.getChildren.mockResolvedValue([grandchild]);
 
-      await facade.loadChildren(2); // nodo nella cache, non in rootNodes
+      await facade.loadChildren(child); // nodo nella cache, non in rootNodes
 
-      expect(facade.getState()().nodeCache.get(2)).toEqual([grandchild]);
+      expect(facade.getState()().nodeCache.get(keyFor(child))).toEqual([grandchild]);
     });
   });
 
@@ -285,9 +288,9 @@ describe('DipFacade', () => {
       await facade.loadRootNodes(1);
       gatewayMock.getChildren.mockRejectedValue(makeError());
 
-      await facade.loadChildren(1);
+      await facade.loadChildren(parent);
 
-      expect(facade.getState()().loadingNodeIds.has(1)).toBe(false);
+      expect(facade.getState()().loadingNodeIds.has(keyFor(parent))).toBe(false);
     });
 
     it('popola nodeChildrenErrors con l\'errore del nodo specifico', async () => {
@@ -298,9 +301,9 @@ describe('DipFacade', () => {
       await facade.loadRootNodes(1);
       gatewayMock.getChildren.mockRejectedValue(error);
 
-      await facade.loadChildren(1);
+      await facade.loadChildren(parent);
 
-      expect(facade.getState()().nodeChildrenErrors.get(1)).toEqual(error);
+      expect(facade.getState()().nodeChildrenErrors.get(keyFor(parent))).toEqual(error);
     });
 
     it('non modifica la phase globale in caso di errore parziale', async () => {
@@ -310,7 +313,7 @@ describe('DipFacade', () => {
       await facade.loadRootNodes(1);
       gatewayMock.getChildren.mockRejectedValue(makeError());
 
-      await facade.loadChildren(1);
+      await facade.loadChildren(parent);
 
       // phase rimane 'ready' — l'errore è parziale, non blocca l'albero
       expect(facade.getState()().phase).toBe('ready');
@@ -324,13 +327,13 @@ describe('DipFacade', () => {
       await facade.loadRootNodes(1);
       // carica nodo 2 con successo
       gatewayMock.getChildren.mockResolvedValueOnce([child2]);
-      await facade.loadChildren(1);
+      await facade.loadChildren(root);
       // nodo 2 fallisce
       gatewayMock.getChildren.mockRejectedValue(makeError());
-      await facade.loadChildren(2);
+      await facade.loadChildren(child2);
 
-      expect(facade.getState()().nodeChildrenErrors.has(2)).toBe(true);
-      expect(facade.getState()().nodeChildrenErrors.has(1)).toBe(false);
+      expect(facade.getState()().nodeChildrenErrors.has(keyFor(child2))).toBe(true);
+      expect(facade.getState()().nodeChildrenErrors.has(keyFor(root))).toBe(false);
     });
   });
 });

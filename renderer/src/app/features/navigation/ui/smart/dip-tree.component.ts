@@ -1,16 +1,22 @@
 import {
-    Component, Input, Output, EventEmitter,
-    inject, computed, signal
-  } from "@angular/core";
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  inject,
+  computed,
+  signal,
+  ViewChild,
+  effect,
+} from "@angular/core";
   import { DipFacade } from "../../services/dip-facade";
   import { DipTreeNode } from "../../contracts/dip-tree-node";
   import { FlatNode } from "../../contracts/flat-node";
   import { CommonModule } from "@angular/common";
   import { DipTreeNodeComponent } from "../dumb/dip-tree-node.component";
   import { CdkVirtualScrollViewport, ScrollingModule } from '@angular/cdk/scrolling';
-  import { InlineErrorComponent } from "../dumb/inline-error.component";
-  import { NodeId } from "../../domain/types";
   import { AppError } from "../../contracts/app-error";
+  import { NodeKey, buildNodeKey } from "../../domain/node-key";
   
   @Component({
     selector: 'app-dip-tree',
@@ -20,9 +26,22 @@ import {
       CdkVirtualScrollViewport,
       ScrollingModule,
       DipTreeNodeComponent,
-      InlineErrorComponent
     ],
     templateUrl: './dip-tree.html',
+    styles: [
+      `
+        :host {
+          display: block;
+          height: 100%;
+          min-height: 0;
+        }
+
+        cdk-virtual-scroll-viewport {
+          height: 100%;
+          width: 100%;
+        }
+      `,
+    ],
   })
   export class DipTree {
     // Se assente usa i rootNodes dal facade (pagina /dip)
@@ -32,13 +51,25 @@ import {
   
     private readonly dipFacade = inject(DipFacade);
   
+    @ViewChild(CdkVirtualScrollViewport)
+    private viewport?: CdkVirtualScrollViewport;
+
     // Signal locali al componente — modificarli triggera il ricalcolo
-    private readonly expandedIds = signal<Set<NodeId>>(new Set());
+    private readonly expandedNodeKeys = signal<Set<NodeKey>>(new Set());
+    private readonly selectedNodeKey = signal<NodeKey | null>(null);
+
+    constructor() {
+      effect(() => {
+        this.flatNodes().length;
+        queueMicrotask(() => this.viewport?.checkViewportSize());
+      });
+    }
   
     // computed() reagisce sia ai Signal locali che al Signal del facade
     readonly flatNodes = computed<FlatNode[]>(() => {
       const state = this.dipFacade.getState()();
-      const expanded = this.expandedIds();
+      const expanded = this.expandedNodeKeys();
+      const selectedNodeKey = this.selectedNodeKey();
       const effectiveRoots = this.rootNodes ?? state.rootNodes;
   
       return this.buildFlatTree(
@@ -47,34 +78,44 @@ import {
         state.nodeCache,
         state.loadingNodeIds,
         state.nodeChildrenErrors,
+        selectedNodeKey,
         0
       );
     });
   
     private buildFlatTree(
       nodes: DipTreeNode[],
-      expandedIds: Set<NodeId>,
-      nodeCache: Map<NodeId, DipTreeNode[]>,
-      loadingNodeIds: Set<NodeId>,
-      errors: Map<NodeId, AppError>,
+      expandedNodeKeys: Set<NodeKey>,
+      nodeCache: Map<NodeKey, DipTreeNode[]>,
+      loadingNodeIds: Set<NodeKey>,
+      errors: Map<NodeKey, AppError>,
+      selectedNodeKey: NodeKey | null,
       depth: number
     ): FlatNode[] {
       const result: FlatNode[] = [];
   
       for (const node of nodes) {
+        const nodeKey = buildNodeKey(node);
         result.push({
           node,
           depth,
           hasChildren: node.hasChildren,
-          isLoading: loadingNodeIds.has(node.id),
-          isExpanded: expandedIds.has(node.id),
-          childrenError: errors.get(node.id),
+          isLoading: loadingNodeIds.has(nodeKey),
+          isExpanded: expandedNodeKeys.has(nodeKey),
+          isSelected: selectedNodeKey === nodeKey,
+          childrenError: errors.get(nodeKey),
         });
   
-        if (expandedIds.has(node.id)) {
-          const children = nodeCache.get(node.id) ?? [];
+        if (expandedNodeKeys.has(nodeKey)) {
+          const children = nodeCache.get(nodeKey) ?? [];
           result.push(...this.buildFlatTree(
-            children, expandedIds, nodeCache, loadingNodeIds, errors, depth + 1
+            children,
+            expandedNodeKeys,
+            nodeCache,
+            loadingNodeIds,
+            errors,
+            selectedNodeKey,
+            depth + 1,
           ));
         }
       }
@@ -82,25 +123,42 @@ import {
       return result;
     }
   
-    public toggleNode(nodeId: NodeId): void {
+    public toggleNode(node: DipTreeNode): void {
       // Aggiorna il Set in modo immutabile per triggerare il Signal
-      this.expandedIds.update(ids => {
-        const next = new Set(ids);
-        if (next.has(nodeId)) {
-          next.delete(nodeId);
+      const state = this.dipFacade.getState()();
+      const nodeKey = buildNodeKey(node);
+      const isExpanded = this.expandedNodeKeys().has(nodeKey);
+
+      this.expandedNodeKeys.update(keys => {
+        const next = new Set(keys);
+        if (next.has(nodeKey)) {
+          next.delete(nodeKey);
         } else {
-          next.add(nodeId);
-          // Carica i figli solo se non già in cache
-          const state = this.dipFacade.getState()();
-          if (!state.nodeCache.has(nodeId)) {
-            this.dipFacade.loadChildren(nodeId);
-          }
+          next.add(nodeKey);
         }
         return next;
       });
+
+      // Carica i figli solo quando si espande e se non gia` in cache.
+      if (!isExpanded && !state.nodeCache.has(nodeKey)) {
+        void this.dipFacade.loadChildren(node).catch(() => {
+          // DipFacade aggiorna gia` lo stato error/loading per nodo.
+        });
+      }
     }
   
+    public retryNode(node: DipTreeNode): void {
+      void this.dipFacade.loadChildren(node).catch(() => {
+        // DipFacade gestisce error state.
+      });
+    }
+
     public selectNode(node: DipTreeNode): void {
+      this.selectedNodeKey.set(buildNodeKey(node));
       this.nodeSelected.emit(node);
+    }
+
+    trackByFlatNode(_index: number, flatNode: FlatNode): string {
+      return buildNodeKey(flatNode.node);
     }
   }

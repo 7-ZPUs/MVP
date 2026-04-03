@@ -1,7 +1,6 @@
 import { inject, injectable } from 'tsyringe';
 import { ISearchDocumentalClassUC } from '../ISearchDocumentalClassUC';
 import { IDocumentClassRepository, DOCUMENT_CLASS_REPOSITORY_TOKEN } from '../../../repo/IDocumentClassRepository';
-import { DocumentClass } from '../../../entity/DocumentClass';
 import { SearchResult } from '../../../../../shared/domain/metadata'
 
 @injectable()

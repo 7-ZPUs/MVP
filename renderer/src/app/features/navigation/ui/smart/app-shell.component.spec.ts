@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { vi } from 'vitest';
-import { CUSTOM_ELEMENTS_SCHEMA,signal } from '@angular/core';
+import { CUSTOM_ELEMENTS_SCHEMA, signal } from '@angular/core';
 
 import { AppShellComponent } from './app-shell.component';
 import { DipFacade } from '../../services/dip-facade';
@@ -19,11 +19,13 @@ describe('AppShellComponent', () => {
     phase: 'loading' as 'loading' | 'ready' | 'idle',
     rootNodes: mockNodes,
     nodeCache: new Map(),
+    loadingNodeIds: new Set(),
     nodeChildrenErrors: new Map(),
   });
 
   const dipFacadeMock = {
     getState: vi.fn(() => mockState),
+    loadRootNodes: vi.fn(),
   };
 
   const routerMock = {
@@ -52,7 +54,7 @@ describe('AppShellComponent', () => {
 
   // ─────────────────────────────────────────────
 
-  it('dovrebbe mostrare loading quando phase !== ready', () => {
+  it('dovrebbe mostrare loading quando phase === loading', () => {
     mockState.set({
       ...mockState(),
       phase: 'loading',
@@ -65,7 +67,7 @@ describe('AppShellComponent', () => {
 
   // ─────────────────────────────────────────────
 
-  it('dovrebbe navigare a /document', () => {
+  it('dovrebbe navigare al dettaglio DOCUMENT', () => {
     const node: DipTreeNode = {
       id: 1,
       name: 'Doc',
@@ -75,6 +77,19 @@ describe('AppShellComponent', () => {
 
     component.onNodeSelected(node);
 
-    expect(routerMock.navigate).toHaveBeenCalledWith(['/document', 1]);
+    expect(routerMock.navigate).toHaveBeenCalledWith(['/detail', 'DOCUMENT', '1']);
+  });
+
+  it('dovrebbe navigare al dettaglio AGGREGATE per nodo process', () => {
+    const node: DipTreeNode = {
+      id: 42,
+      name: 'Process',
+      type: 'process',
+      hasChildren: true,
+    };
+
+    component.onNodeSelected(node);
+
+    expect(routerMock.navigate).toHaveBeenCalledWith(['/detail', 'AGGREGATE', '42']);
   });
 });

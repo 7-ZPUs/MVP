@@ -61,7 +61,7 @@ describe('SearchPageComponent - Integrazione e Navigazione', () => {
     component.onResultSelected(mockResult);
 
     expect(navigateSpy).toHaveBeenCalledTimes(1);
-    expect(navigateSpy).toHaveBeenCalledWith(['/detail/', 'AGGREGATE', 'FASC-001']);
+    expect(navigateSpy).toHaveBeenCalledWith(['/detail', 'AGGREGATE', 'FASC-001']);
   });
 
   it('dovrebbe navigare verso DOCUMENT se il risultato è un DOCUMENTO_INFORMATICO', () => {
@@ -69,7 +69,7 @@ describe('SearchPageComponent - Integrazione e Navigazione', () => {
     component.onResultSelected(mockResult);
 
     expect(navigateSpy).toHaveBeenCalledTimes(1);
-    expect(navigateSpy).toHaveBeenCalledWith(['/detail/', 'DOCUMENT', 'DOC-123']);
+    expect(navigateSpy).toHaveBeenCalledWith(['/detail', 'DOCUMENT', 'DOC-123']);
   });
 
   it('dovrebbe navigare verso DOCUMENT se il risultato è un DOCUMENTO_AMMINISTRATIVO_INFORMATICO', () => {
@@ -77,7 +77,7 @@ describe('SearchPageComponent - Integrazione e Navigazione', () => {
     component.onResultSelected(mockResult);
 
     expect(navigateSpy).toHaveBeenCalledTimes(1);
-    expect(navigateSpy).toHaveBeenCalledWith(['/detail/', 'DOCUMENT', 'DOC-456']);
+    expect(navigateSpy).toHaveBeenCalledWith(['/detail', 'DOCUMENT', 'DOC-456']);
   });
 
 
@@ -88,7 +88,7 @@ describe('SearchPageComponent - Integrazione e Navigazione', () => {
     expect(navigateSpy).not.toHaveBeenCalled();
     expect(warnSpy).toHaveBeenCalledTimes(1);
     expect(warnSpy).toHaveBeenCalledWith(
-      'Tipo di documento sconosciuto: TIPO_NON_MAPPATO. Impossibile determinare la rotta di destinazione.'
+      'Tipo di documento non ancora supportato in navigazione: TIPO_NON_MAPPATO. Impossibile determinare la rotta di destinazione.'
     );
   });
 
@@ -101,6 +101,6 @@ describe('SearchPageComponent - Integrazione e Navigazione', () => {
     searchResultsElement.triggerEventHandler('resultSelected', mockEmitData);
 
     expect(navigateSpy).toHaveBeenCalledTimes(1);
-    expect(navigateSpy).toHaveBeenCalledWith(['/detail/', 'DOCUMENT', 'TEST-DOM-1']);
+    expect(navigateSpy).toHaveBeenCalledWith(['/detail', 'DOCUMENT', 'TEST-DOM-1']);
   });
 });

@@ -1,6 +1,7 @@
 import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { signal, WritableSignal } from '@angular/core';
+import { Router } from '@angular/router';
 
 import { ItemDetailPageComponent } from './item-detail-page.component';
 import { AGGREGATE_FACADE_TOKEN } from '../../../../aggregate/contracts/IAggregateFacade';
@@ -55,6 +56,7 @@ describe('ItemDetailPageComponent', () => {
         { provide: DOCUMENT_FACADE_TOKEN, useValue: mockDocumentFacade },
         { provide: OUTPUT_FACADE_TOKEN, useValue: mockOutputFacade },
         { provide: INTEGRITY_FACADE_TOKEN, useValue: mockIntegrityFacade },
+        { provide: Router, useValue: { navigate: vi.fn() } },
       ],
     }).compileComponents();
 
@@ -71,14 +73,34 @@ describe('ItemDetailPageComponent', () => {
     mockAggregateState.set({
       loading: false,
       error: null,
-      detail: { aggregateId: '123', metadata: { progressivo: '001/2023' } } as any,
+      detail: {
+        idAgg: {
+          tipoAggregazione: 'Fascicolo',
+          idAggregazione: '123',
+        },
+        tipologiaFascicolo: 'affare',
+        soggetti: [],
+        assegnazione: {
+          tipoAssegnazione: 'Per competenza',
+          soggettoAssegnatario: { tipoRuolo: 'Assegnatario' },
+          dataInizioAssegnazione: '2023-01-01',
+        },
+        dataApertura: '2023-01-01',
+        classificazione: {
+          indiceDiClassificazione: '1.1',
+          descrizione: 'Classe test',
+        },
+        progressivo: 1,
+        chiaveDescrittiva: { oggetto: 'Oggetto test' },
+        indiceDocumenti: [],
+      } as any,
     });
 
     fixture.detectChanges();
 
     expect(mockAggregateFacade.loadAggregate).toHaveBeenCalledWith('123');
     expect(mockDocumentFacade.loadDocument).not.toHaveBeenCalled();
-    expect(component.pageTitle()).toBe('Fascicolo 001/2023'); // Testa il branch del computed
+    expect(component.pageTitle()).toBe('Fascicolo affare'); // Testa il branch del computed
     expect(component.isLoading()).toBe(false);
   });
 

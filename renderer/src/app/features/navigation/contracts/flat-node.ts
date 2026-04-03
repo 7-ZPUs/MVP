@@ -8,6 +8,7 @@ export interface FlatNode {
     hasChildren: boolean;
     isLoading: boolean;
     isExpanded: boolean;
+    isSelected: boolean;
     parentId?: NodeId;
     childrenError?: AppError;
     timestamp?: string;

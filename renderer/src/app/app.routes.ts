@@ -1,25 +1,21 @@
 import { Routes } from '@angular/router';
-import { AppShellComponent } from './shared/components/app-shell/app-shell.component';
-import { DipExplorerComponent } from './features/navigation/ui/smart/dip-explorer.component';
-//import { dipReadyGuard } from './features/navigation/guards/dip-ready-guard';
+import { AppShellComponent as NavigationShellComponent } from './features/navigation/ui/smart/app-shell.component';
+import { NavigationHomeComponent } from './features/navigation/ui/dumb/navigation-home.component';
 
 export const routes: Routes = [
   {
-    path: 'dip',
-    component: DipExplorerComponent,
-  },
-
-  //TODO aggiungere le altre rotte
-
-  {
     path: '',
-    redirectTo: 'dip',
-    pathMatch: 'full',
-  },
-  {
-    path: '',
-    component: AppShellComponent,
+    component: NavigationShellComponent,
     children: [
+      {
+        path: '',
+        redirectTo: 'browse',
+        pathMatch: 'full',
+      },
+      {
+        path: 'browse',
+        component: NavigationHomeComponent,
+      },
       {
         path: 'search',
         loadChildren: () => import('./feature/search/app.search.routes').then((m) => m.routes),
@@ -30,5 +26,14 @@ export const routes: Routes = [
           import('./features/item-detail/item-detail.routes').then((m) => m.itemDetailRoutes),
       },
     ],
+  },
+  {
+    path: 'dip',
+    redirectTo: 'browse',
+    pathMatch: 'full',
+  },
+  {
+    path: '**',
+    redirectTo: 'browse',
   },
 ];

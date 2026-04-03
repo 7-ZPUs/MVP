@@ -55,7 +55,7 @@ describe('IpcGateway', () => {
 
     expect(mockBridge.invoke).toHaveBeenCalledWith(
       IpcChannels.BROWSE_GET_DOCUMENT_CLASS_BY_DIP_ID,
-      { dipId: 1 }
+      1
     );
   });
 

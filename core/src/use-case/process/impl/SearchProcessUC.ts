@@ -2,7 +2,6 @@ import { inject, injectable } from 'tsyringe';
 import { ISearchProcessUC } from '../ISearchProcessUC';
 import { IProcessRepository, PROCESS_REPOSITORY_TOKEN } from '../../../repo/IProcessRepository';
 import { SearchResult } from '../../../../../shared/domain/metadata';
-import { Process } from '../../../entity/Process';
 
 
 @injectable()
@@ -17,7 +16,7 @@ export class SearchProcessUC implements ISearchProcessUC {
         return result.map((process) => {
             const metadata = process.getMetadata();
             return {
-                documentId: process.getId.toString(),
+                documentId: String(process.getId()),
                 name: metadata.findNodeByName('name')?.getStringValue() ?? '',
                 type: metadata.findNodeByName('type')?.getStringValue() ?? '',
                 score: null,

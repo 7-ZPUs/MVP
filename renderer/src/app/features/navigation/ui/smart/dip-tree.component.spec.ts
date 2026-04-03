@@ -7,6 +7,7 @@ import { DipFacade, DipState } from "../../services/dip-facade";
 import { DipTreeNode } from "../../contracts/dip-tree-node";
 import { AppError, ErrorCategory, ErrorCode, ErrorSeverity } from "../../../../shared/domain";
 import { NodeId } from "../../domain/types";
+import { buildNodeKey } from "../../domain/node-key";
 // ── Fixtures ─────────────────────────────────────────────────────────────────
 
 const makeNode = (partial: Partial<DipTreeNode> & { id: NodeId }): DipTreeNode => ({
@@ -17,7 +18,7 @@ const makeNode = (partial: Partial<DipTreeNode> & { id: NodeId }): DipTreeNode =
 });
 
 const makeError = (nodeId: NodeId): AppError => ({
-    code: ErrorCode.DIP_CHILDREN_LOAD_ERROR,
+  code: ErrorCode.IPC_ERROR,
     message: `Errore nodo ${nodeId}`,
     recoverable: true,
     category: ErrorCategory.DOMAIN,
@@ -35,6 +36,8 @@ const makeState = (partial: Partial<DipState> = {}): DipState => ({
   nodeChildrenErrors: new Map(),
   ...partial,
 });
+
+const keyFor = (node: DipTreeNode) => buildNodeKey(node);
 
 // ── Mock Facade ───────────────────────────────────────────────────────────────
 
@@ -123,7 +126,7 @@ describe('DipTree', () => {
 
     it('assegna isLoading=true se il nodo è in loadingNodeIds', async () => {
       const node = makeNode({ id: 1 });
-      await setup({ rootNodes: [node], loadingNodeIds: new Set([1]) });
+      await setup({ rootNodes: [node], loadingNodeIds: new Set([keyFor(node)]) });
 
       expect(component.flatNodes()[0].isLoading).toBe(true);
     });
@@ -138,7 +141,7 @@ describe('DipTree', () => {
       const error = makeError(1);
       await setup({
         rootNodes: [node],
-        nodeChildrenErrors: new Map([[1, error]]),
+        nodeChildrenErrors: new Map([[keyFor(node), error]]),
       });
 
       expect(component.flatNodes()[0].childrenError).toBe(error);
@@ -157,7 +160,7 @@ describe('DipTree', () => {
       const parent = makeNode({ id: 1, hasChildren: true });
       await setup({
         rootNodes: [parent],
-        nodeCache: new Map([[1, [makeNode({ id: 2 })]]])
+        nodeCache: new Map([[keyFor(parent), [makeNode({ id: 2 })]]])
       });
 
       expect(component.flatNodes()).toHaveLength(1);
@@ -168,10 +171,10 @@ describe('DipTree', () => {
       const child  = makeNode({ id: 2 });
       await setup({
         rootNodes: [parent],
-        nodeCache: new Map([[1, [child]]])
+        nodeCache: new Map([[keyFor(parent), [child]]])
       });
 
-      component.toggleNode(1);
+      component.toggleNode(parent);
       fixture.detectChanges();
 
       const flat = component.flatNodes();
@@ -184,38 +187,61 @@ describe('DipTree', () => {
       const parent = makeNode({ id: 1, hasChildren: true });
       await setup({
         rootNodes: [parent],
-        nodeCache: new Map([[1, [makeNode({ id: 2 })]]])
+        nodeCache: new Map([[keyFor(parent), [makeNode({ id: 2 })]]])
       });
 
-      component.toggleNode(1);
+      component.toggleNode(parent);
       fixture.detectChanges();
       expect(component.flatNodes()).toHaveLength(2);
 
-      component.toggleNode(1);
+      component.toggleNode(parent);
       fixture.detectChanges();
       expect(component.flatNodes()).toHaveLength(1);
     });
 
     it('segna isExpanded=true dopo il toggle', async () => {
-      await setup({ rootNodes: [makeNode({ id: 1, hasChildren: true })] });
+      const parent = makeNode({ id: 1, hasChildren: true });
+      await setup({ rootNodes: [parent] });
 
-      component.toggleNode(1);
+      component.toggleNode(parent);
       fixture.detectChanges();
 
       expect(component.flatNodes()[0].isExpanded).toBe(true);
     });
 
     it('segna isExpanded=false dopo il secondo toggle', async () => {
+      const parent = makeNode({ id: 1, hasChildren: true });
       await setup({
-        rootNodes: [makeNode({ id: 1, hasChildren: true })],
-        nodeCache: new Map([[1, []]])
+        rootNodes: [parent],
+        nodeCache: new Map([[keyFor(parent), []]])
       });
 
-      component.toggleNode(1);
-      component.toggleNode(1);
+      component.toggleNode(parent);
+      component.toggleNode(parent);
       fixture.detectChanges();
 
       expect(component.flatNodes()[0].isExpanded).toBe(false);
+    });
+
+    it('gestisce nodi con stesso id ma tipo diverso senza collisioni', async () => {
+      const root = makeNode({ id: 1, type: 'dip', hasChildren: true });
+      const child = makeNode({ id: 1, type: 'documentClass', hasChildren: true });
+
+      await setup({
+        rootNodes: [root],
+        nodeCache: new Map([[keyFor(root), [child]]]),
+      });
+
+      component.toggleNode(root);
+      fixture.detectChanges();
+
+      expect(component.flatNodes()).toHaveLength(2);
+      expect(component.flatNodes()[0].isExpanded).toBe(true);
+      expect(component.flatNodes()[1].isExpanded).toBe(false);
+
+      component.toggleNode(child);
+
+      expect(facadeMock.loadChildren).toHaveBeenCalledWith(child);
     });
   });
 
@@ -223,32 +249,35 @@ describe('DipTree', () => {
 
   describe('toggleNode — loadChildren', () => {
     it('chiama facade.loadChildren se i figli non sono in cache', async () => {
-      await setup({ rootNodes: [makeNode({ id: 1, hasChildren: true })] });
+      const parent = makeNode({ id: 1, hasChildren: true });
+      await setup({ rootNodes: [parent] });
 
-      component.toggleNode(1);
+      component.toggleNode(parent);
 
-      expect(facadeMock.loadChildren).toHaveBeenCalledWith(1);
+      expect(facadeMock.loadChildren).toHaveBeenCalledWith(parent);
     });
 
     it('non chiama facade.loadChildren se i figli sono già in cache', async () => {
+      const parent = makeNode({ id: 1, hasChildren: true });
       await setup({
-        rootNodes: [makeNode({ id: 1, hasChildren: true })],
-        nodeCache: new Map([[1, [makeNode({ id: 2 })]]])
+        rootNodes: [parent],
+        nodeCache: new Map([[keyFor(parent), [makeNode({ id: 2 })]]])
       });
 
-      component.toggleNode(1);
+      component.toggleNode(parent);
 
       expect(facadeMock.loadChildren).not.toHaveBeenCalled();
     });
 
     it('non chiama facade.loadChildren quando si collassa un nodo', async () => {
+      const parent = makeNode({ id: 1, hasChildren: true });
       await setup({
-        rootNodes: [makeNode({ id: 1, hasChildren: true })],
-        nodeCache: new Map([[1, []]])
+        rootNodes: [parent],
+        nodeCache: new Map([[keyFor(parent), []]])
       });
 
-      component.toggleNode(1); // espandi
-      component.toggleNode(1); // collassa
+      component.toggleNode(parent); // espandi
+      component.toggleNode(parent); // collassa
 
       expect(facadeMock.loadChildren).not.toHaveBeenCalled();
     });
@@ -261,14 +290,14 @@ describe('DipTree', () => {
       const parent = makeNode({ id: 1, hasChildren: true });
       await setup({ rootNodes: [parent] });
 
-      component.toggleNode(1);
+      component.toggleNode(parent);
       fixture.detectChanges();
       expect(component.flatNodes()).toHaveLength(1); // nessun figlio ancora
 
       // il facade aggiorna lo stato (simula risposta IPC)
       facadeMock.setState(makeState({
         rootNodes: [parent],
-        nodeCache: new Map([[1, [makeNode({ id: 2 })]]])
+        nodeCache: new Map([[keyFor(parent), [makeNode({ id: 2 })]]])
       }));
       fixture.detectChanges();
 
@@ -281,7 +310,7 @@ describe('DipTree', () => {
 
       facadeMock.setState(makeState({
         rootNodes: [node],
-        loadingNodeIds: new Set([1])
+        loadingNodeIds: new Set([keyFor(node)])
       }));
       fixture.detectChanges();
 

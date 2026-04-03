@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { signal,NO_ERRORS_SCHEMA } from "@angular/core";
 import { vi } from "vitest";
+import { Router } from "@angular/router";
 import { DipExplorerComponent } from "./dip-explorer.component";
 import { DipFacade, DipState } from "../../services/dip-facade";
 import { DipTreeNode } from "../../contracts/dip-tree-node";
@@ -45,7 +46,10 @@ describe('DipExplorerComponent', () => {
 
     await TestBed.configureTestingModule({
       imports: [DipExplorerComponent],
-      providers: [{ provide: DipFacade, useValue: facadeMock }],
+      providers: [
+        { provide: DipFacade, useValue: facadeMock },
+        { provide: Router, useValue: { navigate: vi.fn() } },
+      ],
       schemas: [NO_ERRORS_SCHEMA],
     })
     .overrideTemplate(DipExplorerComponent, '<div></div>')

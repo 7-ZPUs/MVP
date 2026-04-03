@@ -14,6 +14,7 @@ import { DocumentToolbarComponent } from '../../dumb/document-toolbar/document-t
 import { DocumentActionsComponent } from '../document-actions/document-actions.component';
 import { DocumentViewerComponent } from '../../../../document/components/document-viewer/document-viewer.component';
 import { DocumentIndexComponent } from '../../../../aggregate/components/document-index/document-index.component';
+import { buildDetailRoute } from '../../../../navigation/domain/navigation-routing';
 
 @Component({
   selector: 'app-item-detail-page',
@@ -37,7 +38,7 @@ import { DocumentIndexComponent } from '../../../../aggregate/components/documen
             [titolo]="pageTitle()"
             [formato]="documentState().detail?.mimeType || ''"
             [zoomLevel]="zoomLevel()"
-            [parentAggregateId]="null"
+            [parentAggregateId]="parentAggregateId()"
             [isPreviewVisible]="isPreviewVisible()"
             (zoomIn)="zoomLevel.set(zoomLevel() + 10)"
             (zoomOut)="zoomLevel.set(Math.max(10, zoomLevel() - 10))"
@@ -226,6 +227,14 @@ export class ItemDetailPageComponent {
     return '';
   });
 
+  parentAggregateId = computed(() => {
+    if (this.itemType() !== 'DOCUMENT') {
+      return null;
+    }
+
+    return this.documentState().detail?.idAggregazione ?? null;
+  });
+
   constructor() {
     effect(() => {
       // Quando cambia l'URL o l'ID, ricarica i dati con il Facade corretto
@@ -253,11 +262,15 @@ export class ItemDetailPageComponent {
   isPreviewVisible = signal(true);
 
   onNavigateBack(aggregateId: string) {
-    this.router.navigate(['/detail', 'AGGREGATE', aggregateId]);
+    if (!aggregateId) {
+      return;
+    }
+
+    void this.router.navigate(buildDetailRoute('AGGREGATE', aggregateId));
   }
 
   onDocumentSelected(docId: string) {
-    this.router.navigate(['/detail', 'DOCUMENT', docId]);
+    void this.router.navigate(buildDetailRoute('DOCUMENT', docId));
     // Resetta la visibilità della preview quando si apre un nuovo documento
     this.isPreviewVisible.set(true);
   }

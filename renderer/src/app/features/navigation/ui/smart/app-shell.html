@@ -1,28 +1,34 @@
-<!-- LOADING -->
-<ng-container *ngIf="state().phase !== 'ready'; else ready">
-    <div class="loading">
-      Caricamento DIP...
+<ng-container *ngIf="state().phase === 'loading'">
+  <div class="status-screen">Caricamento DIP...</div>
+</ng-container>
+
+<ng-container *ngIf="state().phase === 'idle' && state().rootError as rootError">
+  <div class="status-screen">
+    <app-inline-error [error]="rootError"></app-inline-error>
+    <button class="retry-button" type="button" (click)="retryLoadRootNodes()">Riprova</button>
+  </div>
+</ng-container>
+
+<ng-container *ngIf="state().phase === 'ready'">
+  <header class="toolbar">
+    <h1 class="title">DIP Explorer</h1>
+
+    <div class="toolbar-actions">
+      <button class="toolbar-button" type="button" (click)="navigateToBrowse()">Esplora</button>
+      <button class="toolbar-button" type="button" (click)="navigateToSearch()">Ricerca</button>
+      <button class="toolbar-button" type="button" (click)="toggleSidebar()">
+        {{ isSidebarCollapsed() ? 'Apri albero' : 'Chiudi albero' }}
+      </button>
     </div>
-  </ng-container>
-  
-  <!-- READY -->
-  <ng-template #ready>
-    <header class="toolbar">
-      <h1>DIP Explorer</h1>
-    </header>
-  
-    <div class="layout">
-      <!-- SIDEBAR -->
-      <aside class="sidebar">
-        <app-dip-tree
-          [rootNodes]="rootNodes"
-          (nodeSelected)="onNodeSelected($event)">
-        </app-dip-tree>
-      </aside>
-  
-      <!-- CONTENT -->
-      <main class="content">
-        <router-outlet></router-outlet>
-      </main>
-    </div>
-  </ng-template>
+  </header>
+
+  <div class="layout">
+    <aside class="sidebar" [class.sidebar-collapsed]="isSidebarCollapsed()">
+      <app-dip-tree [rootNodes]="rootNodes" (nodeSelected)="onNodeSelected($event)"></app-dip-tree>
+    </aside>
+
+    <main class="content">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</ng-container>

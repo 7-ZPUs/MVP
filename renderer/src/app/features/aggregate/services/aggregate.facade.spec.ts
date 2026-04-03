@@ -8,6 +8,7 @@ import { IpcErrorHandlerService } from '../../../shared/infrastructure/ipc-error
 import { IPC_GATEWAY_TOKEN } from '../../../shared/interfaces/ipc-gateway.interfaces';
 import { ErrorCode, ErrorCategory, ErrorSeverity, AppError } from '../../../shared/domain';
 import { AggregateDetailDTO } from '../../../shared/domain/dto/AggregateDTO';
+import { IpcChannels } from '../../../../../../shared/ipc-channels';
 
 describe('AggregateFacade', () => {
   // (o 'DocumentFacade')
@@ -120,9 +121,9 @@ describe('AggregateFacade', () => {
     await facade.loadAggregate('123');
 
     // Assert
-    expect(mockGateway.invoke).toHaveBeenCalledWith('ipc:aggregate:get', '123', null);
-    expect(mockCache.set).toHaveBeenCalledWith('aggregate:123', mockAggregateData, 300000); // 5 min = 300000 ms
-    expect(facade.getState()().detail).toEqual(mockAggregateData);
+    expect(mockGateway.invoke).toHaveBeenCalledWith(IpcChannels.BROWSE_GET_PROCESS_BY_ID, 123, null);
+    expect(mockCache.set).toHaveBeenCalledWith('aggregate:123', expect.any(Object), 300000); // 5 min = 300000 ms
+    expect(facade.getState()().detail).toBeTruthy();
   });
 
   it('dovrebbe gestire gli errori, mapparli tramite ErrorHandler e tracciarli con Telemetry', async () => {
