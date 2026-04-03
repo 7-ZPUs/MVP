@@ -11,6 +11,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
       "file:download",
       "file:save-dialog",
       "browse:get-dip-by-id",
+      "browse:get-class-by-dip-id",
+      
 
     ];
 
