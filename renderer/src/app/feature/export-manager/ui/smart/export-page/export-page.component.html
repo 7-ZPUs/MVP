@@ -1,0 +1,27 @@
+<div class="export-page">
+
+  <app-document-actions
+    [selectedDocuments]="selectedAsArray()"
+    [reportId]="reportId"
+    (exportClicked)="onExport($event)"
+    (printClicked)="onPrint($event)"
+    (exportReportClicked)="onExportReport($event)"
+  ></app-document-actions>
+
+  @if (loading() && isMulti()) {
+    <app-export-progress
+      [progress]="progress()"
+      [outputContext]="outputContext()"
+    ></app-export-progress>
+  }
+
+  @if (phase() !== ExportPhase.IDLE && phase() !== ExportPhase.PROCESSING) {
+    <app-export-result
+      [phase]="phase()"
+      [result]="result()"
+      [error]="error()"
+      (retry)="onRetry()"
+    ></app-export-result>
+  }
+
+</div>

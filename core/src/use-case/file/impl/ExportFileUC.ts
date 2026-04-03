@@ -1,7 +1,7 @@
 import { inject, injectable } from 'tsyringe';
 import { IExportFileUC } from '../IExportFileUC';
 import { IFileRepository, FILE_REPOSITORY_TOKEN } from '../../../repo/IFileRepository';
-import { ExportResult } from '../../../value-objects/ExportResult';
+import { ExportResult } from '../../../../../shared/domain/ExportResult';
 import { EXPORT_TOKEN, IExportPort } from '../../../repo/IExportPort';
 import { IPackageReaderPort, PACKAGE_READER_PORT_TOKEN } from '../../../repo/IPackageReaderPort';
 

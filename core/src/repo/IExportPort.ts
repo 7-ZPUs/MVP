@@ -1,4 +1,4 @@
-import { ExportResult } from "../value-objects/ExportResult";
+import { ExportResult } from "../../../shared/domain/ExportResult";
 
 export const EXPORT_TOKEN = Symbol("IExportPort");
 

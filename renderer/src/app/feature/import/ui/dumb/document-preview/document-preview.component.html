@@ -1,0 +1,43 @@
+<section class="preview-wrapper" 
+         aria-label="Anteprima documento"
+         aria-live="polite"
+         aria-atomic="true">
+
+  @if (node) {
+    @if (previewAvailable) {
+      <div class="preview-container"
+           role="region"
+           [attr.aria-label]="'Anteprima di ' + node.label">
+        <header class="preview-header">
+          <span class="file-icon">📄</span>
+          <h3>{{ node.label }}</h3>
+        </header>
+        
+        <div class="preview-area"
+             role="img"
+             [attr.aria-label]="'Contenuto del documento ' + node.label">
+          <div class="placeholder-content">
+            <p>Anteprima del documento: <strong>{{ node.label }}</strong></p>
+            <span class="mock-image">🖼️</span>
+          </div>
+        </div>
+      </div>
+    } @else {
+      <div class="preview-unavailable"
+           role="status"
+           [attr.aria-label]="'Anteprima non disponibile per ' + node.label">
+        <span class="warning-icon">🚫</span>
+        <p>Anteprima non disponibile per questo formato.</p>
+        <small>Scarica il file per visualizzarlo.</small>
+      </div>
+    }
+  } @else {
+    <div class="no-selection"
+         role="status"
+         aria-label="Nessun documento selezionato">
+      <div class="empty-icon">🔍</div>
+      <p>Seleziona un documento per visualizzarlo.</p>
+    </div>
+  }
+
+</section>
