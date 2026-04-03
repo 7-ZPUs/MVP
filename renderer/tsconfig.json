@@ -3,11 +3,7 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
-    "baseUrl": "./",
     "paths": {
-      "../../../../../../shared/*": ["../shared/*"],
-      "../../../../../../../../shared/*": ["../shared/*"],
-      "shared/*": ["../shared/*"],
       "@shared/*": ["../shared/*"]
     },
     "strict": true,

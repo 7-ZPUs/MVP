@@ -57,7 +57,6 @@ export const IpcChannels = {
   // ----- File viewer -----
   FILE_OPEN_EXTERNAL: 'file:open-external',
   FILE_DOWNLOAD:      'file:download',
-  FILE_PRINT:         'file:print',
 
 } as const;
 
