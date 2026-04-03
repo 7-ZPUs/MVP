@@ -15,7 +15,7 @@ import { shell } from "electron";
 import { container } from "tsyringe";
 import { FileViewerIpcAdapter } from "../../src/ipc/FileViewerIpcAdapter";
 import { IpcChannels } from "../../../shared/ipc-channels";
-import { ExportResult } from "../../src/value-objects/ExportResult";
+import { ExportResult } from "../../../shared/domain/ExportResult";
 
 // Costruisce un ipcMain mock con handle registrabile e invocabile
 const makeIpcMain = () => {

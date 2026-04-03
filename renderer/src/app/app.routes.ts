@@ -3,7 +3,7 @@ import { AppShellComponent as NavigationShellComponent } from './features/naviga
 import { NavigationHomeComponent } from './features/navigation/ui/dumb/navigation-home.component';
 
 export const routes: Routes = [
-  {
+   {
     path: '',
     component: NavigationShellComponent,
     children: [

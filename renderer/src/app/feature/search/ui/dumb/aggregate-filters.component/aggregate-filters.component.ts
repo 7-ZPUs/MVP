@@ -129,7 +129,7 @@ export class AggregateFiltersComponent implements OnChanges, OnDestroy {
     }
 
     return Array.from(this.validationResult.errors.keys()).some((key) =>
-      key.startsWith('aggregate.procedimento.fasi.'),
+      (key as string).startsWith('aggregate.procedimento.fasi.'),
     );
   }
 }

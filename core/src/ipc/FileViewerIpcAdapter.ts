@@ -1,5 +1,6 @@
 import { IpcMain, shell } from 'electron';
 import { container } from 'tsyringe';
+import { dialog } from 'electron'; // aggiunto
 
 import { IpcChannels } from '../../../shared/ipc-channels';
 import type { IExportFileUC } from '../use-case/file/IExportFileUC';
@@ -13,6 +14,14 @@ export class FileViewerIpcAdapter {
         ipcMain.handle(IpcChannels.FILE_OPEN_EXTERNAL, async (_event, filePath: string) => {
             const error = await shell.openPath(filePath);
             return { success: error === '' };
+        });
+
+        ipcMain.handle(IpcChannels.FILE_SAVE_DIALOG, async (_event, defaultName?: string) => {
+            const result = await dialog.showSaveDialog({
+                defaultPath: defaultName,
+                filters: [{ name: 'All Files', extensions: ['*'] }],
+            });
+            return { canceled: result.canceled, filePath: result.filePath };
         });
 
         ipcMain.handle(

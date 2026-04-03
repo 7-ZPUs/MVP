@@ -1,0 +1,47 @@
+<app-async-state-wrapper
+  [loading]="loading()"
+  [error]="error()"
+  [empty]="phase() === ImportPhase.EMPTY"
+  [ariaLabel]="'Albero documenti DIP'"
+  (retry)="onRetry()">
+
+  <div slot="loading" class="tree-loading" role="status" aria-live="polite">
+    <div class="spinner-small"></div>
+    <span>Caricamento albero DIP…</span>
+  </div>
+
+  <div slot="empty" class="tree-empty" role="status" aria-live="polite">
+    <span>Nessun documento presente nel DIP.</span>
+  </div>
+
+  <div role="tree" aria-label="Albero documenti DIP" class="nodes-container">
+    @for (node of rootNodes(); track node.id) {
+      <div role="group" class="node-group">
+        <app-dip-tree-node
+          [node]="node"
+          [isExpanded]="expandedIds.has(node.id)"
+          [isLoading]="loadingNodes.has(node.id)"
+          [level]="0"
+          (toggle)="toggleNode($event)"
+          (nodeSelected)="onNodeSelected($event)"
+        ></app-dip-tree-node>
+
+        @if (expandedIds.has(node.id)) {
+          <div role="group" class="children-group" [attr.aria-label]="'Figli di ' + node.label">
+            @for (child of getChildren(node.id); track child.id) {
+              <app-dip-tree-node
+                [node]="child"
+                [isExpanded]="expandedIds.has(child.id)"
+                [isLoading]="loadingNodes.has(child.id)"
+                [level]="1"
+                (toggle)="toggleNode($event)"
+                (nodeSelected)="onNodeSelected($event)"
+              ></app-dip-tree-node>
+            }
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+</app-async-state-wrapper>

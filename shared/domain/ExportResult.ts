@@ -1,8 +1,8 @@
 export class ExportResult {
     constructor(
-        public readonly success: boolean,
-        public readonly errorCode?: string,
-        public readonly errorMessage?: string
+        public readonly success: boolean, // successo o fallimento dell'export
+        public readonly errorCode?: string, // codice di errore in caso di fallimento
+        public readonly errorMessage?: string // messaggio di errore in caso di fallimento
     ) {}
 
     static ok(): ExportResult {
