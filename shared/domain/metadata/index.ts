@@ -8,12 +8,6 @@ export { FilterFieldType } from "./search.enum";
 
 export type {
   SearchQuery,
-  SearchFilters,
-  MetadataFilter,
-  MetadataCondition,
-  MetadataGroup,
-  Operator,
-  LogicOperator,
   SearchResult,
   ValidationError,
   ValidationResult,

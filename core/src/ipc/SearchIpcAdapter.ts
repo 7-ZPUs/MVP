@@ -21,6 +21,7 @@ import { WORD_EMBEDDING_PORT_TOKEN } from "../repo/IWordEmbedding";
 import { DOCUMENTO_REPOSITORY_TOKEN } from "../repo/IDocumentRepository";
 import { DocumentClassMapper } from "../dao/mappers/DocumentClassMapper";
 import { ProcessMapper } from "../dao/mappers/ProcessMapper";
+import { DocumentMapper } from "../dao/mappers/DocumentMapper";
 import { MetadataKeyMapper } from "../dao/mappers/MetadataKeyMapper";
 import {
   SearchQuery,
@@ -47,16 +48,18 @@ export class SearchIpcAdapter {
     const documentRepo: IDocumentRepository =
       container.resolve<IDocumentRepository>(DOCUMENTO_REPOSITORY_TOKEN);
 
-    ipcMain.handle(IpcChannels.SEARCH_CLASSES, (_event, name?: string) => {
+    ipcMain.handle(IpcChannels.SEARCH_CLASSES, async (_event, name?: string) => {
       console.log(
         "SearchIpcAdapter: received search classes request with name =",
         name,
       );
-      return searchClassesUC.execute(name ?? "");
+      const results = searchClassesUC.execute(name ?? "");
+      return results.map((dc) => DocumentClassMapper.toDTO(dc));
     });
 
     ipcMain.handle(IpcChannels.SEARCH_PROCESSES, (_event, uuid?: string) => {
-      return searchProcessiUC.execute(uuid ?? "");
+      const results = searchProcessiUC.execute(uuid ?? "");
+      return results.map((proc) => ProcessMapper.toDTO(proc));
     });
 
     // Ricerca avanzata con filtri strutturati
@@ -78,7 +81,8 @@ export class SearchIpcAdapter {
         const domainQuery = new SearchDocumentsQuery(domainMetadataGroup);
 
         // 4. ESECUZIONE USE CASE
-        return await searchDocumentsUC.execute(domainQuery);
+        const results = searchDocumentsUC.execute(domainQuery);
+        return results.map((doc) => DocumentMapper.toDTO(doc));
       },
     );
 
@@ -94,10 +98,14 @@ export class SearchIpcAdapter {
       IpcChannels.SEARCH_FULLTEXT,
       async (_event, query: SearchQuery) => {
         switch (query.type) {
-          case SearchQueryType.PROCESS_ID:
-            return searchProcessiUC.execute(query.text);
-          case SearchQueryType.CLASS_NAME:
-            return searchClassesUC.execute(query.text);
+          case SearchQueryType.PROCESS_ID: {
+            const results = searchProcessiUC.execute(query.text);
+            return results.map((proc) => ProcessMapper.toDTO(proc));
+          }
+          case SearchQueryType.CLASS_NAME: {
+            const results = searchClassesUC.execute(query.text);
+            return results.map((dc) => DocumentClassMapper.toDTO(dc));
+          }
           case SearchQueryType.FREE:
           default: {
             const searchDocsQuery = new SearchDocumentsQuery({
@@ -110,7 +118,8 @@ export class SearchIpcAdapter {
                 },
               ],
             });
-            return searchDocumentsUC.execute(searchDocsQuery);
+            const results = searchDocumentsUC.execute(searchDocsQuery);
+            return results.map((doc) => DocumentMapper.toDTO(doc));
           }
         }
       },

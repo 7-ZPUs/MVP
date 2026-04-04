@@ -1,6 +1,7 @@
 import { SearchQueryType } from "./search.enum";
 import { AppError } from "../error.models";
 import { z } from "zod";
+import { IntegrityStatusEnum } from "../../../core/src/value-objects/IntegrityStatusEnum";
 
 // Regex di sicurezza per il path
 const PathRegex = /^[a-zA-Z0-9_]+(\.[a-zA-Z0-9_]+)*$/;
@@ -55,11 +56,28 @@ export interface SearchQuery {
 }
 
 export interface SearchResult {
-  documentId: string;
+  id: number;
+  uuid: string;
+  integrityStatus: IntegrityStatusEnum;
+}
+
+enum DocumentTypeEnum {
+  DOCUMENTO_INFORMATICO = 'DOCUMENTO INFORMATICO',
+  DOCUMENTO_AMMINISTRATIVO_INFORMATICO = 'DOCUMENTO AMMINISTRATIVO INFORMATICO',
+  AGGREGAZIONE_DOCUMENTALE = 'AGGREGAZIONE DOCUMENTALE',
+}
+
+export interface DocumentSearchResult extends SearchResult {
   name: string;
-  type: string;
+  type: DocumentTypeEnum;
   score: number | null;
 }
+
+export interface ProcessSearchResult extends SearchResult {}
+
+export interface DocumentClassSearchResult extends SearchResult {}
+
+// ------ FRONTEND -------
 
 export interface ValidationError {
   field: string;

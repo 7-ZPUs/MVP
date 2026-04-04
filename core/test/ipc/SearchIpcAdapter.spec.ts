@@ -232,19 +232,22 @@ describe("SearchIpcAdapter", () => {
     const filters: SearchRequestDTO = {
       filter: {
         logicOperator: "AND",
-        items: [{ path: "NomeDelDocumento", operator: "EQ", value: "test" }]
-      }
+        items: [{ path: "NomeDelDocumento", operator: "EQ", value: "test" }],
+      },
     };
     const result = await ipcMain.invoke(IpcChannels.SEARCH_DOCUMENTS, filters);
 
     expect(searchDocumentsUC.execute).toHaveBeenCalled();
-    expect(result).toEqual([doc]);
+    expect(result).toEqual([DocumentMapper.toDTO(doc)]);
   });
 
   it("SEARCH_DOCUMENTS ritorna array vuoto se nessun documento trovato", async () => {
     searchDocumentsUC.execute.mockResolvedValue([]);
     const filters: SearchRequestDTO = {
-      filter: { logicOperator: "AND", items: [{ path: "X", operator: "EQ", value: "Y" }] }
+      filter: {
+        logicOperator: "AND",
+        items: [{ path: "X", operator: "EQ", value: "Y" }],
+      },
     };
     const result = await ipcMain.invoke(IpcChannels.SEARCH_DOCUMENTS, filters);
     expect(result).toEqual([]);
@@ -253,7 +256,10 @@ describe("SearchIpcAdapter", () => {
   it("SEARCH_DOCUMENTS propaga rejection della use-case", async () => {
     searchDocumentsUC.execute.mockRejectedValue(new Error("documents failed"));
     const filters: SearchRequestDTO = {
-      filter: { logicOperator: "AND", items: [{ path: "X", operator: "EQ", value: "Y" }] }
+      filter: {
+        logicOperator: "AND",
+        items: [{ path: "X", operator: "EQ", value: "Y" }],
+      },
     };
     await expect(
       ipcMain.invoke(IpcChannels.SEARCH_DOCUMENTS, filters),
@@ -337,7 +343,7 @@ describe("SearchIpcAdapter", () => {
   });
 
   it("SEARCH_FULLTEXT ritorna Document[] dal searchDocumentsUC", async () => {
-    const expectedResults = [ makeDocument("uuid-1", []) ];
+    const expectedResults = [makeDocument("uuid-1", [])];
     searchDocumentsUC.execute.mockResolvedValue(expectedResults);
 
     const query = {
@@ -347,7 +353,9 @@ describe("SearchIpcAdapter", () => {
     };
     const result = await ipcMain.invoke(IpcChannels.SEARCH_FULLTEXT, query);
 
-    expect(result).toEqual(expectedResults);
+    expect(result).toEqual(
+      expectedResults.map((doc) => DocumentMapper.toDTO(doc)),
+    );
   });
 
   it("SEARCH_FULLTEXT ritorna array vuoto se nessun documento trovato", async () => {

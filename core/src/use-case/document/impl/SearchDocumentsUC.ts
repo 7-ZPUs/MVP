@@ -24,7 +24,7 @@ export class SearchDocumentsUC implements ISearchDocumentsUC {
         private readonly documentRepo: IDocumentRepository
     ) {}
 
-  async execute(filters: SearchDocumentsQuery): Promise<Document[]> {
+  execute(filters: SearchDocumentsQuery): Document[] {
     const results = this.documentRepo.searchDocument(filters);
     return results;
   }
