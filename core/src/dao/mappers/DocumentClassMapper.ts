@@ -1,6 +1,7 @@
 import { DocumentClassDTO } from "../../dto/DocumentClassDTO";
 import { DocumentClass } from "../../entity/DocumentClass";
 import { IntegrityStatusEnum } from "../../value-objects/IntegrityStatusEnum";
+import { DocumentClassSearchResult } from "../../../../shared/domain/metadata/search.models";
 
 export interface DocumentClassPersistenceRow {
   id: number;
@@ -61,6 +62,23 @@ export class DocumentClassMapper {
       integrityStatus: documentClass.getIntegrityStatus(),
       name: documentClass.getName(),
       timestamp: documentClass.getTimestamp(),
+    };
+  }
+
+  static toSearchResult(
+    documentClass: DocumentClass,
+  ): DocumentClassSearchResult {
+    const id = documentClass.getId();
+    if (id === null) {
+      throw new Error(
+        "Cannot convert to SearchResult: DocumentClass entity is not yet persisted and has no ID.",
+      );
+    }
+
+    return {
+      id,
+      uuid: documentClass.getUuid(),
+      integrityStatus: documentClass.getIntegrityStatus(),
     };
   }
 }

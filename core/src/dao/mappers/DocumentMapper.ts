@@ -3,6 +3,10 @@ import { Document } from "../../entity/Document";
 import { IntegrityStatusEnum } from "../../value-objects/IntegrityStatusEnum";
 import { Metadata, MetadataType } from "../../value-objects/Metadata";
 import { MetadataPersistenceRow, MetadataMapper } from "./MetadataMapper";
+import {
+  DocumentSearchResult,
+  DocumentTypeEnum,
+} from "../../../../shared/domain/metadata/search.models";
 
 export interface DocumentPersistenceRow {
   id: number;
@@ -69,6 +73,33 @@ export class DocumentMapper {
     return temp;
   }
 
+  static toSearchResult(
+    document: Document,
+    score: number | null,
+  ): DocumentSearchResult {
+    const id = document.getId();
+    if (id === null) {
+      throw new Error(
+        "Cannot convert to SearchResult: Document entity is not yet persisted and has no ID.",
+      );
+    }
+
+    const metadata = document.getMetadata();
+    const name =
+      metadata.findNodeByName("NomeDelDocumento")?.getStringValue() ??
+      metadata.findNodeByName("nome")?.getStringValue() ??
+      "";
+
+    return {
+      id,
+      uuid: document.getUuid(),
+      integrityStatus: document.getIntegrityStatus(),
+      name,
+      type: this.mapRootMetadataType(metadata),
+      score,
+    };
+  }
+
   static metadataToJson(metadata: Metadata): Record<string, unknown> {
     return {
       [metadata.getName()]: this.metadataNodeToJsonValue(metadata),
@@ -92,14 +123,14 @@ export class DocumentMapper {
     }
 
     const entries = Object.entries(parsed as Record<string, unknown>);
-    
+
     if (entries.length === 1) {
       const [key, value] = entries[0];
       return this.metadataJsonEntryToMetadata(key, value);
     }
 
-    const children = entries.map(
-      ([key, value]) => this.metadataJsonEntryToMetadata(key, value),
+    const children = entries.map(([key, value]) =>
+      this.metadataJsonEntryToMetadata(key, value),
     );
 
     return new Metadata("Metadata", children, MetadataType.COMPOSITE);
@@ -175,6 +206,19 @@ export class DocumentMapper {
       key,
       value === null ? "" : String(value),
       MetadataType.STRING,
+    );
+  }
+
+  private static mapRootMetadataType(metadata: Metadata): DocumentTypeEnum {
+    const rootName = metadata.getName();
+    if ((Object.values(DocumentTypeEnum) as string[]).includes(rootName)) {
+      return rootName as DocumentTypeEnum;
+    }
+
+    throw new Error(
+      `Invalid document metadata root type '${rootName}'. Expected one of: ${Object.values(
+        DocumentTypeEnum,
+      ).join(", ")}.`,
     );
   }
 }

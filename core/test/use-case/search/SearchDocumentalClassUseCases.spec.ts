@@ -35,12 +35,9 @@ describe("SearchDocumentalClassUC", () => {
     const results = await uc.execute("Contratti");
 
     expect(results).toHaveLength(1);
-    expect(results[0]).toEqual({
-      documentId: "1",
-      name: "Contratti",
-      type: "",
-      score: null,
-    });
+    expect(results[0].getId()).toBe(1);
+    expect(results[0].getName()).toBe("Contratti");
+    expect(results[0].getUuid()).toBe("uuid-1");
   });
 
   // La query viene passata intatta al repository
@@ -99,10 +96,10 @@ describe("SearchDocumentalClassUC", () => {
     const uc = new SearchDocumentalClassUC(repo as IDocumentClassRepository);
     const results = await uc.execute("");
 
-    expect(results.map((r) => r.name)).toEqual(["AAA", "BBB", "CCC"]);
+    expect(results.map((r) => r.getName())).toEqual(["AAA", "BBB", "CCC"]);
   });
 
-  it("mappa documentId e name mantenendo score nullo", async () => {
+  it("mantiene gli attributi dominio della classe documentale", async () => {
     const dc = makeDocumentClass(1, "Originale");
     (repo.searchDocumentalClasses as ReturnType<typeof vi.fn>).mockReturnValue([
       dc,
@@ -111,12 +108,9 @@ describe("SearchDocumentalClassUC", () => {
     const uc = new SearchDocumentalClassUC(repo as IDocumentClassRepository);
     const results = await uc.execute("Originale");
 
-    expect(results[0]).toEqual({
-      documentId: "1",
-      name: "Originale",
-      type: "",
-      score: null,
-    });
+    expect(results[0].getId()).toBe(1);
+    expect(results[0].getName()).toBe("Originale");
+    expect(results[0].getIntegrityStatus()).toBe("UNKNOWN");
   });
 
   it("propaga eccezioni del repository senza alterarle", async () => {
@@ -128,7 +122,7 @@ describe("SearchDocumentalClassUC", () => {
 
     const uc = new SearchDocumentalClassUC(repo as IDocumentClassRepository);
 
-    await expect(uc.execute("Contratti")).rejects.toThrow(
+    expect(() => uc.execute("Contratti")).toThrow(
       "document class search failed",
     );
   });

@@ -22,6 +22,7 @@ import { DocumentClassMapper } from "../../src/dao/mappers/DocumentClassMapper";
 import { ProcessMapper } from "../../src/dao/mappers/ProcessMapper";
 import { DocumentMapper } from "../../src/dao/mappers/DocumentMapper";
 import { MetadataType } from "../../src/value-objects/Metadata";
+import { DocumentTypeEnum } from "../../../shared/domain/metadata/search.models";
 
 const makeIpcMain = () => {
   const handlers = new Map<string, Function>();
@@ -71,12 +72,13 @@ const makeProcess = (id: number, uuid: string) =>
 const makeDocument = (
   uuid: string,
   metadata: { name: string; value: string }[] = [],
+  rootType: DocumentTypeEnum = DocumentTypeEnum.DOCUMENTO_INFORMATICO,
 ) => {
   const rows = [
     {
       id: 1,
       parent_id: null,
-      name: "root",
+      name: rootType,
       value: "",
       type: MetadataType.COMPOSITE,
     },
@@ -159,7 +161,7 @@ describe("SearchIpcAdapter", () => {
     );
 
     expect(searchClassesUC.execute).toHaveBeenCalledWith("Contratti");
-    expect(result).toEqual([DocumentClassMapper.toDTO(dc)]);
+    expect(result).toEqual([DocumentClassMapper.toSearchResult(dc)]);
   });
 
   it("SEARCH_CLASSES usa stringa vuota se il nome non è fornito", async () => {
@@ -197,7 +199,7 @@ describe("SearchIpcAdapter", () => {
     );
 
     expect(searchProcessiUC.execute).toHaveBeenCalledWith("proc-uuid-abc");
-    expect(result).toEqual([ProcessMapper.toDTO(proc)]);
+    expect(result).toEqual([ProcessMapper.toSearchResult(proc)]);
   });
 
   it("SEARCH_PROCESSES usa stringa vuota se uuid non è fornito", async () => {
@@ -238,7 +240,7 @@ describe("SearchIpcAdapter", () => {
     const result = await ipcMain.invoke(IpcChannels.SEARCH_DOCUMENTS, filters);
 
     expect(searchDocumentsUC.execute).toHaveBeenCalled();
-    expect(result).toEqual([DocumentMapper.toDTO(doc)]);
+    expect(result).toEqual([DocumentMapper.toSearchResult(doc, null)]);
   });
 
   it("SEARCH_DOCUMENTS ritorna array vuoto se nessun documento trovato", async () => {
@@ -269,15 +271,14 @@ describe("SearchIpcAdapter", () => {
   // ─── SEARCH_SEMANTIC ──────────────────────────────────────────────────────
 
   it("SEARCH_SEMANTIC chiama execute con la query e ritorna SearchResult[]", async () => {
-    const expectedResults = [
-      {
-        documentId: "uuid-s1",
-        name: "sem.pdf",
-        type: "DOCUMENTO INFORMATICO",
-        score: 0.91,
-      },
-    ];
-    searchSemanticUC.execute.mockResolvedValue(expectedResults);
+    const doc = makeDocument(
+      "uuid-s1",
+      [{ name: "NomeDelDocumento", value: "sem.pdf" }],
+      DocumentTypeEnum.DOCUMENTO_INFORMATICO,
+    );
+    searchSemanticUC.execute.mockResolvedValue([
+      { document: doc, score: 0.91 },
+    ]);
 
     const query = {
       text: "ricerca semantica",
@@ -287,7 +288,7 @@ describe("SearchIpcAdapter", () => {
     const result = await ipcMain.invoke(IpcChannels.SEARCH_SEMANTIC, query);
 
     expect(searchSemanticUC.execute).toHaveBeenCalledWith("ricerca semantica");
-    expect(result).toEqual(expectedResults);
+    expect(result).toEqual([DocumentMapper.toSearchResult(doc, 0.91)]);
   });
 
   it("SEARCH_SEMANTIC ritorna array vuoto se nessun documento simile trovato", async () => {
@@ -354,7 +355,7 @@ describe("SearchIpcAdapter", () => {
     const result = await ipcMain.invoke(IpcChannels.SEARCH_FULLTEXT, query);
 
     expect(result).toEqual(
-      expectedResults.map((doc) => DocumentMapper.toDTO(doc)),
+      expectedResults.map((doc) => DocumentMapper.toSearchResult(doc, null)),
     );
   });
 

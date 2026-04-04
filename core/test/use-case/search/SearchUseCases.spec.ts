@@ -71,7 +71,10 @@ describe("SearchDocumentsUC", () => {
     expect(results).toHaveLength(1);
     expect(results[0].getUuid()).toBe("uuid-1");
     expect(
-      results[0].getMetadata().findNodeByName("nome")?.getStringValue(),
+      results[0]
+        .getMetadata()
+        .findNodeByName("NomeDelDocumento")
+        ?.getStringValue(),
     ).toBe("fattura.pdf");
     expect(
       results[0]
@@ -164,7 +167,10 @@ describe("SearchDocumentsUC", () => {
     const results = await uc.execute(emptyFilters);
 
     expect(
-      results[0].getMetadata().findNodeByName("nome")?.getStringValue(),
+      results[0]
+        .getMetadata()
+        .findNodeByName("NomeDelDocumento")
+        ?.getStringValue(),
     ).toBe("contratto.pdf");
     expect(
       results[0]
@@ -187,7 +193,10 @@ describe("SearchDocumentsUC", () => {
     const results = await uc.execute(emptyFilters);
 
     expect(
-      results[0].getMetadata().findNodeByName("nome")?.getStringValue(),
+      results[0]
+        .getMetadata()
+        .findNodeByName("NomeDelDocumento")
+        ?.getStringValue(),
     ).toBe("primo-nome.pdf");
     expect(
       results[0]
@@ -204,7 +213,7 @@ describe("SearchDocumentsUC", () => {
 
     const uc = new SearchDocumentsUC(repo as IDocumentRepository);
 
-    await expect(uc.execute(emptyFilters)).rejects.toThrow("db unavailable");
+    expect(() => uc.execute(emptyFilters)).toThrow("db unavailable");
   });
 });
 
@@ -225,7 +234,7 @@ describe("SearchSemanticUC", () => {
   });
 
   // Caso nominale: un documento con score alto
-  it("mappa correttamente uuid, nome, tipo e score nel SearchResult", async () => {
+  it("ritorna coppie documento+score dal repository", async () => {
     const doc = makeDocument(21, "uuid-s1", [
       { name: "nome", value: "contratto.pdf" },
       { name: "tipoDocumento", value: "DOCUMENTO AMMINISTRATIVO INFORMATICO" },
@@ -238,9 +247,7 @@ describe("SearchSemanticUC", () => {
     const results = await uc.execute("contratto");
 
     expect(results).toHaveLength(1);
-    expect(results[0].documentId).toBe("21");
-    expect(results[0].name).toBe("contratto.pdf");
-    expect(results[0].type).toBe("DOCUMENTO AMMINISTRATIVO INFORMATICO");
+    expect(results[0].document.getUuid()).toBe("uuid-s1");
     expect(results[0].score).toBe(0.92);
   });
 
@@ -337,7 +344,7 @@ describe("SearchSemanticUC", () => {
   });
 
   // Metadati assenti nella ricerca semantica
-  it("usa stringa vuota per name e type se i metadati sono assenti", async () => {
+  it("ritorna comunque documento e score anche con metadati assenti", async () => {
     const doc = makeDocument(43, "uuid-empty", []);
     (repo.searchDocumentSemantic as ReturnType<typeof vi.fn>).mockResolvedValue(
       [{ document: doc, score: 0.88 }],
@@ -346,12 +353,11 @@ describe("SearchSemanticUC", () => {
     const uc = new SearchSemanticUC(repo as IDocumentRepository, aiAdapter);
     const results = await uc.execute("senza metadati");
 
-    expect(results[0].name).toBe("");
-    expect(results[0].type).toBe("");
+    expect(results[0].document.getUuid()).toBe("uuid-empty");
     expect(results[0].score).toBe(0.88);
   });
 
-  it("usa il primo metadato corrispondente quando ci sono duplicati", async () => {
+  it("preserva il documento originale anche con metadati duplicati", async () => {
     const doc = makeDocument(44, "uuid-dup", [
       { name: "nome", value: "primo.pdf" },
       { name: "nome", value: "secondo.pdf" },
@@ -365,8 +371,8 @@ describe("SearchSemanticUC", () => {
     const uc = new SearchSemanticUC(repo as IDocumentRepository, aiAdapter);
     const results = await uc.execute("duplicati");
 
-    expect(results[0].name).toBe("primo.pdf");
-    expect(results[0].type).toBe("TIPO-1");
+    expect(results[0].document.getUuid()).toBe("uuid-dup");
+    expect(results[0].score).toBe(0.5);
   });
 
   it("propaga errori del repository durante la ricerca semantica", async () => {

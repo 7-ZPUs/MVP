@@ -3,6 +3,7 @@ import { Process } from "../../entity/Process";
 import { IntegrityStatusEnum } from "../../value-objects/IntegrityStatusEnum";
 import { Metadata } from "../../value-objects/Metadata";
 import { MetadataPersistenceRow, MetadataMapper } from "./MetadataMapper";
+import { ProcessSearchResult } from "../../../../shared/domain/metadata/search.models";
 
 export interface ProcessPersistenceRow {
   id: number;
@@ -61,6 +62,21 @@ export class ProcessMapper {
       uuid: process.getUuid(),
       integrityStatus: process.getIntegrityStatus(),
       metadata: MetadataMapper.flatten(process.getMetadata()),
+    };
+  }
+
+  static toSearchResult(process: Process): ProcessSearchResult {
+    const id = process.getId();
+    if (id === null) {
+      throw new Error(
+        "Cannot convert to SearchResult: Process entity is not yet persisted and has no ID.",
+      );
+    }
+
+    return {
+      id,
+      uuid: process.getUuid(),
+      integrityStatus: process.getIntegrityStatus(),
     };
   }
 }

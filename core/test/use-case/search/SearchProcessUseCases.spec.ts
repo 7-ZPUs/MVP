@@ -58,12 +58,14 @@ describe("SearchProcessUC", () => {
     const results = await uc.execute("proc-uuid-abc");
 
     expect(results).toHaveLength(1);
-    expect(results[0]).toEqual({
-      documentId: "1",
-      name: "Proc A",
-      type: "PROCESSO",
-      score: null,
-    });
+    expect(results[0].getId()).toBe(1);
+    expect(results[0].getUuid()).toBe("proc-uuid-abc");
+    expect(
+      results[0].getMetadata().findNodeByName("name")?.getStringValue(),
+    ).toBe("Proc A");
+    expect(
+      results[0].getMetadata().findNodeByName("type")?.getStringValue(),
+    ).toBe("PROCESSO");
   });
 
   // La query viene passata intatta al repository
@@ -110,7 +112,7 @@ describe("SearchProcessUC", () => {
     const uc = new SearchProcessUC(repo as IProcessRepository);
     const results = await uc.execute("");
 
-    expect(results.map((r) => r.documentId)).toEqual(["1", "2", "3"]);
+    expect(results.map((r) => r.getId())).toEqual([1, 2, 3]);
   });
 
   it("usa stringa vuota per name e type se i metadati non sono presenti", async () => {
@@ -120,8 +122,8 @@ describe("SearchProcessUC", () => {
     const uc = new SearchProcessUC(repo as IProcessRepository);
     const results = await uc.execute("uuid-originale");
 
-    expect(results[0].name).toBe("");
-    expect(results[0].type).toBe("");
+    expect(results[0].getMetadata().findNodeByName("name")).toBeNull();
+    expect(results[0].getMetadata().findNodeByName("type")).toBeNull();
   });
 
   // uuid parziale — ricerca per prefisso
@@ -143,6 +145,6 @@ describe("SearchProcessUC", () => {
 
     const uc = new SearchProcessUC(repo as IProcessRepository);
 
-    await expect(uc.execute("proc-uuid")).rejects.toThrow("process search failed");
+    expect(() => uc.execute("proc-uuid")).toThrow("process search failed");
   });
 });

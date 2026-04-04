@@ -8,11 +8,17 @@ export { FilterFieldType } from "./search.enum";
 
 export type {
   SearchQuery,
+  SearchFilters,
   SearchResult,
+  DocumentSearchResult,
+  ProcessSearchResult,
+  DocumentClassSearchResult,
+  MetadataFilter,
   ValidationError,
   ValidationResult,
   SearchState,
 } from "./search.models";
 export { SearchQueryType } from "./search.enum";
+export { DocumentTypeEnum } from "./search.models";
 
 export type { FilterValidatorFn } from "./search.models";

@@ -48,18 +48,21 @@ export class SearchIpcAdapter {
     const documentRepo: IDocumentRepository =
       container.resolve<IDocumentRepository>(DOCUMENTO_REPOSITORY_TOKEN);
 
-    ipcMain.handle(IpcChannels.SEARCH_CLASSES, async (_event, name?: string) => {
-      console.log(
-        "SearchIpcAdapter: received search classes request with name =",
-        name,
-      );
-      const results = searchClassesUC.execute(name ?? "");
-      return results.map((dc) => DocumentClassMapper.toDTO(dc));
-    });
+    ipcMain.handle(
+      IpcChannels.SEARCH_CLASSES,
+      async (_event, name?: string) => {
+        console.log(
+          "SearchIpcAdapter: received search classes request with name =",
+          name,
+        );
+        const results = searchClassesUC.execute(name ?? "");
+        return results.map((dc) => DocumentClassMapper.toSearchResult(dc));
+      },
+    );
 
     ipcMain.handle(IpcChannels.SEARCH_PROCESSES, (_event, uuid?: string) => {
       const results = searchProcessiUC.execute(uuid ?? "");
-      return results.map((proc) => ProcessMapper.toDTO(proc));
+      return results.map((proc) => ProcessMapper.toSearchResult(proc));
     });
 
     // Ricerca avanzata con filtri strutturati
@@ -81,8 +84,10 @@ export class SearchIpcAdapter {
         const domainQuery = new SearchDocumentsQuery(domainMetadataGroup);
 
         // 4. ESECUZIONE USE CASE
-        const results = searchDocumentsUC.execute(domainQuery);
-        return results.map((doc) => DocumentMapper.toDTO(doc));
+        const results = await Promise.resolve(
+          searchDocumentsUC.execute(domainQuery),
+        );
+        return results.map((doc) => DocumentMapper.toSearchResult(doc, null));
       },
     );
 
@@ -90,7 +95,10 @@ export class SearchIpcAdapter {
     ipcMain.handle(
       IpcChannels.SEARCH_SEMANTIC,
       async (_event, query: SearchQuery) => {
-        return searchSemanticUC.execute(query.text);
+        const matches = await searchSemanticUC.execute(query.text);
+        return matches.map(({ document, score }) =>
+          DocumentMapper.toSearchResult(document, score),
+        );
       },
     );
 
@@ -100,11 +108,11 @@ export class SearchIpcAdapter {
         switch (query.type) {
           case SearchQueryType.PROCESS_ID: {
             const results = searchProcessiUC.execute(query.text);
-            return results.map((proc) => ProcessMapper.toDTO(proc));
+            return results.map((proc) => ProcessMapper.toSearchResult(proc));
           }
           case SearchQueryType.CLASS_NAME: {
             const results = searchClassesUC.execute(query.text);
-            return results.map((dc) => DocumentClassMapper.toDTO(dc));
+            return results.map((dc) => DocumentClassMapper.toSearchResult(dc));
           }
           case SearchQueryType.FREE:
           default: {
@@ -118,8 +126,12 @@ export class SearchIpcAdapter {
                 },
               ],
             });
-            const results = searchDocumentsUC.execute(searchDocsQuery);
-            return results.map((doc) => DocumentMapper.toDTO(doc));
+            const results = await Promise.resolve(
+              searchDocumentsUC.execute(searchDocsQuery),
+            );
+            return results.map((doc) =>
+              DocumentMapper.toSearchResult(doc, null),
+            );
           }
         }
       },

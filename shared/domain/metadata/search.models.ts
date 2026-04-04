@@ -2,6 +2,8 @@ import { SearchQueryType } from "./search.enum";
 import { AppError } from "../error.models";
 import { z } from "zod";
 import { IntegrityStatusEnum } from "../../../core/src/value-objects/IntegrityStatusEnum";
+import { PartialSearchFilters } from "./partial-filters-models";
+import { SubjectCriteria } from "./search-subject-filters-models";
 
 // Regex di sicurezza per il path
 const PathRegex = /^[a-zA-Z0-9_]+(\.[a-zA-Z0-9_]+)*$/;
@@ -18,6 +20,11 @@ export const SearchConditionSchema = z.object({
 });
 
 export type SearchConditionDTO = z.infer<typeof SearchConditionSchema>;
+
+export interface MetadataFilter {
+  key: string;
+  value: unknown;
+}
 
 /**
  * Definizione del tipo ricorsivo per TypeScript
@@ -49,6 +56,10 @@ export const SearchRequestSchema = z.object({
 
 export type SearchRequestDTO = z.infer<typeof SearchRequestSchema>;
 
+export interface SearchFilters extends PartialSearchFilters {
+  subject: SubjectCriteria[];
+}
+
 export interface SearchQuery {
   text: string;
   type: SearchQueryType;
@@ -61,10 +72,10 @@ export interface SearchResult {
   integrityStatus: IntegrityStatusEnum;
 }
 
-enum DocumentTypeEnum {
-  DOCUMENTO_INFORMATICO = 'DOCUMENTO INFORMATICO',
-  DOCUMENTO_AMMINISTRATIVO_INFORMATICO = 'DOCUMENTO AMMINISTRATIVO INFORMATICO',
-  AGGREGAZIONE_DOCUMENTALE = 'AGGREGAZIONE DOCUMENTALE',
+export enum DocumentTypeEnum {
+  DOCUMENTO_INFORMATICO = "DOCUMENTO INFORMATICO",
+  DOCUMENTO_AMMINISTRATIVO_INFORMATICO = "DOCUMENTO AMMINISTRATIVO INFORMATICO",
+  AGGREGAZIONE_DOCUMENTALE = "AGGREGAZIONE DOCUMENTALE",
 }
 
 export interface DocumentSearchResult extends SearchResult {

@@ -1,10 +1,9 @@
 import { inject, injectable } from "tsyringe";
-import { ISearchSemanticUC } from "../ISearchSemanticUC";
+import { ISearchSemanticUC, SemanticSearchMatch } from "../ISearchSemanticUC";
 import {
   IDocumentRepository,
   DOCUMENTO_REPOSITORY_TOKEN,
 } from "../../../repo/IDocumentRepository";
-import { SearchResult } from "../../../../../shared/domain/metadata/search.models";
 import {
   IWordEmbedding,
   WORD_EMBEDDING_PORT_TOKEN,
@@ -19,18 +18,9 @@ export class SearchSemanticUC implements ISearchSemanticUC {
     private readonly aiAdapter: IWordEmbedding,
   ) {}
 
-  async execute(query: string): Promise<SearchResult[]> {
+  async execute(query: string): Promise<SemanticSearchMatch[]> {
     const queryVector = await this.aiAdapter.generateEmbedding(query);
-    const results = await this.documentRepo.searchDocumentSemantic(queryVector);
-    return results.map(({ document, score }) => {
-      const metadata = document.getMetadata();
-      return {
-        documentId: String(document.getId()),
-        name: metadata.findNodeByName("nome")?.getStringValue() ?? "",
-        type: metadata.findNodeByName("tipoDocumento")?.getStringValue() ?? "",
-        score,
-      };
-    });
+    return this.documentRepo.searchDocumentSemantic(queryVector);
   }
 
   /**
