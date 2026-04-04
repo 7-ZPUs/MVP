@@ -7,7 +7,6 @@ import {
   ValidationError,
   PartialSearchFilters,
   SearchResult,
-  ValidationResult,
 } from '../../../../../../shared/domain/metadata';
 import { SearchQueryType } from '../../../../../../shared/domain/metadata/search.enum';
 import { IErrorHandler, ITelemetry, ILiveAnnouncer } from '../../../shared/contracts';
@@ -23,8 +22,11 @@ export class SearchFacade implements ISearchFacade {
   private readonly state: WritableSignal<SearchState> = signal({
     query: { text: '', type: SearchQueryType.FREE, useSemanticSearch: false },
     filters: {
-      filters: [],
-      subject: null,
+      common: {} as any,
+      diDai: {} as any,
+      aggregate: {} as any,
+      customMeta: {} as any,
+      subject: [],
     },
     results: [],
     loading: false,
@@ -68,8 +70,7 @@ export class SearchFacade implements ISearchFacade {
   public searchAdvanced(filters: SearchFilters): void {
     this.setFilters(filters);
 
-    // Il facade non può più validare i filtri complessi qui, la validazione forte è in UI.
-    const validation: ValidationResult = { isValid: true, errors: new Map() };
+    const validation = this.filterValidator.validate(filters as unknown as PartialSearchFilters);
 
     if (!validation.isValid) {
       const validationErrors = new Map<string, ValidationError>();

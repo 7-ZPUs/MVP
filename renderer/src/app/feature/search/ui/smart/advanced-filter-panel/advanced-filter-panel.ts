@@ -21,7 +21,6 @@ import {
   SubjectCriteria,
   ValidationError,
   PartialSearchFilters,
-  MetadataFilter,
 } from '../../../../../../../../shared/domain/metadata';
 
 import { CommonFiltersComponent } from '../../dumb/common-filters.component/common-filters.component';
@@ -29,6 +28,7 @@ import { DiDaiFiltersComponent } from '../../dumb/di-dai-filters.component/di-da
 import { AggregateFiltersComponent } from '../../dumb/aggregate-filters.component/aggregate-filters.component';
 import { CustomMetaFiltersComponent } from '../../dumb/custom-meta-filters.component/custom-meta-filters.component';
 import { SubjectFiltersComponent } from '../../dumb/subject-filters.component/subject-filters.component';
+import { FilterRulesManager, FilterUIState } from './filter-rules.manager';
 
 @Component({
   selector: 'app-advanced-filter-panel',
@@ -43,30 +43,58 @@ import { SubjectFiltersComponent } from '../../dumb/subject-filters.component/su
     SubjectFiltersComponent,
   ],
   templateUrl: './advanced-filter-panel.html',
+  styleUrl: './advanced-filter-panel.scss',
 })
 export class AdvancedFilterPanelComponent implements OnInit, OnChanges {
   @Input() validator?: FilterValidatorFn;
   @Input() externalValidation: ValidationResult | null = null;
-  private _filters!: SearchFilters;
+  
+  private _filters: SearchFilters = {
+    common: {},
+    diDai: {},
+    aggregate: {},
+    customMeta: null,
+    subject: []
+  } as any;
+
   @Input()
   set filters(value: SearchFilters) {
-    this._filters = value;
-    if (this.panelForm && value) {
-      this.panelForm.patchValue({
-         subject: value.subject,
-         // Non possiamo ricaricare tutti i campi typed indietro da value.filters facilmente. 
-         // Visto che questo componente di solito inizializza o resetta.
-      }, { emitEvent: false });
+    const incoming = value || {} as any;
+
+    const safeFilters = {
+      ...incoming,
+      common: incoming.common || {},
+      diDai: incoming.diDai || {},
+      aggregate: incoming.aggregate || {},
+      subject: incoming.subject || []
+    };
+
+    this._filters = safeFilters;
+
+    if (this.panelForm) {
+      const isReset =
+        Object.keys(safeFilters.common).length === 0 &&
+        Object.keys(safeFilters.diDai).length === 0 &&
+        Object.keys(safeFilters.aggregate).length === 0 &&
+        safeFilters.customMeta === null &&
+        safeFilters.subject.length === 0;
+
+      if (isReset) {
+        this.panelForm.reset({}, { emitEvent: false });
+        this.subjectResetCounter++;
+      } else {
+        this.panelForm.patchValue(safeFilters, { emitEvent: false });
+      }
     }
   }
+
   get filters(): SearchFilters {
-    return this._filters;
+    return this._filters || ({ subject: [] } as any);
   }
 
   @Output() filtersChanged = new EventEmitter<SearchFilters>();
   @Output() filtersSubmit = new EventEmitter<SearchFilters>();
   @Output() validationResult = new EventEmitter<ValidationResult>();
-  // filterAdded e filterRemoved sembrano non usati nell'HTML, ma li lasciamo se servono altrove
   @Output() filterAdded = new EventEmitter<CustomFilterValues>();
   @Output() filterRemoved = new EventEmitter<string>();
   @Output() filtersReset = new EventEmitter<void>();
@@ -77,18 +105,26 @@ export class AdvancedFilterPanelComponent implements OnInit, OnChanges {
 
   public panelForm!: FormGroup;
 
+  public uiState: FilterUIState = {
+    disableAggregate: false,
+    disableDiDai: false,
+    motivoBloccoAggregate: '',
+    motivoBloccoDiDai: '',
+  };
+
   constructor(private readonly fb: FormBuilder) {}
 
   public ngOnInit(): void {
     this.panelForm = this.fb.group({
-      common: [{}],
-      diDai: [{}],
-      aggregate: [{}],
-      customMeta: [null],
-      subject: [this.filters?.subject || null],
+      common: [this.filters.common],
+      diDai: [this.filters.diDai],
+      aggregate: [this.filters.aggregate],
+      customMeta: [this.filters.customMeta],
+      subject: [this.filters.subject],
     });
 
     this.panelForm.valueChanges.subscribe((values) => {
+      this.uiState = FilterRulesManager.calculateUIState(values);
       this.validateAndEmit(values);
     });
   }
@@ -103,7 +139,6 @@ export class AdvancedFilterPanelComponent implements OnInit, OnChanges {
     if (this.externalValidation?.isValid === false) {
       return this.externalValidation;
     }
-
     return this.currentValidationResult || this.externalValidation;
   }
 
@@ -123,78 +158,13 @@ export class AdvancedFilterPanelComponent implements OnInit, OnChanges {
     this.panelForm.patchValue({ customMeta: entries }, { emitEvent: true });
   }
 
-  public onSubjectChanged(subject: SubjectCriteria): void {
+  public onSubjectChanged(subject: SubjectCriteria[]): void {
     const updatedFilters = { ...this.filters, subject };
     this.filtersChanged.emit(updatedFilters);
   }
 
-  private flattenToMetadataFilters(formValues: any): MetadataFilter[] {
-    const filters: MetadataFilter[] = [];
-    const add = (key: string, value: any) => {
-      if (value !== null && value !== undefined && value !== '') {
-        filters.push({ key, value: String(value) });
-      }
-    };
-
-    const c = formValues.common;
-    if (c) {
-      add("note", c.note);
-      add("oggetto", c.chiaveDescrittiva?.oggetto);
-      add("parole_chiave", c.chiaveDescrittiva?.paroleChiave);
-      add("indice_di_classificazione", c.classificazione?.codice);
-      add("descrizione", c.classificazione?.descrizione);
-      add("tempo_di_conservazione", c.conservazione?.valore);
-      if (c.tipoDocumento === "DOCUMENTO INFORMATICO") add("documento_informatico", "");
-      if (c.tipoDocumento === "DOCUMENTO AMMINISTRATIVO INFORMATICO") add("documento_amministrativo_informatico", "");
-      if (c.tipoDocumento === "AGGREGAZIONE DOCUMENTALE") add("aggregazione_documentale", "");
-    }
-
-    const d = formValues.diDai;
-    if (d) {
-      add("nome_del_documento", d.nome);
-      add("versione_del_documento", d.versione);
-      add("id_identificativo_documento_primario", d.idPrimario);
-      add("tipologia_documentale", d.tipologia);
-      add("modalita_di_formazione", d.modalitaFormazione);
-      add("riservato", d.riservatezza);
-      add("formato", d.identificativoFormato?.formato);
-      add("nome_prodotto", d.identificativoFormato?.nomeProdottoCreazione);
-      add("versione_prodotto", d.identificativoFormato?.versioneProdottoCreazione);
-      add("produttore", d.identificativoFormato?.produttoreProdottoCreazione);
-      add("firmato_digitalmente", d.verifica?.formatoDigitalmente);
-      add("sigillato_elettronicamente", d.verifica?.sigillatoElettr);
-      add("marcatura_temporale", d.verifica?.marcaturaTemporale);
-      add("conformita_copie_immagine_su_supporto_informatico", d.verifica?.conformitaCopie);
-      add("tipologia_di_flusso", d.registrazione?.tipologiaFlusso);
-      add("tipo_registro", d.registrazione?.tipologiaRegistro);
-      add("data_registrazione_documento", d.registrazione?.dataRegistrazione);
-      add("numero_registrazione_documento", d.registrazione?.numeroRegistrazione);
-      add("codice_registro", d.registrazione?.codiceRegistro);
-    }
-
-    const a = formValues.aggregate;
-    if (a) {
-      add("tipo_aggregazione", a.tipoAggregazione);
-      add("id_aggregazione", a.idAggregazione);
-      add("tipo_agg", a.tipoFascicolo);
-      add("data_apertura", a.dataApertura);
-      add("data_chiusura", a.dataChiusura);
-      add("oggetto", a.procedimento?.materia);
-      add("denominazione", a.procedimento?.denominazioneProcedimento);
-      add("tipo_ruolo", a.assegnazione?.tipoAssegnazione);
-      add("data_inizio_assegnazione", a.assegnazione?.dataInizioAssegn);
-      add("data_fine_assegnazione", a.assegnazione?.dataFineAssegn);
-    }
-
-    if (formValues.customMeta) {
-      add(formValues.customMeta.field, formValues.customMeta.value);
-    }
-
-    return filters;
-  }
-
   public onFieldValidationError(field: string, error: ValidationError | null): void {
-    // Riservato per logiche future
+    // Riservato
   }
 
   public togglePanel(): void {
@@ -206,10 +176,9 @@ export class AdvancedFilterPanelComponent implements OnInit, OnChanges {
       this.currentValidationResult?.isValid !== false &&
       this.externalValidation?.isValid !== false
     ) {
-      const flatFilters = this.flattenToMetadataFilters(this.panelForm.value);
       const finalFilters: SearchFilters = {
-        filters: flatFilters,
-        subject: this.filters?.subject || null,
+        ...this.filters,
+        ...this.panelForm.value,
       };
       this.filtersSubmit.emit(finalFilters);
     }
@@ -218,7 +187,7 @@ export class AdvancedFilterPanelComponent implements OnInit, OnChanges {
   public onReset(): void {
     this.panelForm.reset();
     this.subjectResetCounter++;
-    this.currentValidationResult = null; // Resetta anche gli errori visivi
+    this.currentValidationResult = null;
     this.filtersReset.emit();
   }
 
@@ -235,10 +204,12 @@ export class AdvancedFilterPanelComponent implements OnInit, OnChanges {
       this.validationResult.emit(this.currentValidationResult);
     }
 
-    const flatFilters = this.flattenToMetadataFilters(formValues);
+    const safeCurrentFilters = this.filters || ({} as any);
+
     const fullFilters: SearchFilters = {
-      filters: flatFilters,
-      subject: this.filters?.subject || null,
+      ...safeCurrentFilters,
+      ...partialSearchFilters,
+      subject: safeCurrentFilters.subject || []
     };
     this.filtersChanged.emit(fullFilters);
   }

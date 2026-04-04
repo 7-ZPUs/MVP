@@ -1,7 +1,39 @@
 import { Routes } from '@angular/router';
-import { SearchPageComponent } from './feature/search/ui/smart/search-page/search-page.component';
+import { AppShellComponent as NavigationShellComponent } from './features/navigation/ui/smart/app-shell.component';
+import { NavigationHomeComponent } from './features/navigation/ui/dumb/navigation-home.component';
 
 export const routes: Routes = [
-  { path: '', redirectTo: 'search', pathMatch: 'full' },
-  { path: 'search', component: SearchPageComponent },
+   {
+    path: '',
+    component: NavigationShellComponent,
+    children: [
+      {
+        path: '',
+        redirectTo: 'browse',
+        pathMatch: 'full',
+      },
+      {
+        path: 'browse',
+        component: NavigationHomeComponent,
+      },
+      {
+        path: 'search',
+        loadChildren: () => import('./feature/search/app.search.routes').then((m) => m.routes),
+      },
+      {
+        path: 'detail',
+        loadChildren: () =>
+          import('./features/item-detail/item-detail.routes').then((m) => m.itemDetailRoutes),
+      },
+    ],
+  },
+  {
+    path: 'dip',
+    redirectTo: 'browse',
+    pathMatch: 'full',
+  },
+  {
+    path: '**',
+    redirectTo: 'browse',
+  },
 ];

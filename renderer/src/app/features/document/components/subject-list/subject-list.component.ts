@@ -1,0 +1,112 @@
+import { Component, input } from '@angular/core';
+import { Subject, SubjectType } from '../../domain/document.models';
+import { KeyValuePipe } from '@angular/common';
+
+@Component({
+  selector: 'app-subject-list',
+  standalone: true,
+  imports: [KeyValuePipe],
+  template: `
+    <div class="metadata-card">
+      <h3>Soggetti</h3>
+      @if (!subjects() || subjects()!.length === 0) {
+        <p class="empty-message">Nessun soggetto presente.</p>
+      } @else {
+        <div class="subject-grid">
+          @for (subject of subjects(); track subject.ruolo + subject.tipo) {
+            <div class="subject-card">
+              <div class="card-header">
+                <span class="role">{{ subject.ruolo }}</span>
+                <span class="type-badge">{{ formatType(subject.tipo) }}</span>
+              </div>
+              <div class="card-body">
+                @for (campo of subject.campiSpecifici | keyvalue; track campo.key) {
+                  <div class="data-row">
+                    <span class="label">{{ campo.key }}:</span>
+                    <span class="value">{{ campo.value }}</span>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  `,
+  styles: [
+    `
+      .metadata-card {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 1.25rem;
+        margin-bottom: 1rem;
+      }
+      .empty-message {
+        color: #64748b;
+        font-style: italic;
+        font-size: 0.9rem;
+      }
+      .subject-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+      }
+      .subject-card {
+        background: white;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        overflow: hidden;
+      }
+      .card-header {
+        background: #f1f5f9;
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid #cbd5e1;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .role {
+        font-weight: 600;
+        color: #0f172a;
+        font-size: 0.95rem;
+      }
+      .type-badge {
+        font-size: 0.75rem;
+        background: #e2e8f0;
+        color: #475569;
+        padding: 0.2rem 0.5rem;
+        border-radius: 9999px;
+        font-weight: 500;
+      }
+      .card-body {
+        padding: 1rem;
+      }
+      .data-row {
+        display: flex;
+        margin-bottom: 0.5rem;
+        font-size: 0.85rem;
+      }
+      .data-row:last-child {
+        margin-bottom: 0;
+      }
+      .label {
+        font-weight: 600;
+        color: #64748b;
+        width: 120px;
+        flex-shrink: 0;
+      }
+      .value {
+        color: #1e293b;
+      }
+    `,
+  ],
+})
+export class SubjectListComponent {
+  subjects = input<Subject[]>();
+
+  formatType(tipo: SubjectType): string {
+    return tipo.replace(/_/g, ' ');
+  }
+}

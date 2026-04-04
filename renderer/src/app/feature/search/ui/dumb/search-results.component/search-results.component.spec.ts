@@ -57,7 +57,7 @@ describe('SearchResultsComponent', () => {
 
   it('dovrebbe emettere resultSelected con il documentId corretto al click sulla riga', () => {
     const mockResults: SearchResult[] = [
-      { documentId: 'DOC-123', name: 'Test', type: 'PDF', score: null },
+      { documentId: 'DOC-123', name: 'Test', type: 'AGGREGAZIONE_DOCUMENTALE', score: null },
     ];
     fixture.componentRef.setInput('results', mockResults);
     fixture.detectChanges();
@@ -68,6 +68,6 @@ describe('SearchResultsComponent', () => {
     firstRow.triggerEventHandler('click', null);
 
     expect(emitSpy).toHaveBeenCalledTimes(1);
-    expect(emitSpy).toHaveBeenCalledWith('DOC-123');
+    expect(emitSpy).toHaveBeenCalledWith({ documentId: 'DOC-123', name: 'Test', type: 'AGGREGAZIONE_DOCUMENTALE', score: null });
   });
 });

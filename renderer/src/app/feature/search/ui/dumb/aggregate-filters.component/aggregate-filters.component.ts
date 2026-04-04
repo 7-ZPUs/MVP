@@ -32,6 +32,8 @@ import {
 export class AggregateFiltersComponent implements OnChanges, OnDestroy {
   @Input() filters: AggregateFilterValues = {} as AggregateFilterValues;
   @Input() validationResult: ValidationResult | null = null;
+  @Input() disabled: boolean = false;
+  @Input() disabledReason: string = '';
 
   @Output() filtersChanged = new EventEmitter<AggregateFilterValues>();
 
@@ -127,7 +129,7 @@ export class AggregateFiltersComponent implements OnChanges, OnDestroy {
     }
 
     return Array.from(this.validationResult.errors.keys()).some((key) =>
-      key.startsWith('aggregate.procedimento.fasi.'),
+      (key as string).startsWith('aggregate.procedimento.fasi.'),
     );
   }
 }

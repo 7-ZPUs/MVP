@@ -7,9 +7,15 @@ contextBridge.exposeInMainWorld("electronAPI", {
       "ipc:search:semantic",
       "ipc:search:advanced",
       "ipc:indexing:status",
+      "file:open-external",
+      "file:download",
+      "file:save-dialog",
+
     ];
 
-    if (validChannels.includes(channel)) {
+    const isValid = validChannels.includes(channel);
+
+    if (isValid) {
       return ipcRenderer.invoke(channel, data);
     } else {
       return Promise.reject(

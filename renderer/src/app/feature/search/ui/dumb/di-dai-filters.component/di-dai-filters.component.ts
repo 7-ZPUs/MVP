@@ -36,6 +36,9 @@ import {
 export class DiDaiFiltersComponent implements OnChanges, OnDestroy {
   @Input() filters: DiDaiFilterValues = {} as DiDaiFilterValues;
   @Input() validationResult: ValidationResult | null = null;
+  @Input() disabled: boolean = false;
+  @Input() disabledReason: string = '';
+
 
   @Output() filtersChanged = new EventEmitter<DiDaiFilterValues>();
 

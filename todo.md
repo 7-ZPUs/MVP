@@ -1,2 +1,0 @@
-- Rivedere negli ipc il fatto che usiamo container.resolve, invece che iniettare nel costruttore
-- Rivedere la gestione del SearchIpcAdapter: adattarlo alle nuove query da stabilire con Lorenzo.

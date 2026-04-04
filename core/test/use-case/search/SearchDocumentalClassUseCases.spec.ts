@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { SearchDocumentalClassUC } from "../../../src/use-case/classe-documentale/impl/SearchDocumentalClassUC";
 import { IDocumentClassRepository } from "../../../src/repo/IDocumentClassRepository";
-import { DocumentClass } from "../../../src/entity/DocumentClass";
 import { DocumentClassMapper } from "../../../src/dao/mappers/DocumentClassMapper";
 
 // Costruisce una DocumentClass già persistita
@@ -26,45 +25,50 @@ describe("SearchDocumentalClassUC", () => {
   });
 
   // Caso nominale: una classe trovata per nome esatto
-  it("ritorna le classi documentali trovate dal repository", () => {
+  it("ritorna le classi documentali trovate dal repository", async () => {
     const dc = makeDocumentClass(1, "Contratti");
     (repo.searchDocumentalClasses as ReturnType<typeof vi.fn>).mockReturnValue([
       dc,
     ]);
 
     const uc = new SearchDocumentalClassUC(repo as IDocumentClassRepository);
-    const results = uc.execute("Contratti");
+    const results = await uc.execute("Contratti");
 
     expect(results).toHaveLength(1);
-    expect(results[0]).toBe(dc);
+    expect(results[0]).toEqual({
+      documentId: "1",
+      name: "Contratti",
+      type: "",
+      score: null,
+    });
   });
 
   // La query viene passata intatta al repository
-  it("passa il nome al repository senza modificarlo", () => {
+  it("passa il nome al repository senza modificarlo", async () => {
     (repo.searchDocumentalClasses as ReturnType<typeof vi.fn>).mockReturnValue(
       [],
     );
 
     const uc = new SearchDocumentalClassUC(repo as IDocumentClassRepository);
-    uc.execute("Fatture 2026");
+    await uc.execute("Fatture 2026");
 
     expect(repo.searchDocumentalClasses).toHaveBeenCalledWith("Fatture 2026");
   });
 
   // Nessun risultato trovato
-  it("ritorna array vuoto se nessuna classe corrisponde al nome", () => {
+  it("ritorna array vuoto se nessuna classe corrisponde al nome", async () => {
     (repo.searchDocumentalClasses as ReturnType<typeof vi.fn>).mockReturnValue(
       [],
     );
 
     const uc = new SearchDocumentalClassUC(repo as IDocumentClassRepository);
-    const results = uc.execute("inesistente");
+    const results = await uc.execute("inesistente");
 
     expect(results).toHaveLength(0);
   });
 
   // Stringa vuota — ricerca senza filtro
-  it("passa stringa vuota al repository per ricerca senza filtro", () => {
+  it("passa stringa vuota al repository per ricerca senza filtro", async () => {
     const dcs = [
       makeDocumentClass(1, "Contratti"),
       makeDocumentClass(2, "Fatture"),
@@ -75,14 +79,14 @@ describe("SearchDocumentalClassUC", () => {
     );
 
     const uc = new SearchDocumentalClassUC(repo as IDocumentClassRepository);
-    const results = uc.execute("");
+    const results = await uc.execute("");
 
     expect(repo.searchDocumentalClasses).toHaveBeenCalledWith("");
     expect(results).toHaveLength(3);
   });
 
   // Più risultati: tutti devono essere restituiti nell'ordine del repository
-  it("preserva l'ordine dei risultati restituito dal repository", () => {
+  it("preserva l'ordine dei risultati restituito dal repository", async () => {
     const dcs = [
       makeDocumentClass(1, "AAA"),
       makeDocumentClass(2, "BBB"),
@@ -93,25 +97,29 @@ describe("SearchDocumentalClassUC", () => {
     );
 
     const uc = new SearchDocumentalClassUC(repo as IDocumentClassRepository);
-    const results = uc.execute("");
+    const results = await uc.execute("");
 
-    expect(results.map((r) => r.getName())).toEqual(["AAA", "BBB", "CCC"]);
+    expect(results.map((r) => r.name)).toEqual(["AAA", "BBB", "CCC"]);
   });
 
-  // Il risultato è la stessa referenza restituita dal repository (nessuna copia)
-  it("ritorna le stesse istanze restituite dal repository senza copiarle", () => {
+  it("mappa documentId e name mantenendo score nullo", async () => {
     const dc = makeDocumentClass(1, "Originale");
     (repo.searchDocumentalClasses as ReturnType<typeof vi.fn>).mockReturnValue([
       dc,
     ]);
 
     const uc = new SearchDocumentalClassUC(repo as IDocumentClassRepository);
-    const results = uc.execute("Originale");
+    const results = await uc.execute("Originale");
 
-    expect(results[0]).toBe(dc);
+    expect(results[0]).toEqual({
+      documentId: "1",
+      name: "Originale",
+      type: "",
+      score: null,
+    });
   });
 
-  it("propaga eccezioni del repository senza alterarle", () => {
+  it("propaga eccezioni del repository senza alterarle", async () => {
     (
       repo.searchDocumentalClasses as ReturnType<typeof vi.fn>
     ).mockImplementation(() => {
@@ -120,7 +128,7 @@ describe("SearchDocumentalClassUC", () => {
 
     const uc = new SearchDocumentalClassUC(repo as IDocumentClassRepository);
 
-    expect(() => uc.execute("Contratti")).toThrow(
+    await expect(uc.execute("Contratti")).rejects.toThrow(
       "document class search failed",
     );
   });

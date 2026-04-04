@@ -1,47 +1,15 @@
 <div class="search-page-layout">
-  <header class="search-header">
-    <div class="title-block">
-      <p class="eyebrow">Digital Archive</p>
-      <h1 class="title">Ricerca Documentale</h1>
-    </div>
-
-    <div class="query-surface">
-      <input
-        type="text"
-        class="query-input"
-        [value]="state().query.text"
-        (input)="onSearchTextChanged($event)"
-        (keyup.enter)="onSearchRequested()"
-        placeholder="Cerca per testo, classe, processo..."
-      />
-
-      <div class="query-actions">
-        <select
-          class="query-select"
-          [value]="state().query.type"
-          (change)="onSearchTypeChanged($event)"
-        >
-          <option value="FREE">Ricerca libera (nome)</option>
-          <option value="PROCESS">Per processo</option>
-          <option value="CLASS">Per classe documentale</option>
-        </select>
-
-        <label class="semantic-toggle">
-          <input
-            type="checkbox"
-            [checked]="state().query.useSemanticSearch"
-            (change)="onSemanticToggle($event)"
-          />
-          <span>Ricerca semantica</span>
-        </label>
-
-        <button class="search-button" (click)="onSearchRequested()">Cerca</button>
-      </div>
-    </div>
-  </header>
-
+  
+  <app-search-bar
+    [query]="state().query"
+    [isSearching]="state().loading"
+    (queryChanged)="onQueryChanged($event)"
+    (searchRequested)="onSearchRequested()">
+  </app-search-bar>
+  
   <div class="main-content">
-    <aside class="filters-pane">
+    
+    <aside class="sidebar">
       <app-advanced-filter-panel
         [filters]="state().filters"
         [validator]="validateFilters"
@@ -54,32 +22,40 @@
       </app-advanced-filter-panel>
     </aside>
 
-    <main class="results-pane">
+    <main class="content-area">
       @if (state().loading) {
-        <div class="state-card loading-state" aria-live="polite">
-          <span class="loading-spinner" aria-hidden="true"></span>
+        <div class="loading-container">
+          <span class="spinner"></span>
           Ricerca in corso...
         </div>
       }
 
       @if (state().error; as err) {
-        <div class="state-card error-state" role="alert">
-          <strong>Si è verificato un errore:</strong> {{ err.message }}
-          <button class="retry-button" (click)="searchFacade.retry()">Riprova</button>
+        <div class="error-banner">
+          <div>
+            <strong>Si è verificato un errore:</strong> {{ err.message }}
+          </div>
+          <button class="btn-retry" (click)="searchFacade.retry()">
+            Riprova
+          </button>
         </div>
       }
 
       @if (!state().loading && state().results.length > 0) {
-        <section class="state-card results-state">
-          <h2 class="results-title">Trovati {{ state().results.length }} risultati</h2>
-          <pre class="results-json">{{ state().results | json }}</pre>
-        </section>
+        <div>
+          <h2 class="page-title">
+            Trovati {{ state().results.length }} risultati
+          </h2>
+          <app-search-results
+            [results]="state().results"
+            [isSemanticSearch]="state().query.useSemanticSearch"
+            (resultSelected)="onResultSelected($event)"
+          ></app-search-results>
+        </div>
       }
 
-      @if (
-        !state().loading && state().results.length === 0 && !state().error && state().query.text
-      ) {
-        <div class="state-card empty-state">
+      @if (!state().loading && state().results.length === 0 && !state().error && state().query.text) {
+        <div class="empty-state">
           Nessun risultato trovato per la tua ricerca. Prova ad alleggerire i filtri.
         </div>
       }

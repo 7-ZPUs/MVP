@@ -1,6 +1,6 @@
 import { SearchQueryType } from "./search.enum";
 import { AppError } from "../error.models";
-import { z } from 'zod';
+import { z } from "zod";
 
 // Regex di sicurezza per il path
 const PathRegex = /^[a-zA-Z0-9_]+(\.[a-zA-Z0-9_]+)*$/;
@@ -9,8 +9,10 @@ const PathRegex = /^[a-zA-Z0-9_]+(\.[a-zA-Z0-9_]+)*$/;
  * Schema e DTO della singola condizione
  */
 export const SearchConditionSchema = z.object({
-  path: z.string().regex(PathRegex, "Il path deve essere in una dot-notation valida"),
-  operator: z.enum(['EQ', 'GT', 'LT', 'LIKE', 'IN', 'ELEM_MATCH']),
+  path: z
+    .string()
+    .regex(PathRegex, "Il path deve essere in una dot-notation valida"),
+  operator: z.enum(["EQ", "GT", "LT", "LIKE", "IN", "ELEM_MATCH"]),
   value: z.any(),
 });
 
@@ -20,7 +22,7 @@ export type SearchConditionDTO = z.infer<typeof SearchConditionSchema>;
  * Definizione del tipo ricorsivo per TypeScript
  */
 export type SearchGroupDTO = {
-  logicOperator: 'AND' | 'OR';
+  logicOperator: "AND" | "OR";
   items: Array<SearchGroupDTO | SearchConditionDTO>;
 };
 
@@ -29,15 +31,15 @@ export type SearchGroupDTO = {
  */
 export const SearchGroupSchema: z.ZodType<SearchGroupDTO> = z.lazy(() =>
   z.object({
-    logicOperator: z.enum(['AND', 'OR']),
-    items: z.array(
-      z.union([SearchConditionSchema, SearchGroupSchema])
-    ).min(1, "Un gruppo deve contenere almeno un elemento"),
-  })
+    logicOperator: z.enum(["AND", "OR"]),
+    items: z
+      .array(z.union([SearchConditionSchema, SearchGroupSchema]))
+      .min(1, "Un gruppo deve contenere almeno un elemento"),
+  }),
 );
 
 /**
- * Schema della richiesta principale. 
+ * Schema della richiesta principale.
  * Ora accetta SOLO l'albero dei filtri. Nessuna pagina/limite.
  */
 export const SearchRequestSchema = z.object({

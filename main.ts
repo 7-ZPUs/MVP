@@ -3,7 +3,7 @@
  *
  * Responsibilities:
  *  1. Bootstrap the DI container (side-effectful imports, reflect-metadata).
- *  2. Initialise the database (async, via ApplicationBootstrapAdapter).
+ *  2. Initialise the database (async, via DatabaseProvider.init()).
  *  3. Register all IPC adapters so that renderer IPC calls are handled.
  *  4. Create the BrowserWindow.
  *
@@ -20,6 +20,7 @@ import { app, BrowserWindow, ipcMain } from "electron";
 import { existsSync, readdirSync } from "node:fs";
 import * as path from "node:path";
 import { ApplicationBootstrapAdapter } from "./db/DatabaseBootstrap";
+import { DATABASE_PROVIDER_PATH_TOKEN } from "./core/src/repo/impl/DatabaseProvider";
 import {
   INDEX_DIP_TOKEN,
   IIndexDip,
@@ -52,7 +53,7 @@ function createWindow(): BrowserWindow {
     },
   });
   // In development load the Angular dev server; in production load the built index.
-  if (process.env["NODE_ENV"] === "development") {
+  if (process.env["SERVE_FRONTEND"] === "true") {
     win.loadURL("http://localhost:4200");
   } else {
     // Angular builds to dist/renderer/browser/ (outputPath set in renderer/angular.json)
@@ -123,6 +124,12 @@ function exportDb(dstPath: string): void {
 (async () => {
   await app.whenReady();
 
+  // Ensure all DAOs/repositories use the same DB file created by bootstrap.
+  const appDbPath = path.resolve(process.cwd(), "dip-viewer.db");
+  container.register(DATABASE_PROVIDER_PATH_TOKEN, {
+    useValue: appDbPath,
+  });
+
   console.warn("[BOOTSTRAP] NODE_ENV =", process.env["NODE_ENV"]);
   const lazyIndexDip: IIndexDip = {
     execute: (dipPath: string) =>
@@ -151,7 +158,7 @@ function exportDb(dstPath: string): void {
   }
 
   // Register all IPC adapters before creating the window
-  BrowsingIpcAdapter.register(ipcMain);
+  BrowsingIpcAdapter.register(ipcMain, dipPath);
   CheckIntegrityIpcAdapter.register(ipcMain);
   SearchIpcAdapter.register(ipcMain);
   FileViewerIpcAdapter.register(ipcMain);

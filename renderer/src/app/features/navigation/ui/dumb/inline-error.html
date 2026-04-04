@@ -1,0 +1,6 @@
+<div class="inline-error">
+    <span class="error-message">{{ error.message }}</span>
+    <button *ngIf="error.recoverable" (click)="onRetry()">
+      Riprova
+    </button>
+</div>

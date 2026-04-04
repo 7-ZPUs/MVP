@@ -34,7 +34,7 @@ describe('AdvancedFilterPanelComponent - Test di Integrazione', () => {
       diDai: {} as any,
       aggregate: {} as any,
       customMeta: {} as any,
-      subject: null,
+      subject: [],
     };
     component.validator = vi.fn().mockReturnValue({ isValid: true, errors: new Map() });
 

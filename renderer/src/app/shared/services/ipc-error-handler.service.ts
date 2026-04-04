@@ -48,6 +48,11 @@ export class IpcErrorHandlerService implements IErrorHandler {
       severity: ErrorSeverity.ERROR,
       recoverable: true,
     },
+    [ErrorCode.INTEGRITY_VERIFY_ERROR]: {
+      category: ErrorCategory.DOMAIN,
+      severity: ErrorSeverity.ERROR,
+      recoverable: false,
+    },
   };
 
   public handle(raw: unknown): AppError {

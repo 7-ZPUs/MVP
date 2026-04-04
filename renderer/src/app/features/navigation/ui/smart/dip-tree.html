@@ -1,0 +1,9 @@
+<cdk-virtual-scroll-viewport itemSize="48" class="tree-viewport" role="tree">
+  <app-dip-tree-node
+    *cdkVirtualFor="let flat of flatNodes(); trackBy: trackByFlatNode"
+    [flatNode]="flat"
+    (toggle)="toggleNode($event)"
+    (retry)="retryNode($event)"
+    (nodeSelected)="selectNode($event)"
+  ></app-dip-tree-node>
+</cdk-virtual-scroll-viewport>

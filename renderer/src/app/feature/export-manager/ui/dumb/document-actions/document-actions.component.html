@@ -1,0 +1,27 @@
+<div class="actions-bar" role="toolbar" aria-label="Azioni documento">
+
+  <button class="action-btn primary"
+          [disabled]="!hasSelection"
+          [attr.aria-disabled]="!hasSelection"
+          [attr.aria-label]="hasSelection ? 'Salva ' + selectionLabel : 'Salva — nessun documento selezionato'"
+          (click)="onExport()">
+    <span class="icon">💾</span> Salva
+  </button>
+
+  <button class="action-btn secondary"
+          [disabled]="!hasSelection"
+          [attr.aria-disabled]="!hasSelection"
+          [attr.aria-label]="hasSelection ? 'Stampa ' + selectionLabel : 'Stampa — nessun documento selezionato'"
+          (click)="onPrint()">
+    <span class="icon">🖨️</span> Stampa
+  </button>
+
+  @if (reportId) {
+    <button class="action-btn report"
+            aria-label="Esporta report di verifica in PDF"
+            (click)="onExportReport()">
+      <span class="icon">📋</span> Esporta report di verifica in PDF
+    </button>
+  }
+
+</div>

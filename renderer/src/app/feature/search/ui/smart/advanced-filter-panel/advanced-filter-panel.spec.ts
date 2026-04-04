@@ -17,7 +17,7 @@ describe('AdvancedFilterPanelComponent', () => {
     diDai: {} as any,
     aggregate: {} as any,
     customMeta: [] as any,
-    subject: null,
+    subject: [] as any,
   };
 
   beforeEach(async () => {
@@ -151,7 +151,7 @@ describe('AdvancedFilterPanelComponent', () => {
         diDai: {} as any,
         aggregate: {} as any,
         customMeta: null,
-        subject: null,
+        subject: [] as any,
       };
 
       fixture.componentRef.setInput('filters', newFilters);
@@ -167,7 +167,7 @@ describe('AdvancedFilterPanelComponent', () => {
         diDai: {} as any,
         aggregate: {} as any,
         customMeta: null,
-        subject: null,
+        subject: [] as any,
       };
 
       fixture.componentRef.setInput('filters', resetFilters);

@@ -65,16 +65,16 @@ export class BrowsingIpcAdapter {
       ProcessUC.GET_BY_STATUS,
     );
     const getProcessByDocumentClassUC: IGetProcessByDocumentClassUC = container.resolve<IGetProcessByDocumentClassUC>(
-      ProcessUC.GET_BY_DOCUMENT_CLASS,
-    );
+        ProcessUC.GET_BY_DOCUMENT_CLASS,
+      );
 
     // ---- DocumentClass use cases ----
     const getDocClassByDipIdUC: IGetDocumentClassByDipIdUC = container.resolve<IGetDocumentClassByDipIdUC>(
       DocumentClassUC.GET_BY_DIP_ID,
     );
     const getDocClassByStatusUC: IGetDocumentClassByStatusUC = container.resolve<IGetDocumentClassByStatusUC>(
-      DocumentClassUC.GET_BY_STATUS,
-    );
+        DocumentClassUC.GET_BY_STATUS,
+      );
     const getDocClassByIdUC: IGetDocumentClassByIdUC = container.resolve<IGetDocumentClassByIdUC>(
       DocumentClassUC.GET_BY_ID,
     );
@@ -122,6 +122,23 @@ export class BrowsingIpcAdapter {
       const file = getFileByIdUC.execute(id);
       return file ? EntityToDtoConverter.fileToDto(file) : null;
     });
+
+    ipcMain.handle(
+      IpcChannels.BROWSE_GET_FILE_BUFFER_BY_ID,
+      (_event, id: number) => {
+        const file = getFileByIdUC.execute(id);
+        if (!file) return null;
+        const fs = require("fs");
+        const path = require("path");
+        try {
+          const absolutePath = path.resolve(dipPath, file.getPath());
+          return fs.readFileSync(absolutePath);
+        } catch (err) {
+          console.error("Error reading file buffer", err);
+          return null;
+        }
+      },
+    );
 
     ipcMain.handle(
       IpcChannels.BROWSE_GET_FILE_BY_DOCUMENT,

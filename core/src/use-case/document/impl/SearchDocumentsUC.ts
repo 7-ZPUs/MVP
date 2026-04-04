@@ -19,10 +19,10 @@ export interface MetadataGroupCondition {
 
 @injectable()
 export class SearchDocumentsUC implements ISearchDocumentsUC {
-  constructor(
-    @inject(DOCUMENTO_REPOSITORY_TOKEN)
-    private readonly documentRepo: IDocumentRepository,
-  ) {}
+    constructor(
+        @inject(DOCUMENTO_REPOSITORY_TOKEN)
+        private readonly documentRepo: IDocumentRepository
+    ) {}
 
   async execute(filters: SearchDocumentsQuery): Promise<Document[]> {
     const results = this.documentRepo.searchDocument(filters);

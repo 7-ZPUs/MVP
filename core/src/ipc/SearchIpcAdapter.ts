@@ -52,15 +52,11 @@ export class SearchIpcAdapter {
         "SearchIpcAdapter: received search classes request with name =",
         name,
       );
-      return searchClassesUC
-        .execute(name ?? "")
-        .map((dc) => DocumentClassMapper.toDTO(dc));
+      return searchClassesUC.execute(name ?? "");
     });
 
     ipcMain.handle(IpcChannels.SEARCH_PROCESSES, (_event, uuid?: string) => {
-      return searchProcessiUC
-        .execute(uuid ?? "")
-        .map((p) => ProcessMapper.toDTO(p));
+      return searchProcessiUC.execute(uuid ?? "");
     });
 
     // Ricerca avanzata con filtri strutturati
@@ -73,8 +69,10 @@ export class SearchIpcAdapter {
           ? MetadataKeyMapper.mapGroup(validDTO.filter)
           : null;
 
-        if(!domainMetadataGroup) {
-          throw new Error("Invalid search filters: no valid metadata group could be constructed");
+        if (!domainMetadataGroup) {
+          throw new Error(
+            "Invalid search filters: no valid metadata group could be constructed",
+          );
         }
 
         const domainQuery = new SearchDocumentsQuery(domainMetadataGroup);
@@ -97,13 +95,9 @@ export class SearchIpcAdapter {
       async (_event, query: SearchQuery) => {
         switch (query.type) {
           case SearchQueryType.PROCESS_ID:
-            return searchProcessiUC
-              .execute(query.text)
-              .map((p) => ProcessMapper.toDTO(p));
+            return searchProcessiUC.execute(query.text);
           case SearchQueryType.CLASS_NAME:
-            return searchClassesUC
-              .execute(query.text)
-              .map((dc) => DocumentClassMapper.toDTO(dc));
+            return searchClassesUC.execute(query.text);
           case SearchQueryType.FREE:
           default: {
             const searchDocsQuery = new SearchDocumentsQuery({

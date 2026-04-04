@@ -12,10 +12,11 @@ import { SubjectDetailFormComponent } from '../subject-detail-form.component/sub
 
 import {
   SubjectCriteria,
-  ISubjectDetailStrategy,
 } from '../../../../../../../../shared/domain/metadata/search-subject-filters-models';
 import { SubjectRoleType, SubjectType } from '../../../../../../../../shared/domain/metadata/search.enum';
 import { ValidationResult } from '../../../../../../../../shared/domain/metadata';
+
+type WizardStep = 0 | 1 | 2 | 3;
 
 @Component({
   selector: 'app-subject-filters',
@@ -24,13 +25,16 @@ import { ValidationResult } from '../../../../../../../../shared/domain/metadata
   templateUrl: './subject-filters.component.html',
 })
 export class SubjectFiltersComponent implements OnChanges {
-  @Input() subject: SubjectCriteria | null = null;
+  @Input() subject: SubjectCriteria[] = [];
   @Input() resetCounter: number = 0;
   @Input() validationResult: ValidationResult | null = null;
 
-  @Output() subjectChanged = new EventEmitter<SubjectCriteria>();
+  @Output() subjectChanged = new EventEmitter<SubjectCriteria[]>();
 
-  public currentStep = signal<1 | 2 | 3>(1);
+  public subjectsList = signal<SubjectCriteria[]>([]);
+
+  public currentStep = signal(0); 
+  
   public selectedRole = signal<SubjectRoleType | null>(null);
   public selectedType = signal<SubjectType | null>(null);
   public currentDetails = signal<any | null>(null);
@@ -40,15 +44,12 @@ export class SubjectFiltersComponent implements OnChanges {
 
   public ngOnChanges(changes: SimpleChanges): void {
     if (changes['resetCounter'] && !changes['resetCounter'].firstChange) {
-      this.reset();
+      this.resetWizard();
+      this.subjectsList.set([]);
     }
 
     if (changes['subject']?.currentValue) {
-      const sub = changes['subject'].currentValue as SubjectCriteria;
-      this.selectedRole.set(sub.role);
-      this.selectedType.set(sub.type);
-      this.currentDetails.set(sub.details);
-      this.currentStep.set(3);
+      this.subjectsList.set(changes['subject'].currentValue || []);
     }
   }
 
@@ -65,34 +66,47 @@ export class SubjectFiltersComponent implements OnChanges {
 
   public onDetailsChanged(details: any): void {
     this.currentDetails.set(details);
-    this.emitSubject();
   }
 
   public nextStep(): void {
     const step = this.currentStep();
-    if (step < 3) this.currentStep.set((step + 1) as 1 | 2 | 3);
+    if (step < 3) this.currentStep.set((step + 1) as WizardStep);
   }
 
   public prevStep(): void {
     const step = this.currentStep();
-    if (step > 1) this.currentStep.set((step - 1) as 1 | 2 | 3);
+    if (step > 1) this.currentStep.set((step - 1) as WizardStep);
   }
 
-  public reset(): void {
+  public startWizard(): void {
     this.currentStep.set(1);
+  }
+
+  public resetWizard(): void {
+    this.currentStep.set(0);
     this.selectedRole.set(null);
     this.selectedType.set(null);
     this.currentDetails.set(null);
   }
 
-  private emitSubject(): void {
+  public addSubjectToList(): void {
     const role = this.selectedRole();
     const type = this.selectedType();
     const details = this.currentDetails();
 
     if (role && type && details) {
-      const criteria = { role, type, details } as unknown as SubjectCriteria;
-      this.subjectChanged.emit(criteria);
+      const newSubject = { role, type, details } as unknown as SubjectCriteria;
+      const updatedList = [...this.subjectsList(), newSubject];
+      
+      this.subjectsList.set(updatedList);
+      this.subjectChanged.emit(updatedList);
+      this.resetWizard();
     }
+  }
+
+  public removeSubject(index: number): void {
+    const updatedList = this.subjectsList().filter((_, i) => i !== index);
+    this.subjectsList.set(updatedList);
+    this.subjectChanged.emit(updatedList);
   }
 }
