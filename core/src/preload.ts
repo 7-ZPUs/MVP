@@ -10,10 +10,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
 
     if (isValid) {
       return ipcRenderer.invoke(channel, data);
-    } else {
-      return Promise.reject(
-        new Error(`Canale IPC non autorizzato: ${channel}`),
-      );
     }
+    return Promise.reject(new Error(`Canale IPC non autorizzato: ${channel}`));
   },
 });
