@@ -1,0 +1,17 @@
+<div
+  class="result-card process-card"
+  role="button"
+  tabindex="0"
+  (click)="onSelectAction(result)"
+  (keydown.enter)="onSelectAction(result)"
+  (keydown.space)="onSelectAction(result); $event.preventDefault()"
+>
+  <div class="card-icon">⚙️</div>
+  <div class="card-content">
+    <h3 class="document-name">{{ result.name || 'Processo senza titolo' }}</h3>
+    <span class="document-id">ID Processo: {{ result.uuid }}</span>
+  </div>
+  <div class="card-meta">
+    <span class="badge process-badge">{{ result.type }}</span>
+  </div>
+</div>

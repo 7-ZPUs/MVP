@@ -18,6 +18,11 @@ export class IpcErrorHandlerService implements IErrorHandler {
       severity: ErrorSeverity.ERROR,
       recoverable: true,
     },
+    [ErrorCode.LOAD_CHILDREN_FAILED]: {
+      category: ErrorCategory.DOMAIN,
+      severity: ErrorSeverity.ERROR,
+      recoverable: true,
+    },
     [ErrorCode.IPC_ERROR]: {
       category: ErrorCategory.IPC,
       severity: ErrorSeverity.FATAL,
@@ -57,18 +62,21 @@ export class IpcErrorHandlerService implements IErrorHandler {
 
   public handle(raw: unknown): AppError {
     const code = this.toErrorCode(raw);
+    const rawObject = this.asRecord(raw);
 
     let message: string;
     if (raw instanceof Error) {
       message = raw.message;
-    } else if (typeof raw === 'object' && raw !== null && 'message' in raw) {
-      message = String((raw as any).message);
+    } else if (rawObject && 'message' in rawObject) {
+      message = String(rawObject['message']);
     } else {
       message = String(raw);
     }
 
-    const source = (raw as any)?.source || 'IPC Gateway';
-    const context = (raw as any)?.context || null;
+    const source =
+      rawObject && typeof rawObject['source'] === 'string' ? rawObject['source'] : 'IPC Gateway';
+    const context =
+      rawObject && typeof rawObject['context'] === 'string' ? rawObject['context'] : null;
     const detail = raw instanceof Error ? raw.stack || null : null;
 
     const errorObj = this.createError(code, message, source);
@@ -97,11 +105,21 @@ export class IpcErrorHandlerService implements IErrorHandler {
     };
   }
 
+  private asRecord(value: unknown): Record<string, unknown> | null {
+    return typeof value === 'object' && value !== null ? (value as Record<string, unknown>) : null;
+  }
+
+  private isErrorCode(value: unknown): value is ErrorCode {
+    return (Object.values(ErrorCode) as unknown[]).includes(value);
+  }
+
   private toErrorCode(raw: unknown): ErrorCode {
-    if (typeof raw === 'object' && raw !== null && 'code' in raw) {
-      const extractedCode = (raw as any).code;
-      if (Object.values(ErrorCode).includes(extractedCode)) {
-        return extractedCode as ErrorCode;
+    const rawObject = this.asRecord(raw);
+
+    if (rawObject && 'code' in rawObject) {
+      const extractedCode = rawObject['code'];
+      if (this.isErrorCode(extractedCode)) {
+        return extractedCode;
       }
     }
 

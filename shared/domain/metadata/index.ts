@@ -4,12 +4,12 @@ export type { CustomFilterValues } from './search-custom-filters-models';
 export type { DiDaiFilterValues } from './search-diDai-filters-models';
 export type { SubjectCriteria } from './search-subject-filters-models';
 export type { PartialSearchFilters } from './partial-filters-models';
+export type { ISearchResult } from './search-result.models';
 export { FilterFieldType } from './search.enum';
 
 export type {
   SearchQuery,
   SearchFilters,
-  SearchResult,
   ValidationError,
   ValidationResult,
   SearchState,

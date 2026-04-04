@@ -11,12 +11,20 @@ const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 describe('SearchFacade', () => {
   let facade: SearchFacade;
 
-  let mockSearchChannel: any;
-  let mockValidator: any;
-  let mockErrorHandler: any;
-  let mockTelemetry: any;
-  let mockSemanticStatus: any;
-  let mockLiveAnnouncer: any;
+  let mockSearchChannel: {
+    search: ReturnType<typeof vi.fn>;
+    searchAdvanced: ReturnType<typeof vi.fn>;
+    searchSemantic: ReturnType<typeof vi.fn>;
+  };
+  let mockValidator: { validate: ReturnType<typeof vi.fn> };
+  let mockErrorHandler: { handle: ReturnType<typeof vi.fn> };
+  let mockTelemetry: {
+    trackEvent: ReturnType<typeof vi.fn>;
+    trackTiming: ReturnType<typeof vi.fn>;
+    trackError: ReturnType<typeof vi.fn>;
+  };
+  let mockSemanticStatus: { getStatus: ReturnType<typeof vi.fn> };
+  let mockLiveAnnouncer: { announce: ReturnType<typeof vi.fn> };
 
   beforeEach(() => {
     mockSearchChannel = {

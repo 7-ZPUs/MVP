@@ -4,9 +4,8 @@ import { AppError, ErrorCode, ErrorCategory, ErrorSeverity } from '../../shared/
 
 @Injectable({ providedIn: 'root' })
 export class IpcErrorHandlerService implements IErrorHandler {
-  private readonly errorMap: Record<
-    ErrorCode,
-    { category: ErrorCategory; severity: ErrorSeverity; recoverable: boolean }
+  private readonly errorMap: Partial<
+    Record<ErrorCode, { category: ErrorCategory; severity: ErrorSeverity; recoverable: boolean }>
   > = {
     [ErrorCode.VALIDATION_ERROR]: {
       category: ErrorCategory.VALIDATION,
@@ -57,18 +56,22 @@ export class IpcErrorHandlerService implements IErrorHandler {
 
   public handle(raw: unknown): AppError {
     const code = this.toErrorCode(raw);
+    const rawObject = this.asRecord(raw);
 
     let message: string;
     if (raw instanceof Error) {
       message = raw.message;
-    } else if (typeof raw === 'object' && raw !== null && 'message' in raw) {
-      message = String((raw as any).message);
+    } else if (rawObject && rawObject['message'] !== undefined) {
+      message = String(rawObject['message']);
     } else {
       message = String(raw);
     }
 
-    const source = (raw as any)?.source || 'IPC Gateway';
-    const context = (raw as any)?.context || null;
+    const sourceValue = rawObject?.['source'];
+    const source =
+      typeof sourceValue === 'string' && sourceValue.length > 0 ? sourceValue : 'IPC Gateway';
+    const contextValue = rawObject?.['context'];
+    const context = typeof contextValue === 'string' ? contextValue : null;
     const detail = raw instanceof Error ? raw.stack || null : null;
 
     const errorObj = this.createError(code, message, source);
@@ -98,9 +101,14 @@ export class IpcErrorHandlerService implements IErrorHandler {
   }
 
   private toErrorCode(raw: unknown): ErrorCode {
-    if (typeof raw === 'object' && raw !== null && 'code' in raw) {
-      const extractedCode = (raw as any).code;
-      if (Object.values(ErrorCode).includes(extractedCode)) {
+    const rawObject = this.asRecord(raw);
+
+    if (rawObject) {
+      const extractedCode = rawObject['code'];
+      if (
+        typeof extractedCode === 'string' &&
+        (Object.values(ErrorCode) as string[]).includes(extractedCode)
+      ) {
         return extractedCode as ErrorCode;
       }
     }
@@ -110,5 +118,9 @@ export class IpcErrorHandlerService implements IErrorHandler {
     }
 
     return ErrorCode.SEARCH_ENGINE_ERROR;
+  }
+
+  private asRecord(value: unknown): Record<string, unknown> | null {
+    return typeof value === 'object' && value !== null ? (value as Record<string, unknown>) : null;
   }
 }

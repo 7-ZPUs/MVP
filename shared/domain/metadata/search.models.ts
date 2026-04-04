@@ -1,10 +1,11 @@
-import { CommonFilterValues } from './search-common-filters-models';
-import { DiDaiFilterValues } from './search-diDai-filters-models';
-import { AggregateFilterValues } from './search-aggregate-filters-models';
-import { SubjectCriteria } from './search-subject-filters-models';
-import { SearchQueryType } from './search.enum';
-import { AppError } from '../error.models';
-import { CustomFilterValues } from './search-custom-filters-models';
+import { CommonFilterValues } from "./search-common-filters-models";
+import { DiDaiFilterValues } from "./search-diDai-filters-models";
+import { AggregateFilterValues } from "./search-aggregate-filters-models";
+import { SubjectCriteria } from "./search-subject-filters-models";
+import { SearchQueryType } from "./search.enum";
+import { AppError } from "../../../renderer/src/app/shared/domain/error.models";
+import { CustomFilterValues } from "./search-custom-filters-models";
+import { ISearchResult } from "./search-result.models";
 
 export interface SearchQuery {
   text: string;
@@ -27,13 +28,6 @@ export interface PartialSearchFilters {
   customMeta: CustomFilterValues | null;
 }
 
-export interface SearchResult {
-  documentId: string;
-  name: string;
-  type: string;
-  score: number | null;
-}
-
 export interface ValidationError {
   field: string;
   message: string;
@@ -48,7 +42,7 @@ export interface ValidationResult {
 export interface SearchState {
   query: SearchQuery;
   filters: SearchFilters;
-  results: SearchResult[];
+  results: ISearchResult[];
   loading: boolean;
   isSearching: boolean;
   error: AppError | null;

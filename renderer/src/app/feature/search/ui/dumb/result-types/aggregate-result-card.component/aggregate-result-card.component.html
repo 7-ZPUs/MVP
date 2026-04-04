@@ -1,0 +1,21 @@
+<div
+  class="result-card aggregate-card"
+  role="button"
+  tabindex="0"
+  (click)="onSelectAction(result)"
+  (keydown.enter)="onSelectAction(result)"
+  (keydown.space)="onSelectAction(result); $event.preventDefault()"
+>
+  <div class="card-icon">📁</div>
+  <div class="card-content">
+    <h3 class="document-name">{{ result.name || 'Fascicolo senza titolo' }}</h3>
+    <span class="document-id">ID Fascicolo: {{ result.uuid }}</span>
+  </div>
+  <div class="card-meta">
+    <span class="badge aggregate-badge">FASCICOLO</span>
+
+    @if (isSemanticSearch && result.score !== null && result.score !== undefined) {
+      <span class="score-badge">Score: {{ result.score | number: '1.0-2' }}</span>
+    }
+  </div>
+</div>
