@@ -1,4 +1,4 @@
-import { Injectable, Inject } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Observable, Observer, of } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { ISearchChannel } from '../contracts/search-channel.interface';
@@ -11,59 +11,53 @@ import {
   IElectronContextBridge,
   ELECTRON_CONTEXT_BRIDGE_TOKEN,
 } from '../../../shared/contracts';
-import {
-  SearchQuery,
-  SearchFilters,
-  SearchResult,
-} from '../../../../../../shared/domain/metadata/search.models';
+import { SearchQuery, SearchFilters } from '../../../../../../shared/domain/metadata/search.models';
+import { ISearchResult } from '../../../../../../shared/domain/metadata/search-result.models';
 
 @Injectable({ providedIn: 'root' })
 export class SearchIpcGateway implements ISearchChannel {
   private readonly CACHE_TTL_MS = 300_000;
+  private readonly contextBridge: IElectronContextBridge = inject(ELECTRON_CONTEXT_BRIDGE_TOKEN);
+  private readonly cache: ICacheService = inject(CACHE_SERVICE_TOKEN);
+  private readonly errorHandler: IErrorHandler = inject(ERROR_HANDLER_TOKEN);
 
-  constructor(
-    @Inject(ELECTRON_CONTEXT_BRIDGE_TOKEN) private readonly contextBridge: IElectronContextBridge,
-    @Inject(CACHE_SERVICE_TOKEN) private readonly cache: ICacheService,
-    @Inject(ERROR_HANDLER_TOKEN) private readonly errorHandler: IErrorHandler,
-  ) {}
-
-  public search(q: SearchQuery, s: AbortSignal): Observable<SearchResult[]> {
+  public search(q: SearchQuery, s: AbortSignal): Observable<ISearchResult[]> {
     const cacheKey = `search:text:${JSON.stringify(q)}`;
 
     // 1. Controllo preventivo della cache
-    const cached = this.cache.get<SearchResult[]>(cacheKey);
+    const cached = this.cache.get<ISearchResult[]>(cacheKey);
     if (cached) {
       return of(cached);
     }
 
-    return this.invoke<SearchResult[]>('ipc:search:text', q, s, 'search:text').pipe(
+    return this.invoke<ISearchResult[]>('ipc:search:text', q, s, 'search:text').pipe(
       tap((results) => this.cache.set(cacheKey, results, this.CACHE_TTL_MS)),
     );
   }
 
-  public searchAdvanced(f: SearchFilters, s: AbortSignal): Observable<SearchResult[]> {
+  public searchAdvanced(f: SearchFilters, s: AbortSignal): Observable<ISearchResult[]> {
     //Zaka's searchFilters
     const cacheKey = `search:advanced:${JSON.stringify(f)}`;
 
-    const cached = this.cache.get<SearchResult[]>(cacheKey);
+    const cached = this.cache.get<ISearchResult[]>(cacheKey);
     if (cached) {
       return of(cached);
     }
 
-    return this.invoke<SearchResult[]>('ipc:search:advanced', f, s, 'search:advanced').pipe(
+    return this.invoke<ISearchResult[]>('ipc:search:advanced', f, s, 'search:advanced').pipe(
       tap((results) => this.cache.set(cacheKey, results, this.CACHE_TTL_MS)),
     );
   }
 
-  public searchSemantic(q: SearchQuery, s: AbortSignal): Observable<SearchResult[]> {
+  public searchSemantic(q: SearchQuery, s: AbortSignal): Observable<ISearchResult[]> {
     const cacheKey = `search:semantic:${JSON.stringify(q)}`;
 
-    const cached = this.cache.get<SearchResult[]>(cacheKey);
+    const cached = this.cache.get<ISearchResult[]>(cacheKey);
     if (cached) {
       return of(cached);
     }
 
-    return this.invoke<SearchResult[]>('ipc:search:semantic', q, s, 'search:semantic').pipe(
+    return this.invoke<ISearchResult[]>('ipc:search:semantic', q, s, 'search:semantic').pipe(
       tap((results) => this.cache.set(cacheKey, results, this.CACHE_TTL_MS)),
     );
   }

@@ -14,30 +14,18 @@
           </tr>
         </thead>
         <tbody>
-          @for (res of results; track res.documentId) {
+          @for (res of results; track res.uuid) {
             <tr class="result-row" (click)="onSelect(res)">
-              
               <td class="name-cell">
                 <span class="document-name">{{ res.name || 'Senza titolo' }}</span>
-                <span class="document-id">ID: {{ res.documentId }}</span>
+                <span class="document-id">ID: {{ res.uuid }}</span>
               </td>
-              
+
               <td>
                 <span class="badge" [class]="res.type | lowercase">{{ res.type }}</span>
               </td>
-              
-              @if (isSemanticSearch) {
-                <td>
-                  @if (res.score !== null && res.score !== undefined) {
-                    <span class="score-badge">{{ res.score | number: '1.0-2' }}</span>
-                  } @else {
-                    <span class="score-empty">-</span>
-                  }
-                </td>
-              }
 
               <td class="actions-cell" (click)="$event.stopPropagation()"></td>
-              
             </tr>
           }
         </tbody>
