@@ -6,7 +6,7 @@ import {
   SearchState,
   ValidationError,
   PartialSearchFilters,
-  SearchResult,
+  ISearchResult,
 } from '../../../../../../shared/domain/metadata';
 import { SearchQueryType } from '../../../../../../shared/domain/metadata/search.enum';
 import { IErrorHandler, ITelemetry, ILiveAnnouncer } from '../../../shared/contracts';
@@ -163,7 +163,7 @@ export class SearchFacade implements ISearchFacade {
     this.abortController = new AbortController();
   }
 
-  private handleSuccess(results: SearchResult[]): void {
+  private handleSuccess(results: ISearchResult[]): void {
     this.state.update((s) => ({ ...s, results }));
     this.telemetryService.trackEvent(TelemetryEvent.SEARCH_EXECUTED);
     this.liveAnnouncer.announce(`Trovati ${results.length} risultati`, 'polite');

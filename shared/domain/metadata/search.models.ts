@@ -104,7 +104,7 @@ export interface ValidationResult {
 export interface SearchState {
   query: SearchQuery;
   filters: SearchFilters;
-  results: SearchResult[];
+  results: ISearchResult[];
   loading: boolean;
   isSearching: boolean;
   error: AppError | null;

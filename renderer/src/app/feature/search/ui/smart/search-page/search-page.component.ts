@@ -1,16 +1,19 @@
-import { Component, inject, OnInit, Inject } from '@angular/core';
+import { Component, inject, OnInit, ProviderToken } from '@angular/core';
 import { Router } from '@angular/router';
 import { SearchFacade } from '../../../services';
 import { AdvancedFilterPanelComponent } from '../advanced-filter-panel/advanced-filter-panel';
 import { SearchResultsComponent } from '../../dumb/search-results.component/search-results.component';
 import {
   SearchFilters,
-  SearchResult,
+  ISearchResult,
   SearchQuery,
   ValidationResult,
   PartialSearchFilters,
 } from '../../../../../../../../shared/domain/metadata';
-import { IFilterValidator } from '../../../../validation/contracts/filter-validator.interface';
+import {
+  FILTER_VALIDATOR_TOKEN,
+  IFilterValidator,
+} from '../../../../validation/contracts/filter-validator.interface';
 import { SearchBarComponent } from '../../dumb/search-bar.component/search-bar.component';
 import {
   buildDetailRoute,
@@ -22,32 +25,30 @@ import {
   standalone: true,
   imports: [AdvancedFilterPanelComponent, SearchResultsComponent, SearchBarComponent],
   templateUrl: './search-page.html',
-  styleUrl: './search-page.scss'
+  styleUrl: './search-page.scss',
 })
 export class SearchPageComponent implements OnInit {
   protected readonly searchFacade = inject(SearchFacade);
   protected readonly router = inject(Router);
+  private readonly filterValidator: IFilterValidator = inject(FILTER_VALIDATOR_TOKEN);
   public readonly state = this.searchFacade.getState();
   public externalValidation: ValidationResult | null = null;
 
-  constructor(@Inject('IFilterValidator') private readonly filterValidator: IFilterValidator) {}
-
   public ngOnInit(): void {
     const currentState = this.state();
-    
+
     if (!currentState.filters || currentState.filters.subject === undefined) {
-    
       this.searchFacade.setFilters({
         common: currentState.filters?.common || {},
         diDai: currentState.filters?.diDai || {},
         aggregate: currentState.filters?.aggregate || {},
         customMeta: currentState.filters?.customMeta || null,
-        subject: [], 
-      } as any);
+        subject: [],
+      } as SearchFilters);
     }
   }
 
- public onQueryChanged(query: SearchQuery): void {
+  public onQueryChanged(query: SearchQuery): void {
     this.searchFacade.setQuery(query);
   }
 
@@ -75,7 +76,7 @@ export class SearchPageComponent implements OnInit {
   }
 
   public onAdvancedSearchRequested(filters: SearchFilters): void {
-   const validation = this.filterValidator.validate(filters as unknown as PartialSearchFilters);
+    const validation = this.filterValidator.validate(filters as unknown as PartialSearchFilters);
     this.externalValidation = validation;
     if (!validation.isValid) {
       return;
@@ -90,7 +91,7 @@ export class SearchPageComponent implements OnInit {
       aggregate: {},
       customMeta: null,
       subject: [],
-    } as any);
+    } as SearchFilters);
 
     this.externalValidation = null;
   }
@@ -103,8 +104,8 @@ export class SearchPageComponent implements OnInit {
     this.externalValidation = result;
   }
 
-  public onResultSelected(result: SearchResult): void {
-    const id = result.documentId;
+  public onResultSelected(result: ISearchResult): void {
+    const id = result.id;
 
     const targetItemType = mapSearchResultTypeToDetailItemType(result.type);
     if (!targetItemType) {

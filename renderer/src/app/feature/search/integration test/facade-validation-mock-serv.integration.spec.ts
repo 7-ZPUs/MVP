@@ -5,7 +5,7 @@ import { of, throwError } from 'rxjs';
 
 import { SearchFacade } from '../services/search-facade';
 import { FilterValidatorService } from '../../validation/services/filter-validator.service';
-import { SearchFilters, SearchResult } from '../../../../../../shared/domain/metadata';
+import { SearchFilters, ISearchResult } from '../../../../../../shared/domain/metadata';
 import { TelemetryEvent } from '../../../shared/domain';
 
 // Strategie Reali
@@ -82,7 +82,7 @@ describe('Search Ecosystem (Facade + Domain + Infrastructure)', () => {
       const validFilters = {
         common: { dataDa: '2026-01-01', dataA: '2026-12-31' },
       } as unknown as SearchFilters;
-      const mockResults: SearchResult[] = [
+      const mockResults: ISearchResult[] = [
         { documentId: 'DOC-1', name: 'Test', type: 'PDF', score: 100 },
       ];
 

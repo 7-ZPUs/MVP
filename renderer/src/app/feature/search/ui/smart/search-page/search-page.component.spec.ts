@@ -6,15 +6,24 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { SearchPageComponent } from './search-page.component';
 import { SearchFacade } from '../../../services';
 import { SearchQueryType } from '../../../../../../../../shared/domain/metadata/search.enum';
-import { SearchState, SearchResult } from '../../../../../../../../shared/domain/metadata';
+import { SearchState, ISearchResult } from '../../../../../../../../shared/domain/metadata';
 import { SearchBarComponent } from '../../dumb/search-bar.component/search-bar.component';
 
 describe('SearchPageComponent', () => {
   let component: SearchPageComponent;
   let fixture: ComponentFixture<SearchPageComponent>;
-  let mockFacade: any;
+  let mockFacade: {
+    getState: ReturnType<typeof vi.fn>;
+    setQuery: ReturnType<typeof vi.fn>;
+    setFilters: ReturnType<typeof vi.fn>;
+    search: ReturnType<typeof vi.fn>;
+    searchAdvanced: ReturnType<typeof vi.fn>;
+    searchSemantic: ReturnType<typeof vi.fn>;
+    cancelSearch: ReturnType<typeof vi.fn>;
+    retry: ReturnType<typeof vi.fn>;
+  };
   let mockStateSignal: any;
-  let mockFilterValidator: any;
+  let mockFilterValidator: { validate: ReturnType<typeof vi.fn> };
 
   beforeEach(async () => {
     mockStateSignal = signal<SearchState>({
@@ -61,19 +70,22 @@ describe('SearchPageComponent', () => {
   });
 
   describe('Interazione con la Barra di Ricerca (Eventi DOM)', () => {
-  it('dovrebbe aggiornare la query intercettando (queryChanged) dalla search-bar', () => {
-    const searchBar = fixture.debugElement.query(By.directive(SearchBarComponent));
-    searchBar.triggerEventHandler('queryChanged', { text: 'test', type: 'FREE', useSemanticSearch: false });
-    expect(mockFacade.setQuery).toHaveBeenCalled();
-  });
+    it('dovrebbe aggiornare la query intercettando (queryChanged) dalla search-bar', () => {
+      const searchBar = fixture.debugElement.query(By.directive(SearchBarComponent));
+      searchBar.triggerEventHandler('queryChanged', {
+        text: 'test',
+        type: 'FREE',
+        useSemanticSearch: false,
+      });
+      expect(mockFacade.setQuery).toHaveBeenCalled();
+    });
 
-  it('dovrebbe lanciare la ricerca intercettando (searchRequested) dalla search-bar', () => {
-    const searchBar = fixture.debugElement.query(By.directive(SearchBarComponent));
-    searchBar.triggerEventHandler('searchRequested', null);
-    expect(mockFacade.search).toHaveBeenCalled();
+    it('dovrebbe lanciare la ricerca intercettando (searchRequested) dalla search-bar', () => {
+      const searchBar = fixture.debugElement.query(By.directive(SearchBarComponent));
+      searchBar.triggerEventHandler('searchRequested', null);
+      expect(mockFacade.search).toHaveBeenCalled();
+    });
   });
-});
-
 
   describe('Orchestrazione della Ricerca', () => {
     it('dovrebbe chiamare searchSemantic se useSemanticSearch è true', () => {
@@ -194,7 +206,7 @@ describe('SearchPageComponent', () => {
       mockStateSignal.update((s: any) => ({
         ...s,
         loading: false,
-        error: new Error('Errore di Rete')
+        error: new Error('Errore di Rete'),
       }));
       fixture.detectChanges();
 
@@ -212,7 +224,7 @@ describe('SearchPageComponent', () => {
         loading: false,
         error: null,
         results: [],
-        query: { ...s.query, text: 'parola inesistente' }
+        query: { ...s.query, text: 'parola inesistente' },
       }));
       fixture.detectChanges();
 
@@ -226,15 +238,13 @@ describe('SearchPageComponent', () => {
         ...s,
         loading: false,
         error: null,
-        results: [
-          { documentId: '1', type: 'DOCUMENTO_INFORMATICO', title: 'Test Doc' }
-        ]
+        results: [{ documentId: '1', type: 'DOCUMENTO_INFORMATICO', title: 'Test Doc' }],
       }));
       fixture.detectChanges();
 
       const resultsComponent = fixture.debugElement.query(By.css('app-search-results'));
       expect(resultsComponent).toBeTruthy();
-      
+
       const pageTitle = fixture.debugElement.query(By.css('.page-title'));
       expect(pageTitle.nativeElement.textContent).toContain('Trovati 1 risultati');
     });

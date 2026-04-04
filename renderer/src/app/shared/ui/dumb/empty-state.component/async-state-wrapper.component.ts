@@ -1,16 +1,17 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { CommonModule }                from '@angular/common';
-import { AppError } from '../../../../shared/domain/app-error';
-import { InlineErrorComponent } from '../../../../shared/ui/dumb/empty-state.component/inline-error.component'; 
+import { CommonModule } from '@angular/common';
+import { AppError } from '../../../../shared/domain';
+import { InlineErrorComponent } from '../../../../shared/ui/dumb/empty-state.component/inline-error.component';
 @Component({
-  selector:   'app-async-state-wrapper',
+  selector: 'app-async-state-wrapper',
   standalone: true,
-  imports:    [CommonModule, InlineErrorComponent],
+  imports: [CommonModule, InlineErrorComponent],
   template: `
-    <div [attr.aria-busy]="loading"
-         [attr.aria-live]="loading ? 'polite' : null"
-         [attr.aria-label]="ariaLabel">
- 
+    <div
+      [attr.aria-busy]="loading"
+      [attr.aria-live]="loading ? 'polite' : null"
+      [attr.aria-label]="ariaLabel"
+    >
       @if (loading) {
         <div role="status" aria-label="Caricamento in corso">
           <ng-content select="[slot=loading]" />
@@ -26,15 +27,14 @@ import { InlineErrorComponent } from '../../../../shared/ui/dumb/empty-state.com
       } @else {
         <ng-content />
       }
- 
     </div>
   `,
 })
 export class AsyncStateWrapperComponent {
   @Input() loading = false;
-  @Input() error:     AppError | null = null;
-  @Input() empty    = false;
-  @Input() ariaLabel: string | null   = null;
- 
+  @Input() error: AppError | null = null;
+  @Input() empty = false;
+  @Input() ariaLabel: string | null = null;
+
   @Output() retry = new EventEmitter<void>();
 }
