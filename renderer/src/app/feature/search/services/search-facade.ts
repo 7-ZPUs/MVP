@@ -16,6 +16,7 @@ import { IFilterValidator } from '../../validation/contracts/filter-validator.in
 import { firstValueFrom, Subject } from 'rxjs';
 import { ISearchChannel } from '../contracts/search-channel.interface';
 import { TelemetryEvent } from '../../../shared/domain/';
+import { hasMeaningfulAdvancedFilters } from '../adapters/search-request.mapper';
 
 @Injectable({ providedIn: 'root' })
 export class SearchFacade implements ISearchFacade {
@@ -78,6 +79,17 @@ export class SearchFacade implements ISearchFacade {
         validationErrors.set(key, errors[0]);
       });
       this.state.update((s) => ({ ...s, validationErrors }));
+      return;
+    }
+
+    if (!hasMeaningfulAdvancedFilters(filters)) {
+      this.state.update((s) => ({
+        ...s,
+        validationErrors: new Map(),
+        results: [],
+        loading: false,
+        isSearching: false,
+      }));
       return;
     }
 

@@ -44,16 +44,18 @@ describe('DocumentResultCardComponent', () => {
   });
 
   it('dovrebbe mostrare lo score solo se isSemanticSearch è true', () => {
-    component.isSemanticSearch = true;
+    fixture.componentRef.setInput('isSemanticSearch', true);
     fixture.detectChanges();
 
     let scoreBadge = fixture.debugElement.query(By.css('.score-badge'));
     expect(scoreBadge).toBeTruthy();
+  });
 
-    component.isSemanticSearch = false;
+  it('non dovrebbe mostrare lo score se isSemanticSearch è false', () => {
+    fixture.componentRef.setInput('isSemanticSearch', false);
     fixture.detectChanges();
 
-    scoreBadge = fixture.debugElement.query(By.css('.score-badge'));
+    const scoreBadge = fixture.debugElement.query(By.css('.score-badge'));
     expect(scoreBadge).toBeFalsy();
   });
 

@@ -3,7 +3,9 @@ import { By } from '@angular/platform-browser';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 import { SearchResultsComponent } from './search-results.component';
-import { SearchResult } from '../../../../../../../../shared/domain/metadata';
+import { ISearchResult } from '../../../../../../../../shared/domain/metadata';
+import { ElementType } from '../../../../../../../../shared/domain/metadata/search.enum';
+import { IntegrityStatusEnum } from '../../../../../../../../core/src/value-objects/IntegrityStatusEnum';
 
 describe('SearchResultsComponent', () => {
   let component: SearchResultsComponent;
@@ -37,9 +39,23 @@ describe('SearchResultsComponent', () => {
   });
 
   it('dovrebbe renderizzare la tabella se ci sono risultati', () => {
-    const mockResults: SearchResult[] = [
-      { documentId: 'DOC-1', name: 'Fascicolo Alfa', type: 'PDF', score: 0.95 },
-      { documentId: 'DOC-2', name: 'Fascicolo Beta', type: 'XML', score: null },
+    const mockResults: ISearchResult[] = [
+      {
+        id: '1',
+        uuid: 'DOC-1',
+        name: 'Fascicolo Alfa',
+        type: ElementType.DOCUMENTO_INFORMATICO,
+        integrityStatus: IntegrityStatusEnum.VALID,
+        score: 0.95,
+      },
+      {
+        id: '2',
+        uuid: 'DOC-2',
+        name: 'Fascicolo Beta',
+        type: ElementType.DOCUMENTO_AMMINISTRATIVO_INFORMATICO,
+        integrityStatus: IntegrityStatusEnum.VALID,
+        score: null,
+      },
     ];
 
     fixture.componentRef.setInput('results', mockResults);
@@ -52,13 +68,19 @@ describe('SearchResultsComponent', () => {
     expect(rows.length).toBe(2);
 
     expect(rows[0].nativeElement.textContent).toContain('Fascicolo Alfa');
-    expect(rows[1].nativeElement.textContent).toContain('-');
+    expect(rows[1].nativeElement.textContent).toContain('DOC-2');
   });
 
   it('dovrebbe emettere resultSelected con il documentId corretto al click sulla riga', () => {
-    const mockResults: SearchResult[] = [
-      { documentId: 'DOC-123', name: 'Test', type: 'AGGREGAZIONE_DOCUMENTALE', score: null },
-    ];
+    const selected: ISearchResult = {
+      id: '123',
+      uuid: 'DOC-123',
+      name: 'Test',
+      type: ElementType.AGGREGAZIONE_DOCUMENTALE,
+      integrityStatus: IntegrityStatusEnum.VALID,
+      score: null,
+    };
+    const mockResults: ISearchResult[] = [selected];
     fixture.componentRef.setInput('results', mockResults);
     fixture.detectChanges();
 
@@ -68,6 +90,6 @@ describe('SearchResultsComponent', () => {
     firstRow.triggerEventHandler('click', null);
 
     expect(emitSpy).toHaveBeenCalledTimes(1);
-    expect(emitSpy).toHaveBeenCalledWith({ documentId: 'DOC-123', name: 'Test', type: 'AGGREGAZIONE_DOCUMENTALE', score: null });
+    expect(emitSpy).toHaveBeenCalledWith(selected);
   });
 });

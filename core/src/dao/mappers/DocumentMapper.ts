@@ -211,12 +211,29 @@ export class DocumentMapper {
 
   private static mapRootMetadataType(metadata: Metadata): DocumentTypeEnum {
     const rootName = metadata.getName();
-    if ((Object.values(DocumentTypeEnum) as string[]).includes(rootName)) {
-      return rootName as DocumentTypeEnum;
+
+    const canonicalMap: Record<string, DocumentTypeEnum> = {
+      DOCUMENTO_INFORMATICO: DocumentTypeEnum.DOCUMENTO_INFORMATICO,
+      DOCUMENTO_AMMINISTRATIVO_INFORMATICO:
+        DocumentTypeEnum.DOCUMENTO_AMMINISTRATIVO_INFORMATICO,
+      AGGREGAZIONE_DOCUMENTALE: DocumentTypeEnum.AGGREGAZIONE_DOCUMENTALE,
+    };
+
+    const normalize = (value: string): string =>
+      value
+        .replace(/([a-z0-9])([A-Z])/g, "$1_$2")
+        .replace(/[^a-zA-Z0-9]+/g, "_")
+        .replace(/^_+|_+$/g, "")
+        .toUpperCase();
+
+    const normalizedRoot = normalize(rootName);
+    const mapped = canonicalMap[normalizedRoot];
+    if (mapped) {
+      return mapped;
     }
 
     throw new Error(
-      `Invalid document metadata root type '${rootName}'. Expected one of: ${Object.values(
+      `Invalid document metadata root type '${rootName}'. Normalized value '${normalizedRoot}'. Expected one of: ${Object.values(
         DocumentTypeEnum,
       ).join(", ")}.`,
     );

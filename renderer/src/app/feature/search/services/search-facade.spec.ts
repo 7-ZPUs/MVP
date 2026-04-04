@@ -102,7 +102,7 @@ describe('SearchFacade', () => {
         isValid: false,
         errors: new Map([['dataDa', [validationError]]]),
       });
-      const dummyFilters = { common: { text: 'test' } } as any;
+      const dummyFilters = { common: { note: 'test' } } as any;
 
       facade.searchAdvanced(dummyFilters);
       await sleep(0);
@@ -183,7 +183,7 @@ describe('SearchFacade', () => {
 
     it('searchAdvanced() deve popolare results dopo validazione positiva', async () => {
       const mockResults = [{ id: '1', title: 'Result 1' }] as any;
-      const dummyFilters = { common: { text: 'test' } } as any;
+      const dummyFilters = { common: { note: 'test' } } as any;
 
       mockValidator.validate.mockReturnValue({ isValid: true, errors: new Map() });
       mockSearchChannel.searchAdvanced.mockReturnValue(of(mockResults));
@@ -198,6 +198,25 @@ describe('SearchFacade', () => {
         dummyFilters,
         expect.any(AbortSignal),
       );
+    });
+
+    it('searchAdvanced() non deve chiamare IPC con filtri vuoti e deve svuotare i risultati', async () => {
+      mockValidator.validate.mockReturnValue({ isValid: true, errors: new Map() });
+      facade['state'].update((s: any) => ({ ...s, results: [{ id: 'old' }] }));
+
+      facade.searchAdvanced({
+        common: {},
+        diDai: {},
+        aggregate: {},
+        customMeta: null,
+        subject: [],
+      } as any);
+      await sleep(0);
+
+      expect(mockSearchChannel.searchAdvanced).not.toHaveBeenCalled();
+      expect(facade.getState()().results).toEqual([]);
+      expect(facade.getState()().loading).toBe(false);
+      expect(facade.getState()().isSearching).toBe(false);
     });
   });
 
@@ -328,10 +347,10 @@ describe('SearchFacade', () => {
         }),
       );
 
-      facade.searchAdvanced({} as any);
+      facade.searchAdvanced({ common: { note: 'test' } } as any);
       expect(facade.getState()().isSearching).toBe(true);
 
-      facade.searchAdvanced({} as any);
+      facade.searchAdvanced({ common: { note: 'test' } } as any);
       expect(mockSearchChannel.searchAdvanced).toHaveBeenCalledTimes(1);
 
       resolveFirstSearch();
@@ -371,7 +390,7 @@ describe('SearchFacade', () => {
           };
         }),
       );
-      facade.searchAdvanced({} as any);
+      facade.searchAdvanced({ common: { note: 'test' } } as any);
 
       await sleep(350);
       expect(mockSearchChannel.search).not.toHaveBeenCalled();
@@ -407,7 +426,7 @@ describe('SearchFacade', () => {
       mockSearchChannel.searchAdvanced.mockReturnValue(throwError(() => rawError));
       mockErrorHandler.handle.mockReturnValue({ code: 'ERR_ADV', message: 'Errore' });
 
-      facade.searchAdvanced({} as any);
+      facade.searchAdvanced({ common: { note: 'test' } } as any);
       await sleep(0);
 
       expect(mockErrorHandler.handle).toHaveBeenCalledWith(rawError);

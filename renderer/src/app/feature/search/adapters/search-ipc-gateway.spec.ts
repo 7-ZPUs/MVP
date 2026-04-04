@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi, Mock } from 'vitest';
 import { SearchIpcGateway } from './search-ipc-gateway';
 import { SearchQuery, SearchQueryType } from '../../../../../../shared/domain/metadata';
+import { toSearchRequestDTO } from './search-request.mapper';
 import {
   ICacheService,
   IErrorHandler,
@@ -92,9 +93,8 @@ describe('SearchIpcGateway', () => {
 
     const abortController = new AbortController();
 
-    let errorResult: any;
     gateway.search(mockQuery, abortController.signal).subscribe({
-      error: (err) => (errorResult = err),
+      error: () => {},
     });
 
     abortController.abort();
@@ -121,7 +121,7 @@ describe('SearchIpcGateway', () => {
   });
 
   describe('searchAdvanced e searchSemantic', () => {
-    const mockFilters: any = { common: { text: 'test' } };
+    const mockFilters: any = { common: { note: 'test' } };
 
     it('dovrebbe usare la cache e chiamare il canale corretto per searchAdvanced', async () => {
       (mockCache.get as Mock).mockReturnValue(null);
@@ -132,9 +132,11 @@ describe('SearchIpcGateway', () => {
         gateway.searchAdvanced(mockFilters, abortController.signal).subscribe(resolve);
       });
 
+      const mapped = toSearchRequestDTO(mockFilters);
+
       expect(mockBridge.invoke).toHaveBeenCalledWith(
         'ipc:search:advanced',
-        mockFilters,
+        mapped,
         abortController.signal,
       );
       expect(result).toEqual(mockResults);
@@ -145,8 +147,24 @@ describe('SearchIpcGateway', () => {
         .searchAdvanced(mockFilters, abortController.signal)
         .subscribe((res) => (cachedResult = res));
 
-      expect(mockCache.get).toHaveBeenCalledWith(`search:advanced:${JSON.stringify(mockFilters)}`);
+      expect(mockCache.get).toHaveBeenCalledWith(`search:advanced:${JSON.stringify(mapped)}`);
       expect(cachedResult).toEqual(mockResults);
+    });
+
+    it('non deve invocare IPC per filtri avanzati non significativi', async () => {
+      (mockCache.get as Mock).mockReturnValue(null);
+      const abortController = new AbortController();
+
+      const result = await new Promise((resolve) => {
+        gateway.searchAdvanced({ common: {} } as any, abortController.signal).subscribe(resolve);
+      });
+
+      expect(mockBridge.invoke).not.toHaveBeenCalledWith(
+        'ipc:search:advanced',
+        expect.anything(),
+        expect.anything(),
+      );
+      expect(result).toEqual([]);
     });
 
     it('dovrebbe usare la cache e chiamare il canale corretto per searchSemantic', async () => {

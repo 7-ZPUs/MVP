@@ -11,8 +11,13 @@ import {
   IElectronContextBridge,
   ELECTRON_CONTEXT_BRIDGE_TOKEN,
 } from '../../../shared/contracts';
-import { SearchQuery, SearchFilters } from '../../../../../../shared/domain/metadata/search.models';
+import {
+  SearchQuery,
+  SearchFilters,
+  SearchRequestDTO,
+} from '../../../../../../shared/domain/metadata/search.models';
 import { ISearchResult } from '../../../../../../shared/domain/metadata/search-result.models';
+import { toSearchRequestDTO } from './search-request.mapper';
 
 @Injectable({ providedIn: 'root' })
 export class SearchIpcGateway implements ISearchChannel {
@@ -36,15 +41,19 @@ export class SearchIpcGateway implements ISearchChannel {
   }
 
   public searchAdvanced(f: SearchFilters, s: AbortSignal): Observable<ISearchResult[]> {
-    //Zaka's searchFilters
-    const cacheKey = `search:advanced:${JSON.stringify(f)}`;
+    const request: SearchRequestDTO | null = toSearchRequestDTO(f);
+    if (!request) {
+      return of([]);
+    }
+
+    const cacheKey = `search:advanced:${JSON.stringify(request)}`;
 
     const cached = this.cache.get<ISearchResult[]>(cacheKey);
     if (cached) {
       return of(cached);
     }
 
-    return this.invoke<ISearchResult[]>('ipc:search:advanced', f, s, 'search:advanced').pipe(
+    return this.invoke<ISearchResult[]>('ipc:search:advanced', request, s, 'search:advanced').pipe(
       tap((results) => this.cache.set(cacheKey, results, this.CACHE_TTL_MS)),
     );
   }

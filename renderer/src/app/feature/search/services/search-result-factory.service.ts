@@ -16,6 +16,7 @@ export class SearchResultFactoryService {
     PROCESSO: ProcessResultCardComponent,
     AGGREGAZIONE_DOCUMENTALE: AggregateResultCardComponent,
     CLASS: ClassResultCardComponent,
+    CLASSE: ClassResultCardComponent,
   };
 
   public getComponentForType(type: string): Type<ISearchResultItemComponent> {

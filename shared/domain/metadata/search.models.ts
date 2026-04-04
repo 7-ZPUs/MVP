@@ -4,8 +4,9 @@ import { z } from "zod";
 import { IntegrityStatusEnum } from "../../../core/src/value-objects/IntegrityStatusEnum";
 import { PartialSearchFilters } from "./partial-filters-models";
 import { SubjectCriteria } from "./search-subject-filters-models";
+import type { ISearchResult } from "./search-result.models";
 
-// Regex di sicurezza per il path
+// Regex di sicurezza per il pathP
 const PathRegex = /^[a-zA-Z0-9_]+(\.[a-zA-Z0-9_]+)*$/;
 
 /**

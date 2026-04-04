@@ -59,11 +59,17 @@ describe('Broad Integration: Full Search Engine Flow (Servizi Reali)', () => {
   });
 
   it('1. Ricerca Libera: dalla UI al canale ipc:search:text', async () => {
-    mockElectronBridge.invoke.mockResolvedValue([{ documentId: '1', title: 'Doc Testo', type: 'DOCUMENTO_INFORMATICO' }]);
+    mockElectronBridge.invoke.mockResolvedValue([
+      { documentId: '1', title: 'Doc Testo', type: 'DOCUMENTO_INFORMATICO' },
+    ]);
 
     // Interazione tramite il componente figlio SearchBar
     const searchBar = fixture.debugElement.query(By.directive(SearchBarComponent));
-    searchBar.triggerEventHandler('queryChanged', { text: 'Ricerca Valida', type: SearchQueryType.FREE, useSemanticSearch: false });
+    searchBar.triggerEventHandler('queryChanged', {
+      text: 'Ricerca Valida',
+      type: SearchQueryType.FREE,
+      useSemanticSearch: false,
+    });
     searchBar.triggerEventHandler('searchRequested', null);
 
     await sleep(350);
@@ -77,7 +83,9 @@ describe('Broad Integration: Full Search Engine Flow (Servizi Reali)', () => {
   });
 
   it('2. Ricerca Avanzata: dal Pannello Filtri al canale ipc:search:advanced', async () => {
-    mockElectronBridge.invoke.mockResolvedValue([{ documentId: '2', title: 'Doc Filtri', type: 'DOCUMENTO_INFORMATICO' }]);
+    mockElectronBridge.invoke.mockResolvedValue([
+      { documentId: '2', title: 'Doc Filtri', type: 'DOCUMENTO_INFORMATICO' },
+    ]);
 
     const validFilters = { common: { note: 'Filtro Note' }, subject: [] };
     const filterPanel = fixture.debugElement.query(By.directive(AdvancedFilterPanelComponent));
@@ -88,16 +96,26 @@ describe('Broad Integration: Full Search Engine Flow (Servizi Reali)', () => {
 
     expect(mockElectronBridge.invoke).toHaveBeenCalledWith(
       'ipc:search:advanced',
-      expect.objectContaining(validFilters),
+      expect.objectContaining({
+        filter: expect.objectContaining({
+          logicOperator: 'AND',
+        }),
+      }),
       expect.any(AbortSignal),
     );
   });
 
   it('3. Ricerca Semantica: attivazione toggle e chiamata a ipc:search:semantic', async () => {
-    mockElectronBridge.invoke.mockResolvedValue([{ documentId: '3', title: 'Doc Semantico', type: 'DOCUMENTO_INFORMATICO' }]);
+    mockElectronBridge.invoke.mockResolvedValue([
+      { documentId: '3', title: 'Doc Semantico', type: 'DOCUMENTO_INFORMATICO' },
+    ]);
 
     const searchBar = fixture.debugElement.query(By.directive(SearchBarComponent));
-    searchBar.triggerEventHandler('queryChanged', { text: 'Concetto chiave', type: SearchQueryType.FREE, useSemanticSearch: true });
+    searchBar.triggerEventHandler('queryChanged', {
+      text: 'Concetto chiave',
+      type: SearchQueryType.FREE,
+      useSemanticSearch: true,
+    });
     searchBar.triggerEventHandler('searchRequested', null);
 
     await sleep(350);
@@ -124,12 +142,12 @@ describe('Broad Integration: Full Search Engine Flow (Servizi Reali)', () => {
     expect(errorBox.nativeElement.textContent).toContain('IPC_TIMEOUT');
   });
 
- it('5. Validazione Reale: la ricerca si blocca se i filtri sono invalidi', async () => {
+  it('5. Validazione Reale: la ricerca si blocca se i filtri sono invalidi', async () => {
     const invalidFilters = { common: { note: 'a' }, subject: [] };
     const validator = TestBed.inject(FilterValidatorService);
     vi.spyOn(validator, 'validate').mockReturnValue({
       isValid: false,
-      errors: new Map([['common.note', [{ message: 'Troppo corto', code: 'ERR', field: '' }]]])
+      errors: new Map([['common.note', [{ message: 'Troppo corto', code: 'ERR', field: '' }]]]),
     });
 
     const filterPanel = fixture.debugElement.query(By.directive(AdvancedFilterPanelComponent));

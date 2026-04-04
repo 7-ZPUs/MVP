@@ -19,6 +19,7 @@ import { container } from "tsyringe";
 import { app, BrowserWindow, ipcMain } from "electron";
 import { existsSync, readdirSync } from "node:fs";
 import * as path from "node:path";
+import { IpcChannels } from "./shared/ipc-channels";
 import { ApplicationBootstrapAdapter } from "./db/DatabaseBootstrap";
 import { DATABASE_PROVIDER_PATH_TOKEN } from "./core/src/repo/impl/DatabaseProvider";
 import {
@@ -37,6 +38,8 @@ import { BrowsingIpcAdapter } from "./core/src/ipc/BrowsingIpcAdapter";
 import { CheckIntegrityIpcAdapter } from "./core/src/ipc/CheckIntegrityIpcAdapter";
 import { SearchIpcAdapter } from "./core/src/ipc/SearchIpcAdapter";
 import { FileViewerIpcAdapter } from "./core/src/ipc/FileViewerIpcAdapter";
+
+const IPC_CHANNEL_REGISTRY_CHANNEL = "__app:get-ipc-channels";
 
 // ---------------------------------------------------------------------------
 // Window management
@@ -158,7 +161,11 @@ function exportDb(dstPath: string): void {
   }
 
   // Register all IPC adapters before creating the window
-  BrowsingIpcAdapter.register(ipcMain, dipPath);
+  ipcMain.on(IPC_CHANNEL_REGISTRY_CHANNEL, (event) => {
+    event.returnValue = Object.values(IpcChannels);
+  });
+
+  BrowsingIpcAdapter.register(ipcMain);
   CheckIntegrityIpcAdapter.register(ipcMain);
   SearchIpcAdapter.register(ipcMain);
   FileViewerIpcAdapter.register(ipcMain);

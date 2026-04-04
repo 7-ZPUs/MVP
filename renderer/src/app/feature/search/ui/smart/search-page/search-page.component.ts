@@ -10,10 +10,7 @@ import {
   ValidationResult,
   PartialSearchFilters,
 } from '../../../../../../../../shared/domain/metadata';
-import {
-  FILTER_VALIDATOR_TOKEN,
-  IFilterValidator,
-} from '../../../../validation/contracts/filter-validator.interface';
+import { IFilterValidator } from '../../../../validation/contracts/filter-validator.interface';
 import { SearchBarComponent } from '../../dumb/search-bar.component/search-bar.component';
 import {
   buildDetailRoute,
@@ -30,21 +27,23 @@ import {
 export class SearchPageComponent implements OnInit {
   protected readonly searchFacade = inject(SearchFacade);
   protected readonly router = inject(Router);
-  private readonly filterValidator: IFilterValidator = inject(FILTER_VALIDATOR_TOKEN);
+  private readonly filterValidator: IFilterValidator = inject(
+    'IFilterValidator' as unknown as ProviderToken<IFilterValidator>,
+  );
   public readonly state = this.searchFacade.getState();
   public externalValidation: ValidationResult | null = null;
 
   public ngOnInit(): void {
     const currentState = this.state();
 
-    if (!currentState.filters || currentState.filters.subject === undefined) {
+    if (currentState.filters?.subject === undefined) {
       this.searchFacade.setFilters({
         common: currentState.filters?.common || {},
         diDai: currentState.filters?.diDai || {},
         aggregate: currentState.filters?.aggregate || {},
         customMeta: currentState.filters?.customMeta || null,
         subject: [],
-      } as SearchFilters);
+      } as unknown as SearchFilters);
     }
   }
 
@@ -91,7 +90,7 @@ export class SearchPageComponent implements OnInit {
       aggregate: {},
       customMeta: null,
       subject: [],
-    } as SearchFilters);
+    } as unknown as SearchFilters);
 
     this.externalValidation = null;
   }

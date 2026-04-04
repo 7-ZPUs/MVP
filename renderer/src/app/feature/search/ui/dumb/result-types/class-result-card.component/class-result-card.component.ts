@@ -9,8 +9,8 @@ import { ISearchResultItemComponent } from '../../../../contracts/search-result-
   selector: 'app-class-result-card',
   standalone: true,
   imports: [CommonModule],
-  template: ``,
-  styles: [``],
+  templateUrl: './class-result-card.component.html',
+  styleUrl: './class-result-card.component.scss',
 })
 export class ClassResultCardComponent implements ISearchResultItemComponent {
   // Iniezione sicura: accetta solo IClassSearchResult

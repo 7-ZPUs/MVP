@@ -6,6 +6,8 @@ import { of, throwError } from 'rxjs';
 import { SearchFacade } from '../services/search-facade';
 import { FilterValidatorService } from '../../validation/services/filter-validator.service';
 import { SearchFilters, ISearchResult } from '../../../../../../shared/domain/metadata';
+import { ElementType } from '../../../../../../shared/domain/metadata/search.enum';
+import { IntegrityStatusEnum } from '../../../../../../core/src/value-objects/IntegrityStatusEnum';
 import { TelemetryEvent } from '../../../shared/domain';
 
 // Strategie Reali
@@ -80,10 +82,17 @@ describe('Search Ecosystem (Facade + Domain + Infrastructure)', () => {
   describe('SCENARIO 2: Il Trionfo (Ricerca con Successo)', () => {
     it('dovrebbe coordinare validazione, IPC, stato, telemetria e accessibilità', async () => {
       const validFilters = {
-        common: { dataDa: '2026-01-01', dataA: '2026-12-31' },
+        common: { note: 'Filtro valido' },
       } as unknown as SearchFilters;
       const mockResults: ISearchResult[] = [
-        { documentId: 'DOC-1', name: 'Test', type: 'PDF', score: 100 },
+        {
+          id: '1',
+          uuid: 'DOC-1',
+          name: 'Test',
+          type: ElementType.DOCUMENTO_INFORMATICO,
+          integrityStatus: IntegrityStatusEnum.VALID,
+          score: 100,
+        },
       ];
 
       mockSearchChannel.searchAdvanced.mockReturnValue(of(mockResults));
@@ -104,7 +113,7 @@ describe('Search Ecosystem (Facade + Domain + Infrastructure)', () => {
   describe('SCENARIO 3: Il Disastro (Errore del Motore di Ricerca)', () => {
     it("dovrebbe intercettare l'errore IPC, passarlo all'ErrorHandler, tracciarlo e resettare lo stato", async () => {
       const validFilters = {
-        common: { dataDa: '2026-01-01', dataA: '2026-12-31' },
+        common: { note: 'Filtro valido' },
       } as unknown as SearchFilters;
       const rawError = new Error('Electron IPC Disconnected');
       const handledAppError = { code: 'IPC_ERR', message: 'Connessione persa' };

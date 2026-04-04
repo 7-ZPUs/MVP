@@ -1,6 +1,5 @@
-import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
+import { ApplicationConfig, provideBrowserGlobalErrorListeners, signal } from '@angular/core';
 import { provideRouter, withComponentInputBinding, withHashLocation } from '@angular/router';
-import { signal } from '@angular/core';
 import { routes } from './app.routes';
 
 import {
@@ -31,11 +30,23 @@ export const appConfig: ApplicationConfig = {
     {
       provide: ELECTRON_CONTEXT_BRIDGE_TOKEN,
       useFactory: () => {
-        if (typeof window !== 'undefined' && (window as any).electronAPI) {
-          return (window as any).electronAPI;
+        if (typeof globalThis.window !== 'undefined') {
+          const bridge =
+            (globalThis.window as any).electronAPI ??
+            (globalThis.window as any).api ??
+            (globalThis.window as any).electron;
+
+          if (bridge && typeof bridge.invoke === 'function') {
+            return bridge;
+          }
         }
         return {
-          invoke: () => Promise.reject(new Error('electronAPI non trovato')),
+          invoke: () =>
+            Promise.reject(
+              new Error(
+                'electronAPI non trovato: verifica preload script e webPreferences.preload in Electron',
+              ),
+            ),
         };
       },
     },

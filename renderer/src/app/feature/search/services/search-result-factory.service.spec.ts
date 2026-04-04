@@ -52,7 +52,7 @@ describe('SearchResultFactoryService', () => {
 
   it('CORNER CASE: dovrebbe usare DocumentResultCardComponent come fallback per tipi sconosciuti', () => {
     const componentClass = service.getComponentForType('TIPO_NON_ESISTENTE');
-    expect(componentClass).toBe(AggregateResultCardComponent);
+    expect(componentClass).toBe(DocumentResultCardComponent);
   });
 
   it('CORNER CASE: dovrebbe usare DocumentResultCardComponent se il tipo è vuoto', () => {
