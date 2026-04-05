@@ -5,16 +5,18 @@ import {
   ISearchResult,
 } from '../../../../../../../../../shared/domain/metadata/search-result.models';
 import { ISearchResultItemComponent } from '../../../../contracts/search-result-item.interface';
+import { IntegrityClassPipe } from '../../../../services/integrity-class.pipe';
 
 @Component({
   selector: 'app-aggregate-result-card',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, IntegrityClassPipe],
   templateUrl: './aggregate-result-card.component.html',
-  styleUrl: './aggregate-result-card.component.scss',
+  styleUrls: ['./aggregate-result-card.component.scss', '../shared-result.styles.scss'],
 })
 export class AggregateResultCardComponent implements ISearchResultItemComponent {
   @Input() result!: IAggregateSearchResult;
   @Input() isSemanticSearch: boolean = false;
   @Input() onSelectAction!: (res: ISearchResult) => void;
+
 }

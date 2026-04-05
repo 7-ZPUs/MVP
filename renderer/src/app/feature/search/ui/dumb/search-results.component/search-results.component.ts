@@ -1,8 +1,10 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, inject, Type } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { EmptyStateComponent } from '../../../../../shared/ui/dumb/empty-state.component/empty-state.component';
 import { ISearchResult } from '../../../../../../../../shared/domain/metadata/search-result.models';
 import { ExportPageComponent } from '../../../../export-manager/ui/smart/export-page/export-page.component';
+import { SearchResultFactoryService } from '../../../services/search-result-factory.service';
+import { ISearchResultItemComponent } from '../../../contracts/search-result-item.interface';
 
 @Component({
   selector: 'app-search-results',
@@ -17,9 +19,20 @@ export class SearchResultsComponent {
   @Input() isSemanticSearch: boolean = false;
 
   @Output() resultSelected = new EventEmitter<ISearchResult>();
+ 
+  private factory = inject(SearchResultFactoryService);
 
-  public onSelect(selectedResult: ISearchResult): void {
-    this.resultSelected.emit(selectedResult);
+  public getComponent(result: ISearchResult): Type<ISearchResultItemComponent> {
+    return this.factory.getComponentForType(result.type);
+  }
+
+  // Inputs passati dinamicamente al componente figlio tramite NgComponentOutlet
+  public getInputs(result: ISearchResult): Record<string, unknown> {
+    return {
+      result,
+      isSemanticSearch: this.isSemanticSearch,
+      onSelectAction: (res: ISearchResult) => this.resultSelected.emit(res),
+    };
   }
 
   public onExport(documentId: string): void {}

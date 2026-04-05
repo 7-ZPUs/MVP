@@ -12,10 +12,13 @@
     <span class="document-id">ID: {{ result.uuid }}</span>
   </div>
   <div class="card-meta">
-    <span class="badge" [class]="result.type | lowercase">{{ result.type }}</span>
+    <span class="badge" [ngClass]="result.type | lowercase">{{ result.type }}</span>
 
     @if (isSemanticSearch && result.score !== null && result.score !== undefined) {
       <span class="score-badge">Score: {{ result.score | number: '1.0-2' }}</span>
     }
+    <span [class]="'integrity-badge-base ' + (result.integrityStatus | integrityClass)">
+      {{ result.integrityStatus }}
+    </span>
   </div>
 </div>

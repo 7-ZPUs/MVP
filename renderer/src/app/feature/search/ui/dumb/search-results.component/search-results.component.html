@@ -1,35 +1,15 @@
 <div class="search-results-wrapper">
   <app-export-page></app-export-page>
-  @if (results && results.length > 0) {
-    <div class="table-container">
-      <table class="results-table">
-        <thead>
-          <tr>
-            <th>Documento</th>
-            <th>Tipologia</th>
-            @if (isSemanticSearch) {
-              <th>Score AI</th>
-            }
-            <th class="actions-cell">Azioni</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (res of results; track res.uuid) {
-            <tr class="result-row" (click)="onSelect(res)">
-              <td class="name-cell">
-                <span class="document-name">{{ res.name || 'Senza titolo' }}</span>
-                <span class="document-id">ID: {{ res.uuid }}</span>
-              </td>
-
-              <td>
-                <span class="badge" [class]="res.type | lowercase">{{ res.type }}</span>
-              </td>
-
-              <td class="actions-cell" (click)="$event.stopPropagation()"></td>
-            </tr>
-          }
-        </tbody>
-      </table>
+     @if (results && results.length > 0) {
+    <div class="results-list">
+      @for (res of results; track res.uuid) {
+        <ng-container
+          *ngComponentOutlet="
+            getComponent(res);
+            inputs: getInputs(res)
+          "
+        />
+      }
     </div>
   } @else {
     <app-empty-state [message]="emptyMessage"></app-empty-state>
