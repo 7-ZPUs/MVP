@@ -123,4 +123,93 @@ describe('search-request.mapper', () => {
       }),
     );
   });
+
+  it('does not emit container-level conditions for subject type wrappers', () => {
+    const dto = toSearchRequestDTO({
+      common: {},
+      diDai: {},
+      aggregate: {},
+      customMeta: null,
+      subject: [
+        {
+          role: SubjectRoleType.ALTRO,
+          type: SubjectType.PF,
+          details: { cognomePF: 'Rossi', nomePF: 'Paolo' },
+        },
+      ],
+    } as any);
+
+    const subjectGroup = (dto?.filter.items as any[]).find((g) => g.logicOperator === 'OR');
+    const elemMatch = subjectGroup.items[0];
+    const nestedItems = elemMatch.value.items as any[];
+
+    expect(nestedItems).toContainEqual(
+      expect.objectContaining({
+        path: 'Altro.TipoRuolo',
+        operator: 'EQ',
+        value: 'Altro',
+      }),
+    );
+    expect(nestedItems).not.toContainEqual(
+      expect.objectContaining({
+        path: 'Altro.PF',
+      }),
+    );
+    expect(nestedItems).toContainEqual(
+      expect.objectContaining({
+        path: 'Altro.PF.Cognome',
+        operator: 'LIKE',
+        value: '%Rossi%',
+      }),
+    );
+    expect(nestedItems).toContainEqual(
+      expect.objectContaining({
+        path: 'Altro.PF.Nome',
+        operator: 'LIKE',
+        value: '%Paolo%',
+      }),
+    );
+  });
+
+  it('maps role and type wrappers aligned with Soggetti XML structure', () => {
+    const dto = toSearchRequestDTO({
+      common: {},
+      diDai: {},
+      aggregate: {},
+      customMeta: null,
+      subject: [
+        {
+          role: SubjectRoleType.RGD,
+          type: SubjectType.PF,
+          details: { cognomeRUP: 'Colombo', nomeRUP: 'Marco' },
+        },
+      ],
+    } as any);
+
+    const subjectGroup = (dto?.filter.items as any[]).find((g) => g.logicOperator === 'OR');
+    const elemMatch = subjectGroup.items[0];
+    const nestedItems = elemMatch.value.items as any[];
+
+    expect(nestedItems).toContainEqual(
+      expect.objectContaining({
+        path: 'ResponsabileGestioneDocumentale.TipoRuolo',
+        operator: 'EQ',
+        value: 'Responsabile della Gestione Documentale',
+      }),
+    );
+    expect(nestedItems).toContainEqual(
+      expect.objectContaining({
+        path: 'ResponsabileGestioneDocumentale.PF.Cognome',
+        operator: 'LIKE',
+        value: '%Colombo%',
+      }),
+    );
+    expect(nestedItems).toContainEqual(
+      expect.objectContaining({
+        path: 'ResponsabileGestioneDocumentale.PF.Nome',
+        operator: 'LIKE',
+        value: '%Marco%',
+      }),
+    );
+  });
 });

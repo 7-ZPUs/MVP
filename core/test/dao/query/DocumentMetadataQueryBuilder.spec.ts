@@ -18,7 +18,9 @@ describe("DocumentMetadataQueryBuilder", () => {
       items: [{ path: "Doc.Type", operator: "EQ", value: "Invoice" }],
     });
     const result = builder.build(query);
-    expect(result.sql).toBe("(json_extract(document.metadata, '$.Doc.Type') = ? COLLATE NOCASE)");
+    expect(result.sql).toBe(
+      "(json_extract(document.metadata, '$.Doc.Type') = ? COLLATE NOCASE)",
+    );
     expect(result.params).toEqual(["Invoice"]);
   });
 
@@ -28,7 +30,9 @@ describe("DocumentMetadataQueryBuilder", () => {
       items: [{ path: "Amount", operator: "GT", value: 100 }],
     });
     const result = builder.build(query);
-    expect(result.sql).toBe("(json_extract(document.metadata, '$.Amount') > ?)");
+    expect(result.sql).toBe(
+      "(json_extract(document.metadata, '$.Amount') > ?)",
+    );
     expect(result.params).toEqual([100]);
   });
 
@@ -38,7 +42,9 @@ describe("DocumentMetadataQueryBuilder", () => {
       items: [{ path: "Amount", operator: "LT", value: 50 }],
     });
     const result = builder.build(query);
-    expect(result.sql).toBe("(json_extract(document.metadata, '$.Amount') < ?)");
+    expect(result.sql).toBe(
+      "(json_extract(document.metadata, '$.Amount') < ?)",
+    );
     expect(result.params).toEqual([50]);
   });
 
@@ -48,7 +54,9 @@ describe("DocumentMetadataQueryBuilder", () => {
       items: [{ path: "Name", operator: "LIKE", value: "%test%" }],
     });
     const result = builder.build(query);
-    expect(result.sql).toBe("(json_extract(document.metadata, '$.Name') LIKE ? COLLATE NOCASE)");
+    expect(result.sql).toBe(
+      "(json_extract(document.metadata, '$.Name') LIKE ? COLLATE NOCASE)",
+    );
     expect(result.params).toEqual(["%test%"]);
   });
 
@@ -58,7 +66,9 @@ describe("DocumentMetadataQueryBuilder", () => {
       items: [{ path: "Status", operator: "IN", value: ["A", "B", "C"] }],
     });
     const result = builder.build(query);
-    expect(result.sql).toBe("(json_extract(document.metadata, '$.Status') IN (?, ?, ?))");
+    expect(result.sql).toBe(
+      "(json_extract(document.metadata, '$.Status') IN (?, ?, ?))",
+    );
     expect(result.params).toEqual(["A", "B", "C"]);
   });
 
@@ -158,7 +168,9 @@ describe("DocumentMetadataQueryBuilder", () => {
         },
       ],
     });
-    expect(() => builder.build(query)).toThrow(/ELEM_MATCH requires a nested SearchGroup value/);
+    expect(() => builder.build(query)).toThrow(
+      /ELEM_MATCH requires a nested SearchGroup value/,
+    );
   });
 
   it("skips conditions with null or undefined value", () => {
@@ -170,8 +182,65 @@ describe("DocumentMetadataQueryBuilder", () => {
       ],
     });
     const result = builder.build(query);
-    expect(result.sql).toBe("(json_extract(document.metadata, '$.Name') = ? COLLATE NOCASE)");
+    expect(result.sql).toBe(
+      "(json_extract(document.metadata, '$.Name') = ? COLLATE NOCASE)",
+    );
     expect(result.params).toEqual(["Valid"]);
+  });
+
+  it("skips conditions with whitespace-only string value", () => {
+    const query = new SearchDocumentsQuery({
+      logicOperator: "AND",
+      items: [
+        { path: "Name", operator: "EQ", value: "   " },
+        { path: "Dept", operator: "EQ", value: "IT" },
+      ],
+    });
+
+    const result = builder.build(query);
+    expect(result.sql).toBe(
+      "(json_extract(document.metadata, '$.Dept') = ? COLLATE NOCASE)",
+    );
+    expect(result.params).toEqual(["IT"]);
+  });
+
+  it("sanitizes IN arrays by dropping empty and whitespace-only values", () => {
+    const query = new SearchDocumentsQuery({
+      logicOperator: "AND",
+      items: [
+        {
+          path: "Status",
+          operator: "IN",
+          value: ["", "   ", "Paid", null, "Sent"],
+        },
+      ],
+    });
+
+    const result = builder.build(query);
+    expect(result.sql).toBe(
+      "(json_extract(document.metadata, '$.Status') IN (?, ?))",
+    );
+    expect(result.params).toEqual(["Paid", "Sent"]);
+  });
+
+  it("skips ELEM_MATCH when nested conditions only contain whitespace-only values", () => {
+    const query = new SearchDocumentsQuery({
+      logicOperator: "AND",
+      items: [
+        {
+          path: "Items",
+          operator: "ELEM_MATCH",
+          value: {
+            logicOperator: "AND",
+            items: [{ path: "Code", operator: "EQ", value: "   " }],
+          },
+        },
+      ],
+    });
+
+    const result = builder.build(query);
+    expect(result.sql).toBe("");
+    expect(result.params).toEqual([]);
   });
 
   it("normalizes path by stripping start dollars and dots, and validates it", () => {
@@ -180,19 +249,25 @@ describe("DocumentMetadataQueryBuilder", () => {
       items: [{ path: "$.My.Path", operator: "EQ", value: "X" }],
     });
     const result = builder.build(query);
-    expect(result.sql).toBe("(json_extract(document.metadata, '$.My.Path') = ? COLLATE NOCASE)");
+    expect(result.sql).toBe(
+      "(json_extract(document.metadata, '$.My.Path') = ? COLLATE NOCASE)",
+    );
     expect(result.params).toEqual(["X"]);
 
     const badQuery1 = new SearchDocumentsQuery({
       logicOperator: "AND",
       items: [{ path: "", operator: "EQ", value: "X" }],
     });
-    expect(() => builder.build(badQuery1)).toThrow(/SearchCondition path cannot be empty/);
+    expect(() => builder.build(badQuery1)).toThrow(
+      /SearchCondition path cannot be empty/,
+    );
 
     const badQuery2 = new SearchDocumentsQuery({
       logicOperator: "AND",
       items: [{ path: "Path with spaces", operator: "EQ", value: "X" }],
     });
-    expect(() => builder.build(badQuery2)).toThrow(/Invalid SearchCondition path segment/);
+    expect(() => builder.build(badQuery2)).toThrow(
+      /Invalid SearchCondition path segment/,
+    );
   });
 });

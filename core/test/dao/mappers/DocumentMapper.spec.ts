@@ -153,4 +153,117 @@ describe("DocumentMapper", () => {
     expect(model.processUuid).toBe("proc-uuid");
     expect(model.metadata.map((m) => m.getName())).toEqual(["Titolo", "Nome"]);
   });
+
+  it("metadataToJson preserves repeated sibling nodes as arrays", () => {
+    const metadata = new Metadata(
+      "DocumentoInformatico",
+      [
+        new Metadata(
+          "Soggetti",
+          [
+            new Metadata(
+              "Ruolo",
+              [
+                new Metadata(
+                  "Altro",
+                  [
+                    new Metadata("TipoRuolo", "Altro", MetadataType.STRING),
+                    new Metadata(
+                      "PF",
+                      [
+                        new Metadata("Cognome", "Rossi", MetadataType.STRING),
+                        new Metadata("Nome", "Paolo", MetadataType.STRING),
+                      ],
+                      MetadataType.COMPOSITE,
+                    ),
+                  ],
+                  MetadataType.COMPOSITE,
+                ),
+              ],
+              MetadataType.COMPOSITE,
+            ),
+            new Metadata(
+              "Ruolo",
+              [
+                new Metadata(
+                  "ResponsabileGestioneDocumentale",
+                  [
+                    new Metadata(
+                      "TipoRuolo",
+                      "Responsabile della Gestione Documentale",
+                      MetadataType.STRING,
+                    ),
+                    new Metadata(
+                      "PF",
+                      [new Metadata("Cognome", "Colombo", MetadataType.STRING)],
+                      MetadataType.COMPOSITE,
+                    ),
+                  ],
+                  MetadataType.COMPOSITE,
+                ),
+              ],
+              MetadataType.COMPOSITE,
+            ),
+          ],
+          MetadataType.COMPOSITE,
+        ),
+      ],
+      MetadataType.COMPOSITE,
+    );
+
+    const json = DocumentMapper.metadataToJson(metadata);
+    const ruolo = (json as any).DocumentoInformatico.Soggetti.Ruolo;
+
+    expect(Array.isArray(ruolo)).toBe(true);
+    expect(ruolo).toHaveLength(2);
+    expect(ruolo[0].Altro.PF.Cognome).toBe("Rossi");
+    expect(ruolo[0].Altro.PF.Nome).toBe("Paolo");
+    expect(ruolo[1].ResponsabileGestioneDocumentale.PF.Cognome).toBe("Colombo");
+  });
+
+  it("metadataJsonToRoot restores repeated nodes from arrays", () => {
+    const metadataJson = JSON.stringify({
+      DocumentoInformatico: {
+        Soggetti: {
+          Ruolo: [
+            {
+              Altro: {
+                TipoRuolo: "Altro",
+                PF: {
+                  Cognome: "Rossi",
+                  Nome: "Paolo",
+                },
+              },
+            },
+            {
+              ResponsabileGestioneDocumentale: {
+                TipoRuolo: "Responsabile della Gestione Documentale",
+                PF: {
+                  Cognome: "Colombo",
+                  Nome: "Marco",
+                },
+              },
+            },
+          ],
+        },
+      },
+    });
+
+    const root = DocumentMapper.metadataJsonToRoot(metadataJson);
+    const soggetti = root.findNodeByName("Soggetti");
+
+    expect(soggetti).not.toBeNull();
+    const ruoloNodes =
+      soggetti?.getChildren().filter((child) => child.getName() === "Ruolo") ?? [];
+    expect(ruoloNodes).toHaveLength(2);
+    expect(root.findNodeByName("Altro")?.findNodeByName("Cognome")?.getStringValue()).toBe(
+      "Rossi",
+    );
+    expect(
+      root
+        .findNodeByName("ResponsabileGestioneDocumentale")
+        ?.findNodeByName("Cognome")
+        ?.getStringValue(),
+    ).toBe("Colombo");
+  });
 });

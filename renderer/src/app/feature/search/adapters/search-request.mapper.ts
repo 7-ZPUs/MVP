@@ -586,7 +586,6 @@ function buildSingleSubjectMatch(criteria: SubjectCriteria): SearchConditionDTO 
 
   const nestedItems: Array<SearchConditionDTO | SearchGroupDTO> = [];
   appendIfPresent(nestedItems, scalarCondition(`${roleWrapper}.TipoRuolo`, roleLabel, 'EQ'));
-  appendIfPresent(nestedItems, scalarCondition(`${roleWrapper}.${typeWrapper}`, '%', 'LIKE'));
 
   const detailEntries = Object.entries(details ?? {});
   for (const [detailKey, detailValue] of detailEntries) {

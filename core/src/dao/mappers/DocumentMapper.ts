@@ -123,15 +123,13 @@ export class DocumentMapper {
     }
 
     const entries = Object.entries(parsed as Record<string, unknown>);
-
-    if (entries.length === 1) {
-      const [key, value] = entries[0];
-      return this.metadataJsonEntryToMetadata(key, value);
-    }
-
-    const children = entries.map(([key, value]) =>
-      this.metadataJsonEntryToMetadata(key, value),
+    const children = entries.flatMap(([key, value]) =>
+      this.metadataJsonEntryToMetadataNodes(key, value),
     );
+
+    if (children.length === 1) {
+      return children[0];
+    }
 
     return new Metadata("Metadata", children, MetadataType.COMPOSITE);
   }
@@ -158,7 +156,21 @@ export class DocumentMapper {
 
     const nested: Record<string, unknown> = {};
     for (const child of node.getChildren()) {
-      nested[child.getName()] = this.metadataNodeToJsonValue(child);
+      const childName = child.getName();
+      const childValue = this.metadataNodeToJsonValue(child);
+      const currentValue = nested[childName];
+
+      if (currentValue === undefined) {
+        nested[childName] = childValue;
+        continue;
+      }
+
+      if (Array.isArray(currentValue)) {
+        currentValue.push(childValue);
+        continue;
+      }
+
+      nested[childName] = [currentValue, childValue];
     }
 
     return nested;
@@ -181,7 +193,18 @@ export class DocumentMapper {
     return rawValue;
   }
 
-  private static metadataJsonEntryToMetadata(
+  private static metadataJsonEntryToMetadataNodes(
+    key: string,
+    value: unknown,
+  ): Metadata[] {
+    if (Array.isArray(value)) {
+      return value.map((item) => this.metadataJsonValueToMetadataNode(key, item));
+    }
+
+    return [this.metadataJsonValueToMetadataNode(key, value)];
+  }
+
+  private static metadataJsonValueToMetadataNode(
     key: string,
     value: unknown,
   ): Metadata {
@@ -194,10 +217,9 @@ export class DocumentMapper {
     }
 
     if (typeof value === "object" && value !== null && !Array.isArray(value)) {
-      const nestedChildren = Object.entries(
-        value as Record<string, unknown>,
-      ).map(([nestedKey, nestedValue]) =>
-        this.metadataJsonEntryToMetadata(nestedKey, nestedValue),
+      const nestedChildren = Object.entries(value as Record<string, unknown>).flatMap(
+        ([nestedKey, nestedValue]) =>
+          this.metadataJsonEntryToMetadataNodes(nestedKey, nestedValue),
       );
       return new Metadata(key, nestedChildren, MetadataType.COMPOSITE);
     }

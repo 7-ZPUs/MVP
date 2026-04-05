@@ -1,4 +1,7 @@
-import { SearchCondition, SearchGroup } from "../../entity/search/SearchQuery.model";
+import {
+  SearchCondition,
+  SearchGroup,
+} from "../../entity/search/SearchQuery.model";
 import { MetadataFilter } from "../../../../shared/domain/metadata";
 
 export class MetadataKeyMapper {
@@ -56,13 +59,25 @@ export class MetadataKeyMapper {
     return {
       logicOperator: "AND",
       items: filters
-        .filter((filter) => filter.value !== null && filter.value !== "")
+        .filter((filter) => MetadataKeyMapper.hasMeaningfulValue(filter.value))
         .map((filter) => ({
           path: MetadataKeyMapper.toPascalCase(filter.key),
           operator: "EQ" as const,
           value: filter.value,
         })),
     };
+  }
+
+  private static hasMeaningfulValue(value: unknown): boolean {
+    if (value === null || value === undefined) {
+      return false;
+    }
+
+    if (typeof value === "string") {
+      return value.trim().length > 0;
+    }
+
+    return true;
   }
 
   private static isGroup(value: unknown): value is SearchGroup {

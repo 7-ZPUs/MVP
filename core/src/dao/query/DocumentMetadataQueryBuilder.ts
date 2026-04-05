@@ -57,6 +57,10 @@ export class DocumentMetadataQueryBuilder {
       return { sql: "", params: [] };
     }
 
+    if (this.isBlankString(condition.value)) {
+      return { sql: "", params: [] };
+    }
+
     if (condition.operator === "ELEM_MATCH") {
       if (!this.isSearchGroup(condition.value)) {
         throw new Error("ELEM_MATCH requires a nested SearchGroup value");
@@ -114,15 +118,28 @@ export class DocumentMetadataQueryBuilder {
           return { sql: "", params: [] };
         }
 
-        const placeholders = value.map(() => "?").join(", ");
+        const sanitizedValues = value.filter(
+          (item) =>
+            item !== null && item !== undefined && !this.isBlankString(item),
+        );
+
+        if (sanitizedValues.length === 0) {
+          return { sql: "", params: [] };
+        }
+
+        const placeholders = sanitizedValues.map(() => "?").join(", ");
         return {
           sql: `${jsonExtract} IN (${placeholders})`,
-          params: value,
+          params: sanitizedValues,
         };
       }
       default:
         return { sql: "", params: [] };
     }
+  }
+
+  private isBlankString(value: unknown): boolean {
+    return typeof value === "string" && value.trim().length === 0;
   }
 
   private toJsonPath(path: string): string {
