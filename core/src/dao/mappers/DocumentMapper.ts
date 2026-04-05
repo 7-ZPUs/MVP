@@ -198,7 +198,9 @@ export class DocumentMapper {
     value: unknown,
   ): Metadata[] {
     if (Array.isArray(value)) {
-      return value.map((item) => this.metadataJsonValueToMetadataNode(key, item));
+      return value.map((item) =>
+        this.metadataJsonValueToMetadataNode(key, item),
+      );
     }
 
     return [this.metadataJsonValueToMetadataNode(key, value)];
@@ -217,9 +219,10 @@ export class DocumentMapper {
     }
 
     if (typeof value === "object" && value !== null && !Array.isArray(value)) {
-      const nestedChildren = Object.entries(value as Record<string, unknown>).flatMap(
-        ([nestedKey, nestedValue]) =>
-          this.metadataJsonEntryToMetadataNodes(nestedKey, nestedValue),
+      const nestedChildren = Object.entries(
+        value as Record<string, unknown>,
+      ).flatMap(([nestedKey, nestedValue]) =>
+        this.metadataJsonEntryToMetadataNodes(nestedKey, nestedValue),
       );
       return new Metadata(key, nestedChildren, MetadataType.COMPOSITE);
     }

@@ -254,11 +254,12 @@ describe("DocumentMapper", () => {
 
     expect(soggetti).not.toBeNull();
     const ruoloNodes =
-      soggetti?.getChildren().filter((child) => child.getName() === "Ruolo") ?? [];
+      soggetti?.getChildren().filter((child) => child.getName() === "Ruolo") ??
+      [];
     expect(ruoloNodes).toHaveLength(2);
-    expect(root.findNodeByName("Altro")?.findNodeByName("Cognome")?.getStringValue()).toBe(
-      "Rossi",
-    );
+    expect(
+      root.findNodeByName("Altro")?.findNodeByName("Cognome")?.getStringValue(),
+    ).toBe("Rossi");
     expect(
       root
         .findNodeByName("ResponsabileGestioneDocumentale")
