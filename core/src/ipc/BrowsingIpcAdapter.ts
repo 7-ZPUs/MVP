@@ -128,11 +128,18 @@ export class BrowsingIpcAdapter {
         if (!file) return null;
         const fs = require("fs");
         const path = require("path");
+        const dipPath = container.resolve<string>("DIP_PATH_TOKEN");
         try {
-          const absolutePath = path.resolve(file.getPath());
+          const absolutePath = path.resolve(dipPath, file.getPath());
+          console.log(`[FILE_READ] Reading file: ${absolutePath}`);
+          if (!fs.existsSync(absolutePath)) {
+            console.error(`[FILE_READ] File does not exist: ${absolutePath}`);
+            throw new Error(`File not found: ${absolutePath}`);
+          }
           return fs.readFileSync(absolutePath);
         } catch (err) {
-          console.error("Error reading file buffer", err);
+          const errorMsg = err instanceof Error ? err.message : String(err);
+          console.error(`[FILE_READ] Error reading file with ID ${id}: ${errorMsg}`, err);
           return null;
         }
       },

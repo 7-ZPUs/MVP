@@ -55,6 +55,9 @@ export class IntegrityVerificationService
     
     @inject(TRANSACTION_MANAGER_TOKEN)
     private readonly transactionManager: ITransactionManager,
+    
+    @inject("DIP_PATH_TOKEN")
+    private readonly dipPath: string,
   ) {}
 
   checkFileIntegrityStatus(fileId: number): Promise<IntegrityStatusEnum> {
@@ -177,8 +180,10 @@ export class IntegrityVerificationService
 
   private async checkFileEntity(file: File): Promise<IntegrityStatusEnum> {
     const fileId = this.requirePersistedId(file.getId(), "File");
+    const path = require("path");
+    const absolutePath = path.resolve(this.dipPath, file.getPath());
     const status = await this.hashingService.checkFileIntegrity(
-      file.getPath(),
+      absolutePath,
       file.getHash(),
     );
 

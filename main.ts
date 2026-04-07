@@ -129,6 +129,12 @@ function exportDb(dstPath: string): void {
 
   // Ensure all DAOs/repositories use the same DB file created by bootstrap.
   const appDbPath = path.resolve(process.cwd(), "dip-viewer.db");
+  const dipPath = resolveBootstrapDipPath();
+  
+  container.register("DIP_PATH_TOKEN", {
+    useValue: dipPath,
+  });
+
   container.register(DATABASE_PROVIDER_PATH_TOKEN, {
     useValue: appDbPath,
   });
@@ -139,7 +145,6 @@ function exportDb(dstPath: string): void {
       container.resolve<IIndexDip>(INDEX_DIP_TOKEN).execute(dipPath),
   };
   const bootstrapAdapter = new ApplicationBootstrapAdapter(lazyIndexDip);
-  const dipPath = resolveBootstrapDipPath();
   try {
     performance.mark("bootstrap-start");
     await bootstrapAdapter.bootstrap(dipPath);
