@@ -1,3 +1,77 @@
+/**
+ * @component ExportPageComponent
+ * @selector app-export-page
+ *
+ * Componente smart che orchestra tutta la logica di export e stampa.
+ * Legge i documenti selezionati tramite ImportFacade e delega
+ * le operazioni a ExportFacade, che comunica col backend via IPC.
+ *
+ * ─────────────────────────────────────────────────────────────────
+ * UTILIZZO STAND-ALONE
+ * ─────────────────────────────────────────────────────────────────
+ * Il componente funziona autonomamente se l'ImportFacade ha già
+ * un documento selezionato. Non serve passare nulla:
+ *
+ *   <app-export-page />
+ *
+ * Il componente padre deve solo assicurarsi che prima del render
+ * venga chiamato importFacade.selectDocument(node), ad esempio
+ * in risposta al click su un nodo dell'albero:
+ *
+ *   // parent.component.ts
+ *   onNodeClick(node: DipTreeNode): void {
+ *     this.importFacade.selectDocument(node);
+ *   }
+ *
+ * ─────────────────────────────────────────────────────────────────
+ * UTILIZZO CON SELEZIONE MULTIPLA
+ * ─────────────────────────────────────────────────────────────────
+ * Se il padre gestisce una selezione multipla, deve chiamare
+ * i metodi appositi dell'ImportFacade per ogni nodo:
+ *
+ *   // parent.component.ts
+ *   onCheckbox(node: DipTreeNode, checked: boolean): void {
+ *     if (checked) this.importFacade.selectDocument(node);
+ *     else         this.importFacade.deselectDocument(node);
+ *   }
+ *
+ *   // parent.component.html
+ *   <input type="checkbox" (change)="onCheckbox(node, $event.target.checked)" />
+ *   <app-export-page />
+ *
+ * I bottoni Salva e Stampa si abilitano automaticamente non appena
+ * almeno un documento è presente in ImportFacade.selectedDocuments.
+ *
+ * ─────────────────────────────────────────────────────────────────
+ * FLUSSO DOWNLOAD (UC-19 singolo, UC-20 multiplo)
+ * ─────────────────────────────────────────────────────────────────
+ *   1. Utente clicca Salva
+ *   2. Si apre il dialog nativo dell'OS per scegliere il path
+ *   3. Il file viene letto dal package e scritto su disco via IPC
+ *   4. Il risultato aggiorna l'ExportState e viene mostrato in UI
+ *
+ * ─────────────────────────────────────────────────────────────────
+ * FLUSSO STAMPA (UC-22)
+ * ─────────────────────────────────────────────────────────────────
+ *   1. Utente clicca Stampa
+ *   2. Viene verificato che il formato sia stampabile
+ *      (pdf, png, jpg, jpeg, tiff)
+ *   3. Il path completo del file viene recuperato via IPC
+ *      usando BROWSE_GET_FILE_BY_ID
+ *   4. Il file viene aperto con shell.openPath — l'OS delega
+ *      all'applicazione predefinita (es. Adobe Reader per PDF)
+ *   5. L'utente stampa dall'applicazione nativa
+ *
+ * ─────────────────────────────────────────────────────────────────
+ * DIPENDENZE RICHIESTE NEL MODULO PADRE
+ * ─────────────────────────────────────────────────────────────────
+ *   - ImportFacade  (providedIn: 'root' — nessuna registrazione manuale)
+ *   - ExportFacade  (providedIn: 'root' — nessuna registrazione manuale)
+ *
+ * Entrambe le facade sono singleton: lo stato è condiviso tra tutti
+ * i componenti che le iniettano. Chiamare importFacade.clearSelection()
+ * nel padre quando si cambia contesto per evitare selezioni residue.
+ */
 import { Component, Signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 

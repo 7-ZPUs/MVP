@@ -19,3 +19,13 @@ export interface SaveDialogResponseDto {
   canceled: boolean;
   filePath?: string;
 }
+
+export interface FileDTO {
+    id:              number;
+    documentId:      number;
+    filename:        string;
+    path:            string;
+    hash:            string;
+    integrityStatus: string;
+    isMain:          boolean;
+}
