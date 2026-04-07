@@ -30,7 +30,47 @@ export class DocumentDAO implements IDocumentDAO {
   ) {}
 
   private toBuffer(vector: Float32Array): Buffer {
-    return Buffer.from(vector.buffer);
+    return Buffer.from(vector.buffer, vector.byteOffset, vector.byteLength);
+  }
+
+  private bufferToVector(buffer: Buffer): Float32Array {
+    const view = new Float32Array(
+      buffer.buffer,
+      buffer.byteOffset,
+      buffer.byteLength / Float32Array.BYTES_PER_ELEMENT,
+    );
+    return new Float32Array(view);
+  }
+
+  private cosineSimilarity(a: Float32Array, b: Float32Array): number {
+    let dot = 0;
+    let normA = 0;
+    let normB = 0;
+
+    for (let i = 0; i < a.length; i += 1) {
+      dot += a[i] * b[i];
+      normA += a[i] * a[i];
+      normB += b[i] * b[i];
+    }
+
+    if (normA === 0 || normB === 0) {
+      return 0;
+    }
+
+    return dot / (Math.sqrt(normA) * Math.sqrt(normB));
+  }
+
+  private hasTable(tableName: string): boolean {
+    const row = this.db
+      .prepare<[string], { present: number }>(
+        `SELECT 1 as present
+         FROM sqlite_master
+         WHERE type = 'table' AND name = ?
+         LIMIT 1`,
+      )
+      .get(tableName);
+
+    return row?.present === 1;
   }
 
   private rowToEntity(row: DocumentJsonPersistenceRow): Document {
@@ -94,30 +134,47 @@ export class DocumentDAO implements IDocumentDAO {
   async searchDocumentSemantic(
     queryVector: Float32Array,
   ): Promise<Array<{ document: Document; score: number }>> {
+    if (queryVector.length === 0 || !this.hasTable("document_vector")) {
+      return [];
+    }
+
     const rows = this.db
-      .prepare<[Buffer, number], { rowid: number; distance: number }>(
-        `SELECT rowid, distance
-                 FROM vss_documents
-                 WHERE vss_search(embedding, ?)
-                 LIMIT ?`,
-      )
-      .all(this.toBuffer(queryVector), 10);
+      .prepare<
+        [],
+        { documentId: number; embedding: Buffer }
+      >("SELECT document_id as documentId, embedding FROM document_vector")
+      .all();
 
     return rows
-      .map(({ rowid, distance }) => {
-        const doc = this.getById(rowid);
+      .map(({ documentId, embedding }) => {
+        const candidateVector = this.bufferToVector(embedding);
+        if (candidateVector.length !== queryVector.length) {
+          return null;
+        }
+
+        const doc = this.getById(documentId);
         if (!doc) return null;
-        return { document: doc, score: 1 - distance };
+
+        return {
+          document: doc,
+          score: this.cosineSimilarity(queryVector, candidateVector),
+        };
       })
+      .sort((a, b) => (b?.score ?? -Infinity) - (a?.score ?? -Infinity))
+      .slice(0, 10)
       .filter((r): r is { document: Document; score: number } => r !== null);
   }
 
   getIndexedDocumentsCount(): number {
+    if (!this.hasTable("document_vector")) {
+      return 0;
+    }
+
     const row = this.db
       .prepare<
         [],
         { count: number }
-      >("SELECT count(*) as count FROM vss_documents")
+      >("SELECT count(*) as count FROM document_vector")
       .get();
     return row?.count ?? 0;
   }

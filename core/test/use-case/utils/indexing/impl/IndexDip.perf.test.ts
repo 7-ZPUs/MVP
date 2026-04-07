@@ -21,6 +21,8 @@ import { ProcessDAO } from "../../../../../src/dao/ProcessDAO";
 import { DocumentClassDAO } from "../../../../../src/dao/DocumentClassDAO";
 import Database from "better-sqlite3";
 import { SqliteTransactionManager } from "../../../../../src/repo/impl/SqliteTransactionManager";
+import { IVectorRepository } from "../../../../../src/repo/IVectorRepository";
+import { IDocumentChunker } from "../../../../../src/services/IDocumentChunker";
 
 const DEFAULT_REAL_DIP_PATH = "core/test/resources/real_dip_heavy";
 const PROJECT_ROOT = path.resolve(__dirname, "../../../../../../");
@@ -87,6 +89,14 @@ describe("IndexDip use-case performance", () => {
       const processRepository = new ProcessRepository(new ProcessDAO(db));
       const documentRepository = new DocumentRepository(new DocumentDAO(db));
       const fileRepository = new FileRepository(new FileDAO(db));
+      const vectorRepository: IVectorRepository = {
+        saveVector: async () => {},
+        getVector: async () => null,
+        searchSimilarVectors: async () => [],
+      };
+      const documentChunker: IDocumentChunker = {
+        generateDocumentEmbedding: async () => null,
+      };
 
       const useCase = new IndexDip(
         packageReader,
@@ -95,6 +105,8 @@ describe("IndexDip use-case performance", () => {
         processRepository,
         documentRepository,
         fileRepository,
+        vectorRepository,
+        documentChunker,
         new SqliteTransactionManager(db),
       );
 

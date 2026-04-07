@@ -91,4 +91,36 @@ describe("DocumentDAO", () => {
     expect(dao.getByStatus(IntegrityStatusEnum.VALID)).toHaveLength(1);
     expect(dao.getByStatus(IntegrityStatusEnum.INVALID)).toHaveLength(1);
   });
+
+  it("searchDocumentSemantic uses document_vector and returns top matches", async () => {
+    const docA = dao.save(new Document("doc-sem-a", buildMetadata("A"), processUuid));
+    const docB = dao.save(new Document("doc-sem-b", buildMetadata("B"), processUuid));
+
+    const vecA = Buffer.from(new Float32Array([1, 0, 0]).buffer);
+    const vecB = Buffer.from(new Float32Array([0, 1, 0]).buffer);
+
+    db.prepare(
+      "INSERT INTO document_vector (document_id, embedding) VALUES (?, ?)",
+    ).run(docA.getId(), vecA);
+    db.prepare(
+      "INSERT INTO document_vector (document_id, embedding) VALUES (?, ?)",
+    ).run(docB.getId(), vecB);
+
+    const results = await dao.searchDocumentSemantic(new Float32Array([1, 0, 0]));
+
+    expect(results).toHaveLength(2);
+    expect(results[0].document.getUuid()).toBe("doc-sem-a");
+    expect(results[0].score).toBeGreaterThan(results[1].score);
+  });
+
+  it("getIndexedDocumentsCount reads from document_vector", () => {
+    const doc = dao.save(new Document("doc-count", buildMetadata("C"), processUuid));
+    const vector = Buffer.from(new Float32Array([0.2, 0.4, 0.6]).buffer);
+
+    db.prepare(
+      "INSERT INTO document_vector (document_id, embedding) VALUES (?, ?)",
+    ).run(doc.getId(), vector);
+
+    expect(dao.getIndexedDocumentsCount()).toBe(1);
+  });
 });

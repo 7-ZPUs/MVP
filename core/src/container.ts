@@ -19,16 +19,20 @@ import { DOCUMENT_CLASS_REPOSITORY_TOKEN } from "./repo/IDocumentClassRepository
 import { DocumentClassRepository } from "./repo/impl/DocumentClassRepository";
 import { DIP_REPOSITORY_TOKEN } from "./repo/IDipRepository";
 import { DipRepository } from "./repo/impl/DipRepository";
+import { VECTOR_REPOSITORY_TOKEN } from "./repo/VectorRepositoryToken";
+import { VectorRepository } from "./repo/impl/VectorRepository";
 import { DIP_DAO_TOKEN } from "./dao/IDipDAO";
 import { DOCUMENT_CLASS_DAO_TOKEN } from "./dao/IDocumentClassDAO";
 import { DOCUMENT_DAO_TOKEN } from "./dao/IDocumentDAO";
 import { FILE_DAO_TOKEN } from "./dao/IFileDAO";
 import { PROCESS_DAO_TOKEN } from "./dao/IProcessDAO";
+import { VECTOR_DAO_TOKEN } from "./dao/IVectorDAO";
 import { DipDAO } from "./dao/DipDAO";
 import { DocumentClassDAO } from "./dao/DocumentClassDAO";
 import { DocumentDAO } from "./dao/DocumentDAO";
 import { FileDAO } from "./dao/FileDAO";
 import { ProcessDAO } from "./dao/ProcessDAO";
+import { VectorDAO } from "./dao/VectorDAO";
 
 // ---- Documento use cases ----
 import { DocumentoUC } from "./use-case/document/tokens";
@@ -79,6 +83,8 @@ import { SqliteTransactionManager } from "./repo/impl/SqliteTransactionManager";
 import { HashingService } from "./services/impl/HashingService";
 import { INTEGRITY_VERIFICATION_SERVICE_TOKEN } from "./services/IIntegrityVerificationService";
 import { IntegrityVerificationService } from "./services/impl/IntegrityVerificationService";
+import { DOCUMENT_CHUNKER_TOKEN } from "./services/IDocumentChunker";
+import { DocumentChunker } from "./services/impl/DocumentChunker";
 import { INDEX_DIP_TOKEN } from "./use-case/utils/indexing/IIndexDip";
 import { IndexDip } from "./use-case/utils/indexing/impl/IndexDip";
 
@@ -93,6 +99,9 @@ container.register(TRANSACTION_MANAGER_TOKEN, {
 });
 container.register(HASHING_SERVICE_TOKEN, {
   useClass: HashingService,
+});
+container.register(DOCUMENT_CHUNKER_TOKEN, {
+  useClass: DocumentChunker,
 });
 container.register(INTEGRITY_VERIFICATION_SERVICE_TOKEN, {
   useClass: IntegrityVerificationService,
@@ -127,6 +136,9 @@ container.register(DOCUMENT_CLASS_REPOSITORY_TOKEN, {
   useClass: DocumentClassRepository,
 });
 container.register(DIP_REPOSITORY_TOKEN, { useClass: DipRepository });
+container.register(VECTOR_REPOSITORY_TOKEN, {
+  useClass: VectorRepository,
+});
 
 // DAOs
 container.register(DIP_DAO_TOKEN, { useClass: DipDAO });
@@ -134,6 +146,7 @@ container.register(DOCUMENT_CLASS_DAO_TOKEN, { useClass: DocumentClassDAO });
 container.register(DOCUMENT_DAO_TOKEN, { useClass: DocumentDAO });
 container.register(FILE_DAO_TOKEN, { useClass: FileDAO });
 container.register(PROCESS_DAO_TOKEN, { useClass: ProcessDAO });
+container.register(VECTOR_DAO_TOKEN, { useClass: VectorDAO });
 
 // Documento use cases
 container.register(DocumentoUC.GET_BY_ID, { useClass: GetDocumentByIdUC });

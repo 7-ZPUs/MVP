@@ -25,6 +25,8 @@ import { readFileSync } from "node:fs";
 import { nukeTestDb } from "../../../../dao/helpers/testDb";
 import Database from "better-sqlite3";
 import { SqliteTransactionManager } from "../../../../../src/repo/impl/SqliteTransactionManager";
+import { IVectorRepository } from "../../../../../src/repo/IVectorRepository";
+import { IDocumentChunker } from "../../../../../src/services/IDocumentChunker";
 
 // ---------------------------------------------------------------------------
 // Realistic DiP index XML — one DocumentClass, one AiP, two Documents
@@ -190,6 +192,15 @@ describe("Index use-case integration tests", () => {
     documentRepository = new DocumentRepository(new DocumentDAO(db));
     fileRepository = new FileRepository(new FileDAO(db));
 
+    const vectorRepository: IVectorRepository = {
+      saveVector: async () => {},
+      getVector: async () => null,
+      searchSimilarVectors: async () => [],
+    };
+    const documentChunker: IDocumentChunker = {
+      generateDocumentEmbedding: async () => null,
+    };
+
     const useCase = new IndexDip(
       packageReader,
       dipRepository,
@@ -197,6 +208,8 @@ describe("Index use-case integration tests", () => {
       processRepository,
       documentRepository,
       fileRepository,
+      vectorRepository,
+      documentChunker,
       new SqliteTransactionManager(db),
     );
 

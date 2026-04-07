@@ -246,9 +246,9 @@ export class DocumentMapper {
 
     const normalize = (value: string): string =>
       value
-        .replace(/([a-z0-9])([A-Z])/g, "$1_$2")
-        .replace(/[^a-zA-Z0-9]+/g, "_")
-        .replace(/^_+|_+$/g, "")
+        .replaceAll(/([a-z0-9])([A-Z])/g, "$1_$2")
+        .replaceAll(/[^a-zA-Z0-9]+/g, "_")
+        .replaceAll(/^_+|_+$/g, "")
         .toUpperCase();
 
     const normalizedRoot = normalize(rootName);

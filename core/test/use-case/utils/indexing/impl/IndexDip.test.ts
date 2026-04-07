@@ -18,11 +18,15 @@ import { DocumentDAO } from "../../../../../src/dao/DocumentDAO";
 import { FileDAO } from "../../../../../src/dao/FileDAO";
 import { readFileSync } from "node:fs";
 import { SqliteTransactionManager } from "../../../../../src/repo/impl/SqliteTransactionManager";
+import { IVectorRepository } from "../../../../../src/repo/IVectorRepository";
+import { IDocumentChunker } from "../../../../../src/services/IDocumentChunker";
 
 describe("IndexDip", () => {
   let db: Database.Database;
   let fileSystemProvider: IFileSystemProvider;
   let useCase: IndexDip;
+  let vectorRepository: IVectorRepository;
+  let documentChunker: IDocumentChunker;
 
   beforeEach(() => {
     db = new Database(":memory:");
@@ -36,6 +40,14 @@ describe("IndexDip", () => {
     const processRepository = new ProcessRepository(new ProcessDAO(db));
     const documentRepository = new DocumentRepository(new DocumentDAO(db));
     const fileRepository = new FileRepository(new FileDAO(db));
+    vectorRepository = {
+      saveVector: vi.fn().mockResolvedValue(undefined),
+      getVector: vi.fn().mockResolvedValue(null),
+      searchSimilarVectors: vi.fn().mockResolvedValue([]),
+    };
+    documentChunker = {
+      generateDocumentEmbedding: vi.fn().mockResolvedValue(null),
+    };
 
     const parser = new XmlDipParser();
     fileSystemProvider = {
@@ -59,6 +71,8 @@ describe("IndexDip", () => {
       processRepository,
       documentRepository,
       fileRepository,
+      vectorRepository,
+      documentChunker,
       new SqliteTransactionManager(db),
     );
   });
@@ -69,6 +83,9 @@ describe("IndexDip", () => {
   // expected_value: returns { success: true } and persists dip, document class, process, document, metadata and file records
   it("TU-F-Indexing-27: execute() should orchestrate reader and repository writes parsing real XML", async () => {
     const dipPath = "/dip/path";
+    vi.mocked(documentChunker.generateDocumentEmbedding).mockResolvedValue(
+      new Float32Array([0.1, 0.2]),
+    );
 
     vi.mocked(fileSystemProvider.listFiles).mockResolvedValue([
       "DiPIndex.test-dip-uuid-1234.xml",
@@ -132,6 +149,16 @@ describe("IndexDip", () => {
     const files = db.prepare("SELECT * FROM file").all();
     expect(files).toHaveLength(1);
     expect((files[0] as any).filename).toBe("./primary.pdf");
+
+    expect(documentChunker.generateDocumentEmbedding).toHaveBeenCalledTimes(1);
+    expect(documentChunker.generateDocumentEmbedding).toHaveBeenCalledWith(
+      expect.stringContaining("primary.pdf"),
+    );
+    expect(vectorRepository.saveVector).toHaveBeenCalledTimes(1);
+    expect(vectorRepository.saveVector).toHaveBeenCalledWith(
+      expect.any(Number),
+      expect.any(Float32Array),
+    );
   });
 
   // identifier: TU-F-Indexing-28
@@ -164,5 +191,64 @@ describe("IndexDip", () => {
     expect(dips).toHaveLength(0);
     const docClasses = db.prepare("SELECT * FROM document_class").all();
     expect(docClasses).toHaveLength(0);
+  });
+
+  // identifier: TU-F-Indexing-29
+  // method_name: execute()
+  // description: should continue indexing when vector generation fails for main files
+  // expected_value: returns success, persists file records, and does not persist vectors
+  it("TU-F-Indexing-29: execute() should continue indexing when vector generation fails", async () => {
+    const dipPath = "/dip/path";
+    vi.mocked(documentChunker.generateDocumentEmbedding).mockRejectedValue(
+      new Error("missing model file"),
+    );
+
+    vi.mocked(fileSystemProvider.listFiles).mockResolvedValue([
+      "DiPIndex.test-dip-uuid-1234.xml",
+    ]);
+
+    vi.mocked(fileSystemProvider.readTextFile).mockImplementation(
+      async (filePath) => {
+        if (filePath.includes("DiPIndex")) {
+          return `<?xml version="1.0" encoding="UTF-8"?>
+          <DiPIndex>
+            <PackageInfo>
+              <ProcessUUID>dip-uuid-1</ProcessUUID>
+            </PackageInfo>
+            <PackageContent>
+              <DiPDocuments>
+                <DocumentClass name="Class1" uuid="dc-1" validFrom="2026-01-01T00:00:00Z">
+                  <AiP uuid="proc-1">
+                    <AiPRoot>./dc-1/proc-1</AiPRoot>
+                    <Document uuid="doc-1">
+                      <DocumentPath>./dc-1/proc-1/doc-1</DocumentPath>
+                      <Files FilesCount="2">
+                        <Metadata uuid="meta-1">./meta.xml</Metadata>
+                        <Primary uuid="prim-1">./primary.pdf</Primary>
+                      </Files>
+                    </Document>
+                  </AiP>
+                </DocumentClass>
+              </DiPDocuments>
+            </PackageContent>
+          </DiPIndex>`;
+        }
+        if (filePath.includes("AiPInfo.xml")) {
+          return `<AiPInfo><ProcessData><SessionId>session-123</SessionId></ProcessData></AiPInfo>`;
+        }
+        if (filePath.includes("meta.xml")) {
+          return `<Document><DocumentoInformatico><IdDoc><ImprontaCrittograficaDelDocumento><Impronta>testHash=</Impronta><Algoritmo>SHA-256</Algoritmo></ImprontaCrittograficaDelDocumento><Identificativo>prim-1</Identificativo></IdDoc><Titolo>Test Titolo</Titolo></DocumentoInformatico></Document>`;
+        }
+        return "";
+      },
+    );
+
+    const result = await useCase.execute(dipPath);
+    expect(result).toEqual({ success: true });
+
+    const files = db.prepare("SELECT * FROM file").all();
+    expect(files).toHaveLength(1);
+    expect(documentChunker.generateDocumentEmbedding).toHaveBeenCalledTimes(1);
+    expect(vectorRepository.saveVector).not.toHaveBeenCalled();
   });
 });

@@ -65,6 +65,14 @@ CREATE TABLE
     type TEXT NOT NULL DEFAULT 'string'
   );
 
+  CREATE TABLE
+    IF NOT EXISTS document_vector (
+      document_id INTEGER NOT NULL UNIQUE REFERENCES document (id) ON DELETE CASCADE,
+      embedding BLOB NOT NULL
+    );
+
+  CREATE INDEX IF NOT EXISTS idx_document_vector_document_id ON document_vector (document_id);
+
 CREATE INDEX IF NOT EXISTS idx_document_process_id ON document (process_id);
 
 CREATE INDEX IF NOT EXISTS idx_document_integrity_status ON document (integrity_status);

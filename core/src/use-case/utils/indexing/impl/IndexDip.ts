@@ -28,7 +28,14 @@ import {
   IDipRepository,
   DIP_REPOSITORY_TOKEN,
 } from "../../../../repo/IDipRepository";
+import { IVectorRepository } from "../../../../repo/IVectorRepository";
+import { VECTOR_REPOSITORY_TOKEN } from "../../../../repo/VectorRepositoryToken";
+import {
+  DOCUMENT_CHUNKER_TOKEN,
+  IDocumentChunker,
+} from "../../../../services/IDocumentChunker";
 import { inject, injectable } from "tsyringe";
+import path from "node:path";
 
 /*
  * Implementation of the IndexDip use case.
@@ -37,6 +44,8 @@ import { inject, injectable } from "tsyringe";
  */
 @injectable()
 export class IndexDip implements IIndexDip {
+  private hasLoggedVectorWarning = false;
+
   constructor(
     @inject(PACKAGE_READER_PORT_TOKEN)
     private readonly packageReader: IPackageReaderPort,
@@ -50,6 +59,10 @@ export class IndexDip implements IIndexDip {
     private readonly documentRepository: IDocumentRepository,
     @inject(FILE_REPOSITORY_TOKEN)
     private readonly fileRepository: IFileRepository,
+    @inject(VECTOR_REPOSITORY_TOKEN)
+    private readonly vectorRepository: IVectorRepository,
+    @inject(DOCUMENT_CHUNKER_TOKEN)
+    private readonly documentChunker: IDocumentChunker,
     @inject(TRANSACTION_MANAGER_TOKEN)
     private readonly transactionManager: ITransactionManager,
   ) {}
@@ -95,8 +108,55 @@ export class IndexDip implements IIndexDip {
 
   private async indexFiles(dipPath: string): Promise<IndexResult> {
     for await (const file of this.packageReader.readFiles(dipPath)) {
-      this.fileRepository.save(file);
+      const savedFile = this.fileRepository.save(file);
+      if (!savedFile.getIsMain()) {
+        continue;
+      }
+
+      await this.indexMainFileVector(
+        dipPath,
+        savedFile.getPath(),
+        savedFile.getDocumentId(),
+      );
     }
     return { success: true };
+  }
+
+  private async indexMainFileVector(
+    dipPath: string,
+    relativeFilePath: string,
+    documentId: number | null,
+  ): Promise<void> {
+    if (documentId === null) {
+      return;
+    }
+
+    const absoluteFilePath = path.join(dipPath, relativeFilePath);
+    try {
+      const embedding = await this.documentChunker.generateDocumentEmbedding(
+        absoluteFilePath,
+      );
+
+      if (!embedding) {
+        return;
+      }
+
+      await this.vectorRepository.saveVector(documentId, embedding);
+    } catch (error) {
+      try {
+        if (!this.hasLoggedVectorWarning) {
+          console.warn(
+            "[INDEXING] Vector generation failed for at least one file:",
+            error instanceof Error ? error.message : String(error),
+          );
+          console.warn(
+            "[INDEXING] Additional vector-generation errors will be suppressed.",
+          );
+          this.hasLoggedVectorWarning = true;
+        }
+      } catch {
+        // Never fail indexing because warning logging failed.
+      }
+    }
   }
 }
