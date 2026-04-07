@@ -19,14 +19,13 @@ export class SearchResultsComponent {
   @Input() isSemanticSearch: boolean = false;
 
   @Output() resultSelected = new EventEmitter<ISearchResult>();
- 
+
   private factory = inject(SearchResultFactoryService);
 
   public getComponent(result: ISearchResult): Type<ISearchResultItemComponent> {
     return this.factory.getComponentForType(result.type);
   }
 
-  // Inputs passati dinamicamente al componente figlio tramite NgComponentOutlet
   public getInputs(result: ISearchResult): Record<string, unknown> {
     return {
       result,
