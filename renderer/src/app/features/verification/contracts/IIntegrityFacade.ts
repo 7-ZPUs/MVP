@@ -20,3 +20,4 @@ export interface IIntegrityFacade {
 }
 
 export const INTEGRITY_FACADE_TOKEN = new InjectionToken<IIntegrityFacade>('IIntegrityFacade');
+
