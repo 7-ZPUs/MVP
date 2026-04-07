@@ -11,6 +11,9 @@ export const IpcChannels = {
   PACKAGE_OPEN: "package:open",
   PACKAGE_LIST: "package:list",
   PACKAGE_CLOSE: "package:close",
+  PACKAGE_OPEN: "package:open",
+  PACKAGE_LIST: "package:list",
+  PACKAGE_CLOSE: "package:close",
 
   // ----- Search -----
   SEARCH_FULLTEXT: "ipc:search:text",

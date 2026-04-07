@@ -1,18 +1,22 @@
-import { InjectionToken, Signal } from '@angular/core';
-import { IntegrityReport } from '../domain/integrity.models';
+import { Signal, InjectionToken } from '@angular/core';
+import { DocumentClassDTO } from '../../../shared/domain/dto/indexDTO';
+import { IntegrityStatusEnum } from '../../../shared/domain/value-objects/IntegrityStatusEnum';
+import { IntegrityNodeVM, IntegrityOverviewStats } from '../domain/integrity.view-models';
 
 export interface IIntegrityFacade {
   // Stato (Signals esposti in sola lettura)
   isVerifying: Signal<boolean>;
-  currentReport: Signal<IntegrityReport | null>;
   error: Signal<string | null>;
+  currentDipStatus: Signal<IntegrityStatusEnum | null>;
+  dipClasses: Signal<DocumentClassDTO[]>;
+  overviewStats: Signal<IntegrityOverviewStats>;
+  corruptedNodes: Signal<IntegrityNodeVM[]>;
+  validRolledUpNodes: Signal<IntegrityNodeVM[]>;
 
   // Azioni
-  verifyDip(): Promise<void>;
-  verifyClass(classId: string): Promise<void>;
-  verifyProcess(processId: string): Promise<void>;
-  verifyDocument(documentId: string): Promise<void>;
-  clearReport(): void;
+  loadOverview(dipId: number): Promise<void>;
+  verifyDip(dipId: number): Promise<void>;
+  clearResults(): void;
 }
 
 export const INTEGRITY_FACADE_TOKEN = new InjectionToken<IIntegrityFacade>('IIntegrityFacade');
