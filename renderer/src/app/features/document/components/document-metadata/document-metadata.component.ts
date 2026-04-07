@@ -71,6 +71,8 @@ import { DocumentMetadata } from '../../domain/document.models'; // Assicurati d
         flex-shrink: 0;
       }
       .value {
+        word-break: break-word;
+        overflow-wrap: anywhere;
         color: #1e293b;
         font-weight: 500;
       }

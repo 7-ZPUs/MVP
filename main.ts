@@ -140,6 +140,7 @@ function exportDb(dstPath: string): void {
   };
   const bootstrapAdapter = new ApplicationBootstrapAdapter(lazyIndexDip);
   const dipPath = resolveBootstrapDipPath();
+  process.env.DIP_PATH = dipPath;
   try {
     performance.mark("bootstrap-start");
     await bootstrapAdapter.bootstrap(dipPath);

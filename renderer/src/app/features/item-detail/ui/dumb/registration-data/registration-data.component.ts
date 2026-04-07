@@ -84,6 +84,8 @@ import { DocumentDetail } from '../../../../document/domain/document.models';
       }
 
       .value {
+        word-break: break-word;
+        overflow-wrap: anywhere;
         font-size: 0.95rem;
         color: #222;
       }

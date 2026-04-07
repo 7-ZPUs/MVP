@@ -129,7 +129,8 @@ export class BrowsingIpcAdapter {
         const fs = require("fs");
         const path = require("path");
         try {
-          const absolutePath = path.resolve(file.getPath());
+          const dipPath = process.env.DIP_PATH || process.cwd();
+          const absolutePath = path.resolve(dipPath, file.getPath());
           return fs.readFileSync(absolutePath);
         } catch (err) {
           console.error("Error reading file buffer", err);
