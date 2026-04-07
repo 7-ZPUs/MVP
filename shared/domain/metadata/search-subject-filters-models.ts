@@ -1,4 +1,5 @@
-import { FilterFieldType, SubjectRoleType, SubjectType } from './search.enum';
+import { FilterFieldType } from "./search.enum";
+import { SubjectRoleType, SubjectType } from "./subject.enum";
 
 export interface SubjectDetails {}
 
@@ -86,7 +87,11 @@ export interface ISubjectDetailStrategy {
   getFields(): SubjectFieldDefinition[];
 }
 
-const text = (key: string, label: string, required = false): SubjectFieldDefinition => ({
+const text = (
+  key: string,
+  label: string,
+  required = false,
+): SubjectFieldDefinition => ({
   key,
   label,
   type: FilterFieldType.TEXT,
@@ -96,13 +101,13 @@ const text = (key: string, label: string, required = false): SubjectFieldDefinit
 export class PAIStrategy implements ISubjectDetailStrategy {
   getFields(): SubjectFieldDefinition[] {
     return [
-      text('denominazione', 'Denominazione'),
-      text('codiceIPA', 'Codice IPA'),
-      text('denominazioneAOO', 'Denominazione AOO'),
-      text('codiceIPAAOO', 'Codice IPA AOO'),
-      text('denominazioneUOR', 'Denominazione UOR'),
-      text('codiceIPAUOR', 'Codice IPA UOR'),
-      text('indirizziDigitali', 'Indirizzi Digitali (separati da virgola)'),
+      text("denominazione", "Denominazione"),
+      text("codiceIPA", "Codice IPA"),
+      text("denominazioneAOO", "Denominazione AOO"),
+      text("codiceIPAAOO", "Codice IPA AOO"),
+      text("denominazioneUOR", "Denominazione UOR"),
+      text("codiceIPAUOR", "Codice IPA UOR"),
+      text("indirizziDigitali", "Indirizzi Digitali (separati da virgola)"),
     ];
   }
 }
@@ -110,9 +115,9 @@ export class PAIStrategy implements ISubjectDetailStrategy {
 export class PAEStrategy implements ISubjectDetailStrategy {
   getFields(): SubjectFieldDefinition[] {
     return [
-      text('denominazioneAmm', 'Denominazione Amministrazione'),
-      text('denominazioneUfficio', 'Denominazione Ufficio'),
-      text('indirizziDigitali', 'Indirizzi Digitali (separati da virgola)'),
+      text("denominazioneAmm", "Denominazione Amministrazione"),
+      text("denominazioneUfficio", "Denominazione Ufficio"),
+      text("indirizziDigitali", "Indirizzi Digitali (separati da virgola)"),
     ];
   }
 }
@@ -120,13 +125,13 @@ export class PAEStrategy implements ISubjectDetailStrategy {
 export class ASStrategy implements ISubjectDetailStrategy {
   getFields(): SubjectFieldDefinition[] {
     return [
-      text('nomeAssegnatario', 'Nome Assegnatario'),
-      text('cognomeAssegnatario', 'Cognome Assegnatario'),
-      text('codiceFiscaleAssegnatario', 'Codice Fiscale'),
-      text('partitaIvaAssegnatario', 'Partita IVA'),
-      text('denominazioneOrga', 'Denominazione Organizzazione'),
-      text('denominazioneUfficio', 'Denominazione Ufficio'),
-      text('indirizziDigitali', 'Indirizzi Digitali (separati da virgola)'),
+      text("nomeAssegnatario", "Nome Assegnatario"),
+      text("cognomeAssegnatario", "Cognome Assegnatario"),
+      text("codiceFiscaleAssegnatario", "Codice Fiscale"),
+      text("partitaIvaAssegnatario", "Partita IVA"),
+      text("denominazioneOrga", "Denominazione Organizzazione"),
+      text("denominazioneUfficio", "Denominazione Ufficio"),
+      text("indirizziDigitali", "Indirizzi Digitali (separati da virgola)"),
     ];
   }
 }
@@ -134,11 +139,11 @@ export class ASStrategy implements ISubjectDetailStrategy {
 export class PGStrategy implements ISubjectDetailStrategy {
   getFields(): SubjectFieldDefinition[] {
     return [
-      text('denominazioneOrga', 'Denominazione Organizzazione'),
-      text('codiceFiscalePG', 'Codice Fiscale'),
-      text('partitaIvaPG', 'Partita IVA'),
-      text('denominazioneUfficio', 'Denominazione Ufficio'),
-      text('indirizziDigitali', 'Indirizzi Digitali (separati da virgola)'),
+      text("denominazioneOrga", "Denominazione Organizzazione"),
+      text("codiceFiscalePG", "Codice Fiscale/Partita IVA"),
+      text("partitaIvaPG", "Partita IVA"),
+      text("denominazioneUfficio", "Denominazione Ufficio"),
+      text("indirizziDigitali", "Indirizzi Digitali (separati da virgola)"),
     ];
   }
 }
@@ -146,9 +151,9 @@ export class PGStrategy implements ISubjectDetailStrategy {
 export class PFStrategy implements ISubjectDetailStrategy {
   getFields(): SubjectFieldDefinition[] {
     return [
-      text('cognomePF', 'Cognome', true),
-      text('nomePF', 'Nome', true),
-      text('indirizziDigitali', 'Indirizzi Digitali (separati da virgola)'),
+      text("cognomePF", "Cognome", true),
+      text("nomePF", "Nome", true),
+      text("indirizziDigitali", "Indirizzi Digitali (separati da virgola)"),
     ];
   }
 }
@@ -156,31 +161,32 @@ export class PFStrategy implements ISubjectDetailStrategy {
 export class RUPStrategy implements ISubjectDetailStrategy {
   getFields(): SubjectFieldDefinition[] {
     return [
-      text('cognomeRUP', 'Cognome RUP'),
-      text('nomeRUP', 'Nome RUP'),
-      text('codiceFiscaleRUP', 'Codice Fiscale RUP'),
-      text('denominazione', 'Denominazione Amministrazione'),
-      text('codiceIPA', 'Codice IPA'),
-      text('denominazioneAOO', 'Denominazione AOO'),
-      text('codiceIPAAOO', 'Codice IPA AOO'),
-      text('denominazioneUOR', 'Denominazione UOR'),
-      text('codiceIPAUOR', 'Codice IPA UOR'),
+      text("cognomeRUP", "Cognome RUP"),
+      text("nomeRUP", "Nome RUP"),
+      text("codiceFiscaleRUP", "Codice Fiscale RUP"),
+      text("denominazione", "Denominazione Amministrazione"),
+      text("codiceIPA", "Codice IPA"),
+      text("denominazioneAOO", "Denominazione AOO"),
+      text("codiceIPAAOO", "Codice IPA AOO"),
+      text("denominazioneUOR", "Denominazione UOR"),
+      text("codiceIPAUOR", "Codice IPA UOR"),
     ];
   }
 }
 
 export class SWStrategy implements ISubjectDetailStrategy {
   getFields(): SubjectFieldDefinition[] {
-    return [text('denominazioneSistema', 'Denominazione Sistema')];
+    return [text("denominazioneSistema", "Denominazione Sistema")];
   }
 }
 
-export const SUBJECT_STRATEGY_REGISTRY: Record<string, ISubjectDetailStrategy> = {
-  [SubjectType.PAI]: new PAIStrategy(),
-  [SubjectType.PAE]: new PAEStrategy(),
-  [SubjectType.AS]: new ASStrategy(),
-  [SubjectType.PG]: new PGStrategy(),
-  [SubjectType.PF]: new PFStrategy(),
-  [SubjectType.RUP]: new RUPStrategy(),
-  [SubjectType.SW]: new SWStrategy(),
-};
+export const SUBJECT_STRATEGY_REGISTRY: Record<string, ISubjectDetailStrategy> =
+  {
+    [SubjectType.PAI]: new PAIStrategy(),
+    [SubjectType.PAE]: new PAEStrategy(),
+    [SubjectType.AS]: new ASStrategy(),
+    [SubjectType.PG]: new PGStrategy(),
+    [SubjectType.PF]: new PFStrategy(),
+    [SubjectType.RUP]: new RUPStrategy(),
+    [SubjectType.SW]: new SWStrategy(),
+  };

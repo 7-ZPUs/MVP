@@ -10,11 +10,18 @@ import {
 import { CommonModule } from '@angular/common';
 import { SubjectDetailFormComponent } from '../subject-detail-form.component/subject-detail-form.component';
 
+import { SubjectCriteria } from '../../../../../../../../shared/domain/metadata/search-subject-filters-models';
 import {
-  SubjectCriteria,
-} from '../../../../../../../../shared/domain/metadata/search-subject-filters-models';
-import { SubjectRoleType, SubjectType } from '../../../../../../../../shared/domain/metadata/search.enum';
+  DocContext,
+  SubjectRoleType,
+  SubjectType,
+} from '../../../../../../../../shared/domain/metadata/subject.enum';
 import { ValidationResult } from '../../../../../../../../shared/domain/metadata';
+import {
+  IDocContextStrategy,
+  RoleDefinition,
+} from '../../../contracts/doc-context-strategy.interface';
+import { DOC_CONTEXT_STRATEGY_REGISTRY } from '../../../strategies/subject-strategy-registry';
 
 type WizardStep = 0 | 1 | 2 | 3;
 
@@ -25,6 +32,7 @@ type WizardStep = 0 | 1 | 2 | 3;
   templateUrl: './subject-filters.component.html',
 })
 export class SubjectFiltersComponent implements OnChanges {
+  @Input() docContext: DocContext = DocContext.ALL;
   @Input() subject: SubjectCriteria[] = [];
   @Input() resetCounter: number = 0;
   @Input() validationResult: ValidationResult | null = null;
@@ -33,8 +41,8 @@ export class SubjectFiltersComponent implements OnChanges {
 
   public subjectsList = signal<SubjectCriteria[]>([]);
 
-  public currentStep = signal(0); 
-  
+  public currentStep = signal(0);
+
   public selectedRole = signal<SubjectRoleType | null>(null);
   public selectedType = signal<SubjectType | null>(null);
   public currentDetails = signal<any | null>(null);
@@ -42,10 +50,23 @@ export class SubjectFiltersComponent implements OnChanges {
   public RoleType = SubjectRoleType;
   public SubjType = SubjectType;
 
+  public availableRoles = signal<RoleDefinition[]>([]);
+  public allowedTypes = signal<SubjectType[]>([]);
+
+  private currentStrategy!: IDocContextStrategy;
+
   public ngOnChanges(changes: SimpleChanges): void {
     if (changes['resetCounter'] && !changes['resetCounter'].firstChange) {
       this.resetWizard();
       this.subjectsList.set([]);
+    }
+
+    if (changes['docContext']) {
+      this.currentStrategy =
+        DOC_CONTEXT_STRATEGY_REGISTRY[this.docContext] ||
+        DOC_CONTEXT_STRATEGY_REGISTRY[DocContext.ALL];
+      this.availableRoles.set(this.currentStrategy.getAvailableRoles());
+      if (this.currentStep() > 0) this.resetWizard();
     }
 
     if (changes['subject']?.currentValue) {
@@ -55,7 +76,15 @@ export class SubjectFiltersComponent implements OnChanges {
 
   public setRole(role: SubjectRoleType): void {
     this.selectedRole.set(role);
-    this.nextStep();
+
+    const types = this.currentStrategy.getAllowedTypes(role);
+    this.allowedTypes.set(types);
+
+    if (types.length === 1) {
+      this.setType(types[0]);
+    } else {
+      this.nextStep();
+    }
   }
 
   public setType(type: SubjectType): void {
@@ -97,7 +126,7 @@ export class SubjectFiltersComponent implements OnChanges {
     if (role && type && details) {
       const newSubject = { role, type, details } as unknown as SubjectCriteria;
       const updatedList = [...this.subjectsList(), newSubject];
-      
+
       this.subjectsList.set(updatedList);
       this.subjectChanged.emit(updatedList);
       this.resetWizard();
