@@ -53,6 +53,11 @@ export class IpcErrorHandlerService implements IErrorHandler {
       severity: ErrorSeverity.ERROR,
       recoverable: true,
     },
+    [ErrorCode.LOAD_CHILDREN_FAILED]: {
+      category: ErrorCategory.DOMAIN,
+      severity: ErrorSeverity.ERROR,
+      recoverable: true,
+    },  
   };
 
   public handle(raw: unknown): AppError {
