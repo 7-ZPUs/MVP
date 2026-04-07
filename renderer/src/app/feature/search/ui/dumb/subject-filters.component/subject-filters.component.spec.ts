@@ -30,6 +30,26 @@ describe('SubjectFiltersComponent (Wizard)', () => {
     } as any;
     component.SubjType = { PAI: 'PAI', PAE: 'PAE', PG: 'PG', PF: 'PF' } as any;
 
+    // FIX: Initialize a mock strategy to bypass the undefined 'currentStrategy' errors.
+    // This simulates the behavior of ngOnChanges resolving the registry strategy.
+    (component as any).currentStrategy = {
+      getAvailableRoles: vi.fn().mockReturnValue([
+        { key: 'AUTORE', label: 'Autore' },
+        { key: 'DESTINATARIO', label: 'Destinatario' },
+        { key: 'OPERATORE', label: 'Operatore' },
+        { key: 'ASSEGNATARIO', label: 'Assegnatario' },
+        { key: 'REGISTRAZIONE', label: 'Registrazione' },
+        { key: 'ALTRO', label: 'Altro' },
+        { key: 'RGD', label: 'RGD' },
+        { key: 'RSP', label: 'RSP' },
+      ]),
+      getAllowedTypes: vi.fn().mockReturnValue(['PAI', 'PAE', 'PG', 'PF']),
+    };
+    
+    // Set the signals to match the mock data so the HTML renders the required buttons
+    component.availableRoles.set((component as any).currentStrategy.getAvailableRoles());
+    component.allowedTypes.set((component as any).currentStrategy.getAllowedTypes());
+
     fixture.detectChanges();
   });
 

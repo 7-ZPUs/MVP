@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { SubjectRoleType, SubjectType } from '../../../../../../shared/domain/metadata/search.enum';
+import { SubjectRoleType, SubjectType } from '../../../../../../shared/domain/metadata/subject.enum';
 import { hasMeaningfulAdvancedFilters, toSearchRequestDTO } from './search-request.mapper';
 
 describe('search-request.mapper', () => {
