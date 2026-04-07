@@ -9,7 +9,12 @@
   
   <div class="main-content">
     
-    <aside class="sidebar">
+    <div class="sidebar-toggle-tab" (click)="isSidebarCollapsed = !isSidebarCollapsed">
+      <span class="tab-arrow" [class.rotated]="isSidebarCollapsed">◀</span>
+      <span>Filtri</span>
+    </div>
+
+    <aside class="sidebar" [class.collapsed]="isSidebarCollapsed">
       <app-advanced-filter-panel
         [filters]="state().filters"
         [validator]="validateFilters"
@@ -18,8 +23,7 @@
         (validationResult)="onLiveValidationChanged($event)"
         (filtersSubmit)="onAdvancedSearchRequested($event)"
         (filtersReset)="onFiltersReset()"
-      >
-      </app-advanced-filter-panel>
+      ></app-advanced-filter-panel>
     </aside>
 
     <main class="content-area">

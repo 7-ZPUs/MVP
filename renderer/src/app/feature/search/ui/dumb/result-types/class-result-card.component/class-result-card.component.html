@@ -14,4 +14,7 @@
   <div class="card-meta">
     <span class="badge class-badge">CLASSE</span>
   </div>
+  <span class="integrity-badge-base" [ngClass]="result.integrityStatus | integrityClass">
+    {{ result.integrityStatus }}
+  </span>
 </div>

@@ -128,12 +128,17 @@ export class BrowsingIpcAdapter {
         if (!file) return null;
         const fs = require("fs");
         const path = require("path");
+        const dipPath = container.resolve<string>("DIP_PATH_TOKEN");
         try {
           const dipPath = process.env.DIP_PATH || process.cwd();
           const absolutePath = path.resolve(dipPath, file.getPath());
           return fs.readFileSync(absolutePath);
         } catch (err) {
-          console.error("Error reading file buffer", err);
+          const errorMsg = err instanceof Error ? err.message : String(err);
+          console.error(
+            `[FILE_READ] Error reading file with ID ${id}: ${errorMsg}`,
+            err,
+          );
           return null;
         }
       },

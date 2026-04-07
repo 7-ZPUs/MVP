@@ -12,10 +12,13 @@
     <span class="document-id">ID Fascicolo: {{ result.uuid }}</span>
   </div>
   <div class="card-meta">
-    <span class="badge aggregate-badge">FASCICOLO</span>
+    <span class="badge aggregate-badge">AGGREGAZIONE DOCUMENTALE</span>
 
     @if (isSemanticSearch && result.score !== null && result.score !== undefined) {
       <span class="score-badge">Score: {{ result.score | number: '1.0-2' }}</span>
     }
+    <span class="integrity-badge-base" [ngClass]="result.integrityStatus | integrityClass">
+      {{ result.integrityStatus }}
+    </span>
   </div>
 </div>

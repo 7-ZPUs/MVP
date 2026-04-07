@@ -12,6 +12,8 @@ const modelsPath = isDev
 
 const numThreads = Math.max(1, Math.floor(os.cpus().length / 2));
 
+const dynamicImport = new Function('specifier', 'return import(specifier)');
+
 @injectable()
 export class WordEmbedding implements IWordEmbedding {
     private embedder: any | null = null;
@@ -25,7 +27,7 @@ export class WordEmbedding implements IWordEmbedding {
         }
 
         // Dynamic import per evitare ERR_REQUIRE_ESM
-        const { pipeline, env } = await import('@xenova/transformers');
+        const { pipeline, env } = await dynamicImport('@xenova/transformers');
 
         env.localModelPath    = modelsPath;
         env.allowLocalModels  = true;
