@@ -1,1 +1,24 @@
 /* You can add global styles to this file, and also import other style files */
+@use '@angular/cdk/overlay-prebuilt.css';
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
+}
+
+app-root {
+  display: block;
+  height: 100%;
+  width: 100%;
+}

@@ -10,6 +10,8 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 
+import { DocumentType } from '../../../../../../../../shared/domain/metadata/search.enum';
+
 import {
   SearchFilters,
   ValidationResult,
@@ -29,6 +31,7 @@ import { AggregateFiltersComponent } from '../../dumb/aggregate-filters.componen
 import { CustomMetaFiltersComponent } from '../../dumb/custom-meta-filters.component/custom-meta-filters.component';
 import { SubjectFiltersComponent } from '../../dumb/subject-filters.component/subject-filters.component';
 import { FilterRulesManager, FilterUIState } from './filter-rules.manager';
+import { DocContext } from '@shared/domain/metadata/subject.enum';
 
 @Component({
   selector: 'app-advanced-filter-panel',
@@ -128,6 +131,29 @@ export class AdvancedFilterPanelComponent implements OnInit, OnChanges {
     });
   }
 
+  public get currentDocContext(): DocContext {
+  const formValues = this.panelForm?.value || {};
+  const tipoOggetto = formValues.common?.tipoOggetto;
+  const tipoDocumento = formValues.common?.tipoDocumento;
+
+  if (this.uiState.disableDiDai) {
+    return DocContext.AGG;
+  }
+
+  if (this.uiState.disableAggregate) {
+    if (tipoOggetto === 'DAI' || tipoDocumento === DocumentType.DOCUMENTO_AMMINISTRATIVO_INFORMATICO) {
+      return DocContext.DAI;
+    }
+    return DocContext.DI;
+  }
+
+  if (tipoOggetto === 'DI') return DocContext.DI;
+  if (tipoOggetto === 'DAI') return DocContext.DAI;
+  if (tipoOggetto === 'AGG') return DocContext.AGG;
+
+  return DocContext.ALL;
+}
+
   public ngOnChanges(changes: SimpleChanges): void {}
 
   public get effectiveValidationResult(): ValidationResult | null {
@@ -149,8 +175,8 @@ export class AdvancedFilterPanelComponent implements OnInit, OnChanges {
     this.panelForm.patchValue({ aggregate: values }, { emitEvent: true });
   }
 
-  public onEntriesChanged(entries: CustomFilterValues | null): void {
-    this.panelForm.patchValue({ customMeta: entries }, { emitEvent: true });
+  public onEntriesChanged(entries: CustomFilterValues[] | null): void {
+   this.panelForm.patchValue({ customMeta: entries }, { emitEvent: true });
   }
 
   public onSubjectChanged(subject: SubjectCriteria[]): void {

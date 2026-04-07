@@ -1,3 +1,5 @@
+import { PFStrategy, PGStrategy } from "./search-subject-filters-models";
+
 export enum SearchQueryType {
   FREE = "FREE",
   CLASS_NAME = "CLASS",
@@ -170,27 +172,4 @@ export enum ProcedimentoFaseType {
 export enum AssegnazioneType {
   COMPETENZA = "PER COMPETENZA",
   CONOSCIENZA = "PER CONOSCIENZA",
-}
-
-export enum SubjectType {
-  PAI = "PAI",
-  PAE = "PAE",
-  AS = "AS",
-  PG = "PG",
-  PF = "PF",
-  RUP = "RUP",
-  SW = "SW",
-  ALTRO = "",
-}
-
-export enum SubjectRoleType {
-  ASSEGNATARIO = "ASSEGNATARIO",
-  REGISTRAZIONE = "SOGGETTO CHE EFFETTUA LA REGISTRAZIONE",
-  MITTENTE = "MITTENTE",
-  DESTINATARIO = "DESTINATARIO",
-  ALTRO = "ALTRO",
-  AUTORE = "AUTORE",
-  OPERATORE = "OPERATORE",
-  RGD = "RESPONSABILE DELLA GESTIONE DOCUMENTALE",
-  RSP = "RESPONSABILE DEL SERVIZIO PROTOCOLLO",
 }

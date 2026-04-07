@@ -18,25 +18,59 @@ import { MetadataExtractor } from '../../../shared/utils/metadata-extractor.util
 
 // List of all expected parent XML blocks that we already parse manually
 const KNOWN_DOCUMENT_XSD_ROOT_BLOCKS = new Set<string>([
-  'IdDoc', 'ModalitaDiFormazione', 'TipologiaDocumentale', 'DatiDiRegistrazione',
-  'Soggetti', 'ChiaveDescrittiva', 'Allegati', 'Classificazione', 'Riservato',
-  'IdentificativoDelFormato', 'Verifica', 'Agg', 'IdIdentificativoDocumentoPrimario',
-  'NomeDelDocumento', 'VersioneDelDocumento', 'TracciatureModificheDocumento',
-  'TempoDiConservazione', 'Note', 
+  'IdDoc',
+  'ModalitaDiFormazione',
+  'TipologiaDocumentale',
+  'DatiDiRegistrazione',
+  'Soggetti',
+  'ChiaveDescrittiva',
+  'Allegati',
+  'Classificazione',
+  'Riservato',
+  'IdentificativoDelFormato',
+  'Verifica',
+  'Agg',
+  'IdIdentificativoDocumentoPrimario',
+  'NomeDelDocumento',
+  'VersioneDelDocumento',
+  'TracciatureModificheDocumento',
+  'TempoDiConservazione',
+  'Note',
   // We can choose to manually skip CustomMetadata wrappers from generic extraction
-  // so we process them via extractCustomDataPairs instead. Or we can just let 
+  // so we process them via extractCustomDataPairs instead. Or we can just let
   // generic extraction handle them! We'll just let generic handle EVERYTHING unmapped.
-  'CustomMetadata', 'ArchimemoData'
+  'CustomMetadata',
+  'ArchimemoData',
 ]);
 
 /**
  * Maps the core identity details of the document.
  */
-function mapIdentityAndMimeType(dto: DocumentDTO, extractor: MetadataExtractor): { id: string; fileName: string; mimeType: MimeType } {
+function mapIdentityAndMimeType(
+  dto: DocumentDTO,
+  extractor: MetadataExtractor,
+): { id: string; fileName: string; mimeType: MimeType } {
+  const fileName = extractor.getString('NomeDelDocumento', `Documento ${dto.id}`);
+  let mimeType = MimeType.UNSUPPORTED;
+
+  const ext = fileName.split('.').pop()?.toLowerCase();
+
+  if (ext) {
+    if (['pdf'].includes(ext)) {
+      mimeType = MimeType.PDF;
+    } else if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'].includes(ext)) {
+      mimeType = MimeType.IMAGE;
+    } else if (['txt', 'csv', 'md'].includes(ext)) {
+      mimeType = MimeType.TEXT;
+    } else if (['xml'].includes(ext)) {
+      mimeType = MimeType.XML;
+    }
+  }
+
   return {
     id: String(dto.id),
-    fileName: extractor.getString('NomeDelDocumento', `Documento ${dto.id}`),
-    mimeType: MimeType.PDF, // For simplicity. A real app might infer based on Format string or file extension.
+    fileName,
+    mimeType,
   };
 }
 
@@ -48,7 +82,7 @@ function mapBaseMetadata(extractor: MetadataExtractor): DocumentMetadata {
     nome: extractor.getString('NomeDelDocumento'),
     descrizione: extractor.getString('Note'),
     oggetto: extractor.getString('Oggetto'),
-    paroleChiave: extractor.findAllValues('ParoleChiave').map(v => String(v)),
+    paroleChiave: extractor.findAllValues('ParoleChiave').map((v) => String(v)),
     tipoDocumentale: extractor.getString('TipologiaDocumentale', 'Generico'),
     modalitaFormazione: extractor.getString('ModalitaDiFormazione', 'Generica'),
     riservatezza: extractor.getString('Riservato', 'false'),
@@ -74,9 +108,14 @@ function mapClassification(extractor: MetadataExtractor): ClassificationInfo {
 function mapRegistration(extractor: MetadataExtractor): RegistrationData {
   return {
     flusso: extractor.getString('TipologiaDiFlusso', 'N/A'),
-    tipoRegistro: extractor.getString('Repertorio_Registro', '') || extractor.getString('TipoRegistro', 'N/A'),
-    data: extractor.getString('DataRegistrazioneDocumento', '') || extractor.getString('DataProtocollazioneDocumento', 'N/A'),
-    numero: extractor.getString('NumeroRegistrazioneDocumento', '') || extractor.getString('NumeroProtocolloDocumento', 'N/A'),
+    tipoRegistro:
+      extractor.getString('Repertorio_Registro', '') || extractor.getString('TipoRegistro', 'N/A'),
+    data:
+      extractor.getString('DataRegistrazioneDocumento', '') ||
+      extractor.getString('DataProtocollazioneDocumento', 'N/A'),
+    numero:
+      extractor.getString('NumeroRegistrazioneDocumento', '') ||
+      extractor.getString('NumeroProtocolloDocumento', 'N/A'),
     codice: extractor.getString('CodiceRegistro', 'N/A'),
   };
 }
@@ -142,37 +181,39 @@ function mapConservationProcess(extractor: MetadataExtractor): ConservationProce
 function mapSubjects(extractor: MetadataExtractor): Subject[] {
   const ruoli = extractor.findAllValues('Ruolo');
   if (!ruoli || ruoli.length === 0) return [];
-  
+
   return ruoli.map((ruoloNode: any) => {
     const rExtractor = new MetadataExtractor(Array.isArray(ruoloNode) ? ruoloNode : [ruoloNode]);
     const tipoRuolo = rExtractor.getString('TipoRuolo', 'Sconosciuto');
-    
+
     // Tentativo di inferire il tipo in base ai tag XSD (PF, PG, PAI, PAE, SW, AS)
-    let tipo: SubjectType = SubjectType.PAI; 
+    let tipo: SubjectType = SubjectType.PAI;
     const campiSpecifici: Record<string, string> = {};
-    
+
     if (rExtractor.findValue('PF')) {
-       tipo = SubjectType.PF;
-       campiSpecifici['Nome'] = rExtractor.getString('Nome');
-       campiSpecifici['Cognome'] = rExtractor.getString('Cognome');
-       campiSpecifici['CodiceFiscale'] = rExtractor.getString('CodiceFiscale');
+      tipo = SubjectType.PF;
+      campiSpecifici['Nome'] = rExtractor.getString('Nome');
+      campiSpecifici['Cognome'] = rExtractor.getString('Cognome');
+      campiSpecifici['CodiceFiscale'] = rExtractor.getString('CodiceFiscale');
     } else if (rExtractor.findValue('PG')) {
-       tipo = SubjectType.PG;
-       campiSpecifici['DenominazioneOrganizzazione'] = rExtractor.getString('DenominazioneOrganizzazione');
-       campiSpecifici['CodiceFiscale_PartitaIva'] = rExtractor.getString('CodiceFiscale_PartitaIva');
+      tipo = SubjectType.PG;
+      campiSpecifici['DenominazioneOrganizzazione'] = rExtractor.getString(
+        'DenominazioneOrganizzazione',
+      );
+      campiSpecifici['CodiceFiscale_PartitaIva'] = rExtractor.getString('CodiceFiscale_PartitaIva');
     } else if (rExtractor.findValue('PAI')) {
-       tipo = SubjectType.PAI;
-       campiSpecifici['IPAAmm'] = rExtractor.getString('IPAAmm');
+      tipo = SubjectType.PAI;
+      campiSpecifici['IPAAmm'] = rExtractor.getString('IPAAmm');
     } else if (rExtractor.findValue('AS') || rExtractor.findValue('Assegnatario')) {
-       tipo = SubjectType.AS;
+      tipo = SubjectType.AS;
     } else {
-       tipo = SubjectType.PG; // Fallback
+      tipo = SubjectType.PG; // Fallback
     }
 
     return {
       ruolo: tipoRuolo,
       tipo: tipo,
-      campiSpecifici
+      campiSpecifici,
     };
   });
 }
@@ -199,7 +240,9 @@ export function mapDocumentDtoToDetail(dto: any): DocumentDetail {
 
   // We bring in both formally packed custom pairs + all randomly unmapped external nodes
   const explicitCustomData = extractor.extractCustomDataPairs(['CustomMetadata', 'ArchimemoData']);
-  const wildUnmappedData = extractor.extractGenericUnmappedCustomMetadata(KNOWN_DOCUMENT_XSD_ROOT_BLOCKS);
+  const wildUnmappedData = extractor.extractGenericUnmappedCustomMetadata(
+    KNOWN_DOCUMENT_XSD_ROOT_BLOCKS,
+  );
 
   // Merge the arrays
   const mergedCustomMetadata = [...explicitCustomData, ...wildUnmappedData];
@@ -222,6 +265,6 @@ export function mapDocumentDtoToDetail(dto: any): DocumentDetail {
       classeDocumentale: extractor.getString('ClasseDocumentale', 'N/A'),
       uuid: dto.uuid || 'N/A',
     },
-    customMetadata: mergedCustomMetadata
+    customMetadata: mergedCustomMetadata,
   };
 }

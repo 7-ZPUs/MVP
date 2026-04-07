@@ -1,5 +1,4 @@
 <div class="filter-panel">
-
   <div
     class="panel-body"
     style="padding: 1rem; border: 1px solid #e2e8f0; border-top: none; border-radius: 0 0 6px 6px"
@@ -31,9 +30,10 @@
 
       <div class="filter-section" style="margin-bottom: 1.5rem">
         <h4 style="margin-bottom: 0.5rem; color: #334155">Dati Documento (DiDai)</h4>
-        <app-di-dai-filters 
+        <app-di-dai-filters
           [disabled]="uiState.disableDiDai"
-          [disabledReason]="uiState.motivoBloccoDiDai" [filters]="$any(filters.diDai || {})"
+          [disabledReason]="uiState.motivoBloccoDiDai"
+          [filters]="$any(filters.diDai || {})"
           [filters]="$any(filters.diDai || {})"
           [validationResult]="effectiveValidationResult"
           (filtersChanged)="onDiDaiFiltersChanged($event)"
@@ -45,7 +45,8 @@
         <h4 style="margin-bottom: 0.5rem; color: #334155">Dati di Aggregazione</h4>
         <app-aggregate-filters
           [disabled]="uiState.disableAggregate"
-          [disabledReason]="uiState.motivoBloccoAggregate" [filters]="$any(filters.aggregate || {})"
+          [disabledReason]="uiState.motivoBloccoAggregate"
+          [filters]="$any(filters.aggregate || {})"
           [filters]="$any(filters.aggregate || {})"
           [validationResult]="effectiveValidationResult"
           (filtersChanged)="onAggregateFiltersChanged($event)"
@@ -67,6 +68,7 @@
         <h4 style="margin-bottom: 0.5rem; color: #334155">Soggetti</h4>
         <app-subject-filters
           [subject]="filters.subject || []"
+          [docContext]="currentDocContext"
           [validationResult]="effectiveValidationResult"
           (subjectChanged)="onSubjectChanged($event)"
         >

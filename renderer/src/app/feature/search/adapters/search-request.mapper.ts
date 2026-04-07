@@ -4,18 +4,11 @@ import {
   SearchGroupDTO,
   SearchRequestDTO,
 } from '../../../../../../shared/domain/metadata/search.models';
+import { DocumentType } from '../../../../../../shared/domain/metadata/search.enum';
 import {
-  AggregationType,
-  AssegnazioneType,
-  DIDAIFormation,
-  DocumentType,
-  FascicoloType,
-  ModificationType,
-  ProcedimentoFaseType,
-  RegisterType,
   SubjectRoleType,
   SubjectType,
-} from '../../../../../../shared/domain/metadata/search.enum';
+} from '../../../../../../shared/domain/metadata/subject.enum';
 import { SubjectCriteria } from '../../../../../../shared/domain/metadata/search-subject-filters-models';
 
 type StringMode = 'LIKE' | 'EQ';
@@ -26,7 +19,7 @@ const PATH_REGEX = /^\w+(\.\w+)*$/;
 
 const SUBJECT_ROLE_WRAPPER: Record<string, string> = {
   [SubjectRoleType.ASSEGNATARIO]: 'Assegnatario',
-  [SubjectRoleType.REGISTRAZIONE]: 'SoggettoCheEffettuaLaRegistrazione',
+  [SubjectRoleType.SOGGETTO_REGISTRAZIONE]: 'SoggettoCheEffettuaLaRegistrazione',
   [SubjectRoleType.MITTENTE]: 'Mittente',
   [SubjectRoleType.DESTINATARIO]: 'Destinatario',
   [SubjectRoleType.ALTRO]: 'Altro',
@@ -38,7 +31,7 @@ const SUBJECT_ROLE_WRAPPER: Record<string, string> = {
 
 const SUBJECT_ROLE_LABEL: Record<string, string> = {
   [SubjectRoleType.ASSEGNATARIO]: 'Assegnatario',
-  [SubjectRoleType.REGISTRAZIONE]: 'Soggetto Che Effettua La Registrazione',
+  [SubjectRoleType.SOGGETTO_REGISTRAZIONE]: 'Soggetto Che Effettua La Registrazione',
   [SubjectRoleType.MITTENTE]: 'Mittente',
   [SubjectRoleType.DESTINATARIO]: 'Destinatario',
   [SubjectRoleType.ALTRO]: 'Altro',

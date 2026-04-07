@@ -54,10 +54,10 @@ export class IpcErrorHandlerService implements IErrorHandler {
       recoverable: true,
     },
     [ErrorCode.LOAD_CHILDREN_FAILED]: {
-      category: ErrorCategory.IPC,
-      severity: ErrorSeverity.FATAL,
-      recoverable: false
-    }
+      category: ErrorCategory.DOMAIN,
+      severity: ErrorSeverity.ERROR,
+      recoverable: true,
+    },  
   };
 
   public handle(raw: unknown): AppError {

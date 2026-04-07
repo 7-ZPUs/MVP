@@ -1,4 +1,5 @@
-import { FilterFieldType, SubjectRoleType, SubjectType } from "./search.enum";
+import { FilterFieldType } from "./search.enum";
+import { SubjectRoleType, SubjectType } from "./subject.enum";
 
 export interface SubjectDetails {}
 

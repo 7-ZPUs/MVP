@@ -11,7 +11,8 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
 
-import { SubjectType, FilterFieldType } from '../../../../../../../../shared/domain/metadata/search.enum';
+import { FilterFieldType } from '../../../../../../../../shared/domain/metadata/search.enum';
+import { SubjectType } from '../../../../../../../../shared/domain/metadata/subject.enum';
 import {
   SubjectDetails,
   SubjectFieldDefinition,

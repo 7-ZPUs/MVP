@@ -1,6 +1,8 @@
 :host {
-  display: block;
-  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
 }
 
 .status-screen {
@@ -62,9 +64,9 @@
 
 .layout {
   display: flex;
-  height: calc(100vh - 58px);
+  flex: 1;
+  overflow: hidden;
 }
-
 .sidebar {
   width: 320px;
   min-width: 320px;

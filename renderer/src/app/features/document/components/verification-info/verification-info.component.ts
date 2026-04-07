@@ -45,6 +45,10 @@ import { VerificationInfo } from '../../domain/document.models';
         flex-shrink: 0;
       }
       .value {
+        flex: 1;
+        min-width: 0;
+        word-break: break-word;
+        overflow-wrap: anywhere;
         color: #1e293b;
         font-weight: 500;
       }
