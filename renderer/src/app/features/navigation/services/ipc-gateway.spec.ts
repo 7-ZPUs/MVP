@@ -71,11 +71,11 @@ describe('IpcGateway', () => {
   // mapping DTO → DipTreeNode
   // ─────────────────────────────────────────────
 
-  it('getDocumentClasses mappa correttamente i DTO', async () => {
+  it('getDocumentClasses usa il nome se presente', async () => {
     mockCache.get.mockReturnValue(null);
 
     mockBridge.invoke.mockResolvedValue([
-      { id: 10, uuid: 'ABC' }
+      { id: 10, uuid: 'ABC', name: 'Classe Contratti' }
     ]);
 
     const parent: DipTreeNode = { id: 1, name: '', type: 'dip', hasChildren: true };
@@ -85,10 +85,57 @@ describe('IpcGateway', () => {
     expect(result).toEqual([
       {
         id: 10,
-        name: 'ABC',
+        name: 'Classe Contratti',
         type: 'documentClass',
         hasChildren: true,
       }
+    ]);
+  });
+
+  it('getDocumentClasses usa fallback tipo + prime 5 cifre id se il nome manca', async () => {
+    mockCache.get.mockReturnValue(null);
+
+    mockBridge.invoke.mockResolvedValue([
+      { id: 1234567, uuid: 'ABC', name: '' }
+    ]);
+
+    const parent: DipTreeNode = { id: 1, name: '', type: 'dip', hasChildren: true };
+
+    const result = await gateway.getChildren(parent);
+
+    expect(result).toEqual([
+      {
+        id: 1234567,
+        name: 'Classe Documentale 12345',
+        type: 'documentClass',
+        hasChildren: true,
+      }
+    ]);
+  });
+
+  it('getProcesses usa metadata oppure fallback tipo + id', async () => {
+    mockCache.get.mockReturnValue(null);
+
+    mockBridge.invoke.mockResolvedValue([
+      {
+        id: 10,
+        uuid: 'PROC-A',
+        metadata: [{ name: 'Oggetto', value: 'Processo Contratti', type: 'string' }],
+      },
+      {
+        id: 987654,
+        uuid: 'PROC-B',
+        metadata: [],
+      },
+    ]);
+
+    const parent: DipTreeNode = { id: 1, name: '', type: 'documentClass', hasChildren: true };
+
+    const result = await gateway.getChildren(parent);
+
+    expect(result.map((node) => node.name)).toEqual([
+      'Processo Contratti',
+      'Processo 98765',
     ]);
   });
 
@@ -103,6 +150,7 @@ describe('IpcGateway', () => {
 
     const result = await gateway.getChildren(parent);
 
+    expect(result[0].name).toBe('file.pdf');
     expect(result[0].type).toBe('file');
     expect(result[0].hasChildren).toBe(false);
   });
