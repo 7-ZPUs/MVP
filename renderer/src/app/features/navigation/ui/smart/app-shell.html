@@ -1,19 +1,22 @@
-<ng-container *ngIf="state().phase === 'loading'">
+@if (state().phase === 'loading') {
   <div class="status-screen">Caricamento DIP...</div>
-</ng-container>
+}
 
-<ng-container *ngIf="state().phase === 'idle' && state().rootError as rootError">
+@if (state().phase === 'idle' && state().rootError; as rootError) {
   <div class="status-screen">
     <app-inline-error [error]="rootError"></app-inline-error>
     <button class="retry-button" type="button" (click)="retryLoadRootNodes()">Riprova</button>
   </div>
-</ng-container>
+}
 
-<ng-container *ngIf="state().phase === 'ready'">
+@if (state().phase === 'ready') {
   <header class="toolbar">
     <h1 class="title">DIP Explorer</h1>
 
     <div class="toolbar-actions">
+      <button class="toolbar-button" type="button" (click)="navigateToIntegrity()">
+        Sezione Integrità
+      </button>
       <button class="toolbar-button" type="button" (click)="navigateToBrowse()">Esplora</button>
       <button class="toolbar-button" type="button" (click)="navigateToSearch()">Ricerca</button>
       <button class="toolbar-button" type="button" (click)="toggleSidebar()">
@@ -31,4 +34,4 @@
       <router-outlet></router-outlet>
     </main>
   </div>
-</ng-container>
+}

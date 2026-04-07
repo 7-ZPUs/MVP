@@ -31,6 +31,12 @@ import { IntegrityValidPanelComponent } from '../../dumb/integrity-valid-panel/i
         </button>
       </header>
 
+      @if (facade.error()) {
+        <div class="error-banner" role="alert">
+          <strong>Errore durante la verifica:</strong> {{ facade.error() }}
+        </div>
+      }
+
       @if (facade.isVerifying()) {
         <section class="progress-section" aria-busy="true" aria-describedby="progress-status">
           <h3 id="progress-status">Ricalcolo hash in corso...</h3>
@@ -112,6 +118,15 @@ import { IntegrityValidPanelComponent } from '../../dumb/integrity-valid-panel/i
         outline-offset: 3px;
       }
 
+      .error-banner {
+        background-color: #fee2e2;
+        color: #991b1b;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 2rem;
+        border-left: 4px solid #ef4444;
+      }
+
       .progress-section {
         background: white;
         padding: 3rem;
@@ -178,7 +193,10 @@ export class IntegrityDashboardComponent implements OnInit {
   startVerification() {
     // Il comando di verifica ora aggiornerà gli hash e poi richiamerà in automatico la loadOverview!
     this.facade.verifyDip(this.currentDipId).then(() => {
-      this.facade.loadOverview(this.currentDipId);
+      // Aggiorniamo l'overview solo se non si sono verificati errori gravi durante la verifica
+      if (!this.facade.error()) {
+        this.facade.loadOverview(this.currentDipId);
+      }
     });
   }
 }

@@ -5,10 +5,7 @@ import { RouterOutlet, Router } from '@angular/router';
 import { DipFacade } from '../../services/dip-facade';
 import { DipTree } from './dip-tree.component';
 import { DipTreeNode } from '../../contracts/dip-tree-node';
-import {
-  buildDetailRoute,
-  mapDipNodeTypeToDetailItemType,
-} from '../../domain/navigation-routing';
+import { buildDetailRoute, mapDipNodeTypeToDetailItemType } from '../../domain/navigation-routing';
 import { InlineErrorComponent } from '../dumb/inline-error.component';
 
 @Component({
@@ -36,6 +33,10 @@ export class AppShellComponent implements OnInit {
 
   toggleSidebar(): void {
     this.isSidebarCollapsed.update((collapsed) => !collapsed);
+  }
+
+  navigateToIntegrity(): void {
+    void this.router.navigate(['/integrity-dashboard']);
   }
 
   navigateToBrowse(): void {

@@ -6,7 +6,10 @@ import { Router } from '@angular/router';
 import { AGGREGATE_FACADE_TOKEN } from '../../../../aggregate/contracts/IAggregateFacade';
 import { DOCUMENT_FACADE_TOKEN } from '../../../../document/contracts/IDocumentFacade';
 import { NODE_FALLBACK_FACADE_TOKEN } from '../../../contracts/INodeFallbackFacade';
-import { NodeFallbackItemType, NodeFallbackRelatedItem } from '../../../domain/node-fallback.models';
+import {
+  NodeFallbackItemType,
+  NodeFallbackRelatedItem,
+} from '../../../domain/node-fallback.models';
 
 // Importiamo la UI
 import { MetadataPanelComponent } from '../../dumb/metadata-panel/metadata-panel.component';
@@ -40,7 +43,15 @@ import { NodeFallbackPanelComponent } from '../../dumb/node-fallback-panel/node-
   template: `
     <div class="page-layout">
       @if (!isLoading() && !currentError() && richItemType(); as richType) {
-        <app-document-actions [itemId]="itemId()" [itemType]="richType"></app-document-actions>
+        <app-document-actions
+          [itemId]="itemId()"
+          [itemType]="richType"
+          [initialVerificationStatus]="
+            richType === 'DOCUMENT'
+              ? documentState().detail?.integrityStatus
+              : aggregateState().detail?.processSummary?.integrityStatus
+          "
+        ></app-document-actions>
 
         @if (richType === 'DOCUMENT') {
           <app-document-toolbar

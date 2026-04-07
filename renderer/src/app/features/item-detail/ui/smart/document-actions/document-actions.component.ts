@@ -1,4 +1,4 @@
-import { Component, inject, input } from '@angular/core';
+import { Component, inject, input, signal, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 // Importiamo i Token appena creati!
@@ -18,6 +18,14 @@ import { INTEGRITY_FACADE_TOKEN } from '../../../../../shared/interfaces/integri
       </div>
 
       <div class="right-actions">
+        <!-- Mostra etichetta di stato verifica -->
+        @if (verificationStatus()) {
+          <div class="status-label" [ngClass]="verificationStatus()?.toLowerCase() || ''">
+            {{ verificationStatus() === 'VALID' ? '✅ Verificato' : 
+               verificationStatus() === 'INVALID' ? '❌ Corrotto' : '⚠️ Sconosciuto' }}
+          </div>
+        }
+
         <button
           class="action-btn btn-verify"
           [disabled]="integrityFacade.isVerifying()"
@@ -74,6 +82,21 @@ import { INTEGRITY_FACADE_TOKEN } from '../../../../../shared/interfaces/integri
       .right-actions {
         display: flex;
         gap: 0.75rem;
+        align-items: center;
+      }
+      .status-label {
+        padding: 0.4rem 0.75rem;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        font-weight: bold;
+        background: #334155;
+        color: #f8fafc;
+      }
+      .status-label.valid {
+        background: #059669;
+      }
+      .status-label.invalid {
+        background: #dc2626;
       }
       .action-btn {
         display: flex;
@@ -126,7 +149,7 @@ import { INTEGRITY_FACADE_TOKEN } from '../../../../../shared/interfaces/integri
           transform: rotate(360deg);
         }
       }
-    `,
+    `
   ],
 })
 export class DocumentActionsComponent {
@@ -134,9 +157,27 @@ export class DocumentActionsComponent {
   itemId = input.required<string>();
   itemType = input.required<'DOCUMENT' | 'AGGREGATE'>();
 
+  // Stato iniziale preso da db/back-end
+  initialVerificationStatus = input<string | undefined | null>();
+
   // Iniezione tramite Token (Dependency Inversion!)
   outputFacade = inject(OUTPUT_FACADE_TOKEN);
   integrityFacade = inject(INTEGRITY_FACADE_TOKEN);
+
+  // Deriviamo lo stato: se abbiamo appena fatto noi una verifica usiamo quel valore (manualStatus),
+  // altrimenti usiamo quello passato inizialmente dal parent
+  manualStatus = signal<string | null>(null);
+
+  resetManualStatusEffect = effect(() => {
+    // Quando itemId() o itemType() cambiano, resettiamo il manualStatus locale
+    const id = this.itemId();
+    const type = this.itemType();
+    this.manualStatus.set(null);
+  }, { allowSignalWrites: true });
+
+  verificationStatus = computed(() => {
+    return this.manualStatus() || this.initialVerificationStatus() || null;
+  });
 
   onExport() {
     this.outputFacade.exportPdf({
@@ -153,6 +194,11 @@ export class DocumentActionsComponent {
   }
 
   onVerify() {
-    this.integrityFacade.verifyDocument(this.itemId());
+    this.integrityFacade.verifyItem(this.itemId(), this.itemType()).then((status) => {
+      this.manualStatus.set(status);
+    }).catch(err => {
+      console.error('Verification failed', err);
+      this.manualStatus.set('UNKNOWN');
+    });
   }
 }

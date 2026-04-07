@@ -269,5 +269,6 @@ export function mapDocumentDtoToDetail(dto: any): DocumentDetail {
       uuid: dto.uuid || 'N/A',
     },
     customMetadata: mergedCustomMetadata,
+    integrityStatus: dto.integrityStatus,
   };
 }

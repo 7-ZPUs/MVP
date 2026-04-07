@@ -6,11 +6,15 @@ import { IntegrityStatusEnum } from '../../../shared/domain/value-objects/Integr
 import { IntegrityNodeVM, IntegrityOverviewStats } from '../domain/integrity.view-models';
 
 import { IIntegrityFacade } from '../contracts/IIntegrityFacade';
+import { AppError } from '../../../shared/domain';
+import { IpcCacheService } from '../../../shared/infrastructure/ipc-cache.service';
+
 
 @Injectable()
 export class IntegrityFacade implements IIntegrityFacade {
   private readonly gateway = inject(IntegrityIpcGateway);
   private readonly errorHandler = inject(IpcErrorHandlerService);
+  private readonly cacheService = inject(IpcCacheService);
 
   private readonly _isVerifying = signal<boolean>(false);
   private readonly _error = signal<string | null>(null);
@@ -40,6 +44,7 @@ export class IntegrityFacade implements IIntegrityFacade {
    */
   async loadOverview(dipId: number): Promise<void> {
     this._isVerifying.set(true);
+    this._error.set(null);
 
     try {
       const classes = await this.gateway.getClassesByDipId(dipId);
@@ -136,6 +141,8 @@ export class IntegrityFacade implements IIntegrityFacade {
     try {
       // 1. Comando di verifica (Command)
       const status = await this.gateway.checkDipIntegrity(dipId);
+      this.cacheService.invalidatePrefix('aggregate:');
+      this.cacheService.invalidatePrefix('document:');
       this._currentDipStatus.set(status);
 
       // 2. Query per ricaricare l'albero UI
@@ -148,7 +155,7 @@ export class IntegrityFacade implements IIntegrityFacade {
       const enrichedError =
         typeof rawError === 'object' && rawError !== null ? rawError : new Error(String(rawError));
 
-      (enrichedError as any).source = 'IntegrityFacade.verifyDip';
+      (enrichedError as AppError).source = 'IntegrityFacade.verifyDip';
       (enrichedError as any).context = { dipId, action: 'CHECK_DIP_INTEGRITY_STATUS' };
 
       // 4. GESTIONE CON IL TUO HANDLER
@@ -156,6 +163,41 @@ export class IntegrityFacade implements IIntegrityFacade {
 
       // 5. AGGIORNAMENTO UI
       this._error.set(appError.message);
+    } finally {
+      this._isVerifying.set(false);
+    }
+  }
+
+  async verifyItem(itemId: string, itemType: 'DOCUMENT' | 'AGGREGATE'): Promise<string> {
+    if (this._isVerifying()) return 'UNKNOWN';
+
+    this._isVerifying.set(true);
+    this._error.set(null);
+
+    let status = IntegrityStatusEnum.UNKNOWN;
+
+    try {
+      const idNum = Number(itemId);
+      if (itemType === 'DOCUMENT') {
+        status = await this.gateway.checkDocumentIntegrity(idNum);
+      } else {
+        // Aggregate maps to Process in our routing
+        status = await this.gateway.checkProcessIntegrity(idNum);
+      }
+      this.cacheService.invalidate(`${itemType === 'DOCUMENT' ? 'document' : 'aggregate'}:${itemId}`);
+      // To be safe, invalidate all if an aggregate is verified as it checks children
+      if (itemType === 'AGGREGATE') { this.cacheService.invalidatePrefix('document:'); }
+      return status;
+    } catch (rawError: unknown) {
+      const enrichedError =
+        typeof rawError === 'object' && rawError !== null ? rawError : new Error(String(rawError));
+
+      (enrichedError as AppError).source = 'IntegrityFacade.verifyItem';
+      (enrichedError as any).context = { itemId, itemType, action: 'CHECK_ITEM_INTEGRITY' };
+
+      const appError = this.errorHandler.handle(enrichedError);
+      this._error.set(appError.message);
+      return 'UNKNOWN';
     } finally {
       this._isVerifying.set(false);
     }
