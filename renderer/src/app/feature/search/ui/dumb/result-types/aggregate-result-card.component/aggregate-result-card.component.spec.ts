@@ -42,7 +42,7 @@ describe('AggregateResultCardComponent', () => {
 
     expect(nameEl.textContent).toContain('Fascicolo Personale Mario Rossi');
     expect(idEl.textContent).toContain('ID Fascicolo: FAS-456');
-    expect(badgeEl.textContent).toContain('FASCICOLO');
+    expect(badgeEl.textContent).toContain('AGGREGAZIONE DOCUMENTALE');
   });
 
   it('dovrebbe mostrare lo score semantico formattato se attivo', () => {

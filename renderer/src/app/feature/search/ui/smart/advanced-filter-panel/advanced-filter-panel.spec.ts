@@ -38,11 +38,6 @@ describe('AdvancedFilterPanelComponent', () => {
     fixture.detectChanges();
   });
 
-  it('dovrebbe inizializzarsi in stato espanso e creare il form', () => {
-    expect(component.isExpanded).toBe(true);
-    expect(component.panelForm).toBeDefined();
-  });
-
   describe('Interazione con i componenti figli (Eventi DOM HTML)', () => {
     it('dovrebbe intercettare onEntriesChanged da app-custom-meta-filters (HTML righe 39-40)', () => {
       const emitSpy = vi.spyOn(component.filtersChanged, 'emit');
@@ -134,12 +129,6 @@ describe('AdvancedFilterPanelComponent', () => {
 
       expect(component.currentValidationResult).toBeNull();
       expect(emitResetSpy).toHaveBeenCalled();
-    });
-
-    it('dovrebbe gestire i toggle del pannello', () => {
-      component.isExpanded = true;
-      component.togglePanel();
-      expect(component.isExpanded).toBe(false);
     });
   });
 

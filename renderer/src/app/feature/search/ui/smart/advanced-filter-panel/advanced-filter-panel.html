@@ -1,28 +1,7 @@
-<div class="filter-panel" [class.collapsed]="!isExpanded">
-  <div
-    class="panel-header"
-    (click)="togglePanel()"
-    style="
-      display: flex;
-      justify-content: space-between;
-      cursor: pointer;
-      background: #f1f5f9;
-      padding: 1rem;
-      border-radius: 6px;
-    "
-  >
-    <h3 style="margin: 0; font-size: 1.125rem">Filtri Avanzati</h3>
-    <button
-      type="button"
-      style="background: none; border: none; font-weight: bold; cursor: pointer"
-    >
-      {{ isExpanded ? 'Comprimi 🔼' : 'Espandi 🔽' }}
-    </button>
-  </div>
+<div class="filter-panel">
 
   <div
     class="panel-body"
-    *ngIf="isExpanded"
     style="padding: 1rem; border: 1px solid #e2e8f0; border-top: none; border-radius: 0 0 6px 6px"
   >
     <div

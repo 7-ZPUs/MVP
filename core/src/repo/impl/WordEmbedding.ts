@@ -20,6 +20,8 @@ const modelsPath = isDev
 
 const numThreads = Math.max(1, Math.floor(os.cpus().length / 2));
 
+const dynamicImport = new Function('specifier', 'return import(specifier)');
+
 @injectable()
 export class WordEmbedding implements IWordEmbedding {
   private embedder: unknown = null;

@@ -115,11 +115,15 @@ export class ExportFacade implements IExportFacade {
             ));
             return;
         }
+
         this.exportState.setProcessing(OutputContext.SINGLE_PRINT);
         try {
-            await (window as any).electron.printCurrentPage();
+            const dto = await this.ipcGateway.getFileDto(Number(node.id));
+            if (!dto) throw new Error('File non trovato');
+
+            await this.ipcGateway.openExternal(dto.path); // ← path completo dal DTO
             this.exportState.setSuccess(
-                new ExportResult(OutputContext.SINGLE_PRINT, 1, 1, 0, '')
+                new ExportResult(OutputContext.SINGLE_PRINT, 1, 1, 0, dto.path)
             );
         } catch (err) {
             this.handleError(ExportErrorCode.PRINT_FAILED, err, 'printDocument');

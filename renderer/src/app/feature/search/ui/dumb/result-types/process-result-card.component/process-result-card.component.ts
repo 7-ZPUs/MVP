@@ -5,12 +5,13 @@ import {
   ISearchResult,
 } from '../../../../../../../../../shared/domain/metadata/search-result.models';
 import { ISearchResultItemComponent } from '../../../../contracts/search-result-item.interface';
+import { IntegrityClassPipe } from '../../../../services/integrity-class.pipe';
 @Component({
   selector: 'app-process-result-card',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, IntegrityClassPipe],
   templateUrl: './process-result-card.component.html',
-  styleUrl: './process-result-card.component.scss',
+  styleUrls: ['./process-result-card.component.scss', '../shared-result.styles.scss'],
 })
 export class ProcessResultCardComponent implements ISearchResultItemComponent {
   @Input() result!: IProcessSearchResult;

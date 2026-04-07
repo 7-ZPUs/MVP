@@ -1,17 +1,18 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   IDocumentSearchResult,
   ISearchResult,
 } from '../../../../../../../../../shared/domain/metadata/search-result.models';
 import { ISearchResultItemComponent } from '../../../../contracts/search-result-item.interface';
+import { IntegrityClassPipe } from '../../../../services/integrity-class.pipe';
 
 @Component({
   selector: 'app-document-result-card',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, IntegrityClassPipe],
   templateUrl: 'document-result-card.component.html',
-  styleUrl: './document-result-card.component.scss',
+  styleUrls: ['./document-result-card.component.scss','../shared-result.styles.scss'],
 })
 
 export class DocumentResultCardComponent implements ISearchResultItemComponent {

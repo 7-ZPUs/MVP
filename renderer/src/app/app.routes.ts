@@ -3,7 +3,7 @@ import { AppShellComponent as NavigationShellComponent } from './features/naviga
 import { NavigationHomeComponent } from './features/navigation/ui/dumb/navigation-home.component';
 
 export const routes: Routes = [
-   {
+  {
     path: '',
     component: NavigationShellComponent,
     children: [
@@ -24,6 +24,11 @@ export const routes: Routes = [
         path: 'detail',
         loadChildren: () =>
           import('./features/item-detail/item-detail.routes').then((m) => m.itemDetailRoutes),
+      },
+      {
+        path: 'integrity-dashboard',
+        loadChildren: () =>
+          import('./features/verification/verification.routes').then((m) => m.VERIFICATION_ROUTES),
       },
     ],
   },

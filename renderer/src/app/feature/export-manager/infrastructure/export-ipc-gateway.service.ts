@@ -1,7 +1,7 @@
 import { Injectable }          from '@angular/core';
 import { IExportChannel }      from '../contracts/i-export-channel';
 import { ExportResult }        from '../../../../../../shared/domain/ExportResult';
-import { SaveDialogResponseDto } from '../domain/dtos';
+import { SaveDialogResponseDto , FileDTO} from '../domain/dtos';
 
 @Injectable({ providedIn: 'root' })
 export class ExportIpcGateway implements IExportChannel {
@@ -26,5 +26,17 @@ export class ExportIpcGateway implements IExportChannel {
     async openSaveDialog(defaultName?: string): Promise<SaveDialogResponseDto> {
         if (!this.ipc) return { canceled: true };
         return await this.ipc.invoke('file:save-dialog', defaultName);
+    }
+
+    // export-ipc-gateway.service.ts
+    async getFileDto(fileId: number): Promise<FileDTO | null> {
+        if (!this.ipc) return null;
+        return await this.ipc.invoke('browse:get-file-by-id', fileId);
+    }
+
+    // export-ipc-gateway.service.ts
+    async openExternal(filePath: string): Promise<void> {
+        if (!this.ipc) return;
+        await this.ipc.invoke('file:open-external', filePath);
     }
 }
