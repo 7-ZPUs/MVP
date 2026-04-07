@@ -145,7 +145,6 @@ function exportDb(dstPath: string): void {
       container.resolve<IIndexDip>(INDEX_DIP_TOKEN).execute(dipPath),
   };
   const bootstrapAdapter = new ApplicationBootstrapAdapter(lazyIndexDip);
-  const dipPath = resolveBootstrapDipPath();
   process.env.DIP_PATH = dipPath;
   try {
     performance.mark("bootstrap-start");

@@ -175,8 +175,8 @@ export class AdvancedFilterPanelComponent implements OnInit, OnChanges {
     this.panelForm.patchValue({ aggregate: values }, { emitEvent: true });
   }
 
-  public onEntriesChanged(entries: CustomFilterValues | null): void {
-    this.panelForm.patchValue({ customMeta: entries }, { emitEvent: true });
+  public onEntriesChanged(entries: CustomFilterValues[] | null): void {
+   this.panelForm.patchValue({ customMeta: entries }, { emitEvent: true });
   }
 
   public onSubjectChanged(subject: SubjectCriteria[]): void {

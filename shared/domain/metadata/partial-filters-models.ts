@@ -7,5 +7,5 @@ export interface PartialSearchFilters {
   common: CommonFilterValues;
   diDai: DiDaiFilterValues;
   aggregate: AggregateFilterValues;
-  customMeta: CustomFilterValues | null;
+  customMeta: CustomFilterValues[] | null;
 }
