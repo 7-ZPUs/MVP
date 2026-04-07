@@ -92,7 +92,7 @@ describe('IpcGateway', () => {
     ]);
   });
 
-  it('getDocumentClasses usa fallback tipo + prime 5 cifre id se il nome manca', async () => {
+  it('getDocumentClasses usa fallback solo tipo se il nome manca', async () => {
     mockCache.get.mockReturnValue(null);
 
     mockBridge.invoke.mockResolvedValue([
@@ -106,7 +106,7 @@ describe('IpcGateway', () => {
     expect(result).toEqual([
       {
         id: 1234567,
-        name: 'Classe Documentale 12345',
+        name: 'Classe Documentale',
         type: 'documentClass',
         hasChildren: true,
       }
@@ -135,22 +135,22 @@ describe('IpcGateway', () => {
 
     expect(result.map((node) => node.name)).toEqual([
       'Processo Contratti',
-      'Processo 98765',
+      'Processo',
     ]);
   });
 
-  it('getFiles mappa correttamente i DTO', async () => {
+  it('getFiles normalizza i nomi con residui di path', async () => {
     mockCache.get.mockReturnValue(null);
 
     mockBridge.invoke.mockResolvedValue([
-      { id: 5, filename: 'file.pdf' }
+      { id: 5, filename: '/869e1069-e50d-48e6-8191-1c677f3053a2/Allegato_1.pdf' }
     ]);
 
     const parent: DipTreeNode = { id: 2, name: '', type: 'document', hasChildren: true };
 
     const result = await gateway.getChildren(parent);
 
-    expect(result[0].name).toBe('file.pdf');
+    expect(result[0].name).toBe('Allegato_1.pdf');
     expect(result[0].type).toBe('file');
     expect(result[0].hasChildren).toBe(false);
   });

@@ -6,11 +6,13 @@ import { Router } from '@angular/router';
 import { ItemDetailPageComponent } from './item-detail-page.component';
 import { AGGREGATE_FACADE_TOKEN } from '../../../../aggregate/contracts/IAggregateFacade';
 import { DOCUMENT_FACADE_TOKEN } from '../../../../document/contracts/IDocumentFacade';
+import { NODE_FALLBACK_FACADE_TOKEN } from '../../../contracts/INodeFallbackFacade';
 import { OUTPUT_FACADE_TOKEN } from '../../../../../shared/interfaces/output.interfaces';
 import { INTEGRITY_FACADE_TOKEN } from '../../../../../shared/interfaces/integrity.interfaces';
 import { AggregateState } from '../../../../aggregate/domain/aggregate.models';
 import { DocumentState } from '../../../../document/domain/document.models';
 import { AppError, ErrorCode, ErrorCategory, ErrorSeverity } from '../../../../../shared/domain';
+import { NodeFallbackState } from '../../../domain/node-fallback.models';
 
 describe('ItemDetailPageComponent', () => {
   let component: ItemDetailPageComponent;
@@ -19,14 +21,18 @@ describe('ItemDetailPageComponent', () => {
   // Signal scrivibili per simulare dinamicamente i cambi di stato dei Facade
   let mockAggregateState: WritableSignal<AggregateState>;
   let mockDocumentState: WritableSignal<DocumentState>;
+  let mockFallbackState: WritableSignal<NodeFallbackState>;
 
   let mockAggregateFacade: any;
   let mockDocumentFacade: any;
+  let mockFallbackFacade: any;
+  let routerMock: any;
 
   beforeEach(async () => {
     // Inizializziamo gli stati di base vuoti
     mockAggregateState = signal({ detail: null, loading: false, error: null });
     mockDocumentState = signal({ detail: null, loading: false, error: null });
+    mockFallbackState = signal({ detail: null, loading: false, error: null });
 
     mockAggregateFacade = {
       getState: vi.fn().mockReturnValue(mockAggregateState),
@@ -37,6 +43,13 @@ describe('ItemDetailPageComponent', () => {
       getState: vi.fn().mockReturnValue(mockDocumentState),
       loadDocument: vi.fn(),
     };
+
+    mockFallbackFacade = {
+      getState: vi.fn().mockReturnValue(mockFallbackState),
+      loadNode: vi.fn(),
+    };
+
+    routerMock = { navigate: vi.fn() };
 
     let mockOutputFacade = {
       isWorking: signal(false),
@@ -54,9 +67,10 @@ describe('ItemDetailPageComponent', () => {
       providers: [
         { provide: AGGREGATE_FACADE_TOKEN, useValue: mockAggregateFacade },
         { provide: DOCUMENT_FACADE_TOKEN, useValue: mockDocumentFacade },
+        { provide: NODE_FALLBACK_FACADE_TOKEN, useValue: mockFallbackFacade },
         { provide: OUTPUT_FACADE_TOKEN, useValue: mockOutputFacade },
         { provide: INTEGRITY_FACADE_TOKEN, useValue: mockIntegrityFacade },
-        { provide: Router, useValue: { navigate: vi.fn() } },
+        { provide: Router, useValue: routerMock },
       ],
     }).compileComponents();
 
@@ -100,6 +114,7 @@ describe('ItemDetailPageComponent', () => {
 
     expect(mockAggregateFacade.loadAggregate).toHaveBeenCalledWith('123');
     expect(mockDocumentFacade.loadDocument).not.toHaveBeenCalled();
+    expect(mockFallbackFacade.loadNode).not.toHaveBeenCalled();
     expect(component.pageTitle()).toBe('Fascicolo affare'); // Testa il branch del computed
     expect(component.isLoading()).toBe(false);
   });
@@ -130,7 +145,41 @@ describe('ItemDetailPageComponent', () => {
 
     expect(mockDocumentFacade.loadDocument).toHaveBeenCalledWith('456');
     expect(mockAggregateFacade.loadAggregate).not.toHaveBeenCalled();
+    expect(mockFallbackFacade.loadNode).not.toHaveBeenCalled();
     expect(component.pageTitle()).toBe('delibera.pdf'); // Testa l'altro branch del computed
+  });
+
+  it('dovrebbe caricare fallback detail per tipo DIP', () => {
+    fixture.componentRef.setInput('itemId', '1');
+    fixture.componentRef.setInput('itemType', 'DIP');
+
+    mockFallbackState.set({
+      loading: false,
+      error: null,
+      detail: {
+        type: 'DIP',
+        typeLabel: 'DIP',
+        title: 'DIP',
+        subtitle: 'Nodo radice del pacchetto documentale',
+        fields: [{ label: 'UUID', value: 'DIP-UUID-1' }],
+      },
+    });
+
+    fixture.detectChanges();
+
+    expect(mockFallbackFacade.loadNode).toHaveBeenCalledWith('DIP', '1');
+    expect(component.pageTitle()).toBe('DIP');
+    expect(fixture.nativeElement.querySelector('app-node-fallback-panel')).toBeTruthy();
+  });
+
+  it('naviga quando viene selezionato un item correlato dal fallback panel', () => {
+    component.onFallbackRelatedSelected({
+      itemType: 'AGGREGATE',
+      itemId: '31',
+      label: 'Processo Contratti',
+    });
+
+    expect(routerMock.navigate).toHaveBeenCalledWith(['/detail', 'AGGREGATE', '31']);
   });
 
   // --- TEST 3: STATO DI CARICAMENTO ---

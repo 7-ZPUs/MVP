@@ -15,19 +15,19 @@ import { DocumentIndexEntryDTO } from '../../../../shared/domain/dto/AggregateDT
           <thead>
             <tr>
               <th>Tipo</th>
-              <th>Identificativo</th>
+              <th>Documento</th>
               <th>Azione</th>
             </tr>
           </thead>
           <tbody>
-            @for (doc of items(); track doc.identificativo) {
+            @for (doc of items(); track doc.routeId || doc.identificativo) {
               <tr class="table-row">
                 <td>
                   <span class="badge">{{ doc.tipoDocumento }}</span>
                 </td>
-                <td class="mono">{{ doc.identificativo }}</td>
+                <td>{{ doc.identificativo }}</td>
                 <td>
-                  <button class="btn-view" (click)="onView(doc.identificativo)">
+                  <button class="btn-view" (click)="onView(doc.routeId || doc.identificativo)">
                     👁️ Visualizza
                   </button>
                 </td>

@@ -52,10 +52,6 @@ export class AppShellComponent implements OnInit {
 
   onNodeSelected(node: DipTreeNode): void {
     const targetItemType = mapDipNodeTypeToDetailItemType(node.type);
-    if (!targetItemType) {
-      return;
-    }
-
     void this.router.navigate(buildDetailRoute(targetItemType, node.id));
   }
 

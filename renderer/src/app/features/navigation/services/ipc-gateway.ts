@@ -10,6 +10,7 @@ import { DocumentDTO } from '../../../shared/domain/dto/DocumentDTO';
 import { FileDTO } from '../../../shared/domain/dto/FileDTO';
 import { ProcessDTO } from '../../../shared/domain/dto/ProcessDTO';
 import { MetadataExtractor } from '../../../shared/utils/metadata-extractor.util';
+import { normalizeDisplayFileName } from '../../../shared/utils/display-file-name.util';
 
 @Injectable({ providedIn: 'root' })
 export class IpcGateway {
@@ -52,7 +53,7 @@ export class IpcGateway {
       `dip:${dipId}`,
       (dto: DipDTO): DipTreeNode => ({
         id: dto.id,
-        name: this.resolveNodeName(null, 'dip', dto.id),
+        name: this.resolveNodeName(null, 'dip'),
         type: 'dip',
         hasChildren: true,
       }),
@@ -70,7 +71,7 @@ export class IpcGateway {
       (dtos: DocumentClassDTO[]): DipTreeNode[] =>
         dtos.map((dto) => ({
           id: dto.id,
-          name: this.resolveNodeName(dto.name, 'documentClass', dto.id),
+          name: this.resolveNodeName(dto.name, 'documentClass'),
           type: 'documentClass',
           hasChildren: true,
         })),
@@ -91,7 +92,6 @@ export class IpcGateway {
           name: this.resolveNodeName(
             this.extractMetadataName(dto.metadata, ['Oggetto', 'Procedimento', 'IdAggregazione']),
             'process',
-            dto.id,
           ),
           type: 'process',
           hasChildren: true,
@@ -113,7 +113,6 @@ export class IpcGateway {
           name: this.resolveNodeName(
             this.extractMetadataName(dto.metadata, ['NomeDelDocumento', 'Oggetto']),
             'document',
-            dto.id,
           ),
           type: 'document',
           hasChildren: true, // ha sempre file
@@ -132,7 +131,7 @@ export class IpcGateway {
       (dtos: FileDTO[]): DipTreeNode[] =>
         dtos.map((dto) => ({
           id: dto.id,
-          name: this.resolveNodeName(dto.filename, 'file', dto.id),
+          name: this.resolveNodeName(normalizeDisplayFileName(dto.filename), 'file'),
           type: 'file',
           hasChildren: false, // foglia
         })),
@@ -142,14 +141,13 @@ export class IpcGateway {
   private resolveNodeName(
     preferredName: string | null | undefined,
     nodeType: DipTreeNode['type'],
-    nodeId: number,
   ): string {
     const normalized = preferredName?.trim();
     if (normalized && normalized.length > 0) {
       return normalized;
     }
 
-    return this.buildFallbackName(nodeType, nodeId);
+    return this.buildFallbackName(nodeType);
   }
 
   private extractMetadataName(metadata: unknown, keys: string[]): string | null {
@@ -168,25 +166,19 @@ export class IpcGateway {
     return null;
   }
 
-  private buildFallbackName(nodeType: DipTreeNode['type'], nodeId: number): string {
-    const idPrefix = this.getIdPrefix(nodeId);
-
+  private buildFallbackName(nodeType: DipTreeNode['type']): string {
     switch (nodeType) {
       case 'dip':
-        return `DIP ${idPrefix}`;
+        return 'DIP';
       case 'documentClass':
-        return `Classe Documentale ${idPrefix}`;
+        return 'Classe Documentale';
       case 'process':
-        return `Processo ${idPrefix}`;
+        return 'Processo';
       case 'document':
-        return `Documento ${idPrefix}`;
+        return 'Documento';
       case 'file':
-        return `File ${idPrefix}`;
+        return 'File';
     }
-  }
-
-  private getIdPrefix(nodeId: number): string {
-    return String(nodeId).slice(0, 5);
   }
 
   // ── Infrastruttura ────────────────────────────────────────────

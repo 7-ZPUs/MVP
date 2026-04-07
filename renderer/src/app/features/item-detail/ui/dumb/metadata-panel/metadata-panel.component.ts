@@ -85,7 +85,7 @@ import { VerificationInfoComponent } from '../../../../document/components/verif
                 <h3>Relazioni</h3>
                 @if (doc.idAggregazione) {
                   <div class="data-row">
-                    <span class="label">ID Aggregazione:</span>
+                    <span class="label">Aggregazione collegata:</span>
                     <span class="value">{{ doc.idAggregazione }}</span>
                   </div>
                 }

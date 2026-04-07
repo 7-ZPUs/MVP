@@ -40,15 +40,17 @@ describe('DipExplorerComponent', () => {
   let fixture: ComponentFixture<DipExplorerComponent>;
   let component: DipExplorerComponent;
   let facadeMock: ReturnType<typeof makeFacadeMock>;
+  const routerMock = { navigate: vi.fn() };
 
   const setup = async (initialState: Partial<DipState> = {}) => {
     facadeMock = makeFacadeMock(makeState(initialState));
+    routerMock.navigate.mockReset();
 
     await TestBed.configureTestingModule({
       imports: [DipExplorerComponent],
       providers: [
         { provide: DipFacade, useValue: facadeMock },
-        { provide: Router, useValue: { navigate: vi.fn() } },
+        { provide: Router, useValue: routerMock },
       ],
       schemas: [NO_ERRORS_SCHEMA],
     })
@@ -120,6 +122,37 @@ describe('DipExplorerComponent', () => {
       facadeMock.setState(makeState({ phase: 'ready' }));
 
       expect(component.state().phase).toBe('ready');
+    });
+  });
+
+  describe('node selection navigation', () => {
+    it('naviga verso il dettaglio fallback per nodo dip', async () => {
+      await setup();
+
+      component.onNodeSelected({ id: 3, name: 'DIP 3', type: 'dip', hasChildren: true });
+
+      expect(routerMock.navigate).toHaveBeenCalledWith(['/detail', 'DIP', '3']);
+    });
+
+    it('naviga verso il dettaglio fallback per nodo documentClass', async () => {
+      await setup();
+
+      component.onNodeSelected({
+        id: 12,
+        name: 'Classe',
+        type: 'documentClass',
+        hasChildren: true,
+      });
+
+      expect(routerMock.navigate).toHaveBeenCalledWith(['/detail', 'DOCUMENT_CLASS', '12']);
+    });
+
+    it('naviga verso il dettaglio fallback per nodo file', async () => {
+      await setup();
+
+      component.onNodeSelected({ id: 44, name: 'file.pdf', type: 'file', hasChildren: false });
+
+      expect(routerMock.navigate).toHaveBeenCalledWith(['/detail', 'FILE', '44']);
     });
   });
 });

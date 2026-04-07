@@ -92,4 +92,43 @@ describe('AppShellComponent', () => {
 
     expect(routerMock.navigate).toHaveBeenCalledWith(['/detail', 'AGGREGATE', '42']);
   });
+
+  it('dovrebbe navigare al dettaglio DIP per nodo dip', () => {
+    const node: DipTreeNode = {
+      id: 7,
+      name: 'DIP 7',
+      type: 'dip',
+      hasChildren: true,
+    };
+
+    component.onNodeSelected(node);
+
+    expect(routerMock.navigate).toHaveBeenCalledWith(['/detail', 'DIP', '7']);
+  });
+
+  it('dovrebbe navigare al dettaglio DOCUMENT_CLASS per nodo documentClass', () => {
+    const node: DipTreeNode = {
+      id: 9,
+      name: 'Classe Contratti',
+      type: 'documentClass',
+      hasChildren: true,
+    };
+
+    component.onNodeSelected(node);
+
+    expect(routerMock.navigate).toHaveBeenCalledWith(['/detail', 'DOCUMENT_CLASS', '9']);
+  });
+
+  it('dovrebbe navigare al dettaglio FILE per nodo file', () => {
+    const node: DipTreeNode = {
+      id: 11,
+      name: 'allegato.pdf',
+      type: 'file',
+      hasChildren: false,
+    };
+
+    component.onNodeSelected(node);
+
+    expect(routerMock.navigate).toHaveBeenCalledWith(['/detail', 'FILE', '11']);
+  });
 });

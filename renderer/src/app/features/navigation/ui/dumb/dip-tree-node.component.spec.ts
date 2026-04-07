@@ -63,11 +63,13 @@ describe('DipTreeNodeComponent', () => {
     component.flatNode = createFlatNode();
     fixture.detectChanges()
     vi.spyOn(component.toggle, 'emit');
+    vi.spyOn(component.nodeSelected, 'emit');
   
     const button = fixture.nativeElement.querySelector('.toggle-icon');
     button.click();
   
     expect(component.toggle.emit).toHaveBeenCalledWith(mockNode);
+    expect(component.nodeSelected.emit).toHaveBeenCalledWith(mockNode);
   });
 
   it('dovrebbe chiamare stopPropagation su toggle', () => {

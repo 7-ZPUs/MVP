@@ -34,6 +34,7 @@ export function mapProcessDtoToAggregateDetail(dto: any): AggregateDetailDTO {
   // We retrieve the metadata array if it's a wrapper, or directly if it's already unwrapped
   const nodes = Array.isArray(dto.metadata) ? dto.metadata : dto.metadata?.value || [];
   const extractor = new MetadataExtractor(nodes);
+  const dataApertura = extractor.getString('DataApertura', 'N/D');
 
   // Subjects Extraction specifically for Aggregations
   const ruoli = extractor.findAllValues('Ruolo');
@@ -76,7 +77,7 @@ export function mapProcessDtoToAggregateDetail(dto: any): AggregateDetailDTO {
       },
       dataInizioAssegnazione: extractor.getString('DataInizioAssegnazione', 'N/A'),
     },
-    dataApertura: extractor.getString('DataApertura', 'N/A'),
+    dataApertura,
     dataChiusura: extractor.getString('DataChiusura'), // optional
     classificazione: {
       indiceDiClassificazione: extractor.getString('IndiceDiClassificazione', 'N/A'),
@@ -97,6 +98,12 @@ export function mapProcessDtoToAggregateDetail(dto: any): AggregateDetailDTO {
       'Archivio',
     ),
     tempoDiConservazione: extractor.getNumber('TempoDiConservazione', 10),
+
+    processSummary: {
+      uuid: dto.uuid || 'N/D',
+      integrityStatus: dto.integrityStatus || 'UNKNOWN',
+      timestamp: dataApertura || 'N/D',
+    },
 
     // In a real payload we might find a block of <IndiceDocumenti>
     indiceDocumenti: [],

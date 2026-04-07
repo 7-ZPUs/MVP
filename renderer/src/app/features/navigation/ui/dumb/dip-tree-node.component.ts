@@ -81,7 +81,8 @@ export class DipTreeNodeComponent {
 
     public onToggle(event: MouseEvent): void {
         event.stopPropagation();
-                this.toggle.emit(this.flatNode.node);
+            this.nodeSelected.emit(this.flatNode.node);
+            this.toggle.emit(this.flatNode.node);
         }
 
         public onRetry(): void {

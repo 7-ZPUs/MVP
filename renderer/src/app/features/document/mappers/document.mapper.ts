@@ -15,6 +15,7 @@ import {
 } from '../domain/document.models';
 import { DocumentDTO } from '../../../shared/domain/dto/indexDTO';
 import { MetadataExtractor } from '../../../shared/utils/metadata-extractor.util';
+import { normalizeDisplayFileName } from '../../../shared/utils/display-file-name.util';
 
 // List of all expected parent XML blocks that we already parse manually
 const KNOWN_DOCUMENT_XSD_ROOT_BLOCKS = new Set<string>([
@@ -50,7 +51,8 @@ function mapIdentityAndMimeType(
   dto: DocumentDTO,
   extractor: MetadataExtractor,
 ): { id: string; fileName: string; mimeType: MimeType } {
-  const fileName = extractor.getString('NomeDelDocumento', `Documento ${dto.id}`);
+  const extractedFileName = extractor.getString('NomeDelDocumento', `Documento ${dto.id}`);
+  const fileName = normalizeDisplayFileName(extractedFileName) || `Documento ${dto.id}`;
   let mimeType = MimeType.UNSUPPORTED;
 
   const ext = fileName.split('.').pop()?.toLowerCase();
@@ -155,7 +157,8 @@ function mapAttachments(extractor: MetadataExtractor): AttachmentData {
   const allegatiList = indiciAllegati.map((i: any) => {
     const ident = extractor.findValue('Identificativo', Array.isArray(i) ? i : [i]) || '';
     const descr = extractor.findValue('Descrizione', Array.isArray(i) ? i : [i]) || '';
-    return { id: String(ident), descrizione: String(descr) };
+    const displayIdentifier = normalizeDisplayFileName(String(ident)) || String(ident);
+    return { id: displayIdentifier, descrizione: String(descr) };
   });
 
   return {

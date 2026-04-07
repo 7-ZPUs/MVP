@@ -10,13 +10,24 @@ import { AggregateDetailDTO } from '../../../../shared/domain/dto/AggregateDTO';
     <div class="metadata-card">
       <h3 class="card-title">Metadati dell'Aggregato</h3>
 
+      @if (data().processSummary; as processSummary) {
+        <div class="data-row">
+          <span class="label">UUID Processo</span>
+          <span class="value">{{ processSummary.uuid }}</span>
+        </div>
+        <div class="data-row">
+          <span class="label">Stato Verifica</span>
+          <span class="value">{{ processSummary.integrityStatus }}</span>
+        </div>
+        <div class="data-row">
+          <span class="label">Marcatura Temporale</span>
+          <span class="value">{{ processSummary.timestamp }}</span>
+        </div>
+      }
+
       <div class="data-row">
         <span class="label">Tipo Aggregazione</span>
         <span class="value">{{ data().idAgg.tipoAggregazione }}</span>
-      </div>
-      <div class="data-row">
-        <span class="label">ID Aggregazione</span>
-        <span class="value">{{ data().idAgg.idAggregazione }}</span>
       </div>
 
       @if (data().tipologiaFascicolo) {
@@ -28,13 +39,25 @@ import { AggregateDetailDTO } from '../../../../shared/domain/dto/AggregateDTO';
 
       <div class="data-row">
         <span class="label">Apertura</span>
-        <span class="value">{{ data().dataApertura | date: 'longDate' }}</span>
+        <span class="value">
+          @if (isValidDate(data().dataApertura)) {
+            {{ data().dataApertura | date: 'longDate' }}
+          } @else {
+            {{ data().dataApertura || 'N/D' }}
+          }
+        </span>
       </div>
 
       @if (data().dataChiusura) {
         <div class="data-row">
           <span class="label">Chiusura</span>
-          <span class="value">{{ data().dataChiusura | date: 'longDate' }}</span>
+          <span class="value">
+            @if (isValidDate(data().dataChiusura)) {
+              {{ data().dataChiusura | date: 'longDate' }}
+            } @else {
+              {{ data().dataChiusura }}
+            }
+          </span>
         </div>
       }
 
@@ -171,4 +194,12 @@ import { AggregateDetailDTO } from '../../../../shared/domain/dto/AggregateDTO';
 })
 export class AggregateMetadataComponent {
   data = input.required<AggregateDetailDTO>();
+
+  protected isValidDate(value: string | null | undefined): boolean {
+    if (!value) {
+      return false;
+    }
+
+    return !Number.isNaN(new Date(value).getTime());
+  }
 }

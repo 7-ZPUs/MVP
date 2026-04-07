@@ -9,7 +9,7 @@
   <div class="card-icon">📄</div>
   <div class="card-content">
     <h3 class="document-name">{{ result.name || 'Senza titolo' }}</h3>
-    <span class="document-id">ID: {{ result.uuid }}</span>
+    <span class="document-id">UUID: {{ result.uuid }}</span>
   </div>
   <div class="card-meta">
     <span class="badge" [ngClass]="result.type | lowercase">{{ result.type }}</span>
