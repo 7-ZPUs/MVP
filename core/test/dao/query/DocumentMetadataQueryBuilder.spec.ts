@@ -24,6 +24,21 @@ describe("DocumentMetadataQueryBuilder", () => {
     expect(result.params).toEqual(["Invoice"]);
   });
 
+  it("converts boolean EQ values to SQLite-safe numeric params", () => {
+    const query = new SearchDocumentsQuery({
+      logicOperator: "AND",
+      items: [
+        { path: "DocumentoInformatico.Riservato", operator: "EQ", value: true },
+      ],
+    });
+
+    const result = builder.build(query);
+    expect(result.sql).toBe(
+      "(json_extract(document.metadata, '$.DocumentoInformatico.Riservato') = ? COLLATE NOCASE)",
+    );
+    expect(result.params).toEqual([1]);
+  });
+
   it("handles a single GT condition", () => {
     const query = new SearchDocumentsQuery({
       logicOperator: "AND",

@@ -10,14 +10,23 @@ export class MetadataKeyMapper {
     const segments = normalized.split(".");
 
     return segments
-      .map((segment) =>
-        segment
-          .split(/_+/)
-          .filter((part) => part.length > 0)
-          .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-          .join(""),
-      )
+      .map((segment) => MetadataKeyMapper.normalizeSegment(segment))
       .join(".");
+  }
+
+  private static normalizeSegment(segment: string): string {
+    const parts = segment.split(/_+/).filter((part) => part.length > 0);
+    if (parts.length === 0) {
+      return "";
+    }
+
+    const hasUnderscore = segment.includes("_");
+    const hasUppercase = /[A-Z]/.test(segment.replaceAll("_", ""));
+    const separator = hasUnderscore && hasUppercase ? "_" : "";
+
+    return parts
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .join(separator);
   }
 
   static mapFilters(filters: MetadataFilter[]): MetadataFilter[] {

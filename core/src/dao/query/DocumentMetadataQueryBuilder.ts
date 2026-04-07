@@ -92,21 +92,31 @@ export class DocumentMetadataQueryBuilder {
     operator: Exclude<SearchOperator, "ELEM_MATCH">,
     value: unknown,
   ): { sql: string; params: unknown[] } {
+    const bindableValue = this.toBindableParam(value);
+
     switch (operator) {
       case "EQ":
+        if (typeof value === "string" && this.isNumericLike(value)) {
+          const normalizedValue = value.trim();
+          return {
+            sql: `(${jsonExtract} = ? COLLATE NOCASE OR CAST(${jsonExtract} AS TEXT) = ? COLLATE NOCASE)`,
+            params: [normalizedValue, normalizedValue],
+          };
+        }
+
         return {
           sql: `${jsonExtract} = ? COLLATE NOCASE`,
-          params: [value],
+          params: [bindableValue],
         };
       case "GT":
         return {
           sql: `${jsonExtract} > ?`,
-          params: [value],
+          params: [bindableValue],
         };
       case "LT":
         return {
           sql: `${jsonExtract} < ?`,
-          params: [value],
+          params: [bindableValue],
         };
       case "LIKE":
         return {
@@ -130,7 +140,7 @@ export class DocumentMetadataQueryBuilder {
         const placeholders = sanitizedValues.map(() => "?").join(", ");
         return {
           sql: `${jsonExtract} IN (${placeholders})`,
-          params: sanitizedValues,
+          params: sanitizedValues.map((item) => this.toBindableParam(item)),
         };
       }
       default:
@@ -140,6 +150,19 @@ export class DocumentMetadataQueryBuilder {
 
   private isBlankString(value: unknown): boolean {
     return typeof value === "string" && value.trim().length === 0;
+  }
+
+  private isNumericLike(value: string): boolean {
+    const normalized = value.trim();
+    return /^-?\d+(\.\d+)?$/.test(normalized);
+  }
+
+  private toBindableParam(value: unknown): unknown {
+    if (typeof value === "boolean") {
+      return value ? 1 : 0;
+    }
+
+    return value;
   }
 
   private toJsonPath(path: string): string {

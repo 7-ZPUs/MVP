@@ -1,11 +1,8 @@
 <fieldset [disabled]="disabled" class="didai-filters-container filter-fieldset" [formGroup]="form">
-  
   @if (disabled && disabledReason) {
-    <div class="info-banner">
-      <span>ℹ️</span> {{ disabledReason }}
-    </div>
+    <div class="info-banner"><span>ℹ️</span> {{ disabledReason }}</div>
   }
-  
+
   <details class="filter-accordion" closed>
     <summary>Registrazione</summary>
 
@@ -15,7 +12,7 @@
           <label for="tipoFlusso">Tipologia Flusso</label>
           <select id="tipoFlusso" formControlName="tipologiaFlusso">
             <option [ngValue]="null">Tutti</option>
-            <option *ngFor="let f of flowTypes" [ngValue]="f">{{ f }}</option>
+            <option *ngFor="let f of flowTypes" [ngValue]="f.value">{{ f.label }}</option>
           </select>
         </div>
         <div class="form-group">
@@ -123,11 +120,19 @@
       <div class="form-row">
         <div class="form-group">
           <label for="versioneProdCreazione">Versione Prodotto</label>
-          <input id="versioneProdCreazione" type="text" formControlName="versioneProdottoCreazione" />
+          <input
+            id="versioneProdCreazione"
+            type="text"
+            formControlName="versioneProdottoCreazione"
+          />
         </div>
         <div class="form-group">
           <label for="produttoreProdCreazione">Produttore Prodotto</label>
-          <input id="produttoreProdCreazione" type="text" formControlName="produttoreProdottoCreazione" />
+          <input
+            id="produttoreProdCreazione"
+            type="text"
+            formControlName="produttoreProdottoCreazione"
+          />
         </div>
       </div>
     </div>
@@ -177,7 +182,7 @@
         </div>
       </div>
 
-      <div class="nested-section" style="margin-top: 1.5rem;">
+      <div class="nested-section" style="margin-top: 1.5rem">
         <h5 class="nested-title">Tracciature Modifiche</h5>
         <div formArrayName="tracciatureModifiche">
           <div

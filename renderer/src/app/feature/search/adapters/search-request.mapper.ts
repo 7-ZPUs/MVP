@@ -5,7 +5,14 @@ import {
   SearchRequestDTO,
 } from '../../../../../../shared/domain/metadata/search.models';
 import {
+  AggregationType,
+  AssegnazioneType,
+  DIDAIFormation,
   DocumentType,
+  FascicoloType,
+  ModificationType,
+  ProcedimentoFaseType,
+  RegisterType,
   SubjectRoleType,
   SubjectType,
 } from '../../../../../../shared/domain/metadata/search.enum';
@@ -38,7 +45,7 @@ const SUBJECT_ROLE_LABEL: Record<string, string> = {
   [SubjectRoleType.AUTORE]: 'Autore',
   [SubjectRoleType.OPERATORE]: 'Operatore',
   [SubjectRoleType.RGD]: 'Responsabile della Gestione Documentale',
-  [SubjectRoleType.RSP]: 'Responsabile del Servizio Protocollo',
+  [SubjectRoleType.RSP]: 'Responsabile del Servizio di Protocollo',
 };
 
 const SUBJECT_TYPE_WRAPPER: Record<string, string> = {
@@ -49,6 +56,57 @@ const SUBJECT_TYPE_WRAPPER: Record<string, string> = {
   [SubjectType.PF]: 'PF',
   [SubjectType.RUP]: 'RUP',
   [SubjectType.SW]: 'SW',
+};
+
+const REGISTER_TYPE_TO_XSD: Record<string, string> = {
+  [RegisterType.PROTOCOLLO]: String.raw`ProtocolloOrdinario\ProtocolloEmergenza`,
+  [RegisterType.REPERTORIO]: String.raw`Repertorio\Registro`,
+  [RegisterType.NESSUNO]: 'Nessuno',
+};
+
+const DIDAI_FORMATION_TO_XSD: Record<string, string> = {
+  [DIDAIFormation.EX_NOVO]:
+    'creazione tramite utilizzo di strumenti software che assicurino la produzione di documenti nei formati previsti in allegato 2',
+  [DIDAIFormation.ACQUISIZIONE]:
+    'acquisizione di un documento informatico per via telematica o su supporto informatico, acquisizione della copia per immagine su supporto informatico di un documento analogico, acquisizione della copia informatica di un documento analogico',
+  [DIDAIFormation.MEMORIZZAZIONE]:
+    'memorizzazione su supporto informatico in formato digitale delle informazioni risultanti da transazioni o processi informatici o dalla presentazione telematica di dati attraverso moduli o formulari resi disponibili ad utente',
+  [DIDAIFormation.GENERAZIONE]:
+    'generazione o raggruppamento anche in via automatica di un insieme di dati o registrazioni, provenienti da una o più banche dati, anche appartenenti a più soggetti interoperanti, secondo una struttura logica predeterminata e memorizzata in forma statica',
+};
+
+const AGGREGATION_TYPE_TO_XSD: Record<string, string> = {
+  [AggregationType.FASCICOLO]: 'Fascicolo',
+  [AggregationType.SERIE_DOCUMENTALE]: 'Serie Documentale',
+  [AggregationType.SERIE_FASCICOLI]: 'Serie Di Fascicoli',
+};
+
+const FASCICOLO_TYPE_TO_XSD: Record<string, string> = {
+  [FascicoloType.AFFARE]: 'affare',
+  [FascicoloType.ATTIVITA]: 'attivita',
+  [FascicoloType.PERSONA_FISICA]: 'persona fisica',
+  [FascicoloType.PERSONA_GIURIDICA]: 'persona giuridica',
+  [FascicoloType.PROCEDIMENTO]: 'procedimento amministrativo',
+};
+
+const PROCEDIMENTO_FASE_TO_XSD: Record<string, string> = {
+  [ProcedimentoFaseType.PREPARATORIA]: 'Preparatoria',
+  [ProcedimentoFaseType.ISTRUTTORIA]: 'Istruttoria',
+  [ProcedimentoFaseType.CONSULTIVA]: 'Consultiva',
+  [ProcedimentoFaseType.DECISORIA]: 'Decisoria o deliberativa',
+  [ProcedimentoFaseType.INTEGRAZIONE]: 'Integrazione dell’efficacia',
+};
+
+const ASSEGNAZIONE_TYPE_TO_XSD: Record<string, string> = {
+  [AssegnazioneType.COMPETENZA]: 'Per Competenza',
+  [AssegnazioneType.CONOSCIENZA]: 'Per Conoscenza',
+};
+
+const MODIFICATION_TYPE_TO_XSD: Record<string, string> = {
+  [ModificationType.ANNULLAMENTO]: 'Annullamento',
+  [ModificationType.RETTIFICA]: 'Rettifica',
+  [ModificationType.INTEGRAZIONE]: 'Integrazione',
+  [ModificationType.ANNOTAZIONE]: 'Annotazione',
 };
 
 function isNil(value: unknown): boolean {
@@ -157,6 +215,26 @@ function appendIfPresent(
   if (candidate) items.push(candidate);
 }
 
+function mapPredefinedValue(value: unknown, map: Record<string, string>): unknown {
+  if (typeof value !== 'string') return value;
+  return map[value] ?? value;
+}
+
+function normalizeBooleanLike(value: unknown): unknown {
+  if (typeof value === 'boolean') return value;
+  if (typeof value !== 'string') return value;
+
+  const normalized = value.trim().toLowerCase();
+  if (normalized === 'true' || normalized === 'si' || normalized === 'sì' || normalized === 'yes') {
+    return true;
+  }
+  if (normalized === 'false' || normalized === 'no') {
+    return false;
+  }
+
+  return value;
+}
+
 function mapDocumentTypeFilter(value: unknown): SearchConditionDTO | null {
   if (value === DocumentType.DOCUMENTO_INFORMATICO) {
     return { path: DOC_ROOT, operator: 'LIKE', value: '%' };
@@ -230,7 +308,7 @@ function buildDiDaiGroup(diDai: any): SearchGroupDTO | null {
     items,
     scalarCondition(
       `${DOC_ROOT}.DatiDiRegistrazione.TipoRegistro.Repertorio_Registro.TipoRegistro`,
-      diDai?.registrazione?.tipologiaRegistro,
+      mapPredefinedValue(diDai?.registrazione?.tipologiaRegistro, REGISTER_TYPE_TO_XSD),
       'EQ',
     ),
   );
@@ -270,9 +348,16 @@ function buildDiDaiGroup(diDai: any): SearchGroupDTO | null {
   appendIfPresent(items, scalarCondition(`${DOC_ROOT}.TipologiaDocumentale`, diDai?.tipologia));
   appendIfPresent(
     items,
-    scalarCondition(`${DOC_ROOT}.ModalitaDiFormazione`, diDai?.modalitaFormazione, 'EQ'),
+    scalarCondition(
+      `${DOC_ROOT}.ModalitaDiFormazione`,
+      mapPredefinedValue(diDai?.modalitaFormazione, DIDAI_FORMATION_TO_XSD),
+      'EQ',
+    ),
   );
-  appendIfPresent(items, scalarCondition(`${DOC_ROOT}.Riservato`, diDai?.riservatezza, 'EQ'));
+  appendIfPresent(
+    items,
+    scalarCondition(`${DOC_ROOT}.Riservato`, normalizeBooleanLike(diDai?.riservatezza), 'EQ'),
+  );
 
   appendIfPresent(
     items,
@@ -351,7 +436,14 @@ function buildDiDaiGroup(diDai: any): SearchGroupDTO | null {
   const modificationItems = modifications
     .map((modifica: any) => {
       const nestedItems: Array<SearchConditionDTO | SearchGroupDTO> = [];
-      appendIfPresent(nestedItems, scalarCondition('TipoModifica', modifica?.tipoModifica, 'EQ'));
+      appendIfPresent(
+        nestedItems,
+        scalarCondition(
+          'TipoModifica',
+          mapPredefinedValue(modifica?.tipoModifica, MODIFICATION_TYPE_TO_XSD),
+          'EQ',
+        ),
+      );
       appendIfPresent(nestedItems, scalarCondition('DataModifica', modifica?.dataModifica, 'EQ'));
       appendIfPresent(nestedItems, scalarCondition('OraModifica', modifica?.oraModifica, 'EQ'));
       appendIfPresent(
@@ -382,7 +474,11 @@ function buildAggregateGroup(aggregate: any): SearchGroupDTO | null {
 
   appendIfPresent(
     items,
-    scalarCondition(`${AGG_ROOT}.TipoAgg.TipoAggregazione`, aggregate?.tipoAggregazione, 'EQ'),
+    scalarCondition(
+      `${AGG_ROOT}.TipoAgg.TipoAggregazione`,
+      mapPredefinedValue(aggregate?.tipoAggregazione, AGGREGATION_TYPE_TO_XSD),
+      'EQ',
+    ),
   );
   appendIfPresent(
     items,
@@ -390,7 +486,11 @@ function buildAggregateGroup(aggregate: any): SearchGroupDTO | null {
   );
   appendIfPresent(
     items,
-    scalarCondition(`${AGG_ROOT}.TipologiaFascicolo`, aggregate?.tipoFascicolo, 'EQ'),
+    scalarCondition(
+      `${AGG_ROOT}.TipologiaFascicolo`,
+      mapPredefinedValue(aggregate?.tipoFascicolo, FASCICOLO_TYPE_TO_XSD),
+      'EQ',
+    ),
   );
   appendIfPresent(
     items,
@@ -429,7 +529,14 @@ function buildAggregateGroup(aggregate: any): SearchGroupDTO | null {
   const faseMatches = fasi
     .map((fase: any) => {
       const nestedItems: Array<SearchConditionDTO | SearchGroupDTO> = [];
-      appendIfPresent(nestedItems, scalarCondition('TipoFase', fase?.tipoFase, 'EQ'));
+      appendIfPresent(
+        nestedItems,
+        scalarCondition(
+          'TipoFase',
+          mapPredefinedValue(fase?.tipoFase, PROCEDIMENTO_FASE_TO_XSD),
+          'EQ',
+        ),
+      );
       appendIfPresent(nestedItems, scalarCondition('DataInizioFase', fase?.dataInizioFase, 'EQ'));
       appendIfPresent(nestedItems, scalarCondition('DataFineFase', fase?.dataFineFase, 'EQ'));
 
@@ -450,7 +557,7 @@ function buildAggregateGroup(aggregate: any): SearchGroupDTO | null {
     items,
     scalarCondition(
       `${AGG_ROOT}.Assegnazione.TipoAssegnazione`,
-      aggregate?.assegnazione?.tipoAssegnazione,
+      mapPredefinedValue(aggregate?.assegnazione?.tipoAssegnazione, ASSEGNAZIONE_TYPE_TO_XSD),
       'EQ',
     ),
   );
@@ -549,6 +656,7 @@ function mapSubjectDetailKey(key: string): string {
   const explicit: Record<string, string> = {
     denominazioneOrga: 'DenominazioneOrganizzazione',
     denominazioneUfficio: 'DenominazioneUfficio',
+    codiceFiscalePartitaIvaPG: 'CodiceFiscale_PartitaIva',
     codiceFiscalePG: 'CodiceFiscale_PartitaIva',
     partitaIvaPG: 'CodiceFiscale_PartitaIva',
     cognomePF: 'Cognome',

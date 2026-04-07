@@ -13,14 +13,14 @@ const dynamicImport = new Function("specifier", "return import(specifier)") as (
   specifier: string,
 ) => Promise<TransformersModule>;
 
+const isVitestRuntime = process.env["VITEST"] === "true";
+
 const isDev = !app.isPackaged;
 const modelsPath = isDev
   ? path.join(__dirname, "..", "..", "models", "Xenova")
   : path.join(process.resourcesPath, "models", "Xenova");
 
 const numThreads = Math.max(1, Math.floor(os.cpus().length / 2));
-
-const dynamicImport = new Function('specifier', 'return import(specifier)');
 
 @injectable()
 export class WordEmbedding implements IWordEmbedding {
@@ -34,8 +34,11 @@ export class WordEmbedding implements IWordEmbedding {
       throw new Error(`[AI] Cartella modelli non trovata: ${modelsPath}`);
     }
 
-    // Dynamic import per evitare ERR_REQUIRE_ESM
-    const { pipeline, env } = await dynamicImport("@xenova/transformers");
+    // In test runtime use plain import so Vitest can mock the module.
+    // In app runtime use function-based dynamic import to avoid CJS require() downleveling.
+    const { pipeline, env } = isVitestRuntime
+      ? await import("@xenova/transformers")
+      : await dynamicImport("@xenova/transformers");
 
     env.localModelPath = modelsPath;
     env.allowLocalModels = true;

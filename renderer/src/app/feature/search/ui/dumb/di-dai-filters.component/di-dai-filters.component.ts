@@ -39,14 +39,17 @@ export class DiDaiFiltersComponent implements OnChanges, OnDestroy {
   @Input() disabled: boolean = false;
   @Input() disabledReason: string = '';
 
-
   @Output() filtersChanged = new EventEmitter<DiDaiFilterValues>();
 
   public form: FormGroup;
   private readonly destroy$ = new Subject<void>();
 
   // Esposizione delle enum per l'HTML
-  public flowTypes = Object.values(FlowType);
+  public flowTypes = [
+    { label: 'ENTRATA', value: FlowType.ENTRATA },
+    { label: 'USCITA', value: FlowType.USCITA },
+    { label: 'INTERNO', value: FlowType.INTERNO },
+  ] as const;
   public registerTypes = Object.values(RegisterType);
   public didaiFormations = Object.values(DIDAIFormation);
   public agidFormats = Object.values(AGIDFormats);

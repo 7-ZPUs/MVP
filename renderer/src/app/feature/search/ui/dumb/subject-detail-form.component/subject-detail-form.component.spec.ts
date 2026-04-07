@@ -55,6 +55,19 @@ describe('SubjectDetailFormComponent', () => {
 
       expect(cognomeControl?.invalid).toBe(true);
     });
+
+    it('dovrebbe mostrare un unico campo PG Codice Fiscale / Partita IVA', async () => {
+      fixture.componentRef.setInput('subjectType', SubjectType.PG);
+
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(component.form.contains('codiceFiscalePartitaIvaPG')).toBe(true);
+      expect(component.form.contains('codiceFiscalePG')).toBe(false);
+      expect(component.form.contains('partitaIvaPG')).toBe(false);
+      expect(component.fields.some((f) => f.key === 'codiceFiscalePartitaIvaPG')).toBe(true);
+      expect(component.fields.some((f) => f.label === 'Codice Fiscale / Partita IVA')).toBe(true);
+    });
   });
 
   describe('Patching dei Dati', () => {
