@@ -4,6 +4,7 @@ export enum MimeType {
   PDF = 'PDF',
   IMAGE = 'IMAGE',
   TEXT = 'TEXT',
+  XML = 'XML',
   UNSUPPORTED = 'UNSUPPORTED',
 }
 

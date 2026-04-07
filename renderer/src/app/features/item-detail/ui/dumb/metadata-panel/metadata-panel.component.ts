@@ -177,16 +177,20 @@ import { VerificationInfoComponent } from '../../../../document/components/verif
       }
       .data-row {
         display: flex;
+        flex-wrap: wrap;
+        gap: 0.25rem;
         margin-bottom: 0.5rem;
         font-size: 0.9rem;
       }
       .label {
         font-weight: 600;
         color: #64748b;
-        width: 140px;
+        min-width: 140px;
         flex-shrink: 0;
       }
       .value {
+        flex: 1;
+        min-width: 0;
         word-break: break-word;
         overflow-wrap: anywhere;
         color: #1e293b;

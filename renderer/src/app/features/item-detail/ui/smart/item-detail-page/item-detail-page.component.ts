@@ -38,12 +38,12 @@ import { buildDetailRoute } from '../../../../navigation/domain/navigation-routi
             [titolo]="pageTitle()"
             [formato]="documentState().detail?.mimeType || ''"
             [zoomLevel]="zoomLevel()"
-            [parentAggregateId]="parentAggregateId()"
+            
             [isPreviewVisible]="isPreviewVisible()"
             (zoomIn)="zoomLevel.set(zoomLevel() + 10)"
             (zoomOut)="zoomLevel.set(Math.max(10, zoomLevel() - 10))"
             (resetZoom)="zoomLevel.set(100)"
-            (navigateBack)="onNavigateBack($event)"
+            
             (closePreview)="onClosePreview()"
             (openPreview)="onOpenPreview()"
           >
@@ -67,7 +67,7 @@ import { buildDetailRoute } from '../../../../navigation/domain/navigation-routi
             <aside
               class="sidebar"
               [style.flex-basis]="isPreviewVisible() ? '350px' : '100%'"
-              [style.max-width]="isPreviewVisible() ? '350px' : '100%'"
+              [style.max-width]="isPreviewVisible() ? '50vw' : '100%'"
             >
               <app-metadata-panel [itemType]="'DOCUMENT'" [documentData]="doc"></app-metadata-panel>
             </aside>
@@ -103,11 +103,18 @@ import { buildDetailRoute } from '../../../../navigation/domain/navigation-routi
   `,
   styles: [
     `
+      :host {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        overflow: hidden;
+      }
       .page-layout {
         display: flex;
         flex-direction: column;
-        height: 100vh;
+        height: 100%;
         background: #f1f5f9;
+        overflow: hidden;
       }
       .split-screen-content {
         display: flex;
@@ -160,8 +167,12 @@ import { buildDetailRoute } from '../../../../navigation/domain/navigation-routi
 
       .sidebar {
         width: 350px;
+        min-width: 250px;
+        max-width: 50vw;
         flex-shrink: 0;
-        overflow-y: auto; /* Se i metadati sono tanti, scorrono qui */
+        resize: horizontal;
+        overflow-y: hidden; /* Lasciamo scorrere al MetadataPanel interno che ha già overflow-y: auto */
+        overflow-x: hidden;
       }
 
       .main-content {
@@ -227,13 +238,6 @@ export class ItemDetailPageComponent {
     return '';
   });
 
-  parentAggregateId = computed(() => {
-    if (this.itemType() !== 'DOCUMENT') {
-      return null;
-    }
-
-    return this.documentState().detail?.idAggregazione ?? null;
-  });
 
   constructor() {
     effect(() => {
@@ -261,13 +265,6 @@ export class ItemDetailPageComponent {
   // Controlla se la preview del documento (app-document-viewer) è visibile
   isPreviewVisible = signal(true);
 
-  onNavigateBack(aggregateId: string) {
-    if (!aggregateId) {
-      return;
-    }
-
-    void this.router.navigate(buildDetailRoute('AGGREGATE', aggregateId));
-  }
 
   onDocumentSelected(docId: string) {
     void this.router.navigate(buildDetailRoute('DOCUMENT', docId));

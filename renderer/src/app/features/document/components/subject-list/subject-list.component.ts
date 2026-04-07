@@ -35,12 +35,16 @@ import { KeyValuePipe } from '@angular/common';
   `,
   styles: [
     `
+      :host {
+        display: block;
+        width: 100%;
+        margin-bottom: 1rem;
+      }
       .metadata-card {
         background: #f8fafc;
         border: 1px solid #e2e8f0;
         border-radius: 8px;
         padding: 1.25rem;
-        margin-bottom: 1rem;
       }
       .empty-message {
         color: #64748b;
@@ -48,8 +52,8 @@ import { KeyValuePipe } from '@angular/common';
         font-size: 0.9rem;
       }
       .subject-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        display: flex;
+        flex-direction: column;
         gap: 1rem;
         margin-top: 1rem;
       }
@@ -66,11 +70,15 @@ import { KeyValuePipe } from '@angular/common';
         display: flex;
         justify-content: space-between;
         align-items: center;
+        flex-wrap: wrap;
+        gap: 0.5rem;
       }
       .role {
         font-weight: 600;
         color: #0f172a;
         font-size: 0.95rem;
+        word-break: break-all;
+        overflow-wrap: break-word;
       }
       .type-badge {
         font-size: 0.75rem;
@@ -87,6 +95,8 @@ import { KeyValuePipe } from '@angular/common';
         display: flex;
         margin-bottom: 0.5rem;
         font-size: 0.85rem;
+        flex-wrap: wrap;
+        gap: 0.25rem;
       }
       .data-row:last-child {
         margin-bottom: 0;
@@ -94,7 +104,7 @@ import { KeyValuePipe } from '@angular/common';
       .label {
         font-weight: 600;
         color: #64748b;
-        width: 120px;
+        min-width: 120px;
         flex-shrink: 0;
       }
       .value {

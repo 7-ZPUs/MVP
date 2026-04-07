@@ -8,13 +8,6 @@ import { CommonModule } from '@angular/common';
   template: `
     <div class="toolbar-container">
       <div class="title-section">
-        @if (parentAggregateId()) {
-          <button class="btn-back" (click)="navigateBack.emit(parentAggregateId()!)">
-            ← Torna al Fascicolo {{ parentAggregateId() }}
-          </button>
-          <span class="separator">/</span>
-        }
-
         <div class="title-info">
           <span class="badge" [class.badge-doc]="formato() !== 'FASCICOLO'">{{ formato() }}</span>
           <h2 class="title">{{ titolo() }}</h2>
@@ -98,11 +91,6 @@ import { CommonModule } from '@angular/common';
         background: #f1f5f9;
         color: #0f172a;
         border-color: #94a3b8;
-      }
-      .separator {
-        color: #cbd5e1;
-        font-weight: 300;
-        font-size: 1.2rem;
       }
       .title-info {
         display: flex;
@@ -190,9 +178,6 @@ export class DocumentToolbarComponent {
   formato = input.required<string>();
   zoomLevel = input.required<number>();
 
-  // Nuovo input opzionale per il breadcrumb
-  parentAggregateId = input<string | null>(null);
-
   // Indica se la preview è visibile
   isPreviewVisible = input<boolean>(true);
 
@@ -202,7 +187,4 @@ export class DocumentToolbarComponent {
   resetZoom = output<void>();
   closePreview = output<void>();
   openPreview = output<void>();
-
-  // Emette l'ID del fascicolo a cui tornare
-  navigateBack = output<string>();
 }
