@@ -38,12 +38,10 @@ import { buildDetailRoute } from '../../../../navigation/domain/navigation-routi
             [titolo]="pageTitle()"
             [formato]="documentState().detail?.mimeType || ''"
             [zoomLevel]="zoomLevel()"
-            
             [isPreviewVisible]="isPreviewVisible()"
             (zoomIn)="zoomLevel.set(zoomLevel() + 10)"
             (zoomOut)="zoomLevel.set(Math.max(10, zoomLevel() - 10))"
             (resetZoom)="zoomLevel.set(100)"
-            
             (closePreview)="onClosePreview()"
             (openPreview)="onOpenPreview()"
           >
@@ -238,7 +236,6 @@ export class ItemDetailPageComponent {
     return '';
   });
 
-
   constructor() {
     effect(() => {
       // Quando cambia l'URL o l'ID, ricarica i dati con il Facade corretto
@@ -263,8 +260,7 @@ export class ItemDetailPageComponent {
   zoomLevel = signal(100);
 
   // Controlla se la preview del documento (app-document-viewer) è visibile
-  isPreviewVisible = signal(true);
-
+  isPreviewVisible = signal(false);
 
   onDocumentSelected(docId: string) {
     void this.router.navigate(buildDetailRoute('DOCUMENT', docId));
