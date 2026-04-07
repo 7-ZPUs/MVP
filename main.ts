@@ -157,7 +157,7 @@ function exportDb(dstPath: string): void {
       "ms.",
     );
     if (process.env["NODE_ENV"] === "development") {
-      exportDb("/workspaces/MVP/dip-viewer-exported.db");
+      exportDb("/workspaces/MVP/export.db");
     }
   } catch (error) {
     console.warn(

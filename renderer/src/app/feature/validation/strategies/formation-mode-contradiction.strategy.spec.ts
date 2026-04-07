@@ -20,7 +20,7 @@ describe('FormationModeContradictionStrategy', () => {
     it("NON dovrebbe segnalare errore se c'è la modalità ma conformitaCopie è null/undefined", () => {
       const filters = {
         diDai: {
-          modalitaFormazione: 'a' as DIDAIFormation,
+          modalitaFormazione: DIDAIFormation.EX_NOVO,
           verifica: { conformitaCopie: null },
         },
       } as unknown as PartialSearchFilters;
@@ -43,10 +43,10 @@ describe('FormationModeContradictionStrategy', () => {
   });
 
   describe('Contraddizioni Logiche', () => {
-    it('dovrebbe segnalare errore se cerco modalità "a" e imposto conformitaCopie a true', () => {
+    it('dovrebbe segnalare errore se cerco modalità EX_NOVO e imposto conformitaCopie a true', () => {
       const filters = {
         diDai: {
-          modalitaFormazione: 'a' as DIDAIFormation,
+          modalitaFormazione: DIDAIFormation.EX_NOVO,
           verifica: { conformitaCopie: true },
         },
       } as unknown as PartialSearchFilters;
@@ -57,10 +57,10 @@ describe('FormationModeContradictionStrategy', () => {
       expect(result.get('diDai.verifica.conformitaCopie')?.[0].code).toBe('ERR_CONF_FORM_001');
     });
 
-    it('dovrebbe segnalare errore se cerco modalità "c" e imposto conformitaCopie a false', () => {
+    it('dovrebbe segnalare errore se cerco modalità MEMORIZZAZIONE e imposto conformitaCopie a false', () => {
       const filters = {
         diDai: {
-          modalitaFormazione: 'c' as DIDAIFormation,
+          modalitaFormazione: DIDAIFormation.MEMORIZZAZIONE,
           verifica: { conformitaCopie: false },
         },
       } as unknown as PartialSearchFilters;
@@ -72,7 +72,19 @@ describe('FormationModeContradictionStrategy', () => {
   });
 
   describe('Ricerche Valide', () => {
-    it('NON dovrebbe segnalare errore se cerco modalità "b" e imposto conformitaCopie a true', () => {
+    it('NON dovrebbe segnalare errore se cerco modalità ACQUISIZIONE e imposto conformitaCopie a true', () => {
+      const filters = {
+        diDai: {
+          modalitaFormazione: DIDAIFormation.ACQUISIZIONE,
+          verifica: { conformitaCopie: true },
+        },
+      } as unknown as PartialSearchFilters;
+
+      const result = strategy.validate(filters);
+      expect(result.size).toBe(0);
+    });
+
+    it('NON dovrebbe segnalare errore se cerco modalità legacy "b" e imposto conformitaCopie a true', () => {
       const filters = {
         diDai: {
           modalitaFormazione: 'b' as DIDAIFormation,

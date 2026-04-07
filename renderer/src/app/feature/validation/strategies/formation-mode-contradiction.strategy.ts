@@ -13,7 +13,7 @@ export class FormationModeContradictionStrategy implements IFilterValidationStra
       return errors;
     }
 
-    const isModeB = mode === ('b' as DIDAIFormation) || mode === ('B' as DIDAIFormation);
+    const isModeB = this.isConformitaCompatibleMode(mode);
 
     if (!isModeB) {
       this.addError(errors, 'diDai.verifica.conformitaCopie', {
@@ -25,6 +25,32 @@ export class FormationModeContradictionStrategy implements IFilterValidationStra
     }
 
     return errors;
+  }
+
+  private isConformitaCompatibleMode(mode: DIDAIFormation | null | undefined): boolean {
+    if (!mode) {
+      return false;
+    }
+
+    if (typeof mode !== 'string') {
+      return false;
+    }
+
+    const normalized = mode.trim().toLowerCase();
+    const normalizedAcquisizione = DIDAIFormation.ACQUISIZIONE.trim().toLowerCase();
+
+    // Legacy compatibility for historical saved filters that used letter codes.
+    if (normalized === 'b') {
+      return true;
+    }
+
+    // Current UI emits full enum string; this keeps validation aligned with the active options.
+    if (normalized === normalizedAcquisizione) {
+      return true;
+    }
+
+    // Defensive fallback for older canonicalized variants.
+    return normalized.startsWith('acquisizione di un documento informatico per via telematica');
   }
 
   private addError(

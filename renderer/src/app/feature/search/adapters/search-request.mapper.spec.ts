@@ -54,7 +54,7 @@ describe('search-request.mapper', () => {
     );
   });
 
-  it('keeps custom path as-is and applies LIKE', () => {
+  it('normalizes custom metadata path to DocumentoRoot.CustomMetadata.Key and applies LIKE', () => {
     const dto = toSearchRequestDTO({
       common: {},
       diDai: {},

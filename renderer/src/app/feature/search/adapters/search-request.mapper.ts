@@ -4,7 +4,16 @@ import {
   SearchGroupDTO,
   SearchRequestDTO,
 } from '../../../../../../shared/domain/metadata/search.models';
-import { DocumentType } from '../../../../../../shared/domain/metadata/search.enum';
+import {
+  AggregationType,
+  AssegnazioneType,
+  DIDAIFormation,
+  DocumentType,
+  FascicoloType,
+  ModificationType,
+  ProcedimentoFaseType,
+  RegisterType,
+} from '../../../../../../shared/domain/metadata/search.enum';
 import {
   SubjectRoleType,
   SubjectType,
@@ -14,7 +23,10 @@ import { SubjectCriteria } from '../../../../../../shared/domain/metadata/search
 type StringMode = 'LIKE' | 'EQ';
 
 const DOC_ROOT = 'DocumentoInformatico';
+const DOC_ADMIN_ROOT = 'DocumentoAmministrativoInformatico';
 const AGG_ROOT = 'AggregazioneDocumentale';
+const AGG_CUSTOM_META_ROOT = 'AggregazioneDocumentaliInformatiche';
+const CUSTOM_METADATA_ROOTS = [DOC_ROOT, DOC_ADMIN_ROOT, AGG_CUSTOM_META_ROOT] as const;
 const PATH_REGEX = /^\w+(\.\w+)*$/;
 
 const SUBJECT_ROLE_WRAPPER: Record<string, string> = {
@@ -631,18 +643,77 @@ function buildAggregateGroup(aggregate: any): SearchGroupDTO | null {
   return andGroup(items);
 }
 
-function buildCustomMetaGroup(customMeta: any): SearchGroupDTO | null {
+function buildCustomMetaGroup(customMeta: any, documentType: unknown): SearchGroupDTO | null {
   if (!customMeta || typeof customMeta !== 'object') return null;
 
-  const field = toTrimmed(customMeta.field);
-  const value = customMeta.value;
-  if (!field || !isMeaningful(value)) return null;
+  const rawEntries = Array.isArray(customMeta) ? customMeta : [customMeta];
 
-  const validPath = safePath(field);
-  if (!validPath) return null;
+  const conditions = rawEntries
+    .map((entry) => {
+      const field = toTrimmed(entry?.field);
+      const value = entry?.value;
+      if (!field || !isMeaningful(value)) return null;
 
-  const condition = scalarCondition(validPath, value, 'LIKE');
-  return condition ? andGroup([condition]) : null;
+      const validPaths = normalizeCustomMetadataPaths(field, documentType);
+      if (validPaths.length === 0) return null;
+
+      if (validPaths.length === 1) {
+        return scalarCondition(validPaths[0], value, 'LIKE');
+      }
+
+      const alternatives = validPaths
+        .map((path) => scalarCondition(path, value, 'LIKE'))
+        .filter((condition): condition is SearchConditionDTO => condition !== null);
+
+      return orGroup(alternatives);
+    })
+    .filter((condition): condition is SearchConditionDTO | SearchGroupDTO => condition !== null);
+
+  return andGroup(conditions);
+}
+
+function resolveCustomMetadataRoots(documentType: unknown): string[] {
+  if (documentType === DocumentType.DOCUMENTO_INFORMATICO) {
+    return [DOC_ROOT];
+  }
+
+  if (documentType === DocumentType.DOCUMENTO_AMMINISTRATIVO_INFORMATICO) {
+    return [DOC_ADMIN_ROOT];
+  }
+
+  if (documentType === DocumentType.AGGREGAZIONE_DOCUMENTALE) {
+    return [AGG_CUSTOM_META_ROOT];
+  }
+
+  return [...CUSTOM_METADATA_ROOTS];
+}
+
+function normalizeCustomMetadataPaths(field: string, documentType: unknown): string[] {
+  const sanitizedPath = safePath(field);
+  if (!sanitizedPath) return [];
+
+  const segments = sanitizedPath.split('.').filter((segment) => segment.length > 0);
+  if (segments.length === 0) return [];
+
+  const keySegment = segments.at(-1);
+  if (!keySegment) return [];
+
+  // If the user typed only "CustomMetadata" (without key), reject it.
+  if (keySegment === 'CustomMetadata') {
+    return [];
+  }
+
+  const roots = resolveCustomMetadataRoots(documentType);
+  const explicitRoot = segments.find((segment) =>
+    [DOC_ROOT, DOC_ADMIN_ROOT, AGG_ROOT, AGG_CUSTOM_META_ROOT].includes(segment),
+  );
+
+  if (explicitRoot) {
+    const normalizedRoot = explicitRoot === AGG_ROOT ? AGG_CUSTOM_META_ROOT : explicitRoot;
+    return [`${normalizedRoot}.CustomMetadata.${keySegment}`];
+  }
+
+  return roots.map((root) => `${root}.CustomMetadata.${keySegment}`);
 }
 
 function mapSubjectDetailKey(key: string): string {
@@ -737,7 +808,10 @@ export function toSearchRequestDTO(filters: SearchFilters): SearchRequestDTO | n
   appendIfPresent(groups, buildCommonGroup((filters as any)?.common));
   appendIfPresent(groups, buildDiDaiGroup((filters as any)?.diDai));
   appendIfPresent(groups, buildAggregateGroup((filters as any)?.aggregate));
-  appendIfPresent(groups, buildCustomMetaGroup((filters as any)?.customMeta));
+  appendIfPresent(
+    groups,
+    buildCustomMetaGroup((filters as any)?.customMeta, (filters as any)?.common?.tipoDocumento),
+  );
   appendIfPresent(groups, buildSubjectGroup((filters as any)?.subject ?? []));
 
   const root = andGroup(groups);

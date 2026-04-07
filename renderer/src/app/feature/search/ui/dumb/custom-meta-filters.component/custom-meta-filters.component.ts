@@ -39,7 +39,7 @@ export class CustomMetaFiltersComponent implements OnChanges, OnDestroy {
 
     this.form.valueChanges.pipe(takeUntil(this.destroy$)).subscribe((val) => {
       const validEntries = val.entries.filter(
-        (e: CustomFilterValues) => e.field?.trim() || e.value?.trim()
+        (e: CustomFilterValues) => e.field?.trim() || e.value?.trim(),
       );
 
       if (validEntries.length === 0) {
@@ -60,7 +60,7 @@ export class CustomMetaFiltersComponent implements OnChanges, OnDestroy {
         field: [entry?.field ?? ''],
         value: [entry?.value ?? ''],
       }),
-      { emitEvent }
+      { emitEvent },
     );
   }
 
@@ -70,14 +70,54 @@ export class CustomMetaFiltersComponent implements OnChanges, OnDestroy {
 
   public ngOnChanges(changes: SimpleChanges): void {
     if ('filters' in changes) {
-      const newFilters = changes['filters'].currentValue as CustomFilterValues[] | null;
+      const newFilters = this.normalizeEntries(
+        changes['filters'].currentValue as CustomFilterValues[] | null,
+      );
+      const currentEntries = this.normalizeEntries(
+        this.entries.getRawValue() as CustomFilterValues[],
+      );
+      const currentMeaningfulEntries = currentEntries.filter((entry) =>
+        this.isMeaningfulEntry(entry),
+      );
+
+      // Avoid rebuilding controls when parent echoes back only meaningful entries while user keeps drafting.
+      if (this.areEntriesEqual(newFilters, currentMeaningfulEntries)) {
+        return;
+      }
 
       this.entries.clear({ emitEvent: false });
 
-      if (newFilters && newFilters.length > 0) {
-        newFilters.forEach((f) => this.addEntry(f, false));
+      newFilters.forEach((f) => this.addEntry(f, false));
+    }
+  }
+
+  private normalizeEntries(entries: CustomFilterValues[] | null | undefined): CustomFilterValues[] {
+    if (!Array.isArray(entries)) {
+      return [];
+    }
+
+    return entries.map((entry) => ({
+      field: entry?.field ?? '',
+      value: entry?.value ?? '',
+    }));
+  }
+
+  private isMeaningfulEntry(entry: CustomFilterValues | null | undefined): boolean {
+    return !!entry?.field?.trim() || !!entry?.value?.trim();
+  }
+
+  private areEntriesEqual(left: CustomFilterValues[], right: CustomFilterValues[]): boolean {
+    if (left.length !== right.length) {
+      return false;
+    }
+
+    for (let i = 0; i < left.length; i++) {
+      if (left[i].field !== right[i].field || left[i].value !== right[i].value) {
+        return false;
       }
     }
+
+    return true;
   }
 
   public ngOnDestroy(): void {
@@ -94,7 +134,7 @@ export class CustomMetaFiltersComponent implements OnChanges, OnDestroy {
       return false;
     }
     return Array.from(this.validationResult.errors.keys()).some((key) =>
-      (key as string).startsWith('customMeta[')
+      key.startsWith('customMeta['),
     );
   }
 }
