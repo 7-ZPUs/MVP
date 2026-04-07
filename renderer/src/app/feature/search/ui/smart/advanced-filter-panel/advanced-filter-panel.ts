@@ -48,25 +48,25 @@ import { FilterRulesManager, FilterUIState } from './filter-rules.manager';
 export class AdvancedFilterPanelComponent implements OnInit, OnChanges {
   @Input() validator?: FilterValidatorFn;
   @Input() externalValidation: ValidationResult | null = null;
-  
+
   private _filters: SearchFilters = {
     common: {},
     diDai: {},
     aggregate: {},
     customMeta: null,
-    subject: []
+    subject: [],
   } as any;
 
   @Input()
   set filters(value: SearchFilters) {
-    const incoming = value || {} as any;
+    const incoming = value || ({} as any);
 
     const safeFilters = {
       ...incoming,
       common: incoming.common || {},
       diDai: incoming.diDai || {},
       aggregate: incoming.aggregate || {},
-      subject: incoming.subject || []
+      subject: incoming.subject || [],
     };
 
     this._filters = safeFilters;
@@ -99,7 +99,6 @@ export class AdvancedFilterPanelComponent implements OnInit, OnChanges {
   @Output() filterRemoved = new EventEmitter<string>();
   @Output() filtersReset = new EventEmitter<void>();
 
-  public isExpanded: boolean = true;
   public currentValidationResult: ValidationResult | null = null;
   public subjectResetCounter: number = 0;
 
@@ -129,11 +128,7 @@ export class AdvancedFilterPanelComponent implements OnInit, OnChanges {
     });
   }
 
-  public ngOnChanges(changes: SimpleChanges): void {
-    if (changes['externalValidation']?.currentValue?.isValid === false) {
-      this.isExpanded = true;
-    }
-  }
+  public ngOnChanges(changes: SimpleChanges): void {}
 
   public get effectiveValidationResult(): ValidationResult | null {
     if (this.externalValidation?.isValid === false) {
@@ -165,10 +160,6 @@ export class AdvancedFilterPanelComponent implements OnInit, OnChanges {
 
   public onFieldValidationError(field: string, error: ValidationError | null): void {
     // Riservato
-  }
-
-  public togglePanel(): void {
-    this.isExpanded = !this.isExpanded;
   }
 
   public onSubmit(): void {
@@ -209,7 +200,7 @@ export class AdvancedFilterPanelComponent implements OnInit, OnChanges {
     const fullFilters: SearchFilters = {
       ...safeCurrentFilters,
       ...partialSearchFilters,
-      subject: safeCurrentFilters.subject || []
+      subject: safeCurrentFilters.subject || [],
     };
     this.filtersChanged.emit(fullFilters);
   }

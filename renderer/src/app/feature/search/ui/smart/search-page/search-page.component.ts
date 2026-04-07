@@ -33,6 +33,8 @@ export class SearchPageComponent implements OnInit {
   public readonly state = this.searchFacade.getState();
   public externalValidation: ValidationResult | null = null;
 
+  public isSidebarCollapsed = false;
+
   public ngOnInit(): void {
     const currentState = this.state();
 
@@ -64,6 +66,7 @@ export class SearchPageComponent implements OnInit {
     this.externalValidation = validation;
 
     if (!validation.isValid) {
+      this.isSidebarCollapsed = false;
       return;
     }
 
@@ -78,6 +81,7 @@ export class SearchPageComponent implements OnInit {
     const validation = this.filterValidator.validate(filters as unknown as PartialSearchFilters);
     this.externalValidation = validation;
     if (!validation.isValid) {
+      this.isSidebarCollapsed = false;
       return;
     }
     this.searchFacade.searchAdvanced(filters);
@@ -101,6 +105,9 @@ export class SearchPageComponent implements OnInit {
 
   public onLiveValidationChanged(result: ValidationResult): void {
     this.externalValidation = result;
+    if( result.isValid === false) {
+      this.isSidebarCollapsed = false;
+    }
   }
 
   public onResultSelected(result: ISearchResult): void {
