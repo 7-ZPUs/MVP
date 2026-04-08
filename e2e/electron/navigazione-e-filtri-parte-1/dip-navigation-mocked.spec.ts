@@ -122,19 +122,22 @@ test.describe('Navigazione e Filtri Parte 1 - Mocked', () => {
     });
   });
 
-  test('[TS-26, TS-28, TS-29, TS-30, TS-31] rende disponibili ricerca base e opzioni', async ({ page }) => {
+  const range = (start: number, end: number): number[] =>
+    Array.from({ length: end - start + 1 }, (_, i) => start + i);
+
+  async function assertSearchOptionsAvailable(page: import('@playwright/test').Page): Promise<void> {
     const dipPage = new DipNavigationPage(page);
     await dipPage.gotoSearchPage();
 
-    await expect(dipPage.searchInput).toBeVisible(); // TS-26
-    await expect(dipPage.freeTextRadio).toBeVisible(); // TS-28
-    await expect(dipPage.classNameRadio).toBeVisible(); // TS-30
-    await expect(dipPage.processIdRadio).toBeVisible(); // TS-29
-    await expect(dipPage.semanticToggle).toBeVisible(); // TS-31 (ricerca avanzata/semantica disponibile)
-    await expect(dipPage.applyFiltersButton).toBeVisible(); // TS-31
-  });
+    await expect(dipPage.searchInput).toBeVisible();
+    await expect(dipPage.freeTextRadio).toBeVisible();
+    await expect(dipPage.classNameRadio).toBeVisible();
+    await expect(dipPage.processIdRadio).toBeVisible();
+    await expect(dipPage.semanticToggle).toBeVisible();
+    await expect(dipPage.applyFiltersButton).toBeVisible();
+  }
 
-  test('[TS-32..TS-34, TS-40..TS-42, TS-43..TS-58] sezioni filtri e campi sono visibili', async ({ page }) => {
+  async function assertSectionsAndFieldsVisible(page: import('@playwright/test').Page): Promise<void> {
     const dipPage = new DipNavigationPage(page);
     await dipPage.gotoSearchPage();
 
@@ -142,21 +145,21 @@ test.describe('Navigazione e Filtri Parte 1 - Mocked', () => {
     await dipPage.openFilterSection('Chiave Descrittiva');
     await dipPage.openFilterSection('Classificazione');
 
-    await expect(dipPage.typeSelect).toBeVisible(); // TS-33, TS-43, TS-54, TS-55
-    await expect(dipPage.conservationYearsInput).toBeVisible(); // TS-43, TS-49, TS-50, TS-51
-    await expect(dipPage.noteInput).toBeVisible(); // TS-43, TS-52, TS-53
-    await expect(dipPage.oggettoInput).toBeVisible(); // TS-43, TS-45, TS-46
-    await expect(dipPage.paroleChiaveInput).toBeVisible(); // TS-43, TS-46
-    await expect(dipPage.codiceClassificazioneInput).toBeVisible(); // TS-43, TS-47, TS-48
-    await expect(dipPage.descrizioneClassificazioneInput).toBeVisible(); // TS-43, TS-48
+    await expect(dipPage.typeSelect).toBeVisible();
+    await expect(dipPage.conservationYearsInput).toBeVisible();
+    await expect(dipPage.noteInput).toBeVisible();
+    await expect(dipPage.oggettoInput).toBeVisible();
+    await expect(dipPage.paroleChiaveInput).toBeVisible();
+    await expect(dipPage.codiceClassificazioneInput).toBeVisible();
+    await expect(dipPage.descrizioneClassificazioneInput).toBeVisible();
 
-    await expect(page.getByRole('heading', { name: 'Dati Documento (DiDai)' })).toBeVisible(); // TS-33, TS-41
-    await expect(page.getByRole('heading', { name: 'Dati di Aggregazione' })).toBeVisible(); // TS-33, TS-41
-    await expect(page.getByRole('heading', { name: 'Metadati Personalizzati' })).toBeVisible(); // TS-34, TS-42
-    await expect(page.getByRole('heading', { name: 'Soggetti' })).toBeVisible(); // TS-32, TS-40, TS-56, TS-58
-  });
+    await expect(page.getByRole('heading', { name: 'Dati Documento (DiDai)' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Dati di Aggregazione' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Metadati Personalizzati' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Soggetti' })).toBeVisible();
+  }
 
-  test('[TS-35, TS-36, TS-37, TS-38, TS-39, TS-44..TS-57] applica filtri multipli e resetta', async ({ page }) => {
+  async function assertApplyAndResetFilters(page: import('@playwright/test').Page): Promise<void> {
     const dipPage = new DipNavigationPage(page);
     await dipPage.gotoSearchPage();
 
@@ -173,52 +176,49 @@ test.describe('Navigazione e Filtri Parte 1 - Mocked', () => {
     await dipPage.descrizioneClassificazioneInput.fill('Classificazione appalti');
 
     await dipPage.applyFiltersButton.click();
-    await expect(dipPage.resultsTitle).toContainText('Trovati'); // TS-35, TS-38, TS-39, TS-44..TS-57
+    await expect(dipPage.resultsTitle).toContainText('Trovati');
 
     await dipPage.clearFiltersButton.click();
-    await expect(dipPage.conservationYearsInput).toHaveValue(''); // TS-36, TS-37
-    await expect(dipPage.noteInput).toHaveValue(''); // TS-36, TS-37
-    await expect(dipPage.oggettoInput).toHaveValue(''); // TS-36, TS-37
-  });
+    await expect(dipPage.conservationYearsInput).toHaveValue('');
+    await expect(dipPage.noteInput).toHaveValue('');
+    await expect(dipPage.oggettoInput).toHaveValue('');
+  }
 
-  test('[TS-59, TS-60] mostra i ruoli disponibili per filtro soggetto', async ({ page }) => {
+  async function assertSubjectRolesVisible(page: import('@playwright/test').Page): Promise<void> {
     const dipPage = new DipNavigationPage(page);
     await dipPage.gotoSearchPage();
 
     await dipPage.startSubjectWizard();
-    await expect(page.getByRole('button', { name: /Autore/i })).toBeVisible(); // TS-59, TS-60
-    await expect(page.getByRole('button', { name: /Destinatario/i })).toBeVisible(); // TS-59, TS-60
-    await expect(page.getByRole('button', { name: /RUP/i })).toBeVisible(); // TS-59, TS-60
-  });
+    await expect(page.getByRole('button', { name: /Autore/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: /Destinatario/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: /RUP/i })).toBeVisible();
+  }
 
-  test('[TS-3, TS-4, TS-5, TS-6, TS-10, TS-11, TS-14, TS-15, TS-16, TS-17, TS-22, TS-23] mostra cards e ricerca per tipo', async ({ page }) => {
+  async function assertSearchCardsByType(page: import('@playwright/test').Page): Promise<void> {
     const dipPage = new DipNavigationPage(page);
     await dipPage.gotoSearchPage();
 
     await dipPage.classNameRadio.check();
     await dipPage.search('Classe');
     await expect(page.getByTestId('search-result-card').first()).toBeVisible();
-
-    await expect(page.getByRole('heading', { name: 'Classe Contratti' })).toBeVisible(); // TS-3, TS-4, TS-22
-    await expect(page.getByText('CLASSE_DOCUMENTALE')).toBeVisible(); // TS-22
-    await expect(page.getByTestId('result-integrity-badge').first()).toContainText('VALID'); // TS-5, TS-6
+    await expect(page.getByRole('heading', { name: 'Classe Contratti' })).toBeVisible();
+    await expect(page.getByText('CLASSE_DOCUMENTALE')).toBeVisible();
+    await expect(page.getByTestId('result-integrity-badge').first()).toContainText('VALID');
 
     await dipPage.processIdRadio.check();
     await dipPage.search('PROC-201');
     await expect(page.getByTestId('search-result-card').first()).toBeVisible();
-
-    await expect(page.getByRole('heading', { name: 'Procedura Appalto 2026' })).toBeVisible(); // TS-10, TS-11, TS-23
-    await expect(page.getByText('ID Processo: PROC-201')).toBeVisible(); // TS-23
+    await expect(page.getByRole('heading', { name: 'Procedura Appalto 2026' })).toBeVisible();
+    await expect(page.getByText('ID Processo: PROC-201')).toBeVisible();
 
     await dipPage.freeTextRadio.check();
     await dipPage.search('Determina');
     await expect(page.getByTestId('search-result-card').first()).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Determina a contrarre.pdf' })).toBeVisible();
+    await expect(page.getByText('ID: DOC-301')).toBeVisible();
+  }
 
-    await expect(page.getByRole('heading', { name: 'Determina a contrarre.pdf' })).toBeVisible(); // TS-14, TS-15
-    await expect(page.getByText('ID: DOC-301')).toBeVisible(); // TS-16, TS-17
-  });
-
-  test('[TS-2, TS-9, TS-13, TS-18] informa utente su elenchi vuoti', async ({ page }) => {
+  async function assertEmptyStateInfo(page: import('@playwright/test').Page): Promise<void> {
     const dipPage = new DipNavigationPage(page);
 
     await page.route('**/__e2e__/mock-ipc', async (route) => {
@@ -242,8 +242,48 @@ test.describe('Navigazione e Filtri Parte 1 - Mocked', () => {
 
     await dipPage.gotoSearchPage();
     await dipPage.search('assenza');
-    await expect(dipPage.emptyState).toContainText(/nessun/i); // TS-2, TS-9, TS-13, TS-18
-  });
+    await expect(dipPage.emptyState).toContainText(/nessun/i);
+  }
+
+  for (const ts of [26, 28, 29, 30, 31]) {
+    test(`[TS-${ts}] rende disponibili ricerca base e opzioni`, async ({ page }) => {
+      await assertSearchOptionsAvailable(page);
+    });
+  }
+
+  for (const ts of [
+    ...range(32, 34),
+    ...range(40, 42),
+    ...range(43, 58),
+  ]) {
+    test(`[TS-${ts}] sezioni filtri e campi sono visibili`, async ({ page }) => {
+      await assertSectionsAndFieldsVisible(page);
+    });
+  }
+
+  for (const ts of [35, 36, 37, 38, 39, ...range(44, 57)]) {
+    test(`[TS-${ts}] applica filtri multipli e resetta`, async ({ page }) => {
+      await assertApplyAndResetFilters(page);
+    });
+  }
+
+  for (const ts of [59, 60]) {
+    test(`[TS-${ts}] mostra i ruoli disponibili per filtro soggetto`, async ({ page }) => {
+      await assertSubjectRolesVisible(page);
+    });
+  }
+
+  for (const ts of [3, 4, 5, 6, 10, 11, 14, 15, 16, 17, 22, 23]) {
+    test(`[TS-${ts}] mostra cards e ricerca per tipo`, async ({ page }) => {
+      await assertSearchCardsByType(page);
+    });
+  }
+
+  for (const ts of [2, 9, 13, 18]) {
+    test(`[TS-${ts}] informa utente su elenchi vuoti`, async ({ page }) => {
+      await assertEmptyStateInfo(page);
+    });
+  }
 
   test('[TS-20] errore se anteprima documento non disponibile', async ({ page }) => {
     const dipPage = new DipNavigationPage(page);
@@ -268,7 +308,12 @@ test.describe('Navigazione e Filtri Parte 1 - Mocked', () => {
     await expect(page.getByTestId('document-viewer-error-message')).toContainText(/nessun file associato a questo documento/i); // TS-20
   });
 
-  test('[TS-7, TS-24, TS-25, TS-27] tracciati come non implementati in UI corrente', async () => {
-    test.fixme(true, 'Requisiti non verificabili end-to-end con la UI attuale: timestamp in card, stato indicizzazione semantic visibile, validazione search input esplicita.');
-  });
+  for (const ts of [7, 24, 25, 27]) {
+    test(`[TS-${ts}] tracciato come non implementato in UI corrente`, async () => {
+      test.fixme(
+        true,
+        'Requisito non verificabile end-to-end con la UI attuale: timestamp in card, stato indicizzazione semantic visibile o validazione search input esplicita.'
+      );
+    });
+  }
 });

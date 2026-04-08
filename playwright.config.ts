@@ -27,7 +27,8 @@ export default defineConfig({
       testMatch: /.*fullstack\.spec\.ts/,
       use: { 
       },
-      fullyParallel: false, 
+      fullyParallel: false,
+      workers: 1,
     }
   ],
 });

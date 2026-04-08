@@ -8,27 +8,27 @@ export class DipNavigationPage {
   }
 
   get searchInput(): Locator {
-    return this.page.getByPlaceholder('Inserisci testo di ricerca...');
+    return this.page.getByTestId('search-input').or(this.page.getByPlaceholder('Inserisci testo di ricerca...'));
   }
 
   get searchSubmitButton(): Locator {
-    return this.page.getByRole('button', { name: '🔍 Cerca', exact: true });
+    return this.page.getByTestId('search-submit-button').or(this.page.getByRole('button', { name: '🔍 Cerca', exact: true }));
   }
 
   get semanticToggle(): Locator {
-    return this.page.getByLabel('Ricerca Semantica');
+    return this.page.getByTestId('search-semantic-toggle').or(this.page.getByLabel('Ricerca Semantica'));
   }
 
   get classNameRadio(): Locator {
-    return this.page.getByLabel('Nome Classe');
+    return this.page.getByTestId('search-type-class').or(this.page.getByLabel('Nome Classe'));
   }
 
   get processIdRadio(): Locator {
-    return this.page.getByLabel('ID Processo');
+    return this.page.getByTestId('search-type-process').or(this.page.getByLabel('ID Processo'));
   }
 
   get freeTextRadio(): Locator {
-    return this.page.getByLabel('Testo Libero');
+    return this.page.getByTestId('search-type-free').or(this.page.getByLabel('Testo Libero'));
   }
 
   get treeNodes(): Locator {
@@ -64,31 +64,31 @@ export class DipNavigationPage {
   }
 
   get typeSelect(): Locator {
-    return this.page.locator('#tipoDoc');
+    return this.page.getByTestId('document-type-select');
   }
 
   get conservationYearsInput(): Locator {
-    return this.page.locator('#anniConservazione');
+    return this.page.getByTestId('conservation-years-input');
   }
 
   get noteInput(): Locator {
-    return this.page.locator('#noteFilter');
+    return this.page.getByTestId('note-input');
   }
 
   get oggettoInput(): Locator {
-    return this.page.locator('#oggettoFilter');
+    return this.page.getByTestId('subject-input');
   }
 
   get paroleChiaveInput(): Locator {
-    return this.page.locator('#paroleChiaveFilter');
+    return this.page.getByTestId('keywords-input');
   }
 
   get codiceClassificazioneInput(): Locator {
-    return this.page.locator('#codiceClass');
+    return this.page.getByTestId('classification-code-input');
   }
 
   get descrizioneClassificazioneInput(): Locator {
-    return this.page.locator('#descrizioneClass');
+    return this.page.getByTestId('classification-description-input');
   }
 
   get ruoloStepTitle(): Locator {
@@ -116,18 +116,24 @@ export class DipNavigationPage {
   }
 
   async openFilterSection(name: string): Promise<void> {
-    const summary = this.page.locator('summary', { hasText: name }).first();
-    if (await summary.count()) {
-      await summary.click();
-      return;
+    const summaryByName: Record<string, string> = {
+      'Dati Generali': 'filter-section-summary-general',
+      'Chiave Descrittiva': 'filter-section-summary-key',
+      'Classificazione': 'filter-section-summary-classification',
+    };
+
+    const summaryTestId = summaryByName[name];
+    if (summaryTestId) {
+      const summary = this.page.getByTestId(summaryTestId);
+      if (await summary.count()) {
+        await summary.click();
+        return;
+      }
     }
 
-    const collapsibleLabel = this.page
-      .locator('div, span, label, legend', { hasText: name })
-      .first();
-
-    if (await collapsibleLabel.count()) {
-      await collapsibleLabel.click({ force: true });
+    const summary = this.page.getByText(name, { exact: true }).first();
+    if (await summary.count()) {
+      await summary.click();
     }
   }
 

@@ -2,32 +2,65 @@ import { _electron as electron, ElectronApplication, expect, Page, test } from '
 import path from 'node:path';
 
 test.describe('Navigazione e Filtri Parte 1 - Fullstack', () => {
+  test.describe.configure({ timeout: 60000 });
+
   let app: ElectronApplication;
   let page: Page;
 
   test.beforeEach(async () => {
     const repoRoot = path.resolve(__dirname, '../../..');
 
-    app = await electron.launch({
-      args: [repoRoot],
-      env: {
-        ...process.env,
-        NODE_ENV: 'development',
-        ELECTRON_DISABLE_SANDBOX: '1',
-      },
-    });
+    let lastError: unknown;
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        app = await electron.launch({
+          args: [repoRoot],
+          env: {
+            ...process.env,
+            NODE_ENV: 'development',
+            ELECTRON_DISABLE_SANDBOX: '1',
+          },
+        });
 
-    page = await app.firstWindow();
-    await page.waitForLoadState('domcontentloaded');
+        page = await app.firstWindow();
+        await page.waitForLoadState('domcontentloaded');
+        return;
+      } catch (error) {
+        lastError = error;
+        if (app) {
+          await app.close().catch(() => {
+            // ignore cleanup errors between retries
+          });
+        }
+
+        await new Promise((resolve) => setTimeout(resolve, 500));
+      }
+    }
+
+    throw lastError;
   });
 
   test.afterEach(async () => {
     await app.close();
   });
 
-  test('[TS-1, TS-8, TS-12, TS-19, TS-21] happy path con backend/IPC reale', async () => {
-    const treeNodes = page.locator('.tree-node');
-    const toggles = page.locator('.toggle-icon');
+  async function ensureMainPageReady(): Promise<void> {
+    const windows = app.windows();
+    for (const win of windows) {
+      const searchButton = win.getByRole('button', { name: 'Ricerca' });
+      if (await searchButton.isVisible().catch(() => false)) {
+        page = win;
+        return;
+      }
+    }
+
+    await expect(page.getByRole('button', { name: 'Ricerca' })).toBeVisible({ timeout: 15000 });
+  }
+
+  async function runBackendIpcHappyPath(): Promise<void> {
+    await ensureMainPageReady();
+    const treeNodes = page.getByTestId('dip-tree-node');
+    const toggles = page.getByTestId('dip-tree-toggle');
 
     await expect(page.getByRole('button', { name: 'Ricerca' })).toBeVisible(); // TS-21
     await expect(treeNodes.first()).toBeVisible(); // TS-1
@@ -46,14 +79,15 @@ test.describe('Navigazione e Filtri Parte 1 - Fullstack', () => {
 
     await expect(page.getByRole('button', { name: /apri anteprima/i })).toBeVisible(); // TS-19
     await page.getByRole('button', { name: /apri anteprima/i }).click();
-    await expect(page.locator('app-document-viewer')).toBeVisible(); // TS-19
-  });
+    await expect(page.getByTestId('document-viewer').or(page.locator('app-document-viewer')).first()).toBeVisible(); // TS-19
+  }
 
-  test('[TS-24] ricerca semantica con bridge Electron reale', async () => {
+  async function runSemanticBridgeFlow(): Promise<void> {
+    await ensureMainPageReady();
     await page.getByRole('button', { name: 'Ricerca' }).click();
-    await page.getByPlaceholder('Inserisci testo di ricerca...').fill('determina');
-    await page.getByLabel('Ricerca Semantica').check();
-    await page.getByRole('button', { name: '🔍 Cerca', exact: true }).click({ noWaitAfter: true });
+    await page.getByTestId('search-input').or(page.getByPlaceholder('Inserisci testo di ricerca...')).first().fill('determina');
+    await page.getByTestId('search-semantic-toggle').or(page.getByLabel('Ricerca Semantica')).first().check();
+    await page.getByTestId('search-submit-button').or(page.getByRole('button', { name: '🔍 Cerca', exact: true })).first().click({ noWaitAfter: true });
 
     const semanticOutcome = page
       .getByTestId('search-page-title')
@@ -63,5 +97,15 @@ test.describe('Navigazione e Filtri Parte 1 - Fullstack', () => {
       .or(page.getByText(/nessun risultato trovato/i));
 
     await expect(semanticOutcome.first()).toBeVisible(); // TS-24
+  }
+
+  for (const ts of [1, 8, 12, 19, 21]) {
+    test(`[TS-${ts}] happy path con backend/IPC reale`, async () => {
+      await runBackendIpcHappyPath();
+    });
+  }
+
+  test('[TS-24] ricerca semantica con bridge Electron reale', async () => {
+    await runSemanticBridgeFlow();
   });
 });

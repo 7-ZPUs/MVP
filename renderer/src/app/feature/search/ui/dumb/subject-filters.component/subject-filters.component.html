@@ -22,13 +22,14 @@
     </button>
   </div>
 
-  <div *ngIf="currentStep() === 1" class="wizard-step slide-in">
+  <div *ngIf="currentStep() === 1" class="wizard-step slide-in" data-testid="subject-wizard-step-role">
     <h4>1. Seleziona il Ruolo</h4>
     <div class="button-grid">
       <button
         *ngFor="let item of availableRoles()"
         type="button"
         class="btn-choice"
+        [attr.data-testid]="'subject-role-option-' + item.key"
         (click)="setRole(item.key)"
       >
         {{ item.label }}
@@ -42,13 +43,14 @@
     </div>
   </div>
 
-  <div *ngIf="currentStep() === 2" class="wizard-step slide-in">
+  <div *ngIf="currentStep() === 2" class="wizard-step slide-in" data-testid="subject-wizard-step-type">
     <h4>2. Seleziona il Tipo di Soggetto ({{ selectedRole() }})</h4>
     <div class="button-grid">
       <button
         *ngFor="let type of allowedTypes()"
         type="button"
         class="btn-choice"
+        [attr.data-testid]="'subject-type-option-' + type"
         (click)="setType(type)"
       >
         {{ type }}
@@ -63,10 +65,11 @@
     </div>
   </div>
 
-  <div *ngIf="currentStep() === 3" class="wizard-step slide-in">
+  <div *ngIf="currentStep() === 3" class="wizard-step slide-in" data-testid="subject-wizard-step-details">
     <h4>3. Dettagli ({{ selectedRole() }} - {{ selectedType() }})</h4>
 
     <app-subject-detail-form
+      data-testid="subject-detail-form"
       [subjectType]="selectedType()"
       [details]="currentDetails()"
       (detailsChanged)="onDetailsChanged($event)"

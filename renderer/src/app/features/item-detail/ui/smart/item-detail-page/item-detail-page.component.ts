@@ -73,6 +73,7 @@ import { buildDetailRoute } from '../../../../navigation/domain/navigation-routi
             @if (isPreviewVisible()) {
               <main class="main-content">
                 <app-document-viewer
+                  data-testid="document-viewer"
                   [documentId]="doc.documentId"
                   [mimeType]="doc.mimeType"
                 ></app-document-viewer>
