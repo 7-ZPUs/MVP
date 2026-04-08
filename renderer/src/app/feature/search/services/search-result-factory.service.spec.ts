@@ -7,6 +7,7 @@ import {
   ClassResultCardComponent,
   AggregateResultCardComponent,
 } from '../ui/dumb/result-types';
+import { ElementType } from '../../../../../../shared/domain/metadata/search.enum';
 import { describe, it, expect, beforeEach } from 'vitest';
 
 describe('SearchResultFactoryService', () => {
@@ -35,19 +36,26 @@ describe('SearchResultFactoryService', () => {
     expect(componentClass).toBe(ClassResultCardComponent);
   });
 
-  it('dovrebbe restituire DocumentResultCardComponent per il tipo DOCUMENTO_INFORMATICO', () => {
-    const componentClass = service.getComponentForType('DOCUMENTO_INFORMATICO');
+  it('dovrebbe restituire DocumentResultCardComponent per ElementType.DOCUMENTO_INFORMATICO', () => {
+    const componentClass = service.getComponentForType(ElementType.DOCUMENTO_INFORMATICO);
     expect(componentClass).toBe(DocumentResultCardComponent);
   });
 
-  it('dovrebbe restituire DocumentResultCardComponent per il tipo DOCUMENTO_AMMINISTRATIVO_INFORMATICO', () => {
-    const componentClass = service.getComponentForType('DOCUMENTO_AMMINISTRATIVO_INFORMATICO');
+  it('dovrebbe restituire DocumentResultCardComponent per ElementType.DOCUMENTO_AMMINISTRATIVO_INFORMATICO', () => {
+    const componentClass = service.getComponentForType(
+      ElementType.DOCUMENTO_AMMINISTRATIVO_INFORMATICO,
+    );
     expect(componentClass).toBe(DocumentResultCardComponent);
   });
 
-  it('dovrebbe restituire AggregateResultCardComponent per il tipo AGGREGAZIONE_DOCUMENTALE', () => {
-    const componentClass = service.getComponentForType('AGGREGAZIONE_DOCUMENTALE');
+  it('dovrebbe restituire AggregateResultCardComponent per ElementType.AGGREGAZIONE_DOCUMENTALE', () => {
+    const componentClass = service.getComponentForType(ElementType.AGGREGAZIONE_DOCUMENTALE);
     expect(componentClass).toBe(AggregateResultCardComponent);
+  });
+
+  it('dovrebbe restituire ProcessResultCardComponent per ElementType.PROCESS', () => {
+    const componentClass = service.getComponentForType(ElementType.PROCESS);
+    expect(componentClass).toBe(ProcessResultCardComponent);
   });
 
   it('CORNER CASE: dovrebbe usare DocumentResultCardComponent come fallback per tipi sconosciuti', () => {

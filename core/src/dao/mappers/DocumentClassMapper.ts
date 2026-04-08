@@ -79,6 +79,7 @@ export class DocumentClassMapper {
       id,
       uuid: documentClass.getUuid(),
       integrityStatus: documentClass.getIntegrityStatus(),
+      type: "CLASSE",
     };
   }
 }

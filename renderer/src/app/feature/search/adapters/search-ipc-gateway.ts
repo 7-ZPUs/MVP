@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable, Observer, of } from 'rxjs';
-import { tap } from 'rxjs/operators';
+import { map, tap } from 'rxjs/operators';
 import { ISearchChannel } from '../contracts/search-channel.interface';
 
 import {
@@ -16,6 +16,7 @@ import {
   SearchFilters,
   SearchRequestDTO,
 } from '../../../../../../shared/domain/metadata/search.models';
+import { SearchQueryType } from '../../../../../../shared/domain/metadata/search.enum';
 import { ISearchResult } from '../../../../../../shared/domain/metadata/search-result.models';
 import { toSearchRequestDTO } from './search-request.mapper';
 
@@ -35,7 +36,15 @@ export class SearchIpcGateway implements ISearchChannel {
       return of(cached);
     }
 
+    let fallbackType: 'CLASS' | 'PROCESS' | undefined;
+    if (q.type === SearchQueryType.CLASS_NAME) {
+      fallbackType = 'CLASS';
+    } else if (q.type === SearchQueryType.PROCESS_ID) {
+      fallbackType = 'PROCESS';
+    }
+
     return this.invoke<ISearchResult[]>('ipc:search:text', q, s, 'search:text').pipe(
+      map((results) => this.ensureResultType(results, fallbackType)),
       tap((results) => this.cache.set(cacheKey, results, this.CACHE_TTL_MS)),
     );
   }
@@ -115,6 +124,23 @@ export class SearchIpcGateway implements ISearchChannel {
           // Pulizia del listener per evitare memory leak
           signal.removeEventListener('abort', onAbort);
         });
+    });
+  }
+
+  private ensureResultType(results: ISearchResult[], fallbackType?: string): ISearchResult[] {
+    if (!Array.isArray(results) || !fallbackType) {
+      return results;
+    }
+
+    return results.map((result) => {
+      if ((result as any)?.type) {
+        return result;
+      }
+
+      return {
+        ...result,
+        type: fallbackType as ISearchResult['type'],
+      } as ISearchResult;
     });
   }
 }
