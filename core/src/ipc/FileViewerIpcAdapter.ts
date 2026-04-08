@@ -1,10 +1,11 @@
-import { IpcMain, shell } from 'electron';
+import { IpcMain, shell, app } from 'electron';
 import { container } from 'tsyringe';
 import { dialog } from 'electron'; // aggiunto
+import * as path from 'path';
 
 import { IpcChannels } from '../../../shared/ipc-channels';
 import type { IExportFileUC } from '../use-case/file/IExportFileUC';
-import { FileUC }             from '../use-case/file/tokens';
+import { FileUC } from '../use-case/file/tokens';
 
 export class FileViewerIpcAdapter {
     static register(ipcMain: IpcMain): void {
@@ -12,7 +13,10 @@ export class FileViewerIpcAdapter {
 
         // non ha UC dedicati, perché è una semplice operazione di sistema che non coinvolge la logica di dominio
         ipcMain.handle(IpcChannels.FILE_OPEN_EXTERNAL, async (_event, filePath: string) => {
-            const error = await shell.openPath(filePath);
+            const absolutePath = path.resolve(app.getAppPath()+"/resources/test-dip/", filePath); // DA CORREGGERE QUANDO SI VA IN PRODUZIONE ( SEPLICEMENTE NON SERVE IL PEZZO HARDCODED)
+            console.log('ABS PATH:', absolutePath);
+            const error = await shell.openPath(absolutePath);
+            console.log('RESULT:', error);
             return { success: error === '' };
         });
 
@@ -26,9 +30,19 @@ export class FileViewerIpcAdapter {
 
         ipcMain.handle(
             IpcChannels.FILE_DOWNLOAD,
-            (_event, fileId: number, targetPath: string) => {
-                return exportFileUC.execute(fileId, targetPath);
+            (_event, { fileId, destPath }: { fileId: number; destPath: string }) => {
+                return exportFileUC.execute(fileId, destPath);
             }
         );
+
+        ipcMain.handle(IpcChannels.FILE_FOLDER_DIALOG, async () => {
+            const result = await dialog.showOpenDialog({
+                properties: ['openDirectory'],
+            });
+            return {
+                canceled: result.canceled,
+                folderPath: result.filePaths[0] ?? undefined,
+            };
+        });
     }
 }

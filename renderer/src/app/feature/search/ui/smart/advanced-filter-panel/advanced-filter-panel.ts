@@ -31,7 +31,7 @@ import { AggregateFiltersComponent } from '../../dumb/aggregate-filters.componen
 import { CustomMetaFiltersComponent } from '../../dumb/custom-meta-filters.component/custom-meta-filters.component';
 import { SubjectFiltersComponent } from '../../dumb/subject-filters.component/subject-filters.component';
 import { FilterRulesManager, FilterUIState } from './filter-rules.manager';
-import { DocContext } from '@shared/domain/metadata/subject.enum';
+import { DocContext } from '../../../../../../../../shared/domain/metadata/subject.enum';
 
 @Component({
   selector: 'app-advanced-filter-panel',

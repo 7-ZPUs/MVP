@@ -1,86 +1,516 @@
 import { TestBed } from '@angular/core/testing';
-import { ExportFacade } from './export.facade';
+import { describe, it, expect, beforeEach, vi, type MockedObject } from 'vitest';
+import { signal } from '@angular/core';
+
+import { ExportFacade } from '../services/export.facade';
+import { FileDTO } from '../domain/dtos';
 import { ExportState } from '../domain/export.state';
-import { ExportPhase, ExportErrorCode } from '../domain/enums';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { ExportIpcGateway } from '../infrastructure/export-ipc-gateway.service';
+import { ExportErrorCode, ExportPhase, OutputContext } from '../domain/enums';
+import { ExportResult } from '../domain/models';
+
+// ─── Mock factories ──────────────────────────────────────────────────────────
+
+function makeDto(overrides: Partial<FileDTO> = {}): FileDTO {
+  return {
+    id:              1,
+    documentId:      10,
+    filename:        'documento.pdf',
+    path:            '/tmp/documento.pdf',
+    hash:            'abc123',
+    integrityStatus: 'ok',
+    isMain:          true,
+    ...overrides,
+  };
+}
+
+function makeSaveDialog(overrides: Partial<{ canceled: boolean; filePath: string }> = {}) {
+  return { canceled: false, filePath: '/tmp/out.pdf', ...overrides };
+}
+
+function makeFolderDialog(overrides: Partial<{ canceled: boolean; folderPath: string }> = {}) {
+  return { canceled: false, folderPath: '/tmp/folder', ...overrides };
+}
+
+function makeIpcResult(overrides: Partial<{ success: boolean; errorMessage?: string; errorCode?: string }> = {}) {
+  return { success: true, ...overrides };
+}
+
+// ─── Setup ───────────────────────────────────────────────────────────────────
+
+function setup() {
+  const stateMock: MockedObject<ExportState> = {
+    phase:         signal(ExportPhase.IDLE),
+    outputContext: signal(null),
+    result:        signal(null),
+    progress:      signal(0),
+    error:         signal(null),
+    loading:       signal(false),
+    queue:         signal([]),
+    setProcessing:   vi.fn(),
+    setSuccess:      vi.fn(),
+    setError:        vi.fn(),
+    setUnavailable:  vi.fn(),
+    reset:           vi.fn(),
+    initQueue:       vi.fn(),
+    updateQueueItem: vi.fn(),
+    setProgress:     vi.fn(),
+  } as any;
+
+  const gatewayMock: MockedObject<ExportIpcGateway> = {
+    getFileDto:     vi.fn(),
+    openSaveDialog: vi.fn(),
+    openFolderDialog: vi.fn(),
+    exportFile:     vi.fn(),
+    openExternal:   vi.fn(),
+  } as any;
+
+  TestBed.configureTestingModule({
+    providers: [
+      ExportFacade,
+      { provide: ExportState,       useValue: stateMock },
+      { provide: ExportIpcGateway,  useValue: gatewayMock },
+    ],
+  });
+
+  return {
+    facade:  TestBed.inject(ExportFacade),
+    state:   stateMock,
+    gateway: gatewayMock,
+  };
+}
+
+// ─── Tests ───────────────────────────────────────────────────────────────────
 
 describe('ExportFacade', () => {
-  let facade: ExportFacade;
-  let state: ExportState;
 
-  const mockIpc = {
-    openSaveDialog: vi.fn(),
-    exportFile: vi.fn(),
-  };
+  // ── Signals delegati ───────────────────────────────────────────────────────
 
-  beforeEach(() => {
-    TestBed.configureTestingModule({
-      providers: [
-        ExportState,
-        {
-          provide: ExportFacade,
-          useFactory: (exportState: ExportState) => new ExportFacade(exportState, mockIpc as any),
-          deps: [ExportState]
-        }
-      ]
+  describe('signal accessors', () => {
+    it('delega phase a ExportState', () => {
+      const { facade, state } = setup();
+      expect(facade.phase).toBe(state.phase);
     });
 
-    state  = TestBed.inject(ExportState);
-    facade = TestBed.inject(ExportFacade);
-    vi.clearAllMocks();
+    it('delega outputContext a ExportState', () => {
+      const { facade, state } = setup();
+      expect(facade.outputContext).toBe(state.outputContext);
+    });
+
+    it('delega result a ExportState', () => {
+      const { facade, state } = setup();
+      expect(facade.result).toBe(state.result);
+    });
+
+    it('delega progress a ExportState', () => {
+      const { facade, state } = setup();
+      expect(facade.progress).toBe(state.progress);
+    });
+
+    it('delega error a ExportState', () => {
+      const { facade, state } = setup();
+      expect(facade.error).toBe(state.error);
+    });
+
+    it('delega loading a ExportState', () => {
+      const { facade, state } = setup();
+      expect(facade.loading).toBe(state.loading);
+    });
+
+    it('delega queue a ExportState', () => {
+      const { facade, state } = setup();
+      expect(facade.queue).toBe(state.queue);
+    });
   });
 
-  it('exportFile dovrebbe resettare lo stato se l\'utente annulla il dialog', async () => {
-    mockIpc.openSaveDialog.mockResolvedValue({ canceled: true });
-    const node = { id: '1', label: 'test.pdf' } as any;
+  // ── reset ──────────────────────────────────────────────────────────────────
 
-    await facade.exportFile(node);
-
-    expect(state.phase()).toBe(ExportPhase.IDLE);
-    expect(mockIpc.exportFile).not.toHaveBeenCalled();
+  describe('reset()', () => {
+    it('chiama state.reset()', () => {
+      const { facade, state } = setup();
+      facade.reset();
+      expect(state.reset).toHaveBeenCalledTimes(1);
+    });
   });
 
-  it('exportFile dovrebbe completare con successo se il gateway risponde OK', async () => {
-    mockIpc.openSaveDialog.mockResolvedValue({ canceled: false, filePath: 'C:/path' });
-    mockIpc.exportFile.mockResolvedValue({ success: true });
-    const node = { id: '1', label: 'test.pdf' } as any;
+  // ── exportFile ─────────────────────────────────────────────────────────────
 
-    await facade.exportFile(node);
+  describe('exportFile()', () => {
+    it('chiama setProcessing con SINGLE_EXPORT', async () => {
+      const { facade, state, gateway } = setup();
+      gateway.getFileDto.mockResolvedValue(makeDto());
+      gateway.openSaveDialog.mockResolvedValue(makeSaveDialog());
+      gateway.exportFile.mockResolvedValue(makeIpcResult());
 
-    expect(state.phase()).toBe(ExportPhase.SUCCESS);
-    expect(state.result()?.successCount).toBe(1);
+      await facade.exportFile(1);
+      expect(state.setProcessing).toHaveBeenCalledWith(OutputContext.SINGLE_EXPORT);
+    });
+
+    it('chiama reset e ritorna se il dialog è annullato', async () => {
+      const { facade, state, gateway } = setup();
+      gateway.getFileDto.mockResolvedValue(makeDto());
+      gateway.openSaveDialog.mockResolvedValue(makeSaveDialog({ canceled: true, filePath: undefined }));
+
+      await facade.exportFile(1);
+      expect(state.reset).toHaveBeenCalledTimes(1);
+      expect(state.setSuccess).not.toHaveBeenCalled();
+    });
+
+    it('chiama reset e ritorna se filePath è assente', async () => {
+      const { facade, state, gateway } = setup();
+      gateway.getFileDto.mockResolvedValue(makeDto());
+      gateway.openSaveDialog.mockResolvedValue({ canceled: false, filePath: undefined });
+
+      await facade.exportFile(1);
+      expect(state.reset).toHaveBeenCalledTimes(1);
+    });
+
+    it('chiama setSuccess con ExportResult corretto', async () => {
+      const { facade, state, gateway } = setup();
+      const dto    = makeDto();
+      const dialog = makeSaveDialog({ filePath: '/out/file.pdf' });
+      gateway.getFileDto.mockResolvedValue(dto);
+      gateway.openSaveDialog.mockResolvedValue(dialog);
+      gateway.exportFile.mockResolvedValue(makeIpcResult());
+
+      await facade.exportFile(1);
+
+      expect(state.setSuccess).toHaveBeenCalledWith(
+        expect.objectContaining({
+          outputContext: OutputContext.SINGLE_EXPORT,
+          successCount: 1,
+          failedCount:  0,
+        })
+      );
+    });
+
+    it('chiama setError se getFileDto ritorna null', async () => {
+      const { facade, state, gateway } = setup();
+      gateway.getFileDto.mockResolvedValue(null);
+
+      await facade.exportFile(99);
+      expect(state.setError).toHaveBeenCalledTimes(1);
+      expect(state.setSuccess).not.toHaveBeenCalled();
+    });
+
+    it('chiama setError se ipcResult.success è false', async () => {
+      const { facade, state, gateway } = setup();
+      gateway.getFileDto.mockResolvedValue(makeDto());
+      gateway.openSaveDialog.mockResolvedValue(makeSaveDialog());
+      gateway.exportFile.mockResolvedValue(makeIpcResult({ success: false, errorMessage: 'Disco pieno' }));
+
+      await facade.exportFile(1);
+      expect(state.setError).toHaveBeenCalledTimes(1);
+    });
+
+    it('usa errorCode come fallback se errorMessage è assente', async () => {
+      const { facade, state, gateway } = setup();
+      gateway.getFileDto.mockResolvedValue(makeDto());
+      gateway.openSaveDialog.mockResolvedValue(makeSaveDialog());
+      gateway.exportFile.mockResolvedValue(makeIpcResult({ success: false, errorCode: 'ERR_IO' }));
+
+      await facade.exportFile(1);
+
+      const error = (state.setError as ReturnType<typeof vi.fn>).mock.calls[0][0];
+      expect(error.message).toBe('ERR_IO');
+    });
+
+    it('chiama setError con recoverable=true in caso di eccezione', async () => {
+      const { facade, state, gateway } = setup();
+      gateway.getFileDto.mockRejectedValue(new Error('IPC crash'));
+
+      await facade.exportFile(1);
+
+      const error = (state.setError as ReturnType<typeof vi.fn>).mock.calls[0][0];
+      expect(error.recoverable).toBe(true);
+      expect(error.message).toBe('IPC crash');
+    });
+
+    it('gestisce err non-Error come "Errore sconosciuto"', async () => {
+      const { facade, state, gateway } = setup();
+      gateway.getFileDto.mockRejectedValue('stringa di errore');
+
+      await facade.exportFile(1);
+
+      const error = (state.setError as ReturnType<typeof vi.fn>).mock.calls[0][0];
+      expect(error.message).toBe('Errore sconosciuto');
+    });
   });
 
-  it('exportFiles (multi) dovrebbe calcolare il progresso correttamente', async () => {
-    mockIpc.openSaveDialog.mockResolvedValue({ canceled: false, filePath: 'C:/path' });
-    mockIpc.exportFile.mockResolvedValue({ success: true });
-    const nodes = [
-      { id: '1', label: 'a.pdf' },
-      { id: '2', label: 'b.pdf' }
-    ] as any;
+  // ── exportFiles ────────────────────────────────────────────────────────────
 
-    await facade.exportFiles(nodes);
+  describe('exportFiles()', () => {
+    it('chiama setProcessing con MULTI_EXPORT', async () => {
+      const { facade, state, gateway } = setup();
+      gateway.getFileDto.mockResolvedValue(makeDto());
+      gateway.openFolderDialog.mockResolvedValue(makeFolderDialog());
+      gateway.exportFile.mockResolvedValue(makeIpcResult());
 
-    expect(state.progress()).toBe(100);
-    expect(mockIpc.exportFile).toHaveBeenCalledTimes(2);
+      await facade.exportFiles([1, 2]);
+      expect(state.setProcessing).toHaveBeenCalledWith(OutputContext.MULTI_EXPORT);
+    });
+
+    it('lancia errore se tutti i DTO sono null', async () => {
+      const { facade, state, gateway } = setup();
+      gateway.getFileDto.mockResolvedValue(null);
+
+      await facade.exportFiles([1, 2]);
+      expect(state.setError).toHaveBeenCalledTimes(1);
+    });
+
+    it('costruisce la coda solo con i DTO validi', async () => {
+      const { facade, state, gateway } = setup();
+      gateway.getFileDto
+        .mockResolvedValueOnce(makeDto({ filename: 'a.pdf' }))
+        .mockResolvedValueOnce(null)
+        .mockResolvedValueOnce(makeDto({ filename: 'c.pdf' }));
+      gateway.openFolderDialog.mockResolvedValue(makeFolderDialog());
+      gateway.exportFile.mockResolvedValue(makeIpcResult());
+
+      await facade.exportFiles([1, 2, 3]);
+
+      const queue = (state.initQueue as ReturnType<typeof vi.fn>).mock.calls[0][0];
+      expect(queue).toHaveLength(2);
+      expect(queue.map((q: any) => q.filename)).toEqual(['a.pdf', 'c.pdf']);
+    });
+
+    it('chiama reset e ritorna se il folder dialog è annullato', async () => {
+      const { facade, state, gateway } = setup();
+      gateway.getFileDto.mockResolvedValue(makeDto());
+      gateway.openFolderDialog.mockResolvedValue(makeFolderDialog({ canceled: true, folderPath: undefined }));
+
+      await facade.exportFiles([1]);
+      expect(state.reset).toHaveBeenCalledTimes(1);
+      expect(state.setSuccess).not.toHaveBeenCalled();
+    });
+
+    it('aggiorna il progresso dopo ogni file', async () => {
+      const { facade, state, gateway } = setup();
+      gateway.getFileDto.mockResolvedValue(makeDto());
+      gateway.openFolderDialog.mockResolvedValue(makeFolderDialog());
+      gateway.exportFile.mockResolvedValue(makeIpcResult());
+
+      await facade.exportFiles([1, 2, 4]);
+
+      const calls = (state.setProgress as ReturnType<typeof vi.fn>).mock.calls.map(c => c[0]);
+      expect(calls).toEqual([
+        expect.closeTo(33.33, 1),
+        expect.closeTo(66.67, 1),
+        100,
+      ]);
+    });
+
+    it('conteggia successCount e failedCount correttamente', async () => {
+      const { facade, state, gateway } = setup();
+      gateway.getFileDto.mockResolvedValue(makeDto());
+      gateway.openFolderDialog.mockResolvedValue(makeFolderDialog());
+      gateway.exportFile
+        .mockResolvedValueOnce(makeIpcResult())
+        .mockResolvedValueOnce(makeIpcResult({ success: false, errorMessage: 'err' }))
+        .mockResolvedValueOnce(makeIpcResult());
+
+      await facade.exportFiles([1, 2, 3]);
+
+      const result: ExportResult = (state.setSuccess as ReturnType<typeof vi.fn>).mock.calls[0][0];
+      expect(result.successCount).toBe(2);
+      expect(result.failedCount).toBe(1);
+    });
+
+    it('aggiorna lo stato dell\'item a "done" in caso di successo', async () => {
+      const { facade, state, gateway } = setup();
+      gateway.getFileDto.mockResolvedValue(makeDto({ filename: 'x.pdf' }));
+      gateway.openFolderDialog.mockResolvedValue(makeFolderDialog());
+      gateway.exportFile.mockResolvedValue(makeIpcResult());
+
+      await facade.exportFiles([7]);
+
+      expect(state.updateQueueItem).toHaveBeenCalledWith(7, { status: 'done' });
+    });
+
+    it('aggiorna lo stato dell\'item a "error" in caso di fallimento', async () => {
+      const { facade, state, gateway } = setup();
+      gateway.getFileDto.mockResolvedValue(makeDto());
+      gateway.openFolderDialog.mockResolvedValue(makeFolderDialog());
+      gateway.exportFile.mockResolvedValue(makeIpcResult({ success: false, errorMessage: 'IO fail' }));
+
+      await facade.exportFiles([5]);
+
+      expect(state.updateQueueItem).toHaveBeenCalledWith(
+        5,
+        expect.objectContaining({ status: 'error', error: 'IO fail' }),
+      );
+    });
+
+    it('setSuccess ha outputContext MULTI_EXPORT', async () => {
+      const { facade, state, gateway } = setup();
+      gateway.getFileDto.mockResolvedValue(makeDto());
+      gateway.openFolderDialog.mockResolvedValue(makeFolderDialog());
+      gateway.exportFile.mockResolvedValue(makeIpcResult());
+
+      await facade.exportFiles([1]);
+
+      const result: ExportResult = (state.setSuccess as ReturnType<typeof vi.fn>).mock.calls[0][0];
+      expect(result.outputContext).toBe(OutputContext.MULTI_EXPORT);
+    });
   });
 
-  it('printDocument dovrebbe dare errore UNAVAILABLE se il formato non è supportato', async () => {
-    const node = { id: '1', label: 'file.zip' } as any;
+  // ── printDocument ──────────────────────────────────────────────────────────
 
-    await facade.printDocument(node);
+  describe('printDocument()', () => {
+    it('chiama setProcessing con SINGLE_PRINT', async () => {
+      const { facade, state, gateway } = setup();
+      gateway.getFileDto.mockResolvedValue(makeDto({ filename: 'doc.pdf' }));
+      gateway.openExternal.mockResolvedValue(undefined);
 
-    expect(state.phase()).toBe(ExportPhase.UNAVAILABLE);
-    expect(state.error()?.code).toBe(ExportErrorCode.PRINT_UNAVAILABLE);
+      await facade.printDocument(1);
+      expect(state.setProcessing).toHaveBeenCalledWith(OutputContext.SINGLE_PRINT);
+    });
+
+    it('chiama openExternal per i formati stampabili', async () => {
+      const { facade, state, gateway } = setup();
+      const dto = makeDto({ filename: 'doc.pdf', path: '/docs/doc.pdf' });
+      gateway.getFileDto.mockResolvedValue(dto);
+      gateway.openExternal.mockResolvedValue(undefined);
+
+      await facade.printDocument(1);
+      expect(gateway.openExternal).toHaveBeenCalledWith('/docs/doc.pdf');
+    });
+
+    it('chiama setSuccess con SINGLE_PRINT dopo la stampa', async () => {
+      const { facade, state, gateway } = setup();
+      gateway.getFileDto.mockResolvedValue(makeDto({ filename: 'doc.png' }));
+      gateway.openExternal.mockResolvedValue(undefined);
+
+      await facade.printDocument(1);
+
+      const result: ExportResult = (state.setSuccess as ReturnType<typeof vi.fn>).mock.calls[0][0];
+      expect(result.outputContext).toBe(OutputContext.SINGLE_PRINT);
+      expect(result.successCount).toBe(1);
+    });
+
+    it('chiama setUnavailable per formati non stampabili', async () => {
+      const { facade, state, gateway } = setup();
+      gateway.getFileDto.mockResolvedValue(makeDto({ filename: 'doc.docx' }));
+
+      await facade.printDocument(1);
+
+      expect(state.setUnavailable).toHaveBeenCalledTimes(1);
+      expect(gateway.openExternal).not.toHaveBeenCalled();
+    });
+
+    it('il messaggio setUnavailable contiene il nome del file', async () => {
+      const { facade, state, gateway } = setup();
+      gateway.getFileDto.mockResolvedValue(makeDto({ filename: 'report.xlsx' }));
+
+      await facade.printDocument(1);
+
+      const error = (state.setUnavailable as ReturnType<typeof vi.fn>).mock.calls[0][0];
+      expect(error.message).toContain('report.xlsx');
+    });
+
+    it('setUnavailable ha recoverable=false', async () => {
+      const { facade, state, gateway } = setup();
+      gateway.getFileDto.mockResolvedValue(makeDto({ filename: 'file.docx' }));
+
+      await facade.printDocument(1);
+
+      const error = (state.setUnavailable as ReturnType<typeof vi.fn>).mock.calls[0][0];
+      expect(error.recoverable).toBe(false);
+    });
+
+    it('chiama setError se getFileDto ritorna null', async () => {
+      const { facade, state, gateway } = setup();
+      gateway.getFileDto.mockResolvedValue(null);
+
+      await facade.printDocument(1);
+      expect(state.setError).toHaveBeenCalledTimes(1);
+    });
+
+    it('chiama setError se openExternal lancia eccezione', async () => {
+      const { facade, state, gateway } = setup();
+      gateway.getFileDto.mockResolvedValue(makeDto({ filename: 'doc.pdf' }));
+      gateway.openExternal.mockRejectedValue(new Error('OS error'));
+
+      await facade.printDocument(1);
+      expect(state.setError).toHaveBeenCalledTimes(1);
+    });
+
+    const stampabili = ['pdf', 'png', 'jpg', 'jpeg', 'tiff'];
+    stampabili.forEach(ext => {
+      it(`accetta il formato .${ext}`, async () => {
+        const { facade, state, gateway } = setup();
+        gateway.getFileDto.mockResolvedValue(makeDto({ filename: `file.${ext}` }));
+        gateway.openExternal.mockResolvedValue(undefined);
+
+        await facade.printDocument(1);
+        expect(state.setSuccess).toHaveBeenCalled();
+        expect(state.setUnavailable).not.toHaveBeenCalled();
+      });
+    });
+
+    it('è case-insensitive per l\'estensione', async () => {
+      const { facade, state, gateway } = setup();
+      gateway.getFileDto.mockResolvedValue(makeDto({ filename: 'IMAGE.PDF' }));
+      gateway.openExternal.mockResolvedValue(undefined);
+
+      await facade.printDocument(1);
+      expect(state.setSuccess).toHaveBeenCalled();
+    });
   });
 
-  it('exportFile dovrebbe impostare lo stato di errore in caso di crash', async () => {
-    mockIpc.openSaveDialog.mockImplementation(() => { throw new Error('Crash fatale'); });
-    const node = { id: '1', label: 'test.pdf' } as any;
+  // ── printDocuments ─────────────────────────────────────────────────────────
 
-    await facade.exportFile(node);
+  describe('printDocuments()', () => {
+    it('chiama openExternal per ogni file stampabile', async () => {
+      const { facade, gateway, state } = setup();
+      gateway.getFileDto
+        .mockResolvedValueOnce(makeDto({ filename: 'a.pdf', path: '/a.pdf' }))
+        .mockResolvedValueOnce(makeDto({ filename: 'b.png', path: '/b.png' }));
+      gateway.openExternal.mockResolvedValue(undefined);
 
-    expect(state.phase()).toBe(ExportPhase.ERROR);
-    expect(state.error()?.message).toBe('Crash fatale');
+      await facade.printDocuments([1, 2]);
+      expect(gateway.openExternal).toHaveBeenCalledTimes(2);
+    });
+
+    it('salta i file con DTO null', async () => {
+      const { facade, gateway } = setup();
+      gateway.getFileDto
+        .mockResolvedValueOnce(null)
+        .mockResolvedValueOnce(makeDto({ filename: 'b.pdf', path: '/b.pdf' }));
+      gateway.openExternal.mockResolvedValue(undefined);
+
+      await facade.printDocuments([1, 2]);
+      expect(gateway.openExternal).toHaveBeenCalledTimes(1);
+    });
+
+    it('salta i file con formato non stampabile', async () => {
+      const { facade, gateway } = setup();
+      gateway.getFileDto
+        .mockResolvedValueOnce(makeDto({ filename: 'doc.docx', path: '/doc.docx' }))
+        .mockResolvedValueOnce(makeDto({ filename: 'img.jpg', path: '/img.jpg' }));
+      gateway.openExternal.mockResolvedValue(undefined);
+
+      await facade.printDocuments([1, 2]);
+      expect(gateway.openExternal).toHaveBeenCalledTimes(1);
+      expect(gateway.openExternal).toHaveBeenCalledWith('/img.jpg');
+    });
+
+    it('chiama setSuccess al termine', async () => {
+      const { facade, state, gateway } = setup();
+      gateway.getFileDto.mockResolvedValue(makeDto({ filename: 'doc.pdf' }));
+      gateway.openExternal.mockResolvedValue(undefined);
+
+      await facade.printDocuments([1, 2]);
+      expect(state.setSuccess).toHaveBeenCalledTimes(1);
+    });
+
+    it('chiama setError se openExternal lancia eccezione', async () => {
+      const { facade, state, gateway } = setup();
+      gateway.getFileDto.mockResolvedValue(makeDto({ filename: 'doc.pdf' }));
+      gateway.openExternal.mockRejectedValue(new Error('crash'));
+
+      await facade.printDocuments([1]);
+      expect(state.setError).toHaveBeenCalledTimes(1);
+    });
   });
 });

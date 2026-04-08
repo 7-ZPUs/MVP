@@ -1,24 +1,35 @@
-<div
-  class="result-card"
-  role="button"
-  tabindex="0"
-  (click)="onSelectAction(result)"
-  (keydown.enter)="onSelectAction(result)"
-  (keydown.space)="onSelectAction(result); $event.preventDefault()"
->
-  <div class="card-icon">📄</div>
-  <div class="card-content">
-    <h3 class="document-name">{{ result.name || 'Senza titolo' }}</h3>
-    <span class="document-id">ID: {{ result.uuid }}</span>
-  </div>
-  <div class="card-meta">
-    <span class="badge" [ngClass]="result.type | lowercase">{{ result.type }}</span>
+<div class="result-card-wrapper">
 
-    @if (isSemanticSearch && result.score !== null && result.score !== undefined) {
-      <span class="score-badge">Score: {{ result.score | number: '1.0-2' }}</span>
-    }
-    <span [class]="'integrity-badge-base ' + (result.integrityStatus | integrityClass)">
-      {{ result.integrityStatus }}
-    </span>
+  <div
+    class="result-card"
+    role="button"
+    tabindex="0"
+    (click)="onSelectAction(result)"
+    (keydown.enter)="onSelectAction(result)"
+    (keydown.space)="onSelectAction(result); $event.preventDefault()"
+  >
+    <div class="card-icon">📄</div>
+    <div class="card-content">
+      <h3 class="document-name">{{ result.name || 'Senza titolo' }}</h3>
+      <span class="document-id">UUID: {{ result.uuid }}</span>
+    </div>
+    <div class="card-meta">
+      <span class="badge" [ngClass]="result.type | lowercase">{{ result.type }}</span>
+
+      @if (isSemanticSearch && result.score !== null && result.score !== undefined) {
+        <span class="score-badge">Score: {{ result.score | number: '1.0-2' }}</span>
+      }
+      <span data-testid="result-integrity-badge" [class]="'integrity-badge-base ' + (result.integrityStatus | integrityClass)">
+        {{ result.integrityStatus }}
+      </span>
+    </div>
   </div>
+
+  <div class="export-actions-box" (click)="$event.stopPropagation()">
+    <app-export-page
+      [documentId]="result.id"
+      [itemType]="itemType"
+    />
+  </div>
+
 </div>

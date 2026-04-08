@@ -1,11 +1,15 @@
 import { DipTreeNode } from '../contracts/dip-tree-node';
 
-export type DetailRouteItemType = 'DOCUMENT' | 'AGGREGATE';
+export type RichDetailRouteItemType = 'DOCUMENT' | 'AGGREGATE' | 'PROCESS';
+export type NodeFallbackRouteItemType = 'DIP' | 'DOCUMENT_CLASS' | 'FILE';
+export type DetailRouteItemType = RichDetailRouteItemType | NodeFallbackRouteItemType;
 
-const SEARCH_RESULT_TYPE_TO_DETAIL_ITEM_TYPE: Record<string, DetailRouteItemType> = {
+const SEARCH_RESULT_TYPE_TO_DETAIL_ITEM_TYPE: Record<string, RichDetailRouteItemType> = {
   AGGREGAZIONE_DOCUMENTALE: 'AGGREGATE',
   DOCUMENTO_INFORMATICO: 'DOCUMENT',
   DOCUMENTO_AMMINISTRATIVO_INFORMATICO: 'DOCUMENT',
+  PROCESSO: 'PROCESS',
+  PROCESS: 'PROCESS',
 };
 
 function normalizeSearchResultType(type: string): string {
@@ -14,15 +18,25 @@ function normalizeSearchResultType(type: string): string {
 
 export function mapDipNodeTypeToDetailItemType(
   nodeType: DipTreeNode['type'],
-): DetailRouteItemType | null {
+): DetailRouteItemType {
   switch (nodeType) {
+    case 'dip':
+      return 'DIP';
+    case 'documentClass':
+      return 'DOCUMENT_CLASS';
+    case 'file':
+      return 'FILE';
     case 'document':
       return 'DOCUMENT';
     case 'process':
-      return 'AGGREGATE';
-    default:
-      return null;
+      return 'PROCESS';
   }
+}
+
+export function isRichDetailRouteItemType(
+  itemType: DetailRouteItemType,
+): itemType is RichDetailRouteItemType {
+  return itemType === 'AGGREGATE' || itemType === 'DOCUMENT' || itemType === 'PROCESS';
 }
 
 export function mapSearchResultTypeToDetailItemType(resultType: string): DetailRouteItemType | null {

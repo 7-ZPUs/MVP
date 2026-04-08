@@ -5,7 +5,10 @@ import {
   RegisterType,
 } from '../../../../../../shared/domain/metadata/search.enum';
 import { hasMeaningfulAdvancedFilters, toSearchRequestDTO } from './search-request.mapper';
-import { SubjectRoleType, SubjectType } from '../../../../../../shared/domain/metadata/subject.enum';
+import {
+  SubjectRoleType,
+  SubjectType,
+} from '../../../../../../shared/domain/metadata/subject.enum';
 
 describe('search-request.mapper', () => {
   it('returns null for empty advanced filters', () => {

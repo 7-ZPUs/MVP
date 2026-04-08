@@ -5,6 +5,7 @@
       <input
         type="text"
         formControlName="text"
+        data-testid="search-input"
         placeholder="Inserisci testo di ricerca..."
         class="search-input"
         [attr.aria-busy]="isSearching"
@@ -16,31 +17,31 @@
         </span>
       }
 
-      <button type="submit" class="btn-search"  >
+      <button type="submit" data-testid="search-submit-button" class="btn-search"  >
         🔍 Cerca
       </button>
     </div>
 
     <div class="search-options">
       <label>
-        <input type="radio" formControlName="type" [value]="QueryType.FREE" />
+        <input type="radio" data-testid="search-type-free" formControlName="type" [value]="QueryType.FREE" />
         Testo Libero
       </label>
 
       <label [style.opacity]="isSemanticForced ? '0.5' : '1'" [style.cursor]="isSemanticForced ? 'not-allowed' : 'pointer'">
-        <input type="radio" formControlName="type" [value]="QueryType.CLASS_NAME" [attr.disabled]="isSemanticForced ? true : null"/>
+        <input type="radio" data-testid="search-type-class" formControlName="type" [value]="QueryType.CLASS_NAME" [attr.disabled]="isSemanticForced ? true : null"/>
         Nome Classe
       </label>
 
       <label [style.opacity]="isSemanticForced ? '0.5' : '1'" [style.cursor]="isSemanticForced ? 'not-allowed' : 'pointer'">
-        <input type="radio" formControlName="type" [value]="QueryType.PROCESS_ID" [attr.disabled]="isSemanticForced ? true : null"/>
+        <input type="radio" data-testid="search-type-process" formControlName="type" [value]="QueryType.PROCESS_ID" [attr.disabled]="isSemanticForced ? true : null"/>
         ID Processo
       </label>
 
       <div class="divider"></div>
 
       <label class="semantic-toggle">
-        <input type="checkbox" formControlName="useSemanticSearch" />
+        <input type="checkbox" data-testid="search-semantic-toggle" formControlName="useSemanticSearch" />
         Ricerca Semantica
       </label>
     </div>

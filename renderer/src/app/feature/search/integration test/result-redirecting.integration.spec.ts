@@ -66,6 +66,14 @@ describe('SearchPageComponent - Integrazione e Navigazione', () => {
     expect(navigateSpy).toHaveBeenCalledWith(['/detail', 'AGGREGATE', 'FASC-001']);
   });
 
+  it('dovrebbe navigare verso PROCESS se il risultato è un PROCESSO', () => {
+    const mockResult: any = { id: 'PROC-31', type: ElementType.PROCESS };
+    component.onResultSelected(mockResult);
+
+    expect(navigateSpy).toHaveBeenCalledTimes(1);
+    expect(navigateSpy).toHaveBeenCalledWith(['/detail', 'PROCESS', 'PROC-31']);
+  });
+
   it('dovrebbe navigare verso DOCUMENT se il risultato è un DOCUMENTO_INFORMATICO', () => {
     const mockResult: any = { id: 'DOC-123', type: ElementType.DOCUMENTO_INFORMATICO };
     component.onResultSelected(mockResult);

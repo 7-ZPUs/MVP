@@ -1,39 +1,62 @@
+.result-card-wrapper {
+  display: flex;
+  align-items: stretch;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  width: 100%;
+}
+
 .result-card {
   display: flex;
   align-items: center;
   padding: 1rem;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
-  margin-bottom: 0.5rem;
   cursor: pointer;
   transition: box-shadow 0.2s ease;
   background: white;
+  flex: 1;
+  min-width: 0; /* evita overflow del testo */
 }
+
 .result-card:hover {
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
+
 .card-icon {
   font-size: 1.5rem;
   margin-right: 1rem;
+  flex-shrink: 0;
 }
+
 .card-content {
   flex: 1;
+  min-width: 0;
 }
+
 .document-name {
   margin: 0 0 0.25rem 0;
   font-size: 1rem;
   color: #0f172a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
+
 .document-id {
   font-size: 0.75rem;
   color: #64748b;
 }
+
 .card-meta {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   gap: 0.5rem;
+  flex-shrink: 0;
+  margin-left: 1rem;
 }
+
 .badge {
   padding: 0.25rem 0.5rem;
   border-radius: 999px;
@@ -42,8 +65,21 @@
   background: #eff6ff;
   color: #1d4ed8;
 }
+
 .score-badge {
   font-size: 0.875rem;
   font-weight: bold;
   color: #059669;
+}
+
+.export-actions-box {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.4rem;
+  flex-shrink: 0;
+  padding: 0.5rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: white;
 }

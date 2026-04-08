@@ -1,5 +1,6 @@
 <div
   class="result-card class-card"
+  data-testid="search-result-card"
   role="button"
   tabindex="0"
   (click)="onSelectAction(result)"
@@ -9,12 +10,12 @@
   <div class="card-icon">🏷️</div>
   <div class="card-content">
     <h3 class="document-name">{{ result.name || 'Classe senza titolo' }}</h3>
-    <span class="document-id">ID Classe: {{ result.uuid }}</span>
+    <span class="document-id">UUID Classe: {{ result.uuid }}</span>
   </div>
   <div class="card-meta">
     <span class="badge class-badge">CLASSE</span>
   </div>
-  <span class="integrity-badge-base" [ngClass]="result.integrityStatus | integrityClass">
+  <span class="integrity-badge-base" data-testid="result-integrity-badge" [ngClass]="result.integrityStatus | integrityClass">
     {{ result.integrityStatus }}
   </span>
 </div>

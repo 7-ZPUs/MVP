@@ -76,9 +76,11 @@ export const IpcChannels = {
 
   // ----- File viewer -----
 
-  FILE_OPEN_EXTERNAL: "file:open-external",
-  FILE_DOWNLOAD: "file:download",
-  FILE_SAVE_DIALOG: "file:save-dialog", // per aprire il merda di dialog
+  FILE_OPEN_EXTERNAL: 'file:open-external',
+  FILE_DOWNLOAD:      'file:download',
+  FILE_SAVE_DIALOG:   'file:save-dialog',   // per aprire il merda di dialog
+  FILE_FOLDER_DIALOG: 'file:folder-dialog', // per aprire il di dialog per cartelle
+
 } as const;
 
 export type IpcChannel = (typeof IpcChannels)[keyof typeof IpcChannels];

@@ -57,9 +57,16 @@ export interface ProcedimentoAmministrativoDTO {
 }
 
 export interface DocumentIndexEntryDTO {
-  tipoDocumento: 'DocumentoAmministativoinformatico' | 'Documentoinformatico'; // [cite: 42]
+  tipoDocumento: 'DocumentoAmministativoinformatico' | 'Documentoinformatico' | 'Documento'; // [cite: 42]
   identificativo: string; // [cite: 43]
   impronta?: string; // Base64 [cite: 43]
+  routeId?: string;
+}
+
+export interface ProcessSummaryDTO {
+  uuid: string;
+  integrityStatus: string;
+  timestamp: string;
 }
 
 export interface CustomMetadataEntry {
@@ -82,6 +89,7 @@ export interface AggregateDetailDTO {
   tempoDiConservazione?: number; // [cite: 16]
   note?: string; // [cite: 16]
   customMetadata?: CustomMetadataEntry[]; // ADDED NEW CATCH-ALL METADATA
+  processSummary?: ProcessSummaryDTO;
 
   // Tabella laterale visiva
   indiceDocumenti: DocumentIndexEntryDTO[]; // [cite: 15]

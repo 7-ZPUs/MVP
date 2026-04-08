@@ -1,0 +1,37 @@
+.metadata-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+}
+.metadata-card h3 {
+  margin: 0 0 1rem 0;
+  font-size: 1rem;
+  color: #0f172a;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 0.5rem;
+}
+.data-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+.label {
+  font-weight: 600;
+  color: #64748b;
+  min-width: 140px;
+  flex-shrink: 0;
+}
+.value {
+  flex: 1;
+  min-width: 0;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  color: #1e293b;
+  font-weight: 500;
+}

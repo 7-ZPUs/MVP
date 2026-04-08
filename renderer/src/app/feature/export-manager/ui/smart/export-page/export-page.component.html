@@ -1,27 +1,127 @@
-<div class="export-page">
-
-  <app-document-actions
-    [selectedDocuments]="selectedAsArray()"
-    [reportId]="reportId"
-    (exportClicked)="onExport($event)"
-    (printClicked)="onPrint($event)"
-    (exportReportClicked)="onExportReport($event)"
-  ></app-document-actions>
-
-  @if (loading() && isMulti()) {
-    <app-export-progress
-      [progress]="progress()"
-      [outputContext]="outputContext()"
-    ></app-export-progress>
+@if (hasPrintableFiles()) {
+    <button class="action-btn btn-print" [disabled]="isWorking()" (click)="onPrint()">
+      <span class="icon">🖨️</span> Stampa documento
+    </button>
   }
 
-  @if (phase() !== ExportPhase.IDLE && phase() !== ExportPhase.PROCESSING) {
-    <app-export-result
-      [phase]="phase()"
-      [result]="result()"
-      [error]="error()"
-      (retry)="onRetry()"
-    ></app-export-result>
+  <button class="action-btn btn-export" [disabled]="isWorking()" (click)="onExport()">
+    @if (isWorking()) {
+      <span class="spinner-small"></span> Attendere...
+    } @else {
+      <span class="icon">💾</span> Scarica documento
+    }
+  </button>
+
+<div class="export-overlays">
+
+  @if (isWorking() && isMulti() && showProgress()) {
+    <app-export-progress [progress]="progress()" [outputContext]="outputContext()">
+      <button class="close-overlay-btn" (click)="showProgress.set(false)">✖</button>
+    </app-export-progress>
+  }
+
+  @if (queue().length > 0 && showQueue()) {
+    <div class="queue-container">
+      <button class="close-all-btn" (click)="showQueue.set(false)">✖</button>
+      @for (item of queue(); track item.fileId) {
+        <div class="queue-item queue-item--{{ item.status }}">
+          <span>{{ item.filename }}</span>
+          <span>{{ item.status }}</span>
+        </div>
+      }
+    </div>
+  }
+
+  @if (phase() !== ExportPhase.IDLE && phase() !== ExportPhase.PROCESSING && showResult()) {
+    <div class="result-container">
+      <button class="close-btn" (click)="showResult.set(false)">✖</button>
+      <app-export-result
+        [phase]="phase()"
+        [result]="result()"
+        [error]="error()"
+        (retry)="onRetry()"
+      />
+    </div>
   }
 
 </div>
+
+<!-- Selettore stampa -->
+@if (showPrintSelector()) {
+  <div class="print-selector-overlay" (click)="cancelPrint()">
+    <div class="print-selector" (click)="$event.stopPropagation()">
+
+      <div class="print-selector__header">
+        <span>Seleziona i documenti da stampare</span>
+        <button class="close-btn" (click)="cancelPrint()">✖</button>
+      </div>
+
+      <ul class="print-selector__list">
+        @for (file of printableFiles(); track file.id) {
+          <li class="print-selector__item">
+            <input
+              type="checkbox"
+              [checked]="selectedPrintIds().has(file.id)"
+              (change)="togglePrintFile(file.id)"
+            />
+            <span class="file-icon">{{ file.isMain ? '📄' : '📎' }}</span>
+            <span class="file-name">{{ file.filename }}</span>
+            <span class="file-badge">{{ file.isMain ? 'Principale' : 'Allegato' }}</span>
+          </li>
+        }
+      </ul>
+
+      <div class="print-selector__footer">
+        <button class="action-btn btn-secondary" (click)="cancelPrint()">Annulla</button>
+        <button
+          class="action-btn btn-print"
+          [disabled]="selectedPrintCount() === 0"
+          (click)="confirmPrint()"
+        >
+          🖨️ Stampa ({{ selectedPrintCount() }})
+        </button>
+      </div>
+
+    </div>
+  </div>
+}
+
+<!-- Selettore download -->
+@if (showDownloadSelector()) {
+  <div class="print-selector-overlay" (click)="cancelDownload()">
+    <div class="print-selector" (click)="$event.stopPropagation()">
+
+      <div class="print-selector__header">
+        <span>Seleziona i documenti da scaricare</span>
+        <button class="close-btn" (click)="cancelDownload()">✖</button>
+      </div>
+
+      <ul class="print-selector__list">
+        @for (file of downloadableFiles(); track file.id) {
+          <li class="print-selector__item">
+            <input
+              type="checkbox"
+              [checked]="selectedDownloadIds().has(file.id)"
+              (change)="toggleDownloadFile(file.id)"
+            />
+            <span class="file-icon">{{ file.isMain ? '📄' : '📎' }}</span>
+            <span class="file-name">{{ file.filename }}</span>
+            <span class="file-badge">{{ file.isMain ? 'Principale' : 'Allegato' }}</span>
+          </li>
+        }
+      </ul>
+
+      <div class="print-selector__footer">
+        <button class="action-btn btn-secondary" (click)="cancelDownload()">Annulla</button>
+        <button
+          class="action-btn btn-export"
+          [disabled]="selectedDownloadCount() === 0"
+          (click)="confirmDownload()"
+        >
+          💾 Scarica ({{ selectedDownloadCount() }})
+        </button>
+      </div>
+
+    </div>
+  </div>
+}

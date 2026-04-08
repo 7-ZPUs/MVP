@@ -7,7 +7,7 @@ import { SaveDialogResponseDto , FileDTO} from '../domain/dtos';
 export class ExportIpcGateway implements IExportChannel {
 
     private get ipc() {
-        return (globalThis as any).electron;
+        return (globalThis as any).electronAPI;
     }
 
     constructor() {
@@ -20,7 +20,7 @@ export class ExportIpcGateway implements IExportChannel {
         if (!this.ipc) {
             return ExportResult.fail('BRIDGE_UNAVAILABLE', 'Electron bridge non disponibile');
         }
-        return await this.ipc.invoke('file:download', fileId, destPath);
+        return await this.ipc.invoke('file:download', { fileId, destPath });
     }
 
     async openSaveDialog(defaultName?: string): Promise<SaveDialogResponseDto> {
@@ -28,15 +28,24 @@ export class ExportIpcGateway implements IExportChannel {
         return await this.ipc.invoke('file:save-dialog', defaultName);
     }
 
-    // export-ipc-gateway.service.ts
+    async openFolderDialog(): Promise<{ canceled: boolean; folderPath?: string }> {
+        if (!this.ipc) return { canceled: true };
+        return await this.ipc.invoke('file:folder-dialog');
+    }
+
     async getFileDto(fileId: number): Promise<FileDTO | null> {
         if (!this.ipc) return null;
         return await this.ipc.invoke('browse:get-file-by-id', fileId);
     }
 
-    // export-ipc-gateway.service.ts
     async openExternal(filePath: string): Promise<void> {
         if (!this.ipc) return;
         await this.ipc.invoke('file:open-external', filePath);
+    }
+
+    // export-ipc-gateway.service.ts
+    async getFilesByDocumentId(documentId: number): Promise<FileDTO[]> {
+        if (!this.ipc) return [];
+        return await this.ipc.invoke('browse:get-file-by-document', documentId);
     }
 }

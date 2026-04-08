@@ -1,11 +1,10 @@
-import { Injectable, Signal }        from '@angular/core';
-import { ExportResult as IpcResult } from '../../../../../../shared/domain/ExportResult'; // DTO IPC
-import { IExportFacade }             from '../contracts/i-export-facade';
-import { ExportIpcGateway }          from '../infrastructure/export-ipc-gateway.service';
-import { ExportState }               from '../domain/export.state';
-import { ExportError, ExportItemError, ExportResult } from '../domain/models'; // modello UI
+import { Injectable, Signal } from '@angular/core';
+import { ExportResult as IpcResult } from '../../../../../../shared/domain/ExportResult';
+import { IExportFacade } from '../contracts/i-export-facade';
+import { ExportIpcGateway } from '../infrastructure/export-ipc-gateway.service';
+import { ExportState } from '../domain/export.state';
+import { DownloadQueueItem, ExportError, ExportItemError, ExportResult } from '../domain/models';
 import { ExportErrorCode, ExportPhase, OutputContext } from '../domain/enums';
-import { DipTreeNode }               from '../../import/domain/models';
 
 const PRINTABLE_FORMATS = ['pdf', 'png', 'jpg', 'jpeg', 'tiff'];
 
@@ -14,35 +13,37 @@ export class ExportFacade implements IExportFacade {
 
     constructor(
         private readonly exportState: ExportState,
-        private readonly ipcGateway:  ExportIpcGateway,
-    ) {}
+        private readonly ipcGateway: ExportIpcGateway,
+    ) { }
 
-    get phase():         Signal<ExportPhase>         { return this.exportState.phase; }
+    get phase(): Signal<ExportPhase> { return this.exportState.phase; }
     get outputContext(): Signal<OutputContext | null> { return this.exportState.outputContext; }
-    get result():        Signal<ExportResult | null> { return this.exportState.result; }
-    get progress():      Signal<number>              { return this.exportState.progress; }
-    get error():         Signal<ExportError | null>  { return this.exportState.error; }
-    get loading():       Signal<boolean>             { return this.exportState.loading; }
+    get result(): Signal<ExportResult | null> { return this.exportState.result; }
+    get progress(): Signal<number> { return this.exportState.progress; }
+    get error(): Signal<ExportError | null> { return this.exportState.error; }
+    get loading(): Signal<boolean> { return this.exportState.loading; }
+    get queue(): Signal<DownloadQueueItem[]> { return this.exportState.queue; }
 
     // ------------------------------------------------------------------
     // UC-19 — export singolo file
     // ------------------------------------------------------------------
-    async exportFile(node: DipTreeNode): Promise<void> {
+    async exportFile(fileId: number): Promise<void> {
         this.exportState.setProcessing(OutputContext.SINGLE_EXPORT);
         try {
-            const dialog = await this.ipcGateway.openSaveDialog(node.label);
+            const dto = await this.ipcGateway.getFileDto(fileId);
+            if (!dto) throw new Error(`File con id ${fileId} non trovato`);
+
+            const dialog = await this.ipcGateway.openSaveDialog(dto.filename);
             if (dialog.canceled || !dialog.filePath) {
                 this.exportState.reset();
                 return;
             }
 
-            const ipcResult: IpcResult = await this.ipcGateway.exportFile(Number(node.id), dialog.filePath);
-
+            const ipcResult: IpcResult = await this.ipcGateway.exportFile(fileId, dialog.filePath);
             if (!ipcResult.success) {
                 throw new Error(ipcResult.errorMessage ?? ipcResult.errorCode ?? 'Export fallito');
             }
 
-            // Costruisce il modello UI dal risultato IPC
             this.exportState.setSuccess(
                 new ExportResult(OutputContext.SINGLE_EXPORT, 1, 1, 0, dialog.filePath)
             );
@@ -52,48 +53,67 @@ export class ExportFacade implements IExportFacade {
     }
 
     // ------------------------------------------------------------------
-    // UC-20 — export multiplo file
+    // UC-20 — export multiplo con coda sequenziale
     // ------------------------------------------------------------------
-    async exportFiles(nodes: DipTreeNode[]): Promise<void> {
+    async exportFiles(fileIds: number[]): Promise<void> {
         this.exportState.setProcessing(OutputContext.MULTI_EXPORT);
         try {
-            const dialog = await this.ipcGateway.openSaveDialog();
-            if (dialog.canceled || !dialog.filePath) {
+            // 1. Recupera tutti i DTO per avere i filename
+            const dtos = await Promise.all(
+                fileIds.map(id => this.ipcGateway.getFileDto(id))
+            );
+
+            // 2. Filtra i null e costruisce la coda
+            const queue: DownloadQueueItem[] = dtos
+                .reduce<DownloadQueueItem[]>((acc, dto, i) => {
+                    if (dto) {
+                        acc.push({ fileId: fileIds[i], filename: dto.filename, status: 'pending' });
+                    }
+                    return acc;
+                }, []);
+            if (queue.length === 0) throw new Error('Nessun file valido trovato');
+
+            this.exportState.initQueue(queue);
+
+            // 3. Un solo dialog per la cartella di destinazione
+            const dialog = await this.ipcGateway.openFolderDialog();
+            if (dialog.canceled || !dialog.folderPath) {
                 this.exportState.reset();
                 return;
             }
 
+            // 4. Scarica in sequenza
             let successCount = 0;
             const errors: ExportItemError[] = [];
 
-            for (let i = 0; i < nodes.length; i++) {
-                const ipcResult: IpcResult = await this.ipcGateway.exportFile(
-                    Number(nodes[i].id),
-                    dialog.filePath
-                );
+            for (let i = 0; i < queue.length; i++) {
+                const item = queue[i];
+                this.exportState.updateQueueItem(item.fileId, { status: 'downloading' });
+
+                const filename = item.filename.split('/').pop() ?? item.filename;
+                const destPath = `${dialog.folderPath}/${filename}`;
+                const ipcResult: IpcResult = await this.ipcGateway.exportFile(item.fileId, destPath);
 
                 if (ipcResult.success) {
                     successCount++;
+                    this.exportState.updateQueueItem(item.fileId, { status: 'done' });
                 } else {
-                    errors.push({
-                        nodeId:   nodes[i].id,
-                        nodeName: nodes[i].label,
-                        reason:   ipcResult.errorMessage ?? ipcResult.errorCode ?? 'Errore sconosciuto',
-                    });
+                    const reason = ipcResult.errorMessage ?? ipcResult.errorCode ?? 'Errore sconosciuto';
+                    errors.push({ nodeId: String(item.fileId), nodeName: item.filename, reason });
+                    this.exportState.updateQueueItem(item.fileId, { status: 'error', error: reason });
                 }
 
-                this.exportState.setProgress(((i + 1) / nodes.length) * 100);
+                this.exportState.setProgress(((i + 1) / queue.length) * 100);
             }
 
-            // Costruisce il modello UI con il riepilogo completo
             this.exportState.setSuccess(
                 new ExportResult(
                     OutputContext.MULTI_EXPORT,
-                    nodes.length,
+                    queue.length,
                     successCount,
                     errors.length,
-                    dialog.filePath,
-                    errors
+                    dialog.folderPath,
+                    errors,
                 )
             );
         } catch (err) {
@@ -102,38 +122,56 @@ export class ExportFacade implements IExportFacade {
     }
 
     // ------------------------------------------------------------------
-    // UC-22 — stampa singolo documento (solo renderer, nessun IPC)
+    // UC-22 — stampa singolo file tramite OS
     // ------------------------------------------------------------------
-    async printDocument(node: DipTreeNode): Promise<void> {
-        if (!this.checkPrintable(node)) {
-            this.exportState.setUnavailable(new ExportError(
-                ExportErrorCode.PRINT_UNAVAILABLE,
-                'VALIDATION' as any,
-                'printDocument',
-                `Formato non supportato per la stampa: ${node.label}`,
-                false,
-            ));
-            return;
-        }
-
+    async printDocument(fileId: number): Promise<void> {
         this.exportState.setProcessing(OutputContext.SINGLE_PRINT);
         try {
-            const dto = await this.ipcGateway.getFileDto(Number(node.id));
+            const dto = await this.ipcGateway.getFileDto(fileId);
+            console.log('DTO per stampa:', fileId);
             if (!dto) throw new Error('File non trovato');
 
-            await this.ipcGateway.openExternal(dto.path); // ← path completo dal DTO
+            if (!this.checkPrintable(dto.filename)) {
+                this.exportState.setUnavailable(new ExportError(
+                    ExportErrorCode.PRINT_UNAVAILABLE,
+                    'VALIDATION' as any,
+                    'printFile',
+                    `Formato non supportato per la stampa: ${dto.filename}`,
+                    false,
+                ));
+                return;
+            }
+
+            await this.ipcGateway.openExternal(dto.path);
             this.exportState.setSuccess(
                 new ExportResult(OutputContext.SINGLE_PRINT, 1, 1, 0, dto.path)
             );
         } catch (err) {
-            this.handleError(ExportErrorCode.PRINT_FAILED, err, 'printDocument');
+            this.handleError(ExportErrorCode.PRINT_FAILED, err, 'printFile');
+        }
+    }
+
+    async printDocuments(fileIds: number[]): Promise<void> {
+        this.exportState.setProcessing(OutputContext.SINGLE_PRINT);
+        try {
+            for (const fileId of fileIds) {
+                const dto = await this.ipcGateway.getFileDto(fileId);
+                if (!dto) continue;
+                if (!this.checkPrintable(dto.filename)) continue;
+                await this.ipcGateway.openExternal(dto.path);
+            }
+            this.exportState.setSuccess(
+                new ExportResult(OutputContext.SINGLE_PRINT, fileIds.length, fileIds.length, 0, '')
+            );
+        } catch (err) {
+            this.handleError(ExportErrorCode.PRINT_FAILED, err, 'printDocuments');
         }
     }
 
     reset(): void { this.exportState.reset(); }
 
-    private checkPrintable(node: DipTreeNode): boolean {
-        return PRINTABLE_FORMATS.some(ext => node.label.toLowerCase().endsWith(`.${ext}`));
+    private checkPrintable(filename: string): boolean {
+        return PRINTABLE_FORMATS.some(ext => filename.toLowerCase().endsWith(`.${ext}`));
     }
 
     private handleError(code: ExportErrorCode, err: unknown, context: string): void {

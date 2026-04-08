@@ -24,6 +24,7 @@ export class DocumentFacade implements IDocumentFacade {
 
   private readonly PREFIX_DOC = 'document:';
   private readonly PREFIX_BLOB = 'blob:';
+  private activeLoadRequestId = 0;
 
   constructor(
     @Inject(IPC_GATEWAY_TOKEN) private readonly ipcGateway: IIpcGateway,
@@ -38,6 +39,7 @@ export class DocumentFacade implements IDocumentFacade {
 
   // --- 1. CARICAMENTO METADATI DEL DOCUMENTO ---
   public async loadDocument(id: string): Promise<void> {
+    const requestId = ++this.activeLoadRequestId;
     const startTime = Date.now();
     const cacheKey = `${this.PREFIX_DOC}${id}`;
 
@@ -48,6 +50,9 @@ export class DocumentFacade implements IDocumentFacade {
       const cachedDetail = this.cache.get<DocumentDetail>(cacheKey);
 
       if (cachedDetail) {
+        if (requestId !== this.activeLoadRequestId) {
+          return;
+        }
         this.state.update((s) => ({ ...s, detail: cachedDetail, loading: false }));
         this.telemetry.trackTiming(TelemetryMetric.SEARCH_LATENCY_MS, Date.now() - startTime);
         return;
@@ -59,13 +64,24 @@ export class DocumentFacade implements IDocumentFacade {
         Number(id),
         null,
       );
+
+      if (requestId !== this.activeLoadRequestId) {
+        return;
+      }
+
       const documentDetail = mapDocumentDtoToDetail(rawData);
 
       // Salvataggio e aggiornamento stato
       this.cache.set(cacheKey, documentDetail, this.CACHE_TTL_METADATA_MS);
+      if (requestId !== this.activeLoadRequestId) {
+        return;
+      }
       this.state.update((s) => ({ ...s, detail: documentDetail, loading: false }));
       this.telemetry.trackTiming(TelemetryMetric.SEARCH_LATENCY_MS, Date.now() - startTime);
     } catch (error) {
+      if (requestId !== this.activeLoadRequestId) {
+        return;
+      }
       const appError = this.errorHandler.handle(error);
       this.state.update((s) => ({ ...s, error: appError, loading: false }));
       this.telemetry.trackError(appError);

@@ -15,7 +15,7 @@ import { AppError, ErrorSeverity } from '../../domain';
         </div>
 
         <div class="modal-body">
-          <p class="error-message">{{ error().message }}</p>
+          <p class="error-message" data-testid="document-viewer-error-message">{{ error().message }}</p>
 
           <div class="error-meta">
             @if (error().code) {
@@ -40,7 +40,7 @@ import { AppError, ErrorSeverity } from '../../domain';
           <button class="btn btn-secondary" (click)="close()">Chiudi</button>
 
           @if (error().recoverable) {
-            <button class="btn btn-primary" (click)="retry()">
+            <button class="btn btn-primary" data-testid="document-viewer-error-retry" (click)="retry()">
               <span class="icon">🔄</span> Riprova
             </button>
           }

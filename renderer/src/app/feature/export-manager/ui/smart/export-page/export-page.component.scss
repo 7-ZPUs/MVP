@@ -1,8 +1,220 @@
-.export-page {
-  padding: 20px;
+// I bottoni ereditano gli stili dalla parent tramite :host
+// Qui definisci solo ciò che è esclusivo della figlia
+
+:host {
+  display: contents; // i bottoni fluiscono nel flex della parent come se fossero figli diretti
+}
+
+.export-overlays {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 100;
+  min-width: 320px;
   display: flex;
   flex-direction: column;
-  gap: 24px;
-  max-width: 800px;
-  margin: 0 auto;
+  gap: 0.5rem;
+  padding-top: 0.5rem;
+}
+
+.queue-container {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 0.5rem 0;
+  position: relative;
+}
+
+.close-all-btn {
+  position: absolute;
+  top: 0.4rem;
+  right: 0.75rem;
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  font-size: 0.8rem;
+
+  &:hover { color: white; }
+}
+
+.queue-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.4rem 1.5rem;
+  font-size: 0.85rem;
+
+  &--pending     { color: #94a3b8; }
+  &--downloading { color: #3b82f6; }
+  &--done        { color: #10b981; }
+  &--error       { color: #ef4444; }
+}
+
+.result-container {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  position: relative;
+}
+
+.close-btn {
+  position: absolute;
+  top: 0.4rem;
+  right: 0.75rem;
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  font-size: 0.8rem;
+
+  &:hover { color: white; }
+}
+
+// Spinner (necessario qui perché usato nei bottoni della figlia)
+.spinner-small {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.btn-print {
+  background: #475569;
+  color: white;
+
+  &:hover:not(:disabled) {
+    background: #334155;
+  }
+}
+
+.btn-export {
+  background: #10b981;
+  color: white;
+
+  &:hover:not(:disabled) {
+    background: #059669;
+  }
+}
+
+.print-selector-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.print-selector {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 10px;
+  min-width: 380px;
+  max-width: 520px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid #334155;
+    font-weight: 600;
+    color: white;
+    font-size: 0.95rem;
+  }
+
+  &__list {
+    list-style: none;
+    padding: 0.5rem 0;
+    margin: 0;
+    max-height: 300px;
+    overflow-y: auto;
+  }
+
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.65rem 1.25rem;
+    cursor: pointer;
+    color: #e2e8f0;
+    font-size: 0.9rem;
+    transition: background 0.15s;
+
+    &:hover {
+      background: #334155;
+    }
+
+    input[type="checkbox"] {
+      accent-color: #3b82f6;
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+  }
+
+  &__footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    border-top: 1px solid #334155;
+  }
+}
+
+.file-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-badge {
+  font-size: 0.75rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  background: #334155;
+  color: #94a3b8;
+  flex-shrink: 0;
+}
+
+.btn-secondary {
+  background: #475569;
+  color: white;
+
+  &:hover:not(:disabled) {
+    background: #334155;
+  }
 }

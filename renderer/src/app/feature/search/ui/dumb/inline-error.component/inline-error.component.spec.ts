@@ -22,6 +22,13 @@ describe('InlineErrorComponent', () => {
 
     expect(component.message).toBe('Si è verificato un errore.');
 
+    // Added coverage for the wrapper container and the static icon
+    const wrapperEl = fixture.debugElement.query(By.css('.inline-error'));
+    expect(wrapperEl).toBeTruthy();
+
+    const iconEl = fixture.debugElement.query(By.css('.error-icon'));
+    expect(iconEl.nativeElement.textContent).toContain('⚠️');
+
     const msgEl = fixture.debugElement.query(By.css('.error-message'));
     expect(msgEl.nativeElement.textContent).toContain('Si è verificato un errore.');
   });

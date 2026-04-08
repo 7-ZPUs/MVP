@@ -26,6 +26,7 @@ describe('CustomMetaFiltersComponent', () => {
   it('ngOnChanges() dovrebbe sincronizzare le entries con i nuovi filtri senza emettere', () => {
     const emitSpy = vi.spyOn(component.filtersChanged, 'emit');
     const incomingFilters = [{ field: 'Chiave1', value: 'Valore1' }];
+    const incomingFilters = [{ field: 'Chiave1', value: 'Valore1' }];
 
     component.ngOnChanges({
       filters: new SimpleChange(null, incomingFilters, true),
@@ -85,6 +86,7 @@ describe('CustomMetaFiltersComponent', () => {
 
   it('dovrebbe restituire gli errori customMeta con getError e hasAnyError', () => {
     const mockErrorField: ValidationError = {
+      field: 'customMeta[0].field',
       field: 'customMeta[0].field',
       message: 'Chiave non valida',
       code: 'E1',
