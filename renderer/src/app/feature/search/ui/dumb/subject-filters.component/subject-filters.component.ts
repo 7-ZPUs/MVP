@@ -50,10 +50,10 @@ export class SubjectFiltersComponent implements OnChanges {
   public RoleType = SubjectRoleType;
   public SubjType = SubjectType;
 
-  public availableRoles = signal<RoleDefinition[]>([]);
-  public allowedTypes = signal<SubjectType[]>([]);
+  private currentStrategy: IDocContextStrategy = DOC_CONTEXT_STRATEGY_REGISTRY[DocContext.ALL];
 
-  private currentStrategy!: IDocContextStrategy;
+  public availableRoles = signal<RoleDefinition[]>(this.currentStrategy.getAvailableRoles());
+  public allowedTypes = signal<SubjectType[]>([]);
 
   public ngOnChanges(changes: SimpleChanges): void {
     if (changes['resetCounter'] && !changes['resetCounter'].firstChange) {

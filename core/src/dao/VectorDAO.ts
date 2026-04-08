@@ -5,6 +5,8 @@ import { SQLITE_DB_TOKEN } from "../../../db/DatabaseBootstrap";
 import { Vector } from "../entity/Vector";
 import { IVectorDAO } from "./IVectorDAO";
 
+const VSS_TABLE = "document_vector_vss";
+
 @injectable()
 export class VectorDAO implements IVectorDAO {
   constructor(
@@ -21,6 +23,13 @@ export class VectorDAO implements IVectorDAO {
          ON CONFLICT(document_id) DO UPDATE SET
            embedding = excluded.embedding`,
       )
+      .run(vector.getDocumentId(), embedding);
+
+    this.db
+      .prepare(`DELETE FROM ${VSS_TABLE} WHERE rowid = ?`)
+      .run(vector.getDocumentId());
+    this.db
+      .prepare(`INSERT INTO ${VSS_TABLE}(rowid, embedding) VALUES (?, ?)`)
       .run(vector.getDocumentId(), embedding);
   }
 
@@ -43,36 +52,24 @@ export class VectorDAO implements IVectorDAO {
     queryVector: Float32Array,
     topK: number,
   ): Array<{ documentId: number; score: number }> {
-    if (topK <= 0) {
+    if (topK <= 0 || queryVector.length === 0) {
       return [];
     }
 
     const rows = this.db
-      .prepare<
-        [],
-        { documentId: number; embedding: Buffer }
-      >("SELECT document_id as documentId, embedding FROM document_vector")
-      .all();
-
-    const candidates = rows
-      .map((row) => {
-        const candidateVector = this.bufferToVector(row.embedding);
-        if (candidateVector.length !== queryVector.length) {
-          return null;
-        }
-
-        return {
-          documentId: row.documentId,
-          score: this.cosineSimilarity(queryVector, candidateVector),
-        };
-      })
-      .filter(
-        (candidate): candidate is { documentId: number; score: number } =>
-          candidate !== null,
+      .prepare<[Buffer, number], { documentId: number; distance: number }>(
+        `SELECT rowid as documentId, distance
+         FROM ${VSS_TABLE}
+         WHERE vss_search(embedding, ?)
+         LIMIT ?`,
       )
-      .sort((a, b) => b.score - a.score);
+      .all(this.toBuffer(queryVector), topK);
 
-    return candidates.slice(0, topK);
+    return rows.map((row) => ({
+      documentId: row.documentId,
+      // sqlite-vss returns distance (lower is better); convert to a monotonic similarity score.
+      score: 1 / (1 + row.distance),
+    }));
   }
 
   private toBuffer(vector: Float32Array): Buffer {
@@ -86,23 +83,5 @@ export class VectorDAO implements IVectorDAO {
       buffer.byteLength / Float32Array.BYTES_PER_ELEMENT,
     );
     return new Float32Array(view);
-  }
-
-  private cosineSimilarity(a: Float32Array, b: Float32Array): number {
-    let dot = 0;
-    let normA = 0;
-    let normB = 0;
-
-    for (let i = 0; i < a.length; i += 1) {
-      dot += a[i] * b[i];
-      normA += a[i] * a[i];
-      normB += b[i] * b[i];
-    }
-
-    if (normA === 0 || normB === 0) {
-      return 0;
-    }
-
-    return dot / (Math.sqrt(normA) * Math.sqrt(normB));
   }
 }

@@ -11,8 +11,9 @@ export class VectorRepository implements IVectorRepository {
     private readonly dao: IVectorDAO,
   ) {}
 
-  async saveVector(documentId: number, vector: Float32Array): Promise<void> {
-    this.dao.save(new Vector(documentId, vector));
+  async saveVector(vector: Vector): Promise<void> {
+    if(!vector) throw new Error("Vector cannot be null or undefined");
+    this.dao.save(vector);
   }
 
   async getVector(documentId: number): Promise<Float32Array | null> {

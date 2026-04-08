@@ -8,6 +8,7 @@ import {
 } from "../core/src/use-case/utils/indexing/IIndexDip";
 
 export const SQLITE_DB_TOKEN = Symbol("SqliteDatabase");
+const EMBEDDING_DIMENSION = 384;
 
 function sqliteVssPackageName(
   platformName: NodeJS.Platform,
@@ -26,6 +27,12 @@ function loadSqliteVssExtensions(db: Database.Database): void {
 
   db.loadExtension(vectorPath);
   db.loadExtension(vssPath);
+}
+
+function ensureVectorSearchSchema(db: Database.Database): void {
+  db.exec(
+    `CREATE VIRTUAL TABLE IF NOT EXISTS document_vector_vss USING vss0(embedding(${EMBEDDING_DIMENSION}))`,
+  );
 }
 
 export class ApplicationBootstrapAdapter {
@@ -69,6 +76,7 @@ export class ApplicationBootstrapAdapter {
 
     try {
       loadSqliteVssExtensions(db);
+      ensureVectorSearchSchema(db);
     } catch (error) {
       console.warn(
         "[BOOTSTRAP] sqlite-vss extensions not loaded; vector search disabled:",

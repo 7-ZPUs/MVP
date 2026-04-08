@@ -1,5 +1,4 @@
 import { TestBed } from '@angular/core/testing';
-import { RouterTestingHarness, RouterTestingModule } from '@angular/router/testing';
 import { Router, provideRouter } from '@angular/router';
 import { routes } from './app.routes';
 import { Location } from '@angular/common';
@@ -17,18 +16,21 @@ describe('App /routes', () => {
     location = TestBed.inject(Location);
   });
 
-  it('should redirect from empty path to /integrity-dashboard', async () => {
+  it('should redirect from empty path to /browse', async () => {
     await router.navigate(['']);
-    expect(location.path()).toBe('/integrity-dashboard');
+    expect(location.path()).toBe('/browse');
   });
 
   it('should load verification routes when navigating to /integrity-dashboard', async () => {
-    // This requires checking the configuration
-    const integrityRoute = router.config.find((route) => route.path === 'integrity-dashboard');
+    const rootRoute = router.config.find((route) => route.path === '');
+    const integrityRoute = rootRoute?.children?.find(
+      (route) => route.path === 'integrity-dashboard',
+    );
+
+    expect(rootRoute).toBeTruthy();
     expect(integrityRoute).toBeTruthy();
     expect(integrityRoute?.loadChildren).toBeDefined();
 
-    // Check if loadChildren is a function
     if (integrityRoute && integrityRoute.loadChildren) {
       expect(typeof integrityRoute.loadChildren).toBe('function');
     }

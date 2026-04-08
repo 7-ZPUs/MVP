@@ -36,6 +36,7 @@ import {
 } from "../../../../services/IDocumentChunker";
 import { inject, injectable } from "tsyringe";
 import path from "node:path";
+import { Vector } from "../../../../entity/Vector";
 
 /*
  * Implementation of the IndexDip use case.
@@ -141,7 +142,7 @@ export class IndexDip implements IIndexDip {
         return;
       }
 
-      await this.vectorRepository.saveVector(documentId, embedding);
+      await this.vectorRepository.saveVector(new Vector(documentId, embedding));
     } catch (error) {
       try {
         if (!this.hasLoggedVectorWarning) {

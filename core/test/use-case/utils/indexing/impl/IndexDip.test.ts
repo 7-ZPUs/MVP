@@ -20,6 +20,7 @@ import { readFileSync } from "node:fs";
 import { SqliteTransactionManager } from "../../../../../src/repo/impl/SqliteTransactionManager";
 import { IVectorRepository } from "../../../../../src/repo/IVectorRepository";
 import { IDocumentChunker } from "../../../../../src/services/IDocumentChunker";
+import { Vector } from "../../../../../src/entity/Vector";
 
 describe("IndexDip", () => {
   let db: Database.Database;
@@ -156,8 +157,7 @@ describe("IndexDip", () => {
     );
     expect(vectorRepository.saveVector).toHaveBeenCalledTimes(1);
     expect(vectorRepository.saveVector).toHaveBeenCalledWith(
-      expect.any(Number),
-      expect.any(Float32Array),
+      expect.any(Vector),
     );
   });
 

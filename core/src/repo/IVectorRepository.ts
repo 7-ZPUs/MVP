@@ -1,5 +1,7 @@
+import { Vector } from "../entity/Vector";
+
 export interface IVectorRepository {
-  saveVector(documentId: number, vector: Float32Array): Promise<void>;
+  saveVector(vector: Vector): Promise<void>;
   getVector(documentId: number): Promise<Float32Array | null>;
   searchSimilarVectors(
     queryVector: Float32Array,
