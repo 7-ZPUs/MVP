@@ -11,56 +11,8 @@ import { ExportPhase, OutputContext } from '../../../domain/enums';
   standalone: true,
   imports: [CommonModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    @if (phase() === ExportPhase.SUCCESS && result()) {
-      <div class="result-box result-success"
-           role="status"
-           aria-live="polite"
-           aria-atomic="true"
-           [attr.aria-label]="successMessage()">
-        <i class="icon bi bi-check-circle-fill" aria-hidden="true"></i>
-        <div class="result-body">
-          <span class="result-title">{{ successMessage() }}</span>
-          @if (result()!.failedCount > 0) {
-            <span class="result-sub"
-                  role="alert"
-                  aria-live="assertive">
-              {{ result()!.failedCount }} elementi non salvati
-            </span>
-          }
-        </div>
-      </div>
-    } @else if (phase() === ExportPhase.ERROR && error()) {
-      <div class="result-box result-error"
-           role="alert"
-           aria-live="assertive"
-           aria-atomic="true"
-           [attr.aria-label]="'Errore: ' + error()!.message">
-        <i class="icon bi bi-x-circle-fill" aria-hidden="true"></i>
-        <div class="result-body">
-          <span class="result-title">{{ error()!.message }}</span>
-          @if (error()!.recoverable) {
-            <button class="retry-btn"
-                    aria-label="Riprova l'operazione"
-                    (click)="retry.emit()">
-              Riprova
-            </button>
-          }
-        </div>
-      </div>
-    } @else if (phase() === ExportPhase.UNAVAILABLE && error()) {
-      <div class="result-box result-warning"
-           role="status"
-           aria-live="polite"
-           aria-atomic="true"
-           [attr.aria-label]="'Operazione non disponibile: ' + error()!.message">
-        <i class="icon bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
-        <div class="result-body">
-          <span class="result-title">{{ error()!.message }}</span>
-        </div>
-      </div>
-    }
-  `,
+  templateUrl: './export-result.component.html',
+  styleUrl: './export-result.component.scss',
 })
 export class ExportResultComponent {
   readonly phase  = input<ExportPhase>(ExportPhase.IDLE);
