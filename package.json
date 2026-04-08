@@ -41,6 +41,7 @@
   },
   "devDependencies": {
     "@angular/cli": "^21.2.5",
+    "@playwright/test": "^1.59.1",
     "@types/adm-zip": "^0.5.5",
     "@types/better-sqlite3": "^7.6.8",
     "@types/node": "^20.19.37",

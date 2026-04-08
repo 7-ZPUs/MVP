@@ -9,7 +9,7 @@
   
   <div class="main-content">
     
-    <div class="sidebar-toggle-tab" (click)="isSidebarCollapsed = !isSidebarCollapsed">
+    <div class="sidebar-toggle-tab" data-testid="search-filters-toggle" (click)="isSidebarCollapsed = !isSidebarCollapsed">
       <span class="tab-arrow" [class.rotated]="isSidebarCollapsed">◀</span>
       <span>Filtri</span>
     </div>
@@ -35,11 +35,11 @@
       }
 
       @if (state().error; as err) {
-        <div class="error-banner">
+        <div class="error-banner" data-testid="search-error-banner">
           <div>
             <strong>Si è verificato un errore:</strong> {{ err.message }}
           </div>
-          <button class="btn-retry" (click)="searchFacade.retry()">
+          <button class="btn-retry" data-testid="search-retry-button" (click)="searchFacade.retry()">
             Riprova
           </button>
         </div>
@@ -47,7 +47,7 @@
 
       @if (!state().loading && state().results.length > 0) {
         <div>
-          <h2 class="page-title">
+          <h2 class="page-title" data-testid="search-page-title">
             Trovati {{ state().results.length }} risultati
           </h2>
           <app-search-results
@@ -59,7 +59,7 @@
       }
 
       @if (!state().loading && state().results.length === 0 && !state().error && state().query.text) {
-        <div class="empty-state">
+        <div class="empty-state" data-testid="search-empty-state">
           Nessun risultato trovato per la tua ricerca. Prova ad alleggerire i filtri.
         </div>
       }

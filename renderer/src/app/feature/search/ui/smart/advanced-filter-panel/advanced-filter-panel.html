@@ -88,6 +88,7 @@
       >
         <button
           type="button"
+          data-testid="clear-filters-button"
           (click)="onReset()"
           style="
             padding: 0.5rem 1rem;
@@ -101,6 +102,7 @@
         </button>
         <button
           type="submit"
+          data-testid="apply-filters-button"
           [disabled]="effectiveValidationResult?.isValid === false"
           style="
             padding: 0.5rem 1rem;

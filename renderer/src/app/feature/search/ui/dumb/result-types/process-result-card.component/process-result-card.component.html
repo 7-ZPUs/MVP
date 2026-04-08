@@ -1,5 +1,6 @@
 <div
   class="result-card process-card"
+  data-testid="search-result-card"
   role="button"
   tabindex="0"
   (click)="onSelectAction(result)"
@@ -14,7 +15,7 @@
   <div class="card-meta">
     <span class="badge process-badge">{{ result.type }}</span>
   </div>
-  <span class="integrity-badge-base" [ngClass]="result.integrityStatus | integrityClass">
+  <span class="integrity-badge-base" data-testid="result-integrity-badge" [ngClass]="result.integrityStatus | integrityClass">
     {{ result.integrityStatus }}
   </span>
 </div>

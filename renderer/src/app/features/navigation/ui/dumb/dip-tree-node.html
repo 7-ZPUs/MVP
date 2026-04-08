@@ -1,5 +1,6 @@
 <div
   class="tree-node"
+  data-testid="dip-tree-node"
   [class.tree-node-selected]="flatNode.isSelected"
   [style.padding-left.px]="12 + flatNode.depth * 16"
   role="treeitem"
@@ -16,6 +17,7 @@
     *ngIf="flatNode.hasChildren"
     type="button"
     class="toggle-icon"
+    data-testid="dip-tree-toggle"
     [disabled]="flatNode.isLoading"
     [attr.aria-label]="flatNode.isExpanded ? 'Comprimi nodo' : 'Espandi nodo'"
     (click)="onToggle($event)"
