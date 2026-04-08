@@ -33,7 +33,7 @@ describe('ErrorDialogComponent', () => {
       setError({ severity: ErrorSeverity.ERROR, message: 'Test error' });
 
       expect(component.isFatal()).toBe(false);
-      expect(component.getIcon()).toBe('❌');
+      expect(component.getIcon()).toBe('bi-x-octagon-fill');
       expect(component.getTitle()).toBe('Si è verificato un errore');
       
       const headerTitle = fixture.debugElement.query(By.css('.header-title')).nativeElement;
@@ -47,7 +47,7 @@ describe('ErrorDialogComponent', () => {
       setError({ severity: ErrorSeverity.FATAL });
 
       expect(component.isFatal()).toBe(true);
-      expect(component.getIcon()).toBe('💀');
+      expect(component.getIcon()).toBe('bi-bug-fill');
       expect(component.getTitle()).toBe('Errore Critico del Sistema');
 
       const dialog = fixture.debugElement.query(By.css('.modal-dialog')).nativeElement;
@@ -57,14 +57,14 @@ describe('ErrorDialogComponent', () => {
     it('should render WARNING severity correctly', () => {
       setError({ severity: ErrorSeverity.WARNING });
 
-      expect(component.getIcon()).toBe('⚠️');
+      expect(component.getIcon()).toBe('bi-exclamation-triangle-fill');
       expect(component.getTitle()).toBe('Attenzione');
     });
 
     it('should render default (INFO/fallback) severity correctly', () => {
       setError({ severity: 'UNKNOWN' as ErrorSeverity });
 
-      expect(component.getIcon()).toBe('ℹ️');
+      expect(component.getIcon()).toBe('bi-info-circle-fill');
       expect(component.getTitle()).toBe('Avviso');
     });
   });

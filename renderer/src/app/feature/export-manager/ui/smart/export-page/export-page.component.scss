@@ -35,7 +35,9 @@
   cursor: pointer;
   font-size: 0.8rem;
 
-  &:hover { color: white; }
+  &:hover {
+    color: white;
+  }
 }
 
 .queue-item {
@@ -44,10 +46,18 @@
   padding: 0.4rem 1.5rem;
   font-size: 0.85rem;
 
-  &--pending     { color: #94a3b8; }
-  &--downloading { color: #3b82f6; }
-  &--done        { color: #10b981; }
-  &--error       { color: #ef4444; }
+  &--pending {
+    color: #94a3b8;
+  }
+  &--downloading {
+    color: #3b82f6;
+  }
+  &--done {
+    color: #10b981;
+  }
+  &--error {
+    color: #ef4444;
+  }
 }
 
 .result-container {
@@ -68,7 +78,9 @@
   cursor: pointer;
   font-size: 0.8rem;
 
-  &:hover { color: white; }
+  &:hover {
+    color: white;
+  }
 }
 
 // Spinner (necessario qui perché usato nei bottoni della figlia)
@@ -83,7 +95,9 @@
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .action-btn {
@@ -120,6 +134,16 @@
   &:hover:not(:disabled) {
     background: #059669;
   }
+}
+
+.action-btn .bi {
+  font-size: 0.95rem;
+}
+
+.file-icon {
+  color: #cbd5e1;
+  width: 1rem;
+  text-align: center;
 }
 
 .print-selector-overlay {
@@ -176,7 +200,7 @@
       background: #334155;
     }
 
-    input[type="checkbox"] {
+    input[type='checkbox'] {
       accent-color: #3b82f6;
       width: 16px;
       height: 16px;

@@ -8,7 +8,10 @@ import { IntegrityNodeVM } from '../../../domain/integrity.view-models';
     @if (nodes().length > 0) {
       <section class="valid-container" aria-labelledby="valid-heading">
         <header class="panel-header">
-          <h3 id="valid-heading">✅ Elementi Analizzati e Verificati</h3>
+          <h3 id="valid-heading">
+            <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+            Elementi Analizzati e Verificati
+          </h3>
           <p>Gli elementi raggruppati qui sotto sono intatti.</p>
         </header>
 

@@ -1,5 +1,4 @@
 <fieldset class="filter-fieldset" [formGroup]="form">
-
   <details class="filter-accordion" [attr.open]="hasAnyError() ? '' : null">
     <summary>Metadati Personalizzati</summary>
 
@@ -11,7 +10,14 @@
             [formGroupName]="i"
             class="dynamic-form-item"
           >
-            <button type="button" (click)="removeEntry(i)" class="btn-remove-item">✕</button>
+            <button
+              type="button"
+              (click)="removeEntry(i)"
+              class="btn-remove-item"
+              aria-label="Rimuovi metadato"
+            >
+              <i class="bi bi-x-lg" aria-hidden="true"></i>
+            </button>
 
             <div class="form-row">
               <div class="form-group">
@@ -43,11 +49,8 @@
           </div>
         </div>
 
-        <button type="button" (click)="addEntry()" class="btn-outline">
-          + Aggiungi Metadato
-        </button>
+        <button type="button" (click)="addEntry()" class="btn-outline">+ Aggiungi Metadato</button>
       </div>
     </div>
   </details>
-
 </fieldset>

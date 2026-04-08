@@ -10,7 +10,7 @@ import { CommonModule } from '@angular/common';
       class="inline-error"
       style="color: #dc2626; background: #fef2f2; padding: 0.5rem; border-radius: 4px; border: 1px solid #fee2e2; display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem;"
     >
-      <span class="error-icon">⚠️</span>
+      <i class="error-icon bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
       <span class="error-message">{{ message }}</span>
     </div>
   `,

@@ -45,7 +45,7 @@ import { CommonModule } from '@angular/common';
             aria-label="Chiudi anteprima"
             title="Chiudi anteprima"
           >
-            ✕
+            <i class="bi bi-x-lg" aria-hidden="true"></i>
           </button>
         } @else {
           <button
@@ -54,7 +54,8 @@ import { CommonModule } from '@angular/common';
             (click)="openPreview.emit()"
             title="Apri anteprima"
           >
-            👁 Apri Anteprima
+            <i class="bi bi-eye" aria-hidden="true"></i>
+            Apri Anteprima
           </button>
         }
       </div>
@@ -86,6 +87,9 @@ import { CommonModule } from '@angular/common';
         cursor: pointer;
         transition: all 0.2s;
         font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
       }
       .btn-back:hover {
         background: #f1f5f9;
@@ -165,6 +169,9 @@ import { CommonModule } from '@angular/common';
         color: #94a3b8;
         cursor: pointer;
         padding: 0.25rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
       }
       .close-btn:hover {
         color: #ef4444;

@@ -53,7 +53,11 @@
       text-align: center;
     "
   >
-    <span style="font-size: 2rem; margin-bottom: 0.5rem">⚠️</span>
+    <i
+      class="bi bi-exclamation-triangle-fill"
+      style="font-size: 2rem; margin-bottom: 0.5rem"
+      aria-hidden="true"
+    ></i>
     <h4 style="margin: 0 0 0.5rem 0">Errore di caricamento</h4>
     <p style="margin: 0 0 1.5rem 0">{{ error.message || fallbackErrorMessage }}</p>
 

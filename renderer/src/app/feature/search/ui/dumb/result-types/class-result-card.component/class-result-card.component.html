@@ -7,7 +7,7 @@
   (keydown.enter)="onSelectAction(result)"
   (keydown.space)="onSelectAction(result); $event.preventDefault()"
 >
-  <div class="card-icon">🏷️</div>
+  <i class="card-icon bi bi-tag" aria-hidden="true"></i>
   <div class="card-content">
     <h3 class="document-name">{{ result.name || 'Classe senza titolo' }}</h3>
     <span class="document-id">UUID Classe: {{ result.uuid }}</span>
@@ -15,7 +15,11 @@
   <div class="card-meta">
     <span class="badge class-badge">CLASSE</span>
   </div>
-  <span class="integrity-badge-base" data-testid="result-integrity-badge" [ngClass]="result.integrityStatus | integrityClass">
+  <span
+    class="integrity-badge-base"
+    data-testid="result-integrity-badge"
+    [ngClass]="result.integrityStatus | integrityClass"
+  >
     {{ result.integrityStatus }}
   </span>
 </div>

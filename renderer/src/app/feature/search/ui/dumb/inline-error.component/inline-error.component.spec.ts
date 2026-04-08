@@ -27,7 +27,7 @@ describe('InlineErrorComponent', () => {
     expect(wrapperEl).toBeTruthy();
 
     const iconEl = fixture.debugElement.query(By.css('.error-icon'));
-    expect(iconEl.nativeElement.textContent).toContain('⚠️');
+    expect(iconEl.nativeElement.className).toContain('bi-exclamation-triangle-fill');
 
     const msgEl = fixture.debugElement.query(By.css('.error-message'));
     expect(msgEl.nativeElement.textContent).toContain('Si è verificato un errore.');

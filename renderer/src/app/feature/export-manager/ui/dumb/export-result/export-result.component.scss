@@ -9,18 +9,17 @@
 
   .icon {
     font-size: 1.2rem;
-    font-weight: bold;
   }
 
   .result-body {
     display: flex;
     flex-direction: column;
-    
+
     .result-title {
       font-weight: 600;
       font-size: 14px;
     }
-    
+
     .result-sub {
       font-size: 12px;
       opacity: 0.9;
@@ -37,7 +36,7 @@
     background-color: #fce8e6;
     color: #c5221f;
     border-color: #fad2cf;
-    
+
     .retry-btn {
       margin-top: 8px;
       padding: 4px 12px;
@@ -48,7 +47,9 @@
       cursor: pointer;
       font-size: 12px;
       width: fit-content;
-      &:hover { background: #a51b19; }
+      &:hover {
+        background: #a51b19;
+      }
     }
   }
 

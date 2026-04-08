@@ -18,7 +18,7 @@ import { ExportPhase, OutputContext } from '../../../domain/enums';
            aria-live="polite"
            aria-atomic="true"
            [attr.aria-label]="successMessage()">
-        <span aria-hidden="true">✓</span>
+        <i class="icon bi bi-check-circle-fill" aria-hidden="true"></i>
         <div class="result-body">
           <span class="result-title">{{ successMessage() }}</span>
           @if (result()!.failedCount > 0) {
@@ -36,7 +36,7 @@ import { ExportPhase, OutputContext } from '../../../domain/enums';
            aria-live="assertive"
            aria-atomic="true"
            [attr.aria-label]="'Errore: ' + error()!.message">
-        <span aria-hidden="true">✕</span>
+        <i class="icon bi bi-x-circle-fill" aria-hidden="true"></i>
         <div class="result-body">
           <span class="result-title">{{ error()!.message }}</span>
           @if (error()!.recoverable) {
@@ -54,7 +54,7 @@ import { ExportPhase, OutputContext } from '../../../domain/enums';
            aria-live="polite"
            aria-atomic="true"
            [attr.aria-label]="'Operazione non disponibile: ' + error()!.message">
-        <span aria-hidden="true">⚠</span>
+        <i class="icon bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
         <div class="result-body">
           <span class="result-title">{{ error()!.message }}</span>
         </div>

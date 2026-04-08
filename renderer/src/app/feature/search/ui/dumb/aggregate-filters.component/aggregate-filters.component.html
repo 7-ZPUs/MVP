@@ -1,24 +1,34 @@
 <fieldset [disabled]="disabled" class="filter-fieldset" [formGroup]="form">
   @if (disabled && disabledReason) {
     <div class="info-banner">
-      <span>ℹ️</span> {{ disabledReason }}
+      <i class="bi bi-info-circle" aria-hidden="true"></i>
+      {{ disabledReason }}
     </div>
   }
-  
+
   <details class="filter-accordion" [attr.open]="getError('dataApertura') ? '' : null">
     <summary>Dati Aggregazione</summary>
     <div class="accordion-content">
       <div class="form-row">
         <div class="form-group">
           <label for="tipoAggregazione">Tipo Aggregazione</label>
-          <select id="tipoAggregazione" data-testid="aggregation-type-select" formControlName="tipoAggregazione">
+          <select
+            id="tipoAggregazione"
+            data-testid="aggregation-type-select"
+            formControlName="tipoAggregazione"
+          >
             <option [ngValue]="null">Tutte</option>
             <option *ngFor="let t of aggregationTypes" [ngValue]="t">{{ t }}</option>
           </select>
         </div>
         <div class="form-group">
           <label for="idAggregazione">ID Aggregazione</label>
-          <input id="idAggregazione" data-testid="aggregate-identifier-input" type="text" formControlName="idAggregazione" />
+          <input
+            id="idAggregazione"
+            data-testid="aggregate-identifier-input"
+            type="text"
+            formControlName="idAggregazione"
+          />
         </div>
       </div>
 
@@ -72,7 +82,14 @@
             [formGroupName]="i"
             class="dynamic-form-item"
           >
-            <button type="button" (click)="removeFase(i)" class="btn-remove-item">✕</button>
+            <button
+              type="button"
+              (click)="removeFase(i)"
+              class="btn-remove-item"
+              aria-label="Rimuovi fase"
+            >
+              <i class="bi bi-x-lg" aria-hidden="true"></i>
+            </button>
 
             <div class="form-row">
               <div class="form-group">
@@ -104,9 +121,7 @@
             </div>
           </div>
         </div>
-        <button type="button" (click)="addFase()" class="btn-outline">
-          + Aggiungi Fase
-        </button>
+        <button type="button" (click)="addFase()" class="btn-outline">+ Aggiungi Fase</button>
       </div>
     </div>
   </details>

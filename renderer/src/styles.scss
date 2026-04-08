@@ -9,6 +9,7 @@ body {
   width: 100%;
   overflow: hidden;
   box-sizing: border-box;
+  font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
 }
 
 *,
@@ -21,4 +22,134 @@ app-root {
   display: block;
   height: 100%;
   width: 100%;
+}
+
+.bi {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  line-height: 1;
+  vertical-align: -0.125em;
+  background-color: currentColor;
+  -webkit-mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: contain;
+  mask-position: center;
+  mask-repeat: no-repeat;
+  mask-size: contain;
+}
+
+.bi-arrow-clockwise {
+  -webkit-mask-image: url('icons/arrow-clockwise.svg');
+  mask-image: url('icons/arrow-clockwise.svg');
+}
+
+.bi-bug-fill {
+  -webkit-mask-image: url('icons/bug-fill.svg');
+  mask-image: url('icons/bug-fill.svg');
+}
+
+.bi-check-circle-fill {
+  -webkit-mask-image: url('icons/check-circle-fill.svg');
+  mask-image: url('icons/check-circle-fill.svg');
+}
+
+.bi-download {
+  -webkit-mask-image: url('icons/download.svg');
+  mask-image: url('icons/download.svg');
+}
+
+.bi-exclamation-octagon-fill {
+  -webkit-mask-image: url('icons/exclamation-octagon-fill.svg');
+  mask-image: url('icons/exclamation-octagon-fill.svg');
+}
+
+.bi-exclamation-triangle-fill {
+  -webkit-mask-image: url('icons/exclamation-triangle-fill.svg');
+  mask-image: url('icons/exclamation-triangle-fill.svg');
+}
+
+.bi-eye {
+  -webkit-mask-image: url('icons/eye.svg');
+  mask-image: url('icons/eye.svg');
+}
+
+.bi-file-earmark-pdf {
+  -webkit-mask-image: url('icons/file-earmark-pdf.svg');
+  mask-image: url('icons/file-earmark-pdf.svg');
+}
+
+.bi-file-earmark-text {
+  -webkit-mask-image: url('icons/file-earmark-text.svg');
+  mask-image: url('icons/file-earmark-text.svg');
+}
+
+.bi-folder {
+  -webkit-mask-image: url('icons/folder.svg');
+  mask-image: url('icons/folder.svg');
+}
+
+.bi-gear {
+  -webkit-mask-image: url('icons/gear.svg');
+  mask-image: url('icons/gear.svg');
+}
+
+.bi-geo-alt {
+  -webkit-mask-image: url('icons/geo-alt.svg');
+  mask-image: url('icons/geo-alt.svg');
+}
+
+.bi-hourglass-split {
+  -webkit-mask-image: url('icons/hourglass-split.svg');
+  mask-image: url('icons/hourglass-split.svg');
+}
+
+.bi-info-circle {
+  -webkit-mask-image: url('icons/info-circle.svg');
+  mask-image: url('icons/info-circle.svg');
+}
+
+.bi-info-circle-fill {
+  -webkit-mask-image: url('icons/info-circle-fill.svg');
+  mask-image: url('icons/info-circle-fill.svg');
+}
+
+.bi-paperclip {
+  -webkit-mask-image: url('icons/paperclip.svg');
+  mask-image: url('icons/paperclip.svg');
+}
+
+.bi-printer {
+  -webkit-mask-image: url('icons/printer.svg');
+  mask-image: url('icons/printer.svg');
+}
+
+.bi-search {
+  -webkit-mask-image: url('icons/search.svg');
+  mask-image: url('icons/search.svg');
+}
+
+.bi-shield-check {
+  -webkit-mask-image: url('icons/shield-check.svg');
+  mask-image: url('icons/shield-check.svg');
+}
+
+.bi-tag {
+  -webkit-mask-image: url('icons/tag.svg');
+  mask-image: url('icons/tag.svg');
+}
+
+.bi-x-circle-fill {
+  -webkit-mask-image: url('icons/x-circle-fill.svg');
+  mask-image: url('icons/x-circle-fill.svg');
+}
+
+.bi-x-lg {
+  -webkit-mask-image: url('icons/x-lg.svg');
+  mask-image: url('icons/x-lg.svg');
+}
+
+.bi-x-octagon-fill {
+  -webkit-mask-image: url('icons/x-octagon-fill.svg');
+  mask-image: url('icons/x-octagon-fill.svg');
 }
