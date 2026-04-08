@@ -4,9 +4,9 @@ import { Component, input } from '@angular/core';
   selector: 'app-optional-field-absent',
   standalone: true,
   template: `
-    <div class="absent-field-box">
+    <div class="absent-field-box" data-testid="optional-field-absent-box">
       <span class="icon">ℹ️</span>
-      <span class="message">{{ message() }}</span>
+      <span class="message" data-testid="optional-field-absent-message">{{ message() }}</span>
     </div>
   `,
   styles: [

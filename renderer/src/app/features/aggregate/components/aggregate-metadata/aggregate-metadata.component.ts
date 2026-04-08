@@ -7,37 +7,71 @@ import { AggregateDetailDTO } from '../../../../shared/domain/dto/AggregateDTO';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="metadata-card">
-      <h3 class="card-title">Metadati dell'Aggregato</h3>
+    <div class="metadata-card" data-testid="aggregate-metadata-card">
+      <h3 class="card-title" data-testid="aggregate-metadata-heading">Metadati dell'Aggregato</h3>
 
       @if (data().processSummary; as processSummary) {
-        <div class="data-row">
+        <div class="data-row" data-testid="aggregate-row-process-uuid">
           <span class="label">UUID Processo</span>
           <span class="value">{{ processSummary.uuid }}</span>
         </div>
-        <div class="data-row">
+        <div class="data-row" data-testid="aggregate-row-process-integrity-status">
           <span class="label">Stato Verifica</span>
           <span class="value">{{ processSummary.integrityStatus }}</span>
         </div>
-        <div class="data-row">
+        <div class="data-row" data-testid="aggregate-row-process-timestamp">
           <span class="label">Marcatura Temporale</span>
           <span class="value">{{ processSummary.timestamp }}</span>
         </div>
       }
 
-      <div class="data-row">
+      <div class="data-row" data-testid="aggregate-row-tipo-aggregazione">
         <span class="label">Tipo Aggregazione</span>
         <span class="value">{{ data().idAgg.tipoAggregazione }}</span>
       </div>
 
+      <div class="data-row" data-testid="aggregate-row-id-aggregazione">
+        <span class="label">ID Aggregazione</span>
+        <span class="value">{{ data().idAgg.idAggregazione }}</span>
+      </div>
+
+      @if (data().idAggPrimario) {
+        <div class="data-row" data-testid="aggregate-row-id-aggregazione-primaria">
+          <span class="label">ID Aggregazione Primaria</span>
+          <span class="value">{{ data().idAggPrimario }}</span>
+        </div>
+      }
+
       @if (data().tipologiaFascicolo) {
-        <div class="data-row">
+        <div class="data-row" data-testid="aggregate-row-tipologia-fascicolo">
           <span class="label">Tipologia</span>
           <span class="value">{{ data().tipologiaFascicolo }}</span>
         </div>
       }
 
-      <div class="data-row">
+      <div class="data-row" data-testid="aggregate-row-tipo-assegnazione">
+        <span class="label">Tipo Assegnazione</span>
+        <span class="value">{{ data().assegnazione.tipoAssegnazione }}</span>
+      </div>
+
+      <div class="data-row" data-testid="aggregate-row-soggetto-assegnatario">
+        <span class="label">Soggetto Assegnatario</span>
+        <span class="value">{{ data().assegnazione.soggettoAssegnatario.denominazione }}</span>
+      </div>
+
+      <div class="data-row" data-testid="aggregate-row-data-inizio-assegnazione">
+        <span class="label">Data Inizio Assegnazione</span>
+        <span class="value">{{ data().assegnazione.dataInizioAssegnazione }}</span>
+      </div>
+
+      @if (data().assegnazione.dataFineAssegnazione) {
+        <div class="data-row" data-testid="aggregate-row-data-fine-assegnazione">
+          <span class="label">Data Fine Assegnazione</span>
+          <span class="value">{{ data().assegnazione.dataFineAssegnazione }}</span>
+        </div>
+      }
+
+      <div class="data-row" data-testid="aggregate-row-data-apertura">
         <span class="label">Apertura</span>
         <span class="value">
           @if (isValidDate(data().dataApertura)) {
@@ -49,7 +83,7 @@ import { AggregateDetailDTO } from '../../../../shared/domain/dto/AggregateDTO';
       </div>
 
       @if (data().dataChiusura) {
-        <div class="data-row">
+        <div class="data-row" data-testid="aggregate-row-data-chiusura">
           <span class="label">Chiusura</span>
           <span class="value">
             @if (isValidDate(data().dataChiusura)) {
@@ -61,12 +95,12 @@ import { AggregateDetailDTO } from '../../../../shared/domain/dto/AggregateDTO';
         </div>
       }
 
-      <div class="data-row">
+      <div class="data-row" data-testid="aggregate-row-progressivo">
         <span class="label">Progressivo</span>
         <span class="value">{{ data().progressivo }}</span>
       </div>
 
-      <div class="data-row">
+      <div class="data-row" data-testid="aggregate-row-classificazione">
         <span class="label">Classificazione</span>
         <span class="value"
           >{{ data().classificazione.indiceDiClassificazione }} -
@@ -87,14 +121,14 @@ import { AggregateDetailDTO } from '../../../../shared/domain/dto/AggregateDTO';
       }
 
       @if (data().posizioneFisicaAggregazioneDocumentale) {
-        <div class="data-row">
+        <div class="data-row" data-testid="aggregate-row-posizione-fisica">
           <span class="label">Posizione Fisica</span>
           <span class="value">{{ data().posizioneFisicaAggregazioneDocumentale }}</span>
         </div>
       }
 
       @if (data().tempoDiConservazione) {
-        <div class="data-row">
+        <div class="data-row" data-testid="aggregate-row-tempo-conservazione">
           <span class="label">Tempo Conservazione</span>
           <span class="value">{{ data().tempoDiConservazione }} anni</span>
         </div>

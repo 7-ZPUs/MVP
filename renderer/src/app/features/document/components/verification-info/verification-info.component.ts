@@ -5,20 +5,20 @@ import { VerificationInfo } from '../../domain/document.models';
   selector: 'app-verification-info',
   standalone: true,
   template: `
-    <div class="metadata-card">
-      <h3>Verifiche e Formati</h3>
-      <div class="data-row">
+    <div class="metadata-card" data-testid="verification-info-card">
+      <h3 data-testid="verification-info-heading">Verifiche e Formati</h3>
+      <div class="data-row" data-testid="verification-info-row-firma-digitale">
         <span class="label">Firma Digitale:</span>
         <span class="value">{{ data().firmaDigitale }}</span>
       </div>
-      <div class="data-row">
+      <div class="data-row" data-testid="verification-info-row-sigillo">
         <span class="label">Sigillo:</span> <span class="value">{{ data().sigillo }}</span>
       </div>
-      <div class="data-row">
+      <div class="data-row" data-testid="verification-info-row-marcatura-temporale">
         <span class="label">Marcatura Temporale:</span>
         <span class="value">{{ data().marcaturaTemporale }}</span>
       </div>
-      <div class="data-row">
+      <div class="data-row" data-testid="verification-info-row-conformita-copie">
         <span class="label">Conformità Copie:</span>
         <span class="value">{{ data().conformitaCopie }}</span>
       </div>

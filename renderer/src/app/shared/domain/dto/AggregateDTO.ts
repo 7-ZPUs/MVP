@@ -76,6 +76,7 @@ export interface CustomMetadataEntry {
 
 export interface AggregateDetailDTO {
   idAgg: IdAggDTO; // [cite: 14]
+  idAggPrimario?: string;
   tipologiaFascicolo?: TipologiaFascicoloEnum; // [cite: 14]
   soggetti: SoggettoDTO[]; // [cite: 14]
   assegnazione: AssegnazioneDTO;
