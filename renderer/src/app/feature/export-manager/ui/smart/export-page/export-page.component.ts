@@ -198,6 +198,11 @@ export class ExportPageComponent implements OnInit {
     this.selectedDownloadIds.set(current);
   }
 
+  getBaseName(filename: string): string {
+    const parts = filename.split('/');
+    return parts[parts.length - 1] || filename;
+  }
+
   async confirmDownload(): Promise<void> {
     const ids = [...this.selectedDownloadIds()];
     if (ids.length === 0) return;

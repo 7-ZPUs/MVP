@@ -78,7 +78,7 @@
               "
               aria-hidden="true"
             ></i>
-            <span class="file-name">{{ file.filename }}</span>
+            <span class="file-name">{{ getBaseName(file.filename) }}</span>
             <span class="file-badge">{{ file.isMain ? 'Principale' : 'Allegato' }}</span>
           </li>
         }
@@ -125,7 +125,7 @@
               "
               aria-hidden="true"
             ></i>
-            <span class="file-name">{{ file.filename }}</span>
+            <span class="file-name">{{ getBaseName(file.filename) }}</span>
             <span class="file-badge">{{ file.isMain ? 'Principale' : 'Allegato' }}</span>
           </li>
         }
