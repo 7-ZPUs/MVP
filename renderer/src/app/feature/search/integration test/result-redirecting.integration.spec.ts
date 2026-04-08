@@ -93,6 +93,14 @@ describe('SearchPageComponent - Integrazione e Navigazione', () => {
     expect(navigateSpy).toHaveBeenCalledWith(['/detail', 'DOCUMENT', 'DOC-456']);
   });
 
+  it('dovrebbe navigare verso DOCUMENT_CLASS se il risultato è una classe documentale', () => {
+    const mockResult: any = { id: 'CLASS-99', type: ElementType.CLASS };
+    component.onResultSelected(mockResult);
+
+    expect(navigateSpy).toHaveBeenCalledTimes(1);
+    expect(navigateSpy).toHaveBeenCalledWith(['/detail', 'DOCUMENT_CLASS', 'CLASS-99']);
+  });
+
   it('CORNER CASE: NON dovrebbe navigare e dovrebbe emettere un warning se il tipo è sconosciuto', () => {
     const mockResult: any = { id: 'ERR-999', type: 'TIPO_NON_MAPPATO' };
     component.onResultSelected(mockResult);

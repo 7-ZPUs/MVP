@@ -1,6 +1,7 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterOutlet, Router } from '@angular/router';
+import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
+import { filter } from 'rxjs';
 
 import { DipFacade } from '../../services/dip-facade';
 import { DipTree } from './dip-tree.component';
@@ -22,9 +23,37 @@ export class AppShellComponent implements OnInit {
 
   readonly state = this.dipFacade.getState();
   readonly isSidebarCollapsed = signal(false);
+  readonly currentRoute = signal<string>('browse');
+
+  readonly isIntegrityActive = computed(() => this.currentRoute() === 'integrity-dashboard');
+  readonly isBrowseActive = computed(() => this.currentRoute() === 'browse');
+  readonly isSearchActive = computed(() => this.currentRoute() === 'search');
 
   ngOnInit(): void {
     this.initializeRootNodes();
+    this.trackRouteChanges();
+  }
+
+  private trackRouteChanges(): void {
+    // Set initial route
+    this.updateCurrentRoute(this.router.url);
+
+    // Listen to route changes
+    this.router.events
+      .pipe(filter((event) => event instanceof NavigationEnd))
+      .subscribe((event: NavigationEnd) => {
+        this.updateCurrentRoute(event.url);
+      });
+  }
+
+  private updateCurrentRoute(url: string): void {
+    if (url.includes('integrity-dashboard')) {
+      this.currentRoute.set('integrity-dashboard');
+    } else if (url.includes('search')) {
+      this.currentRoute.set('search');
+    } else {
+      this.currentRoute.set('browse');
+    }
   }
 
   get rootNodes(): DipTreeNode[] {

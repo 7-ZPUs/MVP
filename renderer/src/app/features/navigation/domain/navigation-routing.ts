@@ -4,16 +4,16 @@ export type RichDetailRouteItemType = 'DOCUMENT' | 'AGGREGATE' | 'PROCESS';
 export type NodeFallbackRouteItemType = 'DIP' | 'DOCUMENT_CLASS' | 'FILE';
 export type DetailRouteItemType = RichDetailRouteItemType | NodeFallbackRouteItemType;
 
-const SEARCH_RESULT_TYPE_TO_DETAIL_ITEM_TYPE: Record<string, RichDetailRouteItemType> = {
+const SEARCH_RESULT_TYPE_TO_DETAIL_ITEM_TYPE: Record<string, DetailRouteItemType> = {
   AGGREGAZIONE_DOCUMENTALE: 'AGGREGATE',
   DOCUMENTO_INFORMATICO: 'DOCUMENT',
   DOCUMENTO_AMMINISTRATIVO_INFORMATICO: 'DOCUMENT',
   PROCESSO: 'PROCESS',
-  PROCESS: 'PROCESS',
+  CLASSE: 'DOCUMENT_CLASS',
 };
 
 function normalizeSearchResultType(type: string): string {
-  return type.trim().replace(/\s+/g, '_').toUpperCase();
+  return type.trim().replaceAll(/\s+/g, '_').toUpperCase();
 }
 
 export function mapDipNodeTypeToDetailItemType(

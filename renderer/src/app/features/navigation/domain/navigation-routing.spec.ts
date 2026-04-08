@@ -22,6 +22,7 @@ describe('navigation-routing', () => {
       'DOCUMENT',
     );
     expect(mapSearchResultTypeToDetailItemType('processo')).toBe('PROCESS');
+    expect(mapSearchResultTypeToDetailItemType('classe')).toBe('DOCUMENT_CLASS');
     expect(mapSearchResultTypeToDetailItemType('tipo sconosciuto')).toBeNull();
   });
 

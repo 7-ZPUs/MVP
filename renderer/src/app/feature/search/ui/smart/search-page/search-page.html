@@ -8,12 +8,6 @@
   </app-search-bar>
   
   <div class="main-content">
-    
-    <div class="sidebar-toggle-tab" data-testid="search-filters-toggle" (click)="isSidebarCollapsed = !isSidebarCollapsed">
-      <span class="tab-arrow" [class.rotated]="isSidebarCollapsed">◀</span>
-      <span>Filtri</span>
-    </div>
-
     <aside class="sidebar" [class.collapsed]="isSidebarCollapsed">
       <app-advanced-filter-panel
         [filters]="state().filters"
@@ -25,6 +19,17 @@
         (filtersReset)="onFiltersReset()"
       ></app-advanced-filter-panel>
     </aside>
+
+    <button
+      class="sidebar-toggle-tab"
+      type="button"
+      aria-label="Mostra o nascondi i filtri"
+      data-testid="search-filters-toggle"
+      (click)="isSidebarCollapsed = !isSidebarCollapsed"
+    >
+      <span class="tab-arrow" [class.rotated]="isSidebarCollapsed">◀</span>
+      <span>Filtri</span>
+    </button>
 
     <main class="content-area">
       @if (state().loading) {
