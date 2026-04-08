@@ -6,6 +6,8 @@ import {
   INDEX_DIP_TOKEN,
   IIndexDip,
 } from "../core/src/use-case/utils/indexing/IIndexDip";
+import { webContents } from "electron";
+import { IpcChannels } from "../shared/ipc-channels";
 
 export const SQLITE_DB_TOKEN = Symbol("SqliteDatabase");
 const EMBEDDING_DIMENSION = 384;
@@ -36,10 +38,27 @@ function ensureVectorSearchSchema(db: Database.Database): void {
 }
 
 export class ApplicationBootstrapAdapter {
+  private bootstrapCompleted = false;
+
   constructor(
     @inject(INDEX_DIP_TOKEN)
     private readonly indexDip: IIndexDip,
   ) {}
+
+  public isBootstrapCompleted(): boolean {
+    return this.bootstrapCompleted;
+  }
+
+  public markBootstrapCompleted(): void {
+    if (this.bootstrapCompleted) {
+      return;
+    }
+
+    this.bootstrapCompleted = true;
+    webContents
+      .getAllWebContents()
+      .forEach((wc) => wc.send(IpcChannels.BOOTSTRAP_COMPLETE));
+  }
 
   async bootstrap(dipPath: string): Promise<void> {
     const appBasePath = this.getApplicationBasePath();
@@ -52,6 +71,7 @@ export class ApplicationBootstrapAdapter {
     }
 
     await this.indexDip.execute(resolvedDipPath);
+    this.markBootstrapCompleted();
   }
 
   bootstrapDatabase(appBasePath: string): string {

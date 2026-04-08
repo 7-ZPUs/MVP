@@ -21,14 +21,43 @@ function loadAllowedChannels(): Set<string> {
 
 const validChannels = loadAllowedChannels();
 
-contextBridge.exposeInMainWorld("electronAPI", {
+type RendererEventHandler = (...args: unknown[]) => void;
+
+function ensureAllowedChannel(channel: string): void {
+  if (!validChannels.has(channel)) {
+    throw new Error(`Canale IPC non autorizzato: ${channel}`);
+  }
+}
+
+function subscribe(channel: string, handler: RendererEventHandler): () => void {
+  ensureAllowedChannel(channel);
+
+  const wrapped = (_event: unknown, ...args: unknown[]) => handler(...args);
+  ipcRenderer.on(channel, wrapped);
+
+  return () => {
+    ipcRenderer.removeListener(channel, wrapped);
+  };
+}
+
+const bridge = {
   invoke: (channel: string, data?: any) => {
-    if (validChannels.has(channel)) {
-      return ipcRenderer.invoke(channel, data);
-    }
-    return Promise.reject(new Error(`Canale IPC non autorizzato: ${channel}`));
+    ensureAllowedChannel(channel);
+    return ipcRenderer.invoke(channel, data);
+  },
+
+  on: (channel: string, handler: RendererEventHandler) => {
+    return subscribe(channel, handler);
+  },
+
+  receive: (channel: string, handler: RendererEventHandler) => {
+    return subscribe(channel, handler);
   },
 
   // Optional debug utility for renderer diagnostics.
   listChannels: () => Array.from(validChannels),
-});
+};
+
+contextBridge.exposeInMainWorld("electronAPI", bridge);
+contextBridge.exposeInMainWorld("electron", bridge);
+contextBridge.exposeInMainWorld("api", bridge);

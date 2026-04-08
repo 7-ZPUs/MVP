@@ -147,28 +147,22 @@ function exportDb(dstPath: string): void {
   const bootstrapAdapter = new ApplicationBootstrapAdapter(lazyIndexDip);
   process.env.DIP_PATH = dipPath;
   try {
-    performance.mark("bootstrap-start");
-    await bootstrapAdapter.bootstrap(dipPath);
-    performance.mark("bootstrap-end");
-    performance.measure("DIP indexing", "bootstrap-start", "bootstrap-end");
-    console.warn(
-      "[BOOTSTRAP] DIP indexing completed successfully in",
-      performance.getEntriesByName("DIP indexing")[0].duration,
-      "ms.",
-    );
-    if (process.env["NODE_ENV"] === "development") {
-      exportDb("/workspaces/MVP/export.db");
-    }
+    bootstrapAdapter.bootstrap(dipPath);
   } catch (error) {
     console.warn(
       "[BOOTSTRAP] Skipping automatic DIP indexing:",
       error instanceof Error ? error.message : String(error),
     );
+    bootstrapAdapter.markBootstrapCompleted();
   }
 
   // Register all IPC adapters before creating the window
   ipcMain.on(IPC_CHANNEL_REGISTRY_CHANNEL, (event) => {
     event.returnValue = Object.values(IpcChannels);
+  });
+
+  ipcMain.handle(IpcChannels.BOOTSTRAP_STATUS, () => {
+    return bootstrapAdapter.isBootstrapCompleted();
   });
 
   BrowsingIpcAdapter.register(ipcMain);

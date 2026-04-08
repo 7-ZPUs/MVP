@@ -7,6 +7,10 @@
  * raw string literals for channel names outside this file.
  */
 export const IpcChannels = {
+  // ----- App bootstrap -----
+  BOOTSTRAP_COMPLETE: "app:bootstrap-complete",
+  BOOTSTRAP_STATUS: "app:bootstrap-status",
+
   // ----- Package management -----
   PACKAGE_OPEN: "package:open",
   PACKAGE_LIST: "package:list",
@@ -72,10 +76,9 @@ export const IpcChannels = {
 
   // ----- File viewer -----
 
-  FILE_OPEN_EXTERNAL: 'file:open-external',
-  FILE_DOWNLOAD:      'file:download',
-  FILE_SAVE_DIALOG:   'file:save-dialog',   // per aprire il merda di dialog
-
+  FILE_OPEN_EXTERNAL: "file:open-external",
+  FILE_DOWNLOAD: "file:download",
+  FILE_SAVE_DIALOG: "file:save-dialog", // per aprire il merda di dialog
 } as const;
 
 export type IpcChannel = (typeof IpcChannels)[keyof typeof IpcChannels];

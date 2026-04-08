@@ -1,0 +1,13 @@
+@if ((isLoaded$ | async) !== true) {
+  <div class="loading-overlay">
+    <div class="loading-panel" role="status" aria-live="polite" aria-busy="true">
+      <h2 class="loading-title">Preparazione in corso</h2>
+      <p class="loading-message">Indicizzazione DIP in corso...</p>
+
+      <div class="loading-bar-track">
+        <div class="loading-bar-indeterminate loading-bar-primary"></div>
+        <div class="loading-bar-indeterminate loading-bar-secondary"></div>
+      </div>
+    </div>
+  </div>
+}
