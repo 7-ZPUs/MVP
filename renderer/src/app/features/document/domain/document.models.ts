@@ -57,6 +57,7 @@ export interface DocumentDetail {
   conservationProcess: ConservationProcessData;
   idAggregazione?: string;
   documentiCollegati?: string[];
+  integrityStatus?: string;
 }
 
 export interface ClassificationInfo {

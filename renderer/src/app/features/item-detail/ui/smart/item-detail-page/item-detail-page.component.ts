@@ -5,6 +5,12 @@ import { Router } from '@angular/router';
 // Iniezione dei Token separati come da C4
 import { AGGREGATE_FACADE_TOKEN } from '../../../../aggregate/contracts/IAggregateFacade';
 import { DOCUMENT_FACADE_TOKEN } from '../../../../document/contracts/IDocumentFacade';
+import { NODE_FALLBACK_FACADE_TOKEN } from '../../../contracts/INodeFallbackFacade';
+import { PROCESS_FACADE_TOKEN } from '../../../../process/contracts/IProcessFacade';
+import {
+  NodeFallbackItemType,
+  NodeFallbackRelatedItem,
+} from '../../../domain/node-fallback.models';
 
 // Importiamo la UI
 import { MetadataPanelComponent } from '../../dumb/metadata-panel/metadata-panel.component';
@@ -14,7 +20,13 @@ import { DocumentToolbarComponent } from '../../dumb/document-toolbar/document-t
 import { DocumentActionsComponent } from '../document-actions/document-actions.component';
 import { DocumentViewerComponent } from '../../../../document/components/document-viewer/document-viewer.component';
 import { DocumentIndexComponent } from '../../../../aggregate/components/document-index/document-index.component';
-import { buildDetailRoute } from '../../../../navigation/domain/navigation-routing';
+import {
+  buildDetailRoute,
+  DetailRouteItemType,
+  isRichDetailRouteItemType,
+  RichDetailRouteItemType,
+} from '../../../../navigation/domain/navigation-routing';
+import { NodeFallbackPanelComponent } from '../../dumb/node-fallback-panel/node-fallback-panel.component';
 
 @Component({
   selector: 'app-item-detail-page',
@@ -27,13 +39,24 @@ import { buildDetailRoute } from '../../../../navigation/domain/navigation-routi
     DocumentActionsComponent,
     DocumentViewerComponent,
     DocumentIndexComponent,
+    NodeFallbackPanelComponent,
   ],
   template: `
     <div class="page-layout">
-      @if (!isLoading() && !currentError()) {
-        <app-document-actions [itemId]="itemId()" [itemType]="itemType()"></app-document-actions>
+      @if (!isLoading() && !currentError() && richItemType(); as richType) {
+        <app-document-actions
+          [itemId]="itemId()"
+          [itemType]="richType"
+          [initialVerificationStatus]="
+            richType === 'DOCUMENT'
+              ? documentState().detail?.integrityStatus
+              : richType === 'PROCESS'
+                ? processState().detail?.integrityStatus
+              : aggregateState().detail?.processSummary?.integrityStatus
+          "
+        ></app-document-actions>
 
-        @if (itemType() === 'DOCUMENT') {
+        @if (richType === 'DOCUMENT') {
           <app-document-toolbar
             [titolo]="pageTitle()"
             [formato]="documentState().detail?.mimeType || ''"
@@ -96,143 +119,103 @@ import { buildDetailRoute } from '../../../../navigation/domain/navigation-routi
               ></app-document-index>
             </main>
           }
+
+          @if (itemType() === 'PROCESS' && processState().detail; as process) {
+            <aside class="sidebar process-sidebar">
+              <app-metadata-panel
+                [itemType]="'PROCESS'"
+                [processData]="process"
+              ></app-metadata-panel>
+            </aside>
+
+            <main class="main-content process-main-content">
+              <app-document-index
+                [items]="process.indiceDocumenti"
+                (documentSelected)="onDocumentSelected($event)"
+              ></app-document-index>
+            </main>
+          }
+
+          @if (isFallbackRoute() && fallbackState().detail; as fallbackDetail) {
+            <main class="fallback-content">
+              <app-node-fallback-panel
+                [detail]="fallbackDetail"
+                (relatedItemSelected)="onFallbackRelatedSelected($event)"
+              ></app-node-fallback-panel>
+            </main>
+          }
         </div>
       }
     </div>
   `,
-  styles: [
-    `
-      :host {
-        display: flex;
-        flex-direction: column;
-        height: 100%;
-        overflow: hidden;
-      }
-      .page-layout {
-        display: flex;
-        flex-direction: column;
-        height: 100%;
-        background: #f1f5f9;
-        overflow: hidden;
-      }
-      .split-screen-content {
-        display: flex;
-        flex: 1;
-        overflow: hidden;
-      }
-      .left-panel {
-        width: 1700px;
-        flex-shrink: 0;
-        background: white;
-        z-index: 10;
-        box-shadow: 2px 0 8px rgba(0, 0, 0, 0.05);
-      }
-      .right-panel {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-      }
-      .viewer-container {
-        flex: 1;
-        padding: 1.5rem;
-        overflow-y: auto;
-      }
-      .spinner-overlay {
-        position: absolute;
-        inset: 0;
-        background: rgba(255, 255, 255, 0.8);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        z-index: 1000;
-      }
-      .spinner {
-        border: 4px solid #e2e8f0;
-        border-top: 4px solid #3b82f6;
-        border-radius: 50%;
-        width: 40px;
-        height: 40px;
-        animation: spin 1s linear infinite;
-      }
-      .content-layout {
-        display: flex;
-        flex: 1;
-        gap: 20px;
-        overflow: hidden; /* Evita che sfondi oltre lo schermo */
-        padding: 0 20px 20px 20px; /* Un po' di padding se necessario */
-      }
-
-      .sidebar {
-        width: 350px;
-        min-width: 250px;
-        max-width: 50vw;
-        flex-shrink: 0;
-        resize: horizontal;
-        overflow-y: hidden; /* Lasciamo scorrere al MetadataPanel interno che ha già overflow-y: auto */
-        overflow-x: hidden;
-      }
-
-      .main-content {
-        flex-grow: 1;
-        background-color: #f5f5f5; /* Sfondo grigetto tipico dei visualizzatori PDF */
-        overflow: hidden;
-        display: flex;
-        flex-direction: column;
-      }
-      app-document-viewer,
-      app-document-index,
-      app-metadata-panel {
-        display: block;
-        flex: 1;
-        height: 100%;
-        width: 100%;
-      }
-      @keyframes spin {
-        0% {
-          transform: rotate(0deg);
-        }
-        100% {
-          transform: rotate(360deg);
-        }
-      }
-    `,
-  ],
+  styleUrl: './item-detail-page.component.scss',
 })
 export class ItemDetailPageComponent {
   // 1. INIEZIONE TRAMITE TOKEN (Dependency Inversion)
   private readonly aggregateFacade = inject(AGGREGATE_FACADE_TOKEN);
+  private readonly processFacade = inject(PROCESS_FACADE_TOKEN);
   private readonly documentFacade = inject(DOCUMENT_FACADE_TOKEN);
+  private readonly nodeFallbackFacade = inject(NODE_FALLBACK_FACADE_TOKEN);
   private readonly router = inject(Router);
 
   // 2. INPUT DALLA ROTTA (es. /detail/AGGREGATE/123)
   itemId = input.required<string>();
-  itemType = input.required<'AGGREGATE' | 'DOCUMENT'>();
+  itemType = input.required<DetailRouteItemType>();
 
   // 3. COLLEGAMENTO AI FACADE
   aggregateState = this.aggregateFacade.getState();
+  processState = this.processFacade.getState();
   documentState = this.documentFacade.getState();
+  fallbackState = this.nodeFallbackFacade.getState();
+
+  richItemType = computed<RichDetailRouteItemType | null>(() => {
+    const currentType = this.itemType();
+    return isRichDetailRouteItemType(currentType) ? currentType : null;
+  });
+
+  isFallbackRoute = computed(() => !isRichDetailRouteItemType(this.itemType()));
 
   // 4. COMPUTED SIGNALS (Unificano lo stato in base alla rotta attuale)
   isLoading = computed(() => {
-    return this.itemType() === 'AGGREGATE'
-      ? this.aggregateState().loading
-      : this.documentState().loading;
+    const currentType = this.itemType();
+    if (currentType === 'AGGREGATE') {
+      return this.aggregateState().loading;
+    }
+    if (currentType === 'PROCESS') {
+      return this.processState().loading;
+    }
+    if (currentType === 'DOCUMENT') {
+      return this.documentState().loading;
+    }
+    return this.fallbackState().loading;
   });
 
   currentError = computed(() => {
-    return this.itemType() === 'AGGREGATE'
-      ? this.aggregateState().error
-      : this.documentState().error;
+    const currentType = this.itemType();
+    if (currentType === 'AGGREGATE') {
+      return this.aggregateState().error;
+    }
+    if (currentType === 'PROCESS') {
+      return this.processState().error;
+    }
+    if (currentType === 'DOCUMENT') {
+      return this.documentState().error;
+    }
+    return this.fallbackState().error;
   });
 
   pageTitle = computed(() => {
     if (this.itemType() === 'AGGREGATE' && this.aggregateState().detail) {
       return `Fascicolo ${this.aggregateState().detail!.tipologiaFascicolo}`;
     }
+    if (this.itemType() === 'PROCESS' && this.processState().detail) {
+      return this.processState().detail!.processUuid;
+    }
     if (this.itemType() === 'DOCUMENT' && this.documentState().detail) {
       return this.documentState().detail!.fileName;
+    }
+    if (this.isFallbackRoute() && this.fallbackState().detail) {
+      return this.fallbackState().detail!.title;
     }
     return '';
   });
@@ -245,11 +228,22 @@ export class ItemDetailPageComponent {
   }
 
   private loadData() {
-    if (this.itemType() === 'AGGREGATE') {
-      this.aggregateFacade.loadAggregate(this.itemId());
-    } else {
-      this.documentFacade.loadDocument(this.itemId());
+    const currentType = this.itemType();
+    const currentId = this.itemId();
+    if (currentType === 'AGGREGATE') {
+      void this.aggregateFacade.loadAggregate(currentId);
+      return;
     }
+    if (currentType === 'PROCESS') {
+      void this.processFacade.loadProcess(currentId);
+      return;
+    }
+    if (currentType === 'DOCUMENT') {
+      void this.documentFacade.loadDocument(currentId);
+      return;
+    }
+
+    void this.nodeFallbackFacade.loadNode(currentType as NodeFallbackItemType, currentId);
   }
 
   retryLoad() {
@@ -267,6 +261,10 @@ export class ItemDetailPageComponent {
     void this.router.navigate(buildDetailRoute('DOCUMENT', docId));
     // Resetta la visibilità della preview quando si apre un nuovo documento
     this.isPreviewVisible.set(true);
+  }
+
+  onFallbackRelatedSelected(item: NodeFallbackRelatedItem): void {
+    void this.router.navigate(buildDetailRoute(item.itemType, item.itemId));
   }
 
   onClosePreview() {

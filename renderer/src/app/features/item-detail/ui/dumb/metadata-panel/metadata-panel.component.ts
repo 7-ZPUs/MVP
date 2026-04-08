@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 
 import { AggregateDetailDTO } from '../../../../../shared/domain/dto/AggregateDTO';
 import { DocumentDetail } from '../../../../document/domain/document.models';
+import { ProcessDetail } from '../../../../process/domain/process.models';
 
 // Importiamo i Dumb Component di Epica 1
 import { AdminProcedureComponent } from '../../../../aggregate/components/admin-procedure/admin-procedure.component';
@@ -20,6 +21,7 @@ import { DocumentMetadataComponent } from '../../../../document/components/docum
 import { FormatInfoComponent } from '../../../../document/components/format-info/format-info.component';
 import { SubjectListComponent } from '../../../../document/components/subject-list/subject-list.component';
 import { VerificationInfoComponent } from '../../../../document/components/verification-info/verification-info.component';
+import { ProcessMetadataComponent } from '../../../../process/components/process-metadata/process-metadata.component';
 
 @Component({
   selector: 'app-metadata-panel',
@@ -40,6 +42,7 @@ import { VerificationInfoComponent } from '../../../../document/components/verif
     SubjectListComponent,
     VerificationInfoComponent,
     AggregateMetadataComponent,
+    ProcessMetadataComponent,
   ],
   template: `
     <div class="metadata-container">
@@ -66,6 +69,17 @@ import { VerificationInfoComponent } from '../../../../document/components/verif
           }
         }
 
+        @case ('PROCESS') {
+          @if (processData(); as process) {
+            <h2 class="section-title">Dettaglio Processo</h2>
+            <app-process-metadata [data]="process"></app-process-metadata>
+          } @else {
+            <app-optional-field-absent
+              message="Nessun metadato presente per questo processo"
+            ></app-optional-field-absent>
+          }
+        }
+
         @case ('DOCUMENT') {
           @if (documentData(); as doc) {
             <h2 class="section-title">Dettaglio Documento</h2>
@@ -85,7 +99,7 @@ import { VerificationInfoComponent } from '../../../../document/components/verif
                 <h3>Relazioni</h3>
                 @if (doc.idAggregazione) {
                   <div class="data-row">
-                    <span class="label">ID Aggregazione:</span>
+                    <span class="label">Aggregazione collegata:</span>
                     <span class="value">{{ doc.idAggregazione }}</span>
                   </div>
                 }
@@ -143,64 +157,11 @@ import { VerificationInfoComponent } from '../../../../document/components/verif
       }
     </div>
   `,
-  styles: [
-    `
-      .metadata-container {
-        padding: 1.5rem;
-        height: 100%;
-        overflow-y: auto;
-        background: #ffffff;
-        border-right: 1px solid #e2e8f0;
-      }
-      .section-title {
-        font-size: 1.25rem;
-        font-weight: 700;
-        color: #0f172a;
-        margin-top: 0;
-        margin-bottom: 1.5rem;
-      }
-      .metadata-card {
-        background: #f8fafc;
-        border: 1px solid #e2e8f0;
-        border-radius: 8px;
-        padding: 1.25rem;
-        margin-bottom: 1rem;
-      }
-      .metadata-card h3 {
-        margin: 0 0 1rem 0;
-        font-size: 1rem;
-        color: #0f172a;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        border-bottom: 2px solid #e2e8f0;
-        padding-bottom: 0.5rem;
-      }
-      .data-row {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.25rem;
-        margin-bottom: 0.5rem;
-        font-size: 0.9rem;
-      }
-      .label {
-        font-weight: 600;
-        color: #64748b;
-        min-width: 140px;
-        flex-shrink: 0;
-      }
-      .value {
-        flex: 1;
-        min-width: 0;
-        word-break: break-word;
-        overflow-wrap: anywhere;
-        color: #1e293b;
-        font-weight: 500;
-      }
-    `,
-  ],
+  styleUrl: './metadata-panel.component.scss',
 })
 export class MetadataPanelComponent {
-  itemType = input.required<'AGGREGATE' | 'DOCUMENT'>();
+  itemType = input.required<'AGGREGATE' | 'DOCUMENT' | 'PROCESS'>();
   aggregateData = input<AggregateDetailDTO | null>(null);
   documentData = input<DocumentDetail | null>(null);
+  processData = input<ProcessDetail | null>(null);
 }

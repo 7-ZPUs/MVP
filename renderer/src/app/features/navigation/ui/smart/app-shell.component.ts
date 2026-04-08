@@ -5,10 +5,7 @@ import { RouterOutlet, Router } from '@angular/router';
 import { DipFacade } from '../../services/dip-facade';
 import { DipTree } from './dip-tree.component';
 import { DipTreeNode } from '../../contracts/dip-tree-node';
-import {
-  buildDetailRoute,
-  mapDipNodeTypeToDetailItemType,
-} from '../../domain/navigation-routing';
+import { buildDetailRoute, mapDipNodeTypeToDetailItemType } from '../../domain/navigation-routing';
 import { InlineErrorComponent } from '../dumb/inline-error.component';
 
 @Component({
@@ -38,6 +35,10 @@ export class AppShellComponent implements OnInit {
     this.isSidebarCollapsed.update((collapsed) => !collapsed);
   }
 
+  navigateToIntegrity(): void {
+    void this.router.navigate(['/integrity-dashboard']);
+  }
+
   navigateToBrowse(): void {
     void this.router.navigate(['/browse']);
   }
@@ -52,10 +53,6 @@ export class AppShellComponent implements OnInit {
 
   onNodeSelected(node: DipTreeNode): void {
     const targetItemType = mapDipNodeTypeToDetailItemType(node.type);
-    if (!targetItemType) {
-      return;
-    }
-
     void this.router.navigate(buildDetailRoute(targetItemType, node.id));
   }
 

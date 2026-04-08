@@ -31,6 +31,12 @@ import { IntegrityValidPanelComponent } from '../../dumb/integrity-valid-panel/i
         </button>
       </header>
 
+      @if (facade.error()) {
+        <div class="error-banner" role="alert">
+          <strong>Errore durante la verifica:</strong> {{ facade.error() }}
+        </div>
+      }
+
       @if (facade.isVerifying()) {
         <section class="progress-section" aria-busy="true" aria-describedby="progress-status">
           <h3 id="progress-status">Ricalcolo hash in corso...</h3>
@@ -54,117 +60,7 @@ import { IntegrityValidPanelComponent } from '../../dumb/integrity-valid-panel/i
       }
     </main>
   `,
-  styles: [
-    `
-      .dashboard-container {
-        font-family: 'Inter', system-ui, sans-serif;
-        display: flex;
-        flex-direction: column;
-        height: 100%;
-        background: #f4f6f8;
-        padding: 2rem;
-        gap: 0;
-        overflow-y: auto;
-      }
-      .dashboard-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 2rem;
-      }
-      .dashboard-header h2 {
-        margin: 0 0 0.25rem 0;
-        color: #0f172a;
-        font-size: 1.75rem;
-        font-weight: 800;
-      }
-      .subtitle {
-        margin: 0;
-        color: #64748b;
-        font-size: 1rem;
-      }
-
-      .btn-primary {
-        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-        color: white;
-        padding: 0.75rem 1.5rem;
-        border-radius: 8px;
-        border: none;
-        cursor: pointer;
-        font-weight: 600;
-        font-size: 0.95rem;
-        box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);
-        transition: all 0.2s;
-      }
-      .btn-primary:hover:not(:disabled) {
-        transform: translateY(-1px);
-        box-shadow: 0 6px 12px rgba(37, 99, 235, 0.3);
-      }
-      .btn-primary:disabled {
-        opacity: 0.6;
-        cursor: wait;
-        filter: grayscale(50%);
-      }
-
-      /* GESTIONE FOCUS ACCESSIBILE PER TASTIERA (TAB) */
-      .btn-primary:focus-visible {
-        outline: 3px solid #60a5fa;
-        outline-offset: 3px;
-      }
-
-      .progress-section {
-        background: white;
-        padding: 3rem;
-        border-radius: 12px;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-        text-align: center;
-        margin-bottom: 2rem;
-      }
-      .progress-section h3 {
-        color: #0f172a;
-        margin-bottom: 0.5rem;
-        font-size: 1.25rem;
-      }
-      .progress-subtitle {
-        color: #64748b;
-        margin-bottom: 2rem;
-      }
-      .indeterminate-progress-bar {
-        position: relative;
-        height: 8px;
-        background-color: #e2e8f0;
-        border-radius: 8px;
-        overflow: hidden;
-        width: 100%;
-        max-width: 500px;
-        margin: 0 auto;
-      }
-      .indeterminate-bar-slider {
-        position: absolute;
-        top: 0;
-        left: 0;
-        bottom: 0;
-        background-color: #3b82f6;
-        width: 30%;
-        border-radius: 8px;
-        animation: indeterminateAnimation 1.5s infinite ease-in-out;
-      }
-      @keyframes indeterminateAnimation {
-        0% {
-          left: -30%;
-          width: 30%;
-        }
-        50% {
-          left: 30%;
-          width: 70%;
-        }
-        100% {
-          left: 100%;
-          width: 30%;
-        }
-      }
-    `,
-  ],
+  styleUrl: './integrity-dashboard.component.scss',
 })
 export class IntegrityDashboardComponent implements OnInit {
   facade = inject(INTEGRITY_FACADE_TOKEN);
@@ -178,7 +74,10 @@ export class IntegrityDashboardComponent implements OnInit {
   startVerification() {
     // Il comando di verifica ora aggiornerà gli hash e poi richiamerà in automatico la loadOverview!
     this.facade.verifyDip(this.currentDipId).then(() => {
-      this.facade.loadOverview(this.currentDipId);
+      // Aggiorniamo l'overview solo se non si sono verificati errori gravi durante la verifica
+      if (!this.facade.error()) {
+        this.facade.loadOverview(this.currentDipId);
+      }
     });
   }
 }

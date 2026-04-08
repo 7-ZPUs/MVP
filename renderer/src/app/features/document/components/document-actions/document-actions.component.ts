@@ -133,6 +133,6 @@ export class DocumentActionsComponent {
   }
 
   onVerifyIntegrity() {
-    this.integrityFacade.verifyDocument(this.itemId());
+    this.integrityFacade.verifyItem(this.itemId(), this.itemType());
   }
 }
