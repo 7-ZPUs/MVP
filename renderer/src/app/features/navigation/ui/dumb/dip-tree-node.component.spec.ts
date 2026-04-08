@@ -24,7 +24,7 @@ describe('DipTreeNodeComponent', () => {
     isLoading: false,
     isExpanded: false,
     isSelected: false,
-    ...overrides
+    ...overrides,
   });
 
   const setup = (overrides = {}) => {
@@ -34,11 +34,7 @@ describe('DipTreeNodeComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        DipTreeNodeComponent,
-        CommonModule,
-        InlineErrorComponent,
-      ],
+      imports: [DipTreeNodeComponent, CommonModule, InlineErrorComponent],
     }).compileComponents();
 
     fixture = TestBed.createComponent(DipTreeNodeComponent);
@@ -53,7 +49,7 @@ describe('DipTreeNodeComponent', () => {
 
   it('dovrebbe mostrare il nome del nodo', () => {
     component.flatNode = createFlatNode();
-    fixture.detectChanges()
+    fixture.detectChanges();
 
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.textContent).toContain(mockNode.name);
@@ -61,13 +57,13 @@ describe('DipTreeNodeComponent', () => {
 
   it('dovrebbe emettere toggle quando clicco il bottone', () => {
     component.flatNode = createFlatNode();
-    fixture.detectChanges()
+    fixture.detectChanges();
     vi.spyOn(component.toggle, 'emit');
     vi.spyOn(component.nodeSelected, 'emit');
-  
+
     const button = fixture.nativeElement.querySelector('.toggle-icon');
     button.click();
-  
+
     expect(component.toggle.emit).toHaveBeenCalledWith(mockNode);
     expect(component.nodeSelected.emit).toHaveBeenCalledWith(mockNode);
   });
@@ -75,19 +71,45 @@ describe('DipTreeNodeComponent', () => {
   it('dovrebbe chiamare stopPropagation su toggle', () => {
     const event = new MouseEvent('click');
     const spy = vi.spyOn(event, 'stopPropagation');
-  
+
     component.onToggle(event);
-  
+
     expect(spy).toHaveBeenCalled();
   });
 
-  it('dovrebbe emettere nodeSelected quando clicco il nodo', () => {
+  it('dovrebbe emettere nodeSelected e toggle quando clicco il nodo espandibile', () => {
     vi.spyOn(component.nodeSelected, 'emit');
-  
+    vi.spyOn(component.toggle, 'emit');
+
     const div = fixture.nativeElement.querySelector('div');
     div.click();
-  
+
     expect(component.nodeSelected.emit).toHaveBeenCalledWith(mockNode);
+    expect(component.toggle.emit).toHaveBeenCalledWith(mockNode);
+  });
+
+  it('non dovrebbe emettere toggle al click del nodo se non ha figli', () => {
+    setup({ hasChildren: false });
+    vi.spyOn(component.nodeSelected, 'emit');
+    vi.spyOn(component.toggle, 'emit');
+
+    const div = fixture.nativeElement.querySelector('div');
+    div.click();
+
+    expect(component.nodeSelected.emit).toHaveBeenCalledWith(mockNode);
+    expect(component.toggle.emit).not.toHaveBeenCalled();
+  });
+
+  it('non dovrebbe emettere toggle al click del nodo se è in loading', () => {
+    setup({ isLoading: true });
+    vi.spyOn(component.nodeSelected, 'emit');
+    vi.spyOn(component.toggle, 'emit');
+
+    const div = fixture.nativeElement.querySelector('div');
+    div.click();
+
+    expect(component.nodeSelected.emit).toHaveBeenCalledWith(mockNode);
+    expect(component.toggle.emit).not.toHaveBeenCalled();
   });
 
   it('dovrebbe mostrare il bottone toggle se ha figli', () => {
@@ -99,7 +121,7 @@ describe('DipTreeNodeComponent', () => {
 
   it('non dovrebbe mostrare il bottone toggle se non ha figli', () => {
     setup({ hasChildren: false });
-    
+
     const button = fixture.nativeElement.querySelector('.toggle-icon');
     expect(button).toBeFalsy();
   });
@@ -110,32 +132,34 @@ describe('DipTreeNodeComponent', () => {
     const spinner = fixture.nativeElement.querySelector('.spinner');
     expect(spinner).toBeTruthy();
   });
-  
+
   it('non dovrebbe mostrare spinner quando isLoading è false', () => {
     setup({ isLoading: false });
-  
+
     const spinner = fixture.nativeElement.querySelector('.spinner');
     expect(spinner).toBeFalsy();
   });
 
   it('non dovrebbe mostrare inline error se non c’è errore', () => {
     setup({ childrenError: undefined });
-  
+
     const error = fixture.nativeElement.querySelector('app-inline-error');
     expect(error).toBeFalsy();
   });
 
-  it('dovrebbe mostrare ▶ quando non è espanso', () => {
+  it('dovrebbe mostrare dot vuoto quando non è espanso', () => {
     setup({ isExpanded: false });
-  
-    const button = fixture.nativeElement.querySelector('.toggle-icon');
-    expect(button.textContent).toContain('▶');
+
+    const dot = fixture.nativeElement.querySelector('.toggle-icon .node-dot');
+    expect(dot).toBeTruthy();
+    expect(dot.classList.contains('node-dot-closed')).toBe(true);
   });
-  
-  it('dovrebbe mostrare ▼ quando è espanso', () => {
+
+  it('dovrebbe mostrare dot pieno quando è espanso', () => {
     setup({ isExpanded: true });
-  
-    const button = fixture.nativeElement.querySelector('.toggle-icon');
-    expect(button.textContent).toContain('▼');
+
+    const dot = fixture.nativeElement.querySelector('.toggle-icon .node-dot');
+    expect(dot).toBeTruthy();
+    expect(dot.classList.contains('node-dot-open')).toBe(true);
   });
 });

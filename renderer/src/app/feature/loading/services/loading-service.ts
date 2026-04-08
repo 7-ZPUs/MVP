@@ -17,32 +17,43 @@ export class LoadingService {
   private readonly ngZone = inject(NgZone);
   private readonly isLoaded$ = new BehaviorSubject<boolean>(false);
   public readonly loadingStatus$ = this.isLoaded$.asObservable();
+  private readonly bridge: ElectronBridge | null = null;
 
   constructor() {
-    const bridge = this.resolveBridge();
-    if (!bridge) {
+    this.bridge = this.resolveBridge();
+    if (!this.bridge) {
       console.warn('[LoadingService] electron bridge non disponibile nel renderer.');
       return;
     }
 
-    const listen = bridge.on ?? bridge.receive;
+    const listen = this.bridge.on ?? this.bridge.receive;
     if (typeof listen === 'function') {
       listen(IpcChannels.BOOTSTRAP_COMPLETE, () => {
         this.markLoaded();
       });
     }
 
-    if (typeof bridge.invoke === 'function') {
-      void bridge
-        .invoke<boolean>(IpcChannels.BOOTSTRAP_STATUS)
-        .then((isCompleted) => {
-          if (isCompleted) {
-            this.markLoaded();
-          }
-        })
-        .catch((error) => {
-          console.warn('[LoadingService] impossibile leggere lo stato bootstrap:', error);
-        });
+    this.initializeBootstrapStatus();
+  }
+
+  private initializeBootstrapStatus(): void {
+    if (this.bridge) {
+      void this.syncBootstrapStatus(this.bridge);
+    }
+  }
+
+  private async syncBootstrapStatus(bridge: ElectronBridge): Promise<void> {
+    if (typeof bridge.invoke !== 'function') {
+      return;
+    }
+
+    try {
+      const isCompleted = await bridge.invoke<boolean>(IpcChannels.BOOTSTRAP_STATUS);
+      if (isCompleted) {
+        this.markLoaded();
+      }
+    } catch (error) {
+      console.warn('[LoadingService] impossibile leggere lo stato bootstrap:', error);
     }
   }
 

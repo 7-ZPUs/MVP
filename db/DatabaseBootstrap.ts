@@ -6,7 +6,7 @@ import {
   INDEX_DIP_TOKEN,
   IIndexDip,
 } from "../core/src/use-case/utils/indexing/IIndexDip";
-import { webContents } from "electron";
+import { app, webContents } from "electron";
 import { IpcChannels } from "../shared/ipc-channels";
 
 export const SQLITE_DB_TOKEN = Symbol("SqliteDatabase");
@@ -23,7 +23,12 @@ function sqliteVssPackageName(
 function loadSqliteVssExtensions(db: Database.Database): void {
   const packageName = sqliteVssPackageName(process.platform, process.arch);
   const packageJsonPath = require.resolve(`${packageName}/package.json`);
-  const packageDir = path.dirname(packageJsonPath);
+  let packageDir = path.dirname(packageJsonPath);
+
+  if (packageDir.includes('app.asar')) {
+    packageDir = packageDir.replace('app.asar', 'app.asar.unpacked');
+  }
+
   const vectorPath = path.join(packageDir, "lib", "vector0");
   const vssPath = path.join(packageDir, "lib", "vss0");
 
@@ -74,20 +79,34 @@ export class ApplicationBootstrapAdapter {
     this.markBootstrapCompleted();
   }
 
-  bootstrapDatabase(appBasePath: string): string {
-    const schemaPath = path.join(appBasePath, "db", "schema.sql");
-    const dbPath = path.join(appBasePath, "dip-viewer.db");
+bootstrapDatabase(appBasePath: string): string {
+  // 1. Resolve Schema Path based on environment
+  const basePath = process.env["NODE_ENV"] === "development"
+    ? appBasePath
+    : process.resourcesPath;
 
-    // Always rebuild DB from scratch before indexing.
-    rmSync(dbPath, { force: true });
+  const schemaPath = path.join(basePath, "schema.sql");
 
-    const schema = readFileSync(schemaPath, "utf-8");
-    const db = new Database(dbPath);
-    db.exec(schema);
-    db.close();
-    console.log(`[BOOTSTRAP] Database bootstrapped successfully at ${dbPath}.`);
-    return dbPath;
+  // Defensive check: catch packaging issues early
+  if (!existsSync(schemaPath)) {
+    throw new Error(`[BOOTSTRAP] CRITICAL: Schema not found at ${schemaPath}`);
   }
+
+  // 2. Resolve Database Path (Writable user directory)
+  const dbPath = path.join(app.getPath("userData"), "dip-viewer.db");
+
+  // Always rebuild DB from scratch before indexing.
+  rmSync(dbPath, { force: true });
+
+  // 3. Read and execute schema
+  const schema = readFileSync(schemaPath, "utf-8");
+  const db = new Database(dbPath);
+  db.exec(schema);
+  db.close();
+  
+  console.log(`[BOOTSTRAP] Database bootstrapped successfully at ${dbPath}.`);
+  return dbPath;
+}
 
   private registerRuntimeDatabase(dbPath: string): void {
     const db = new Database(dbPath);

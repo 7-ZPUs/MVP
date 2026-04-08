@@ -47,7 +47,7 @@ const IPC_CHANNEL_REGISTRY_CHANNEL = "__app:get-ipc-channels";
 
 function createWindow(): BrowserWindow {
   const win = new BrowserWindow({
-    width: 1280,
+    width: 1920,
     height: 800,
     webPreferences: {
       preload: path.join(__dirname, "core", "src", "preload.js"),
@@ -55,6 +55,7 @@ function createWindow(): BrowserWindow {
       nodeIntegration: false,
     },
   });
+  win.removeMenu();
   // In development load the Angular dev server; in production load the built index.
   if (process.env["SERVE_FRONTEND"] === "true") {
     win.loadURL("http://localhost:4200");

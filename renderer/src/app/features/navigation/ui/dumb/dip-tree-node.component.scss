@@ -1,58 +1,109 @@
 .tree-node {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    min-height: 40px;
-    border-radius: 6px;
-    margin: 2px 6px;
-    padding-right: 8px;
-    cursor: pointer;
-    user-select: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  border-radius: 6px;
+  margin: 2px 6px;
+  padding-right: 8px;
+  cursor: pointer;
+  user-select: none;
 }
 
 .tree-node:hover {
-    background: #f8fafc;
+  background: #f8fafc;
 }
 
 .tree-node.tree-node-selected {
-    background: #e2e8f0;
+  background: #e2e8f0;
 }
 
 .toggle-icon {
-    width: 24px;
-    height: 24px;
-    border: none;
-    border-radius: 4px;
-    background: transparent;
-    color: #334155;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: #334155;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.toggle-icon > * {
+  pointer-events: none;
+}
+
+.toggle-icon:focus-visible {
+  outline: 2px solid #94a3b8;
+  outline-offset: 1px;
 }
 
 .toggle-icon:disabled {
-    cursor: progress;
-    opacity: 0.7;
+  cursor: progress;
+  opacity: 0.7;
 }
 
 .leaf-placeholder {
-    width: 24px;
-    height: 24px;
-    display: inline-block;
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.node-dot {
+  --node-dot-color: #b9c2cf;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid var(--node-dot-color);
+  display: inline-block;
+  box-sizing: border-box;
+}
+
+.node-dot-open {
+  background: var(--node-dot-color);
+}
+
+.node-dot-closed {
+  background: transparent;
+}
+
+.node-dot-document-class {
+  --node-dot-color: #f1a9a9;
+}
+
+.node-dot-process {
+  --node-dot-color: #9fd7a6;
+}
+
+.node-dot-document {
+  --node-dot-color: #9fc9f6;
+}
+
+.node-dot-file {
+  --node-dot-color: #d9dde3;
+}
+
+.node-dot-dip {
+  --node-dot-color: #b4bdd0;
 }
 
 .node-name {
-    flex: 1;
-    min-width: 0;
-    color: #0f172a;
-    font-size: 0.92rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+  flex: 1;
+  min-width: 0;
+  color: #0f172a;
+  font-size: 0.92rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .node-error {
-    margin-left: 8px;
+  margin-left: 8px;
 }

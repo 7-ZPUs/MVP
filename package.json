@@ -23,7 +23,8 @@
     "test:renderer:coverage": "cd renderer && npx ng test --watch=false --coverage",
     "test": "npm run test:core && npm run test:renderer",
     "test:coverage": "npm run test:core:coverage && npm run test:renderer:coverage",
-    "lint": "eslint . --ext .ts,.tsx"
+    "lint": "eslint . --ext .ts,.tsx",
+    "dist": "npm run build:all && electron-builder"
   },
   "dependencies": {
     "@angular/animations": "^21.2.6",
@@ -32,14 +33,16 @@
     "@xenova/transformers": "^2.17.2",
     "adm-zip": "^0.5.10",
     "better-sqlite3": "^12.8.0",
-    "electron": "^30.0.0",
     "fast-xml-parser": "^4.3.6",
     "onnxruntime-node": "^1.17.3",
     "reflect-metadata": "^0.2.2",
     "sharp": "^0.34.5",
-    "tsyringe": "^4.8.0"
+    "tsyringe": "^4.8.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
+    "electron": "^30.0.0",
+    "electron-builder": "^26.8.1",
     "@angular/cli": "^21.2.5",
     "@playwright/test": "^1.59.1",
     "@types/adm-zip": "^0.5.5",
@@ -48,15 +51,66 @@
     "@vitest/coverage-v8": "^1.6.1",
     "cpx": "^1.5.0",
     "defaults": "^3.0.0",
-    "electron": "^30.0.0",
     "electron-rebuild": "^3.2.9",
     "eslint": "^10.0.3",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.5",
-    "vitest": "^1.6.1",
-    "zod": "^4.3.6"
+    "vitest": "^1.6.1"
   },
   "optionalDependencies": {
     "sqlite-vss": "^0.1.2"
+  },
+  "build": {
+    "appId": "com.dipreader.app",
+    "productName": "DIPReader",
+    "directories": {
+      "output": "dist-deploy"
+    },
+    "electronLanguages": [
+      "en",
+      "it"
+    ],
+    "files": [
+      "dist/DipReader/**/*",
+      "dist/**/*",
+      "schema.sql",
+      "!**/node_modules/onnxruntime-node/bin/napi-v{3,6}/{win32,darwin,linux/arm64}/**",
+      "!**/node_modules/@xenova/transformers/node_modules/onnxruntime-node/bin/napi-v{3,6}/{win32,darwin,linux/arm64}/**",
+      "!**/libonnxruntime_providers_cuda.so",
+      "!**/libonnxruntime_providers_tensorrt.so"
+    ],
+    "extraResources": [
+      {
+        "from": "core/src/models",
+        "to": "models",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "db/schema.sql",
+        "to": "schema.sql"
+      }
+    ],
+    "linux": {
+      "target": "AppImage",
+      "category": "Utility"
+    },
+    "win": {
+      "target": "portable"
+    },
+    "mac": {
+      "target": "dmg"
+    },
+    "asar": true,
+    "asarUnpack": [
+      "**/better-sqlite3/**/*",
+      "**/onnxruntime-node/**/*",
+      "**/sharp/**/*",
+      "**/sqlite-vss-*/**/*"
+    ]
+  },
+  "overrides": {
+    "onnxruntime-node": "1.20.0"
   }
 }
