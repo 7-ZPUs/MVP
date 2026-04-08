@@ -1,8 +1,5 @@
-// I bottoni ereditano gli stili dalla parent tramite :host
-// Qui definisci solo ciò che è esclusivo della figlia
-
 :host {
-  display: contents; // i bottoni fluiscono nel flex della parent come se fossero figli diretti
+  display: contents;
 }
 
 .export-overlays {

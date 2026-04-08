@@ -1,15 +1,10 @@
 .result-box {
   display: flex;
   align-items: center;
-  gap: 12px;
   padding: 12px 16px;
   border-radius: 6px;
   margin: 10px 0;
   border: 1px solid transparent;
-
-  .icon {
-    font-size: 1.2rem;
-  }
 
   .result-body {
     display: flex;
