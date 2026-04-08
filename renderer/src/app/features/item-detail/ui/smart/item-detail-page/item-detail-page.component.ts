@@ -6,6 +6,7 @@ import { Router } from '@angular/router';
 import { AGGREGATE_FACADE_TOKEN } from '../../../../aggregate/contracts/IAggregateFacade';
 import { DOCUMENT_FACADE_TOKEN } from '../../../../document/contracts/IDocumentFacade';
 import { NODE_FALLBACK_FACADE_TOKEN } from '../../../contracts/INodeFallbackFacade';
+import { PROCESS_FACADE_TOKEN } from '../../../../process/contracts/IProcessFacade';
 import {
   NodeFallbackItemType,
   NodeFallbackRelatedItem,
@@ -49,6 +50,8 @@ import { NodeFallbackPanelComponent } from '../../dumb/node-fallback-panel/node-
           [initialVerificationStatus]="
             richType === 'DOCUMENT'
               ? documentState().detail?.integrityStatus
+              : richType === 'PROCESS'
+                ? processState().detail?.integrityStatus
               : aggregateState().detail?.processSummary?.integrityStatus
           "
         ></app-document-actions>
@@ -116,6 +119,22 @@ import { NodeFallbackPanelComponent } from '../../dumb/node-fallback-panel/node-
             </main>
           }
 
+          @if (itemType() === 'PROCESS' && processState().detail; as process) {
+            <aside class="sidebar process-sidebar">
+              <app-metadata-panel
+                [itemType]="'PROCESS'"
+                [processData]="process"
+              ></app-metadata-panel>
+            </aside>
+
+            <main class="main-content process-main-content">
+              <app-document-index
+                [items]="process.indiceDocumenti"
+                (documentSelected)="onDocumentSelected($event)"
+              ></app-document-index>
+            </main>
+          }
+
           @if (isFallbackRoute() && fallbackState().detail; as fallbackDetail) {
             <main class="fallback-content">
               <app-node-fallback-panel
@@ -128,117 +147,12 @@ import { NodeFallbackPanelComponent } from '../../dumb/node-fallback-panel/node-
       }
     </div>
   `,
-  styles: [
-    `
-      :host {
-        display: flex;
-        flex-direction: column;
-        height: 100%;
-        overflow: hidden;
-      }
-      .page-layout {
-        display: flex;
-        flex-direction: column;
-        height: 100%;
-        background: #f1f5f9;
-        overflow: hidden;
-      }
-      .split-screen-content {
-        display: flex;
-        flex: 1;
-        overflow: hidden;
-      }
-      .left-panel {
-        width: 1700px;
-        flex-shrink: 0;
-        background: white;
-        z-index: 10;
-        box-shadow: 2px 0 8px rgba(0, 0, 0, 0.05);
-      }
-      .right-panel {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-      }
-      .viewer-container {
-        flex: 1;
-        padding: 1.5rem;
-        overflow-y: auto;
-      }
-      .spinner-overlay {
-        position: absolute;
-        inset: 0;
-        background: rgba(255, 255, 255, 0.8);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        z-index: 1000;
-      }
-      .spinner {
-        border: 4px solid #e2e8f0;
-        border-top: 4px solid #3b82f6;
-        border-radius: 50%;
-        width: 40px;
-        height: 40px;
-        animation: spin 1s linear infinite;
-      }
-      .content-layout {
-        display: flex;
-        flex: 1;
-        gap: 20px;
-        overflow: hidden; /* Evita che sfondi oltre lo schermo */
-        padding: 0 20px 20px 20px; /* Un po' di padding se necessario */
-      }
-
-      .sidebar {
-        width: 350px;
-        min-width: 250px;
-        max-width: 50vw;
-        flex-shrink: 0;
-        resize: horizontal;
-        overflow-y: hidden; /* Lasciamo scorrere al MetadataPanel interno che ha già overflow-y: auto */
-        overflow-x: hidden;
-      }
-
-      .main-content {
-        flex-grow: 1;
-        background-color: #f5f5f5; /* Sfondo grigetto tipico dei visualizzatori PDF */
-        overflow: hidden;
-        display: flex;
-        flex-direction: column;
-      }
-      app-document-viewer,
-      app-document-index,
-      app-metadata-panel,
-      app-node-fallback-panel {
-        display: block;
-        flex: 1;
-        height: 100%;
-        width: 100%;
-      }
-
-      .fallback-content {
-        flex: 1;
-        overflow: auto;
-        background: #f8fafc;
-      }
-
-      @keyframes spin {
-        0% {
-          transform: rotate(0deg);
-        }
-        100% {
-          transform: rotate(360deg);
-        }
-      }
-    `,
-  ],
+  styleUrl: './item-detail-page.component.scss',
 })
 export class ItemDetailPageComponent {
   // 1. INIEZIONE TRAMITE TOKEN (Dependency Inversion)
   private readonly aggregateFacade = inject(AGGREGATE_FACADE_TOKEN);
+  private readonly processFacade = inject(PROCESS_FACADE_TOKEN);
   private readonly documentFacade = inject(DOCUMENT_FACADE_TOKEN);
   private readonly nodeFallbackFacade = inject(NODE_FALLBACK_FACADE_TOKEN);
   private readonly router = inject(Router);
@@ -249,6 +163,7 @@ export class ItemDetailPageComponent {
 
   // 3. COLLEGAMENTO AI FACADE
   aggregateState = this.aggregateFacade.getState();
+  processState = this.processFacade.getState();
   documentState = this.documentFacade.getState();
   fallbackState = this.nodeFallbackFacade.getState();
 
@@ -265,6 +180,9 @@ export class ItemDetailPageComponent {
     if (currentType === 'AGGREGATE') {
       return this.aggregateState().loading;
     }
+    if (currentType === 'PROCESS') {
+      return this.processState().loading;
+    }
     if (currentType === 'DOCUMENT') {
       return this.documentState().loading;
     }
@@ -276,6 +194,9 @@ export class ItemDetailPageComponent {
     if (currentType === 'AGGREGATE') {
       return this.aggregateState().error;
     }
+    if (currentType === 'PROCESS') {
+      return this.processState().error;
+    }
     if (currentType === 'DOCUMENT') {
       return this.documentState().error;
     }
@@ -285,6 +206,9 @@ export class ItemDetailPageComponent {
   pageTitle = computed(() => {
     if (this.itemType() === 'AGGREGATE' && this.aggregateState().detail) {
       return `Fascicolo ${this.aggregateState().detail!.tipologiaFascicolo}`;
+    }
+    if (this.itemType() === 'PROCESS' && this.processState().detail) {
+      return this.processState().detail!.processUuid;
     }
     if (this.itemType() === 'DOCUMENT' && this.documentState().detail) {
       return this.documentState().detail!.fileName;
@@ -306,11 +230,15 @@ export class ItemDetailPageComponent {
     const currentType = this.itemType();
     const currentId = this.itemId();
     if (currentType === 'AGGREGATE') {
-      this.aggregateFacade.loadAggregate(currentId);
+      void this.aggregateFacade.loadAggregate(currentId);
+      return;
+    }
+    if (currentType === 'PROCESS') {
+      void this.processFacade.loadProcess(currentId);
       return;
     }
     if (currentType === 'DOCUMENT') {
-      this.documentFacade.loadDocument(currentId);
+      void this.documentFacade.loadDocument(currentId);
       return;
     }
 

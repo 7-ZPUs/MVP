@@ -7,10 +7,12 @@ import { ItemDetailPageComponent } from './item-detail-page.component';
 import { AGGREGATE_FACADE_TOKEN } from '../../../../aggregate/contracts/IAggregateFacade';
 import { DOCUMENT_FACADE_TOKEN } from '../../../../document/contracts/IDocumentFacade';
 import { NODE_FALLBACK_FACADE_TOKEN } from '../../../contracts/INodeFallbackFacade';
+import { PROCESS_FACADE_TOKEN } from '../../../../process/contracts/IProcessFacade';
 import { OUTPUT_FACADE_TOKEN } from '../../../../../shared/interfaces/output.interfaces';
 import { INTEGRITY_FACADE_TOKEN } from '../../../../../shared/interfaces/integrity.interfaces';
 import { AggregateState } from '../../../../aggregate/domain/aggregate.models';
 import { DocumentState } from '../../../../document/domain/document.models';
+import { ProcessState } from '../../../../process/domain/process.models';
 import { AppError, ErrorCode, ErrorCategory, ErrorSeverity } from '../../../../../shared/domain';
 import { NodeFallbackState } from '../../../domain/node-fallback.models';
 
@@ -20,10 +22,12 @@ describe('ItemDetailPageComponent', () => {
 
   // Signal scrivibili per simulare dinamicamente i cambi di stato dei Facade
   let mockAggregateState: WritableSignal<AggregateState>;
+  let mockProcessState: WritableSignal<ProcessState>;
   let mockDocumentState: WritableSignal<DocumentState>;
   let mockFallbackState: WritableSignal<NodeFallbackState>;
 
   let mockAggregateFacade: any;
+  let mockProcessFacade: any;
   let mockDocumentFacade: any;
   let mockFallbackFacade: any;
   let routerMock: any;
@@ -31,12 +35,19 @@ describe('ItemDetailPageComponent', () => {
   beforeEach(async () => {
     // Inizializziamo gli stati di base vuoti
     mockAggregateState = signal({ detail: null, loading: false, error: null });
+    mockProcessState = signal({ detail: null, loading: false, error: null });
     mockDocumentState = signal({ detail: null, loading: false, error: null });
     mockFallbackState = signal({ detail: null, loading: false, error: null });
 
     mockAggregateFacade = {
       getState: vi.fn().mockReturnValue(mockAggregateState),
       loadAggregate: vi.fn(),
+    };
+
+    mockProcessFacade = {
+      getState: vi.fn().mockReturnValue(mockProcessState),
+      loadProcess: vi.fn(),
+      isProcess: vi.fn().mockResolvedValue(true),
     };
 
     mockDocumentFacade = {
@@ -66,6 +77,7 @@ describe('ItemDetailPageComponent', () => {
       imports: [ItemDetailPageComponent],
       providers: [
         { provide: AGGREGATE_FACADE_TOKEN, useValue: mockAggregateFacade },
+        { provide: PROCESS_FACADE_TOKEN, useValue: mockProcessFacade },
         { provide: DOCUMENT_FACADE_TOKEN, useValue: mockDocumentFacade },
         { provide: NODE_FALLBACK_FACADE_TOKEN, useValue: mockFallbackFacade },
         { provide: OUTPUT_FACADE_TOKEN, useValue: mockOutputFacade },
@@ -145,8 +157,52 @@ describe('ItemDetailPageComponent', () => {
 
     expect(mockDocumentFacade.loadDocument).toHaveBeenCalledWith('456');
     expect(mockAggregateFacade.loadAggregate).not.toHaveBeenCalled();
+    expect(mockProcessFacade.loadProcess).not.toHaveBeenCalled();
     expect(mockFallbackFacade.loadNode).not.toHaveBeenCalled();
     expect(component.pageTitle()).toBe('delibera.pdf'); // Testa l'altro branch del computed
+  });
+
+  it('dovrebbe inizializzare e caricare i dati per un PROCESS', () => {
+    fixture.componentRef.setInput('itemId', '31');
+    fixture.componentRef.setInput('itemType', 'PROCESS');
+
+    mockProcessState.set({
+      loading: false,
+      error: null,
+      detail: {
+        processId: '31',
+        processUuid: 'PROC-31',
+        integrityStatus: 'VALID',
+        overview: {
+          oggetto: 'Processo Contratti',
+          procedimento: 'Gestione Contratti',
+          materiaArgomentoStruttura: 'Contratti',
+        },
+        conservation: {
+          processo: 'PROC-31',
+          sessione: 'SESS-1',
+          dataInizio: '2026-04-08',
+        },
+        documentClass: {
+          id: 22,
+          name: 'Classe Contratti',
+        },
+        customMetadata: [],
+        indiceDocumenti: [],
+      },
+    });
+
+    fixture.detectChanges();
+
+    expect(mockProcessFacade.loadProcess).toHaveBeenCalledWith('31');
+    expect(mockAggregateFacade.loadAggregate).not.toHaveBeenCalled();
+    expect(mockDocumentFacade.loadDocument).not.toHaveBeenCalled();
+    expect(mockFallbackFacade.loadNode).not.toHaveBeenCalled();
+    expect(component.pageTitle()).toBe('PROC-31');
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.querySelector('.process-sidebar')).toBeTruthy();
+    expect(compiled.querySelector('.process-main-content')).toBeTruthy();
   });
 
   it('dovrebbe caricare fallback detail per tipo DIP', () => {
@@ -174,12 +230,12 @@ describe('ItemDetailPageComponent', () => {
 
   it('naviga quando viene selezionato un item correlato dal fallback panel', () => {
     component.onFallbackRelatedSelected({
-      itemType: 'AGGREGATE',
+      itemType: 'PROCESS',
       itemId: '31',
       label: 'Processo Contratti',
     });
 
-    expect(routerMock.navigate).toHaveBeenCalledWith(['/detail', 'AGGREGATE', '31']);
+    expect(routerMock.navigate).toHaveBeenCalledWith(['/detail', 'PROCESS', '31']);
   });
 
   // --- TEST 3: STATO DI CARICAMENTO ---
