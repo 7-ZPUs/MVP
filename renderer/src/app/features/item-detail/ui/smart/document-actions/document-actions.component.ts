@@ -28,8 +28,8 @@ import { ExportPageComponent } from '../../../../../feature/export-manager/ui/sm
         <!-- Mostra etichetta di stato verifica -->
         @if (verificationStatus()) {
           <div class="status-label" [ngClass]="verificationStatus()?.toLowerCase() || ''">
-            {{ verificationStatus() === 'VALID' ? '✅ Verificato' : 
-               verificationStatus() === 'INVALID' ? '❌ Corrotto' : '⚠️ Sconosciuto' }}
+            {{ verificationStatus() === 'VALID' ? 'Verificato' : 
+               verificationStatus() === 'INVALID' ? 'Corrotto' : 'Sconosciuto' }}
           </div>
         }
 
@@ -41,7 +41,7 @@ import { ExportPageComponent } from '../../../../../feature/export-manager/ui/sm
           @if (integrityFacade.isVerifying()) {
             <span class="spinner-small"></span> Verifica in corso...
           } @else {
-            <span class="icon">🛡️</span> Verifica Integrità
+            <i class="icon bi bi-shield-check" aria-hidden="true"></i> Verifica Integrità
           }
         </button>
 

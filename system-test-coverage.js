@@ -1,105 +1,93 @@
+// npx playwright test --reporter=json > test-results.json Per eseguire i test e generare il file di input
+
 const fs = require('fs');
-const path = require('path');
 
 // --- CONFIGURAZIONE ---
-const testDir = './e2e/electron/'; 
-const testFilePattern = /\.spec\.ts$/; 
-const maxTSNumber = 309; 
+const maxTSNumber = 309;
+const inputFile = 'test-results.json';
+const outputFile = 'coverage-report.md';
 // ----------------------
 
+console.log(`Caricamento risultati da ${inputFile}...`);
+
+if (!fs.existsSync(inputFile)) {
+  console.error(`❌ Errore: Il file ${inputFile} non esiste.`);
+  console.error('Esegui prima i test con: npx playwright test --reporter=json > test-results.json');
+  process.exit(1);
+}
+
+const rawData = fs.readFileSync(inputFile, 'utf-8');
+const testData = JSON.parse(rawData);
+
+// Inizializza la mappa delle coperture (TS-1 fino a TS-309)
 const expectedTests = Array.from({ length: maxTSNumber }, (_, i) => `TS-${i + 1}`);
 const tsCoverage = {};
 for (const ts of expectedTests) {
   tsCoverage[ts] = [];
 }
 
-/**
- * Regex per il nuovo stile:
- * 1. itRegex: Cattura it o test (inclusi test.describe, test.fixme, ecc.)
- */
-const itRegex = /(?:it|test|test\.\w+)\s*\(\s*(['"`])(.*?)\1/g;
-
-/**
- * Regex per identificare i TS:
- * 1. Range: TS-1..TS-5
- * 2. Singoli: TS-10
- */
-const tsRangeRegex = /TS-(\d+)\.\.TS-(\d+)/g;
+// Regex per trovare "TS-X" (inclusi i numeri estratti dinamicamente dai cicli for)
 const tsIdRegex = /TS-(\d+)/g;
 
-function findTestFiles(dir, fileList = []) {
-  if (!fs.existsSync(dir)) return fileList;
-  const files = fs.readdirSync(dir);
-  for (const file of files) {
-    const filePath = path.join(dir, file);
-    if (fs.statSync(filePath).isDirectory()) {
-      if (file !== 'node_modules' && file !== 'dist' && !file.startsWith('.')) {
-        findTestFiles(filePath, fileList);
-      }
-    } else if (testFilePattern.test(filePath)) {
-      fileList.push(filePath);
-    }
-  }
-  return fileList;
-}
-
-const testFiles = findTestFiles(testDir);
-
-for (const file of testFiles) {
-  const content = fs.readFileSync(file, 'utf-8');
-  let match;
+// Funzione ricorsiva per navigare la struttura JSON di Playwright
+// (testData.suites -> suite figlie -> specs)
+function processSuites(suites) {
+  if (!suites) return;
   
-  while ((match = itRegex.exec(content)) !== null) {
-    const testTitle = match[2]; 
-    const detectedTsIds = new Set();
+  suites.forEach(suite => {
+    // Se ci sono specifiche (i singoli "test()"), analizza i titoli
+    if (suite.specs) {
+      suite.specs.forEach(spec => {
+        const title = spec.title;
+        const file = spec.file.split('/').pop(); // Estrae solo il nome del file
+        
+        let match;
+        const detectedTsIds = new Set(); // Usa un Set per evitare duplicati nello stesso test
+        
+        while ((match = tsIdRegex.exec(title)) !== null) {
+          detectedTsIds.add(`TS-${match[1]}`);
+        }
 
-    // 1. Gestione Range (es. TS-32..TS-34)
-    let rangeMatch;
-    while ((rangeMatch = tsRangeRegex.exec(testTitle)) !== null) {
-      const start = parseInt(rangeMatch[1], 10);
-      const end = parseInt(rangeMatch[2], 10);
-      for (let i = start; i <= end; i++) {
-        detectedTsIds.add(`TS-${i}`);
-      }
+        // Aggiunge il test trovato alla copertura
+        detectedTsIds.forEach(tsId => {
+          if (tsCoverage[tsId]) {
+            tsCoverage[tsId].push({ file, title });
+          }
+        });
+      });
     }
-
-    // 2. Gestione Singoli (es. TS-45)
-    let tsMatch;
-    while ((tsMatch = tsIdRegex.exec(testTitle)) !== null) {
-      detectedTsIds.add(`TS-${tsMatch[1]}`);
+    
+    // Scende nei blocchi test.describe() annidati
+    if (suite.suites) {
+      processSuites(suite.suites);
     }
-
-    // Salvataggio copertura
-    detectedTsIds.forEach(tsId => {
-      if (tsCoverage[tsId]) {
-        tsCoverage[tsId].push({ file, title: testTitle });
-      }
-    });
-  }
+  });
 }
 
-// Creazione del report Markdown
-let report = '## 📊 Report Copertura Test di Sistema (TS-1 → TS-309)\n\n';
-report += '| ID Test | Stato | Posizioni (File e Titolo) |\n';
-report += '|---|---|---|\n';
+// Avvia l'estrazione
+processSuites(testData.suites);
+
+// --- GENERAZIONE REPORT MARKDOWN ---
+let report = '# 📊 Report Copertura Test di Sistema (TS-1 → TS-309)\n\n';
 
 let stats = { missing: 0, single: 0, multiple: 0 };
+let tableRows = '';
 
 for (const ts of expectedTests) {
   const locations = tsCoverage[ts];
   
   if (locations.length === 0) {
-    report += `| **${ts}** | ❌ Mancante | N/A |\n`;
+    tableRows += `| **${ts}** | ❌ Mancante | - |\n`;
     stats.missing++;
   } else if (locations.length === 1) {
-    report += `| **${ts}** | ✅ Coperto | \`${locations[0].file}\` <br> _"${locations[0].title}"_ |\n`;
+    tableRows += `| **${ts}** | ✅ Coperto | \`${locations[0].file}\`<br>_"${locations[0].title}"_ |\n`;
     stats.single++;
   } else {
     const formattedLocations = locations
-      .map(loc => `\`${loc.file}\` <br> _"${loc.title}"_`)
-      .join('<br><br> --- <br><br>');
+      .map(loc => `\`${loc.file}\`<br>_"${loc.title}"_`)
+      .join('<br><hr>');
       
-    report += `| **${ts}** | ⚠️ Multiplo (${locations.length}x) | ${formattedLocations} |\n`;
+    tableRows += `| **${ts}** | ⚠️ Multiplo (${locations.length}x) | ${formattedLocations} |\n`;
     stats.multiple++;
   }
 }
@@ -107,14 +95,22 @@ for (const ts of expectedTests) {
 const totalCovered = stats.single + stats.multiple;
 const progress = ((totalCovered / maxTSNumber) * 100).toFixed(2);
 
-report += `\n### 📝 Sommario\n`;
+report += `### 📝 Sommario\n`;
 report += `- ✅ Singola Copertura: **${stats.single}**\n`;
 report += `- ⚠️ Copertura Multipla: **${stats.multiple}**\n`;
 report += `- ❌ Mancanti: **${stats.missing}**\n`;
 report += `- 🎯 Progresso Globale: **${progress}%**\n\n`;
 
-console.log(report);
+report += '| ID Test | Stato | Posizioni (File e Titolo) |\n';
+report += '|---|---|---|\n';
+report += tableRows;
 
+// Salvataggio su file
+fs.writeFileSync(outputFile, report, 'utf-8');
+console.log(`✅ Report generato con successo: ${outputFile}`);
+console.log(`🎯 Copertura totale: ${progress}%`);
+
+// Supporto per GitHub Actions (Stampa nel summary della pipeline se disponibile)
 if (process.env.GITHUB_STEP_SUMMARY) {
   fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, report + '\n');
 }

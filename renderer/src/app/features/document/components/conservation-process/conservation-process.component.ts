@@ -5,30 +5,30 @@ import { ConservationProcessData } from '../../domain/document.models';
   selector: 'app-conservation-process',
   standalone: true,
   template: `
-    <div class="metadata-card">
-      <h3>Processo di Conservazione</h3>
-      <div class="data-row">
+    <div class="metadata-card" data-testid="conservation-process-card">
+      <h3 data-testid="conservation-process-heading">Processo di Conservazione</h3>
+      <div class="data-row" data-testid="conservation-process-row-processo">
         <span class="label">Processo:</span> <span class="value">{{ data().processo }}</span>
       </div>
-      <div class="data-row">
+      <div class="data-row" data-testid="conservation-process-row-sessione">
         <span class="label">Sessione:</span> <span class="value">{{ data().sessione }}</span>
       </div>
-      <div class="data-row">
+      <div class="data-row" data-testid="conservation-process-row-data-inizio">
         <span class="label">Data Inizio:</span> <span class="value">{{ data().dataInizio }}</span>
       </div>
       @if (data().dataFine) {
-        <div class="data-row">
+        <div class="data-row" data-testid="conservation-process-row-data-fine">
           <span class="label">Data Fine:</span> <span class="value">{{ data().dataFine }}</span>
         </div>
       }
       @if (data().uuidTerminatore) {
-        <div class="data-row">
+        <div class="data-row" data-testid="conservation-process-row-uuid-terminatore">
           <span class="label">UUID Terminatore:</span>
           <span class="value">{{ data().uuidTerminatore }}</span>
         </div>
       }
       @if (data().canaleTerminazione) {
-        <div class="data-row">
+        <div class="data-row" data-testid="conservation-process-row-canale-terminazione">
           <span class="label">Canale Terminazione:</span>
           <span class="value">{{ data().canaleTerminazione }}</span>
         </div>

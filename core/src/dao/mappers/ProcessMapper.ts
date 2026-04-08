@@ -77,6 +77,7 @@ export class ProcessMapper {
       id,
       uuid: process.getUuid(),
       integrityStatus: process.getIntegrityStatus(),
+      type: "PROCESSO",
     };
   }
 }

@@ -7,7 +7,7 @@
   (keydown.enter)="onSelectAction(result)"
   (keydown.space)="onSelectAction(result); $event.preventDefault()"
 >
-  <div class="card-icon">⚙️</div>
+  <i class="card-icon bi bi-gear" aria-hidden="true"></i>
   <div class="card-content">
     <h3 class="document-name">{{ result.name || 'Processo senza titolo' }}</h3>
     <span class="document-id">UUID Processo: {{ result.uuid }}</span>
@@ -15,7 +15,11 @@
   <div class="card-meta">
     <span class="badge process-badge">{{ result.type }}</span>
   </div>
-  <span class="integrity-badge-base" data-testid="result-integrity-badge" [ngClass]="result.integrityStatus | integrityClass">
+  <span
+    class="integrity-badge-base"
+    data-testid="result-integrity-badge"
+    [ngClass]="result.integrityStatus | integrityClass"
+  >
     {{ result.integrityStatus }}
   </span>
 </div>

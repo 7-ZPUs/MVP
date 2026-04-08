@@ -7,23 +7,23 @@ import { KeyValuePipe } from '@angular/common';
   standalone: true,
   imports: [KeyValuePipe],
   template: `
-    <div class="metadata-card">
-      <h3>Soggetti</h3>
+    <div class="metadata-card" data-testid="subjects-card">
+      <h3 data-testid="subjects-heading">Soggetti</h3>
       @if (!subjects() || subjects()!.length === 0) {
-        <p class="empty-message">Nessun soggetto presente.</p>
+        <p class="empty-message" data-testid="subjects-empty">Nessun soggetto presente.</p>
       } @else {
-        <div class="subject-grid">
+        <div class="subject-grid" data-testid="subjects-grid">
           @for (subject of subjects(); track subject.ruolo + subject.tipo) {
-            <div class="subject-card">
-              <div class="card-header">
-                <span class="role">{{ subject.ruolo }}</span>
-                <span class="type-badge">{{ formatType(subject.tipo) }}</span>
+            <div class="subject-card" [attr.data-testid]="'subject-card-' + toTestIdSuffix(subject.ruolo)">
+              <div class="card-header" [attr.data-testid]="'subject-header-' + toTestIdSuffix(subject.ruolo)">
+                <span class="role" data-testid="subject-role">{{ subject.ruolo }}</span>
+                <span class="type-badge" data-testid="subject-type">{{ formatType(subject.tipo) }}</span>
               </div>
-              <div class="card-body">
+              <div class="card-body" [attr.data-testid]="'subject-body-' + toTestIdSuffix(subject.ruolo)">
                 @for (campo of subject.campiSpecifici | keyvalue; track campo.key) {
-                  <div class="data-row">
-                    <span class="label">{{ campo.key }}:</span>
-                    <span class="value">{{ campo.value }}</span>
+                  <div class="data-row" [attr.data-testid]="'subject-field-' + toTestIdSuffix(subject.ruolo) + '-' + toTestIdSuffix(campo.key)">
+                    <span class="label" data-testid="subject-field-label">{{ campo.key }}:</span>
+                    <span class="value" data-testid="subject-field-value">{{ campo.value }}</span>
                   </div>
                 }
               </div>
@@ -119,6 +119,10 @@ export class SubjectListComponent {
   subjects = input<Subject[]>();
 
   formatType(tipo: SubjectType): string {
-    return tipo.replace(/_/g, ' ');
+    return tipo.replaceAll('_', ' ');
+  }
+
+  toTestIdSuffix(value: string): string {
+    return value.toLowerCase().replaceAll(/[^a-z0-9]+/g, '-').replaceAll(/(^-|-$)/g, '');
   }
 }

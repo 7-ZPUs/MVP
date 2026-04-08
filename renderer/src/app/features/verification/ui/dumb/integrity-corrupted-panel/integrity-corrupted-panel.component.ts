@@ -9,7 +9,7 @@ import { IntegrityNodeVM } from '../../../domain/integrity.view-models';
       <section class="alert-container" aria-labelledby="alert-heading" role="alert">
         <header class="alert-header">
           <div class="alert-title">
-            <span class="pulse-icon" aria-hidden="true">🔴</span>
+            <i class="pulse-icon bi bi-exclamation-octagon-fill" aria-hidden="true"></i>
             <h3 id="alert-heading">Rilevate Anomalie di Integrità ({{ nodes().length }})</h3>
           </div>
           <p>
@@ -27,7 +27,8 @@ import { IntegrityNodeVM } from '../../../domain/integrity.view-models';
                 <strong class="item-name">{{ node.name }}</strong>
               </div>
               <div class="item-context">
-                <span aria-hidden="true">📍</span> Posizione: <span>{{ node.contextPath }}</span>
+                <i class="bi bi-geo-alt" aria-hidden="true"></i>
+                Posizione: <span>{{ node.contextPath }}</span>
               </div>
             </li>
           }

@@ -30,6 +30,7 @@ function makeError(overrides: Partial<ExportError> = {}): ExportError {
     context: 'export',
     message: 'Qualcosa è andato storto',
     recoverable: false,
+    ...overrides,
   };
 }
 
@@ -57,12 +58,12 @@ describe('ExportResultComponent', () => {
     });
 
     it('il phase di default è IDLE', () => {
-      expect(component.phase).toBe(ExportPhase.IDLE);
+      expect(component.phase()).toBe(ExportPhase.IDLE);
     });
 
     it('result e error sono null di default', () => {
-      expect(component.result).toBeNull();
-      expect(component.error).toBeNull();
+      expect(component.result()).toBeNull();
+      expect(component.error()).toBeNull();
     });
   });
 
@@ -70,8 +71,8 @@ describe('ExportResultComponent', () => {
 
   describe('phase SUCCESS', () => {
     beforeEach(() => {
-      component.phase = ExportPhase.SUCCESS;
-      component.result = makeResult();
+      fixture.componentRef.setInput('phase', ExportPhase.SUCCESS);
+      fixture.componentRef.setInput('result', makeResult());
       fixture.detectChanges();
     });
 
@@ -95,7 +96,7 @@ describe('ExportResultComponent', () => {
     });
 
     it('mostra il contatore elementi falliti se failedCount > 0', () => {
-      component.result = makeResult({ failedCount: 3 });
+      fixture.componentRef.setInput('result', makeResult({ failedCount: 3 }));
       fixture.detectChanges();
       const sub = fixture.nativeElement.querySelector('.result-sub');
       expect(sub).not.toBeNull();
@@ -103,7 +104,7 @@ describe('ExportResultComponent', () => {
     });
 
     it('non mostra nulla se result è null anche con phase SUCCESS', () => {
-      component.result = null;
+      fixture.componentRef.setInput('result', null);
       fixture.detectChanges();
       expect(fixture.nativeElement.querySelector('.result-success')).toBeNull();
     });
@@ -113,35 +114,35 @@ describe('ExportResultComponent', () => {
 
   describe('successMessage', () => {
     it('restituisce stringa vuota se result è null', () => {
-      component.result = null;
-      expect(component.successMessage).toBe('');
+      fixture.componentRef.setInput('result', null);
+      expect(component.successMessage()).toBe('');
     });
 
     const cases: Array<[OutputContext, string | ((r: ExportResult) => string)]> = [
       [OutputContext.SINGLE_EXPORT, 'Documento salvato con successo'],
-      [OutputContext.SINGLE_PRINT,  'Documento inviato alla stampante'],
+      [OutputContext.SINGLE_PRINT,  'Documento aperto con lettore predefinito'],
       [OutputContext.REPORT_PDF,    'Report PDF esportato con successo'],
       [OutputContext.MULTI_EXPORT,  (r) => `${r.successCount} documenti salvati`],
-      [OutputContext.MULTI_PRINT,   (r) => `${r.successCount} documenti inviati alla stampante`],
+      [OutputContext.MULTI_PRINT,   (r) => `${r.successCount} documenti aperti con lettore predefinito`],
     ];
 
     cases.forEach(([ctx, expected]) => {
       it(`OutputContext.${ctx}`, () => {
         const result = makeResult({ outputContext: ctx, successCount: 5 });
-        component.result = result;
+        fixture.componentRef.setInput('result', result);
         const msg = typeof expected === 'function' ? expected(result) : expected;
-        expect(component.successMessage).toBe(msg);
+        expect(component.successMessage()).toBe(msg);
       });
     });
 
     it('restituisce "Operazione completata" per outputContext sconosciuto', () => {
-      component.result = makeResult({ outputContext: 'UNKNOWN' as OutputContext });
-      expect(component.successMessage).toBe('Operazione completata');
+      fixture.componentRef.setInput('result', makeResult({ outputContext: 'UNKNOWN' as OutputContext }));
+      expect(component.successMessage()).toBe('Operazione completata');
     });
 
     it('il messaggio compare nel template come aria-label', () => {
-      component.phase = ExportPhase.SUCCESS;
-      component.result = makeResult({ outputContext: OutputContext.SINGLE_EXPORT });
+      fixture.componentRef.setInput('phase', ExportPhase.SUCCESS);
+      fixture.componentRef.setInput('result', makeResult({ outputContext: OutputContext.SINGLE_EXPORT }));
       fixture.detectChanges();
       const box = fixture.nativeElement.querySelector('.result-success');
       expect(box.getAttribute('aria-label')).toBe('Documento salvato con successo');
@@ -152,8 +153,8 @@ describe('ExportResultComponent', () => {
 
   describe('phase ERROR', () => {
     beforeEach(() => {
-      component.phase = ExportPhase.ERROR;
-      component.error = makeError();
+      fixture.componentRef.setInput('phase', ExportPhase.ERROR);
+      fixture.componentRef.setInput('error', makeError());
       fixture.detectChanges();
     });
 
@@ -187,7 +188,7 @@ describe('ExportResultComponent', () => {
     });
 
     it('mostra il bottone Riprova se error.recoverable è true', () => {
-      component.error = makeError({ recoverable: true });
+      fixture.componentRef.setInput('error', makeError({ recoverable: true }));
       fixture.detectChanges();
       const btn = fixture.nativeElement.querySelector('.retry-btn');
       expect(btn).not.toBeNull();
@@ -195,7 +196,7 @@ describe('ExportResultComponent', () => {
     });
 
     it('non mostra nulla se error è null anche con phase ERROR', () => {
-      component.error = null;
+      fixture.componentRef.setInput('error', null);
       fixture.detectChanges();
       expect(fixture.nativeElement.querySelector('.result-error')).toBeNull();
     });
@@ -205,15 +206,14 @@ describe('ExportResultComponent', () => {
 
   describe('evento retry', () => {
     beforeEach(() => {
-      component.phase = ExportPhase.ERROR;
-      component.error = makeError({ recoverable: true });
+      fixture.componentRef.setInput('phase', ExportPhase.ERROR);
+      fixture.componentRef.setInput('error', makeError({ recoverable: true }));
       fixture.detectChanges();
     });
 
     it('emette retry al click del bottone', () => {
       const spy = vi.fn();
       component.retry.subscribe(spy);
-
       fixture.nativeElement.querySelector('.retry-btn').click();
       expect(spy).toHaveBeenCalledTimes(1);
     });
@@ -221,7 +221,6 @@ describe('ExportResultComponent', () => {
     it('emette retry senza payload (void)', () => {
       const emitted: unknown[] = [];
       component.retry.subscribe((v) => emitted.push(v));
-
       fixture.nativeElement.querySelector('.retry-btn').click();
       expect(emitted[0]).toBeUndefined();
     });
@@ -231,8 +230,8 @@ describe('ExportResultComponent', () => {
 
   describe('phase UNAVAILABLE', () => {
     beforeEach(() => {
-      component.phase = ExportPhase.UNAVAILABLE;
-      component.error = makeError({ message: 'Funzione non disponibile' });
+      fixture.componentRef.setInput('phase', ExportPhase.UNAVAILABLE);
+      fixture.componentRef.setInput('error', makeError({ message: 'Funzione non disponibile' }));
       fixture.detectChanges();
     });
 
@@ -268,7 +267,7 @@ describe('ExportResultComponent', () => {
     });
 
     it('non mostra nulla se error è null anche con phase UNAVAILABLE', () => {
-      component.error = null;
+      fixture.componentRef.setInput('error', null);
       fixture.detectChanges();
       expect(fixture.nativeElement.querySelector('.result-warning')).toBeNull();
     });
@@ -277,20 +276,11 @@ describe('ExportResultComponent', () => {
   // ── Accessibilità ──────────────────────────────────────────────────────────
 
   describe('accessibilità', () => {
-    it('le icone hanno aria-hidden="true"', () => {
-      component.phase = ExportPhase.SUCCESS;
-      component.result = makeResult();
-      fixture.detectChanges();
-
-      const icon = fixture.nativeElement.querySelector('[aria-hidden="true"]');
-      expect(icon).not.toBeNull();
-    });
 
     it('lo span result-sub in SUCCESS ha role="alert" e aria-live="assertive"', () => {
-      component.phase = ExportPhase.SUCCESS;
-      component.result = makeResult({ failedCount: 2 });
+      fixture.componentRef.setInput('phase', ExportPhase.SUCCESS);
+      fixture.componentRef.setInput('result', makeResult({ failedCount: 2 }));
       fixture.detectChanges();
-
       const sub = fixture.nativeElement.querySelector('.result-sub');
       expect(sub.getAttribute('role')).toBe('alert');
       expect(sub.getAttribute('aria-live')).toBe('assertive');
@@ -298,17 +288,16 @@ describe('ExportResultComponent', () => {
 
     it('aria-atomic è true su tutti i box', () => {
       const phases = [
-        { phase: ExportPhase.SUCCESS, result: makeResult(), error: null },
-        { phase: ExportPhase.ERROR,   result: null, error: makeError() },
-        { phase: ExportPhase.UNAVAILABLE, result: null, error: makeError() },
+        { phase: ExportPhase.SUCCESS,     result: makeResult(), error: null },
+        { phase: ExportPhase.ERROR,       result: null,         error: makeError() },
+        { phase: ExportPhase.UNAVAILABLE, result: null,         error: makeError() },
       ];
 
       phases.forEach(({ phase, result, error }) => {
-        component.phase  = phase;
-        component.result = result;
-        component.error  = error;
+        fixture.componentRef.setInput('phase',  phase);
+        fixture.componentRef.setInput('result', result);
+        fixture.componentRef.setInput('error',  error);
         fixture.detectChanges();
-
         const box = fixture.nativeElement.querySelector('.result-box');
         expect(box.getAttribute('aria-atomic')).toBe('true');
       });

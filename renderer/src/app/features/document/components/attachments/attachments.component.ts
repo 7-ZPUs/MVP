@@ -5,20 +5,20 @@ import { AttachmentData } from '../../domain/document.models';
   selector: 'app-attachments',
   standalone: true,
   template: `
-    <div class="metadata-card">
-      <h3>Allegati</h3>
-      <div class="data-row">
+    <div class="metadata-card" data-testid="attachments-card">
+      <h3 data-testid="attachments-heading">Allegati</h3>
+      <div class="data-row" data-testid="attachments-row-numero">
         <span class="label">Numero Allegati:</span> <span class="value">{{ data().numero }}</span>
       </div>
 
       @if (!data().allegati || data().allegati!.length === 0) {
-        <p class="empty-message">Nessun dettaglio allegato presente.</p>
+        <p class="empty-message" data-testid="attachments-empty">Nessun dettaglio allegato presente.</p>
       } @else {
-        <ul class="attachment-list">
+        <ul class="attachment-list" data-testid="attachments-list">
           @for (allegato of data().allegati; track allegato.id) {
-            <li class="attachment-item">
-              <span class="attachment-id">{{ allegato.id }}</span>
-              <span class="attachment-desc">{{ allegato.descrizione }}</span>
+            <li class="attachment-item" [attr.data-testid]="'attachment-item-' + $index">
+              <span class="attachment-id" data-testid="attachment-id">{{ allegato.id || 'Identificativo allegato non disponibile' }}</span>
+              <span class="attachment-desc" data-testid="attachment-desc">{{ allegato.descrizione || 'Descrizione allegato non disponibile' }}</span>
             </li>
           }
         </ul>

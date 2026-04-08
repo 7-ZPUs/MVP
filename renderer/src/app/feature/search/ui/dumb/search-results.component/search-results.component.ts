@@ -2,14 +2,13 @@ import { Component, EventEmitter, Input, Output, inject, Type } from '@angular/c
 import { CommonModule } from '@angular/common';
 import { EmptyStateComponent } from '../../../../../shared/ui/dumb/empty-state.component/empty-state.component';
 import { ISearchResult } from '../../../../../../../../shared/domain/metadata/search-result.models';
-import { ExportPageComponent } from '../../../../export-manager/ui/smart/export-page/export-page.component';
 import { SearchResultFactoryService } from '../../../services/search-result-factory.service';
 import { ISearchResultItemComponent } from '../../../contracts/search-result-item.interface';
 
 @Component({
   selector: 'app-search-results',
   standalone: true,
-  imports: [CommonModule, EmptyStateComponent, ExportPageComponent],
+  imports: [CommonModule, EmptyStateComponent],
   templateUrl: './search-results.component.html',
   styleUrl: './search-results.component.scss',
 })

@@ -13,6 +13,12 @@ interface AggregateSourceDto {
   metadata?: unknown;
 }
 
+function toSafeString(value: unknown, fallback = ''): string {
+  return typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean'
+    ? String(value)
+    : fallback;
+}
+
 // Known XSD tags for aggregation. Any root fields outside these are grouped generically
 const KNOWN_AGGREGATE_XSD_ROOT_BLOCKS = new Set<string>([
   'IdAgg',
@@ -62,6 +68,20 @@ export function mapProcessDtoToAggregateDetail(dto: unknown): AggregateDetailDTO
     KNOWN_AGGREGATE_XSD_ROOT_BLOCKS,
   );
   const mergedCustomMetadata = [...explicitCustomData, ...wildUnmappedData];
+  const rawFasi = extractor.findAllValues('Fase') as unknown[];
+  const fasi = rawFasi.map((faseNode) => {
+    const faseExtractor = new MetadataExtractor(normalizeMetadataNodes(faseNode));
+    return {
+      tipoFase: faseExtractor.getString('TipoFase', 'Preparatoria') as
+        | 'Preparatoria'
+        | 'Istruttoria'
+        | 'Consultiva'
+        | 'Decisoria o liberativa'
+        | "Integrazione dell'efficacia",
+      dataInizio: faseExtractor.getString('DataInizio', 'N/A'),
+      dataFine: faseExtractor.getString('DataFine', ''),
+    };
+  });
 
   return {
     idAgg: {
@@ -69,7 +89,7 @@ export function mapProcessDtoToAggregateDetail(dto: unknown): AggregateDetailDTO
         'TipoAggregazione',
         'Fascicolo',
       ) as TipoAggregazioneEnum,
-      idAggregazione: extractor.getString('IdAggregazione', String(source.id ?? '')),
+      idAggregazione: extractor.getString('IdAggregazione', toSafeString(source.id, '')),
     },
     tipologiaFascicolo: extractor.getString(
       'TipologiaFascicolo',
@@ -85,6 +105,7 @@ export function mapProcessDtoToAggregateDetail(dto: unknown): AggregateDetailDTO
         denominazione: extractor.getString('Nome', 'N/A'),
       },
       dataInizioAssegnazione: extractor.getString('DataInizioAssegnazione', 'N/A'),
+      dataFineAssegnazione: extractor.getString('DataFineAssegnazione'),
     },
     dataApertura,
     dataChiusura: extractor.getString('DataChiusura'), // optional
@@ -94,14 +115,15 @@ export function mapProcessDtoToAggregateDetail(dto: unknown): AggregateDetailDTO
     },
     progressivo: extractor.getNumber('Progressivo', 1),
     chiaveDescrittiva: {
-      oggetto: extractor.getString('Oggetto', `Fascicolo n. ${String(source.id ?? '')}`),
+      oggetto: extractor.getString('Oggetto', `Fascicolo n. ${toSafeString(source.id, '')}`),
     },
     procedimentoAmministrativo: {
       materiaArgomentoStruttura: extractor.getString('MateriaArgomentoStruttura', 'Standard'),
       procedimento: extractor.getString('Procedimento', 'N/A'),
       uriProcedimento: extractor.getString('URIProcedimento', ''),
-      fasi: [], // Fasi details can be recursively mapped similar to subjects
+      fasi,
     },
+    idAggPrimario: extractor.getString('IdAggPrimario'),
     posizioneFisicaAggregazioneDocumentale: extractor.getString(
       'PosizioneFisicaAggregazioneDocumentale',
       'Archivio',
@@ -109,8 +131,8 @@ export function mapProcessDtoToAggregateDetail(dto: unknown): AggregateDetailDTO
     tempoDiConservazione: extractor.getNumber('TempoDiConservazione', 10),
 
     processSummary: {
-      uuid: String(source.uuid || 'N/D'),
-      integrityStatus: String(source.integrityStatus || 'UNKNOWN'),
+      uuid: toSafeString(source.uuid, 'N/D'),
+      integrityStatus: toSafeString(source.integrityStatus, 'UNKNOWN'),
       timestamp: dataApertura || 'N/D',
     },
 

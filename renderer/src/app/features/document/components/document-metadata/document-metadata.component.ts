@@ -5,47 +5,47 @@ import { DocumentMetadata } from '../../domain/document.models'; // Assicurati d
   selector: 'app-document-metadata',
   standalone: true,
   template: `
-    <div class="metadata-card">
-      <h3>Metadati Principali</h3>
-      <div class="data-row">
+    <div class="metadata-card" data-testid="document-metadata-card">
+      <h3 data-testid="document-metadata-heading">Metadati Principali</h3>
+      <div class="data-row" data-testid="document-metadata-row-nome">
         <span class="label">Nome:</span> <span class="value">{{ data().nome }}</span>
       </div>
-      <div class="data-row">
+      <div class="data-row" data-testid="document-metadata-row-oggetto">
         <span class="label">Oggetto:</span> <span class="value">{{ data().oggetto }}</span>
       </div>
-      <div class="data-row">
+      <div class="data-row" data-testid="document-metadata-row-descrizione">
         <span class="label">Descrizione:</span> <span class="value">{{ data().descrizione }}</span>
       </div>
       @if (data().dataCreazione) {
-        <div class="data-row">
+        <div class="data-row" data-testid="document-metadata-row-data-creazione">
           <span class="label">Data Creazione:</span>
           <span class="value">{{ data().dataCreazione }}</span>
         </div>
       }
-      <div class="data-row">
+      <div class="data-row" data-testid="document-metadata-row-tipo-doc">
         <span class="label">Tipo Doc:</span> <span class="value">{{ data().tipoDocumentale }}</span>
       </div>
-      <div class="data-row">
+      <div class="data-row" data-testid="document-metadata-row-formazione">
         <span class="label">Formazione:</span>
         <span class="value">{{ data().modalitaFormazione }}</span>
       </div>
       @if (data().paroleChiave && data().paroleChiave!.length > 0) {
-        <div class="data-row">
+        <div class="data-row" data-testid="document-metadata-row-parole-chiave">
           <span class="label">Parole Chiave:</span>
           <span class="value">{{ data().paroleChiave?.join(', ') }}</span>
         </div>
       }
       @if (data().lingua) {
-        <div class="data-row">
+        <div class="data-row" data-testid="document-metadata-row-lingua">
           <span class="label">Lingua:</span>
           <span class="value">{{ data().lingua }}</span>
         </div>
       }
-      <div class="data-row">
+      <div class="data-row" data-testid="document-metadata-row-riservatezza">
         <span class="label">Riservatezza:</span>
         <span class="value">{{ data().riservatezza }}</span>
       </div>
-      <div class="data-row">
+      <div class="data-row" data-testid="document-metadata-row-versione">
         <span class="label">Versione:</span> <span class="value">{{ data().versione }}</span>
       </div>
     </div>

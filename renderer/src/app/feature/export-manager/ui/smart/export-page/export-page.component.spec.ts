@@ -32,18 +32,18 @@ function makeFile(overrides: Partial<FileDTO> = {}): FileDTO {
 
 function makeMockFacade() {
   return {
-    phase:         signal<ExportPhase>(ExportPhase.IDLE),
+    phase: signal<ExportPhase>(ExportPhase.IDLE),
     outputContext: signal<OutputContext | null>(null),
-    result:        signal<ExportResult | null>(null),
-    progress:      signal<number>(0),
-    error:         signal<ExportError | null>(null),
-    loading:       signal<boolean>(false),
-    queue:         signal<any[]>([]),
-    exportFile:    vi.fn().mockResolvedValue(undefined),
-    exportFiles:   vi.fn().mockResolvedValue(undefined),
+    result: signal<ExportResult | null>(null),
+    progress: signal<number>(0),
+    error: signal<ExportError | null>(null),
+    loading: signal<boolean>(false),
+    queue: signal<any[]>([]),
+    exportFile: vi.fn().mockResolvedValue(undefined),
+    exportFiles: vi.fn().mockResolvedValue(undefined),
     printDocument: vi.fn().mockResolvedValue(undefined),
     printDocuments: vi.fn().mockResolvedValue(undefined),
-    reset:         vi.fn(),
+    reset: vi.fn(),
   };
 }
 
@@ -54,7 +54,7 @@ function makeMockFacade() {
 function makeMockGateway(files: FileDTO[] = [makeFile()]) {
   return {
     getFilesByDocumentId: vi.fn().mockResolvedValue(files),
-    getFileDto:           vi.fn().mockResolvedValue(makeFile()),
+    getFileDto: vi.fn().mockResolvedValue(makeFile()),
   };
 }
 
@@ -63,18 +63,18 @@ function makeMockGateway(files: FileDTO[] = [makeFile()]) {
 // ----------------------------------------------------------------
 
 async function setup(files: FileDTO[] = [makeFile()]) {
-  const mockFacade  = makeMockFacade();
+  const mockFacade = makeMockFacade();
   const mockGateway = makeMockGateway(files);
 
   await TestBed.configureTestingModule({
     imports: [ExportPageComponent],
     providers: [
-      { provide: ExportFacade,      useValue: mockFacade  },
-      { provide: ExportIpcGateway,  useValue: mockGateway },
+      { provide: ExportFacade, useValue: mockFacade },
+      { provide: ExportIpcGateway, useValue: mockGateway },
     ],
   }).compileComponents();
 
-  const fixture   = TestBed.createComponent(ExportPageComponent);
+  const fixture = TestBed.createComponent(ExportPageComponent);
   const component = fixture.componentInstance;
 
   fixture.componentRef.setInput('documentId', '42');
@@ -89,7 +89,6 @@ async function setup(files: FileDTO[] = [makeFile()]) {
 // ================================================================
 
 describe('ExportPageComponent', () => {
-
   // --------------------------------------------------------------
   // Inizializzazione
   // --------------------------------------------------------------
@@ -101,13 +100,13 @@ describe('ExportPageComponent', () => {
     });
 
     it('non chiama il gateway se documentId non è un numero valido', async () => {
-      const mockFacade  = makeMockFacade();
+      const mockFacade = makeMockFacade();
       const mockGateway = makeMockGateway();
 
       await TestBed.configureTestingModule({
         imports: [ExportPageComponent],
         providers: [
-          { provide: ExportFacade,     useValue: mockFacade  },
+          { provide: ExportFacade, useValue: mockFacade },
           { provide: ExportIpcGateway, useValue: mockGateway },
         ],
       }).compileComponents();
@@ -151,6 +150,7 @@ describe('ExportPageComponent', () => {
       const { fixture, mockFacade } = await setup([makeFile()]);
 
       mockFacade.loading.set(true);
+      // outputContext rimane null (diverso da MULTI_EXPORT)
       fixture.detectChanges();
 
       expect(fixture.debugElement.query(By.css('app-export-progress'))).toBeNull();
@@ -192,6 +192,9 @@ describe('ExportPageComponent', () => {
 
     it('non è visibile in fase IDLE', async () => {
       const { fixture } = await setup();
+      // Il mockFacade ha phase = IDLE di default
+      await fixture.whenStable();
+      fixture.detectChanges();
       expect(fixture.debugElement.query(By.css('app-export-result'))).toBeNull();
     });
 
@@ -210,7 +213,8 @@ describe('ExportPageComponent', () => {
       mockFacade.phase.set(ExportPhase.ERROR);
       fixture.detectChanges();
 
-      fixture.debugElement.query(By.css('app-export-result'))
+      fixture.debugElement
+        .query(By.css('app-export-result'))
         .triggerEventHandler('retry', null);
 
       expect(mockFacade.reset).toHaveBeenCalled();
@@ -319,12 +323,13 @@ describe('ExportPageComponent', () => {
       expect(component.selectedDownloadIds().size).toBe(0);
     });
 
-    it('click sull\'overlay chiama cancelDownload', async () => {
+    it("click sull'overlay chiama cancelDownload", async () => {
       const { fixture, component } = await setup(twoFiles);
       await component.onExport();
       fixture.detectChanges();
 
-      fixture.debugElement.query(By.css('.print-selector-overlay'))
+      fixture.debugElement
+        .query(By.css('.print-selector-overlay'))
         .triggerEventHandler('click', null);
 
       expect(component.showDownloadSelector()).toBe(false);
@@ -348,9 +353,7 @@ describe('ExportPageComponent', () => {
 
   describe('onPrint — nessun file stampabile', () => {
     it('non apre il selettore e non chiama la facade', async () => {
-      const { component, mockFacade } = await setup([
-        makeFile({ filename: 'doc.docx' }),
-      ]);
+      const { component, mockFacade } = await setup([makeFile({ filename: 'doc.docx' })]);
 
       await component.onPrint();
 
@@ -430,7 +433,8 @@ describe('ExportPageComponent', () => {
   describe('computed selectedDownloadCount e selectedPrintCount', () => {
     it('selectedDownloadCount riflette la dimensione del Set', async () => {
       const { component } = await setup([
-        makeFile({ id: 1 }), makeFile({ id: 2, filename: 'b.pdf' }),
+        makeFile({ id: 1 }),
+        makeFile({ id: 2, filename: 'b.pdf' }),
       ]);
       await component.onExport();
 

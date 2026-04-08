@@ -6,7 +6,10 @@
       <div>
         <strong>{{ subj.role }}</strong> <span class="subject-type">({{ subj.type }})</span>
       </div>
-      <button type="button" (click)="removeSubject(i)" class="btn-remove-text">✕ Rimuovi</button>
+      <button type="button" (click)="removeSubject(i)" class="btn-remove-text">
+        <i class="bi bi-x-lg" aria-hidden="true"></i>
+        Rimuovi
+      </button>
     </div>
   </div>
 
@@ -22,7 +25,11 @@
     </button>
   </div>
 
-  <div *ngIf="currentStep() === 1" class="wizard-step slide-in" data-testid="subject-wizard-step-role">
+  <div
+    *ngIf="currentStep() === 1"
+    class="wizard-step slide-in"
+    data-testid="subject-wizard-step-role"
+  >
     <h4>1. Seleziona il Ruolo</h4>
     <div class="button-grid">
       <button
@@ -43,7 +50,11 @@
     </div>
   </div>
 
-  <div *ngIf="currentStep() === 2" class="wizard-step slide-in" data-testid="subject-wizard-step-type">
+  <div
+    *ngIf="currentStep() === 2"
+    class="wizard-step slide-in"
+    data-testid="subject-wizard-step-type"
+  >
     <h4>2. Seleziona il Tipo di Soggetto ({{ selectedRole() }})</h4>
     <div class="button-grid">
       <button
@@ -65,7 +76,11 @@
     </div>
   </div>
 
-  <div *ngIf="currentStep() === 3" class="wizard-step slide-in" data-testid="subject-wizard-step-details">
+  <div
+    *ngIf="currentStep() === 3"
+    class="wizard-step slide-in"
+    data-testid="subject-wizard-step-details"
+  >
     <h4>3. Dettagli ({{ selectedRole() }} - {{ selectedType() }})</h4>
 
     <app-subject-detail-form

@@ -85,9 +85,13 @@ export interface DocumentSearchResult extends SearchResult {
   score: number | null;
 }
 
-export interface ProcessSearchResult extends SearchResult {}
+export interface ProcessSearchResult extends SearchResult {
+  type: "PROCESSO";
+}
 
-export interface DocumentClassSearchResult extends SearchResult {}
+export interface DocumentClassSearchResult extends SearchResult {
+  type: "CLASSE";
+}
 
 // ------ FRONTEND -------
 

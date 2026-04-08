@@ -111,7 +111,9 @@
     width: 24px;
     min-width: 24px;
     background: var(--f-surface, #ffffff);
-    border-right: 1px solid var(--f-border-light, #e2e8f0);
+    border: 0;
+      border-left: 1px solid var(--f-border-light, #e2e8f0);
+    padding: 0;
     cursor: pointer;
     color: var(--f-text-muted, #64748b);
     font-size: 0.75rem;

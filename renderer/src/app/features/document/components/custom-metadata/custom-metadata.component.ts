@@ -5,13 +5,13 @@ import { CustomMetadataEntry } from '../../domain/document.models';
   selector: 'app-custom-metadata',
   standalone: true,
   template: `
-    <div class="metadata-card">
-      <h3>Metadati Aggiuntivi</h3>
+    <div class="metadata-card" data-testid="custom-metadata-card">
+      <h3 data-testid="custom-metadata-heading">Metadati Aggiuntivi</h3>
       @if (!entries() || entries()!.length === 0) {
-        <p class="empty-message">Nessun metadato aggiuntivo presente.</p>
+        <p class="empty-message" data-testid="custom-metadata-empty">Nessun metadato aggiuntivo presente.</p>
       } @else {
-        <div class="table-container">
-          <table>
+        <div class="table-container" data-testid="custom-metadata-table-container">
+          <table data-testid="custom-metadata-table">
             <thead>
               <tr>
                 <th>Nome</th>
@@ -20,9 +20,9 @@ import { CustomMetadataEntry } from '../../domain/document.models';
             </thead>
             <tbody>
               @for (entry of entries(); track entry.nome) {
-                <tr>
-                  <td>{{ entry.nome }}</td>
-                  <td>{{ entry.valore }}</td>
+                <tr [attr.data-testid]="'custom-metadata-row-' + toTestIdSuffix(entry.nome)">
+                  <td data-testid="custom-metadata-name">{{ entry.nome }}</td>
+                  <td data-testid="custom-metadata-value">{{ entry.valore }}</td>
                 </tr>
               }
             </tbody>
@@ -74,4 +74,8 @@ import { CustomMetadataEntry } from '../../domain/document.models';
 })
 export class CustomMetadataComponent {
   entries = input<CustomMetadataEntry[]>();
+
+  toTestIdSuffix(value: string): string {
+    return value.toLowerCase().replaceAll(/[^a-z0-9]+/g, '-').replaceAll(/(^-|-$)/g, '');
+  }
 }

@@ -65,10 +65,10 @@ export class PreviewPanelComponent implements OnInit {
   }
 
   onPdfError(error: any) {
-    console.error('🚨 ERRORE NG2-PDF-VIEWER:', error);
+    console.error('ERRORE NG2-PDF-VIEWER:', error);
   }
 
   onPdfLoaded(pdfInfo: any) {
-    console.log('✅ PDF Caricato offline con successo! Pagine:', pdfInfo.numPages);
+    console.log('PDF caricato offline con successo. Pagine:', pdfInfo.numPages);
   }
 }

@@ -5,15 +5,15 @@ import { ClassificationInfo } from '../../domain/document.models';
   selector: 'app-classification-info',
   standalone: true,
   template: `
-    <div class="metadata-card">
-      <h3>Classificazione</h3>
-      <div class="data-row">
+    <div class="metadata-card" data-testid="classification-card">
+      <h3 data-testid="classification-heading">Classificazione</h3>
+      <div class="data-row" data-testid="classification-row-indice">
         <span class="label">Indice:</span> <span class="value">{{ data().indice }}</span>
       </div>
-      <div class="data-row">
+      <div class="data-row" data-testid="classification-row-descrizione">
         <span class="label">Descrizione:</span> <span class="value">{{ data().descrizione }}</span>
       </div>
-      <div class="data-row">
+      <div class="data-row" data-testid="classification-row-uri-piano">
         <span class="label">Piano (URI):</span> <span class="value">{{ data().uriPiano }}</span>
       </div>
     </div>
