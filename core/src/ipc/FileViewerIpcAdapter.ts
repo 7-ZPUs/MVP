@@ -1,7 +1,6 @@
-import { IpcMain, shell, app } from 'electron';
+import { IpcMain, shell, app, dialog } from 'electron';
 import { container } from 'tsyringe';
-import { dialog } from 'electron'; // aggiunto
-import * as path from 'path';
+import * as path from 'node:path';
 
 import { IpcChannels } from '../../../shared/ipc-channels';
 import type { IExportFileUC } from '../use-case/file/IExportFileUC';
@@ -14,9 +13,7 @@ export class FileViewerIpcAdapter {
         // non ha UC dedicati, perché è una semplice operazione di sistema che non coinvolge la logica di dominio
         ipcMain.handle(IpcChannels.FILE_OPEN_EXTERNAL, async (_event, filePath: string) => {
             const absolutePath = path.resolve(app.getAppPath()+"/resources/test-dip/", filePath); // DA CORREGGERE QUANDO SI VA IN PRODUZIONE ( SEPLICEMENTE NON SERVE IL PEZZO HARDCODED)
-            console.log('ABS PATH:', absolutePath);
             const error = await shell.openPath(absolutePath);
-            console.log('RESULT:', error);
             return { success: error === '' };
         });
 
