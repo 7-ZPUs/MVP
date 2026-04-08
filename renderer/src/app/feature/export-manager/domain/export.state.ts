@@ -1,29 +1,45 @@
 import { Injectable, Signal, computed, signal } from '@angular/core';
-import { ExportError, ExportResult }             from './models';
+import { ExportError, ExportResult, DownloadQueueItem }             from './models';
 import { ExportPhase, OutputContext }             from './enums';
  
 export interface ExportStateSnapshot {
-  phase:         ExportPhase;
-  outputContext: OutputContext | null;
-  result:        ExportResult | null;
-  progress:      number;          // 0-100, usato per UC-20 UC-23 (multi)
-  error:         ExportError | null;
-  loading:       boolean;
+    phase:         ExportPhase;
+    outputContext: OutputContext | null;
+    result:        ExportResult | null;
+    progress:      number;
+    error:         ExportError | null;
+    loading:       boolean;
+    queue:         DownloadQueueItem[];
 }
- 
+
 const INITIAL: ExportStateSnapshot = {
-  phase:         ExportPhase.IDLE,
-  outputContext: null,
-  result:        null,
-  progress:      0,
-  error:         null,
-  loading:       false,
+    phase:         ExportPhase.IDLE,
+    outputContext: null,
+    result:        null,
+    progress:      0,
+    error:         null,
+    loading:       false,
+    queue:         [],
 };
  
 @Injectable({ providedIn: 'root' })
 export class ExportState {
  
   private readonly _state = signal<ExportStateSnapshot>({ ...INITIAL });
+  readonly queue: Signal<DownloadQueueItem[]> = computed(() => this._state().queue);
+
+  initQueue(items: DownloadQueueItem[]): void {
+    this._state.update(s => ({ ...s, queue: items }));
+  }
+
+  updateQueueItem(fileId: number, patch: Partial<DownloadQueueItem>): void {
+    this._state.update(s => ({
+        ...s,
+        queue: s.queue.map(item =>
+            item.fileId === fileId ? { ...item, ...patch } : item
+        ),
+    }));
+  }
  
   // Segnali pubblici derivati — i componenti leggono solo questi
   readonly phase:         Signal<ExportPhase>          = computed(() => this._state().phase);

@@ -4,11 +4,12 @@ import { CommonModule } from '@angular/common';
 // Importiamo i Token appena creati!
 import { OUTPUT_FACADE_TOKEN } from '../../../../../shared/interfaces/output.interfaces';
 import { INTEGRITY_FACADE_TOKEN } from '../../../../../shared/interfaces/integrity.interfaces';
+import { ExportPageComponent } from '../../../../../feature/export-manager/ui/smart/export-page/export-page.component';
 
 @Component({
   selector: 'app-document-actions',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, ExportPageComponent],
   template: `
     <div class="actions-bar">
       <div class="left-actions">
@@ -45,25 +46,10 @@ import { INTEGRITY_FACADE_TOKEN } from '../../../../../shared/interfaces/integri
         </button>
 
         @if (itemType() === 'DOCUMENT') {
-          <button
-            class="action-btn btn-print"
-            [disabled]="outputFacade.isWorking()"
-            (click)="onPrint()"
-          >
-            <span class="icon">🖨️</span> Stampa
-          </button>
-
-          <button
-            class="action-btn btn-export"
-            [disabled]="outputFacade.isWorking()"
-            (click)="onExport()"
-          >
-            @if (outputFacade.isWorking()) {
-              <span class="spinner-small"></span> Attendere...
-            } @else {
-              <span class="icon">💾</span> Scarica / Esporta
-            }
-          </button>
+          <app-export-page
+            [documentId]="itemId()"
+            [itemType]="itemType()"
+          ></app-export-page>
         }
       </div>
     </div>

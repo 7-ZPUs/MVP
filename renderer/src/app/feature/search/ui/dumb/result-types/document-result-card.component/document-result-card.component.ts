@@ -6,18 +6,21 @@ import {
 } from '../../../../../../../../../shared/domain/metadata/search-result.models';
 import { ISearchResultItemComponent } from '../../../../contracts/search-result-item.interface';
 import { IntegrityClassPipe } from '../../../../services/integrity-class.pipe';
+import { ExportPageComponent } from '../../../../../../feature/export-manager/ui/smart/export-page/export-page.component';
 
 @Component({
   selector: 'app-document-result-card',
   standalone: true,
-  imports: [CommonModule, IntegrityClassPipe],
+  imports: [CommonModule, IntegrityClassPipe, ExportPageComponent],
   templateUrl: 'document-result-card.component.html',
-  styleUrls: ['./document-result-card.component.scss','../shared-result.styles.scss'],
+  styleUrls: ['./document-result-card.component.scss', '../shared-result.styles.scss'],
 })
-
 export class DocumentResultCardComponent implements ISearchResultItemComponent {
-  // Type Safety in azione: questo componente accetta solo IDocumentSearchResult!
   @Input() result!: IDocumentSearchResult;
   @Input() isSemanticSearch: boolean = false;
   @Input() onSelectAction!: (res: ISearchResult) => void;
+
+  get itemType(): 'DOCUMENT' | 'AGGREGATE' | 'DOCUMENT_ATTACHED' {
+    return 'DOCUMENT';
+  }
 }

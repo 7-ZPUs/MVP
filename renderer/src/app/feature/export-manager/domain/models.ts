@@ -48,3 +48,10 @@ export interface ExportAuditPayload {
   destPath?: string;
   error?: string;
 }
+
+export interface DownloadQueueItem {
+    fileId:    number;
+    filename:  string;
+    status:    'pending' | 'downloading' | 'done' | 'error';
+    error?:    string;
+}
