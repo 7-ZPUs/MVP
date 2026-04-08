@@ -20,7 +20,7 @@ export class ExportPageComponent implements OnInit {
   showProgress = signal(true);
 
   documentId = input.required<string>();
-  itemType   = input.required<'DOCUMENT' | 'AGGREGATE' | 'DOCUMENT_ATTACHED'>();
+  itemType   = input.required<'DOCUMENT' | 'AGGREGATE' | 'PROCESS'>();
 
   private readonly exportFacade = inject(ExportFacade);
   private readonly ipcGateway   = inject(ExportIpcGateway);

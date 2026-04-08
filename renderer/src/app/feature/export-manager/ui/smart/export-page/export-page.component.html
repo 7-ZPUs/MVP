@@ -1,6 +1,4 @@
-@if (itemType() === 'DOCUMENT') {
-
-  @if (hasPrintableFiles()) {
+@if (hasPrintableFiles()) {
     <button class="action-btn btn-print" [disabled]="isWorking()" (click)="onPrint()">
       <span class="icon">🖨️</span> Stampa documento
     </button>
@@ -13,16 +11,6 @@
       <span class="icon">💾</span> Scarica documento
     }
   </button>
-
-} @else if (itemType() === 'DOCUMENT_ATTACHED') {
-
-  @if (hasPrintableFiles()) {
-    <button class="action-btn btn-print" [disabled]="isWorking()" (click)="onPrint()">
-      <span class="icon">🖨️</span> Stampa documento
-    </button>
-  }
-
-}
 
 <div class="export-overlays">
 

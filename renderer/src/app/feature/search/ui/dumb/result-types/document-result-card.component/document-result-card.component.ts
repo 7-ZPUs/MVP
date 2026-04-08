@@ -20,7 +20,7 @@ export class DocumentResultCardComponent implements ISearchResultItemComponent {
   @Input() isSemanticSearch: boolean = false;
   @Input() onSelectAction!: (res: ISearchResult) => void;
 
-  get itemType(): 'DOCUMENT' | 'AGGREGATE' | 'DOCUMENT_ATTACHED' {
+  get itemType(): 'DOCUMENT' | 'AGGREGATE' | 'PROCESS' {
     return 'DOCUMENT';
   }
 }

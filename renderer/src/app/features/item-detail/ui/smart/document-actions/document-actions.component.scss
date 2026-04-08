@@ -17,20 +17,7 @@
   display: flex;
   gap: 0.75rem;
   align-items: center;
-}
-.status-label {
-  padding: 0.4rem 0.75rem;
-  border-radius: 6px;
-  font-size: 0.85rem;
-  font-weight: bold;
-  background: #334155;
-  color: #f8fafc;
-}
-.status-label.valid {
-  background: #059669;
-}
-.status-label.invalid {
-  background: #dc2626;
+  position: relative;
 }
 .action-btn {
   display: flex;
