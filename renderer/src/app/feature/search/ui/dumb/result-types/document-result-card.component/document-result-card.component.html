@@ -1,5 +1,4 @@
 <div class="result-card-wrapper">
-
   <div
     class="result-card"
     role="button"
@@ -8,7 +7,7 @@
     (keydown.enter)="onSelectAction(result)"
     (keydown.space)="onSelectAction(result); $event.preventDefault()"
   >
-    <div class="card-icon">📄</div>
+    <i class="card-icon bi bi-file-earmark-text" aria-hidden="true"></i>
     <div class="card-content">
       <h3 class="document-name">{{ result.name || 'Senza titolo' }}</h3>
       <span class="document-id">UUID: {{ result.uuid }}</span>
@@ -19,17 +18,16 @@
       @if (isSemanticSearch && result.score !== null && result.score !== undefined) {
         <span class="score-badge">Score: {{ result.score | number: '1.0-2' }}</span>
       }
-      <span data-testid="result-integrity-badge" [class]="'integrity-badge-base ' + (result.integrityStatus | integrityClass)">
+      <span
+        data-testid="result-integrity-badge"
+        [class]="'integrity-badge-base ' + (result.integrityStatus | integrityClass)"
+      >
         {{ result.integrityStatus }}
       </span>
     </div>
   </div>
 
   <div class="export-actions-box" (click)="$event.stopPropagation()">
-    <app-export-page
-      [documentId]="result.id"
-      [itemType]="itemType"
-    />
+    <app-export-page [documentId]="result.id" [itemType]="itemType" />
   </div>
-
 </div>

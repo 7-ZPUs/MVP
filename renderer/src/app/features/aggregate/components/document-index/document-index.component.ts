@@ -28,7 +28,8 @@ import { DocumentIndexEntryDTO } from '../../../../shared/domain/dto/AggregateDT
                 <td>{{ doc.identificativo }}</td>
                 <td>
                   <button class="btn-view" (click)="onView(doc.routeId || doc.identificativo)">
-                    👁️ Visualizza
+                    <i class="bi bi-eye" aria-hidden="true"></i>
+                    Visualizza
                   </button>
                 </td>
               </tr>

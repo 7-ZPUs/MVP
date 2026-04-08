@@ -6,29 +6,8 @@ import { OutputContext }    from '../../../domain/enums';
   selector:   'app-export-progress',
   standalone: true,
   imports:    [CommonModule],
-  template: `
-    <div class="progress-wrap"
-         role="status"
-         aria-live="polite"
-         aria-atomic="false"
-         [attr.aria-label]="label + ' ' + progress + '%'">
- 
-      <div class="progress-header">
-        <span class="progress-label">{{ label }}</span>
-        <span class="progress-pct" aria-hidden="true">{{ progress }}%</span>
-      </div>
- 
-      <div class="progress-bar-bg"
-           role="progressbar"
-           [attr.aria-valuenow]="progress"
-           aria-valuemin="0"
-           aria-valuemax="100"
-           [attr.aria-label]="label">
-        <div class="progress-bar-fill" [style.width.%]="progress"></div>
-      </div>
- 
-    </div>
-  `,
+  templateUrl: './export-progress.component.html',
+  styleUrl:   './export-progress.component.scss',
 })
 export class ExportProgressComponent {
   @Input() progress:      number              = 0;

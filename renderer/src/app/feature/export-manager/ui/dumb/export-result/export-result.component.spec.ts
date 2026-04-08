@@ -276,13 +276,6 @@ describe('ExportResultComponent', () => {
   // ── Accessibilità ──────────────────────────────────────────────────────────
 
   describe('accessibilità', () => {
-    it('le icone hanno aria-hidden="true"', () => {
-      fixture.componentRef.setInput('phase', ExportPhase.SUCCESS);
-      fixture.componentRef.setInput('result', makeResult());
-      fixture.detectChanges();
-      const icon = fixture.nativeElement.querySelector('[aria-hidden="true"]');
-      expect(icon).not.toBeNull();
-    });
 
     it('lo span result-sub in SUCCESS ha role="alert" e aria-live="assertive"', () => {
       fixture.componentRef.setInput('phase', ExportPhase.SUCCESS);

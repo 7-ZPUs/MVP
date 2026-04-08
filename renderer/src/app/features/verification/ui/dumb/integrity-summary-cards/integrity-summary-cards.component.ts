@@ -7,21 +7,21 @@ import { IntegrityOverviewStats } from '../../../domain/integrity.view-models';
   template: `
     <section class="cards-grid" aria-label="Riepilogo statistico delle verifiche">
       <div class="card valid-card">
-        <div class="icon" aria-hidden="true">🛡️</div>
+        <i class="icon bi bi-shield-check" aria-hidden="true"></i>
         <div class="content">
           <div class="number" aria-label="Elementi Integri: ">{{ stats().validProcesses }}</div>
           <div class="label" aria-hidden="true">Elementi Integri</div>
         </div>
       </div>
       <div class="card invalid-card">
-        <div class="icon" aria-hidden="true">⚠️</div>
+        <i class="icon bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
         <div class="content">
           <div class="number" aria-label="Elementi Corrotti: ">{{ stats().invalidProcesses }}</div>
           <div class="label" aria-hidden="true">Elementi Corrotti</div>
         </div>
       </div>
       <div class="card unknown-card">
-        <div class="icon" aria-hidden="true">⏳</div>
+        <i class="icon bi bi-hourglass-split" aria-hidden="true"></i>
         <div class="content">
           <div class="number" aria-label="In Attesa di Verifica: ">
             {{ stats().unverifiedProcesses }}
