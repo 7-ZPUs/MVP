@@ -168,7 +168,7 @@ export class IntegrityFacade implements IIntegrityFacade {
     }
   }
 
-  async verifyItem(itemId: string, itemType: 'DOCUMENT' | 'AGGREGATE'): Promise<string> {
+  async verifyItem(itemId: string, itemType: 'DOCUMENT' | 'AGGREGATE' | 'PROCESS'): Promise<string> {
     if (this._isVerifying()) return 'UNKNOWN';
 
     this._isVerifying.set(true);
@@ -181,12 +181,21 @@ export class IntegrityFacade implements IIntegrityFacade {
       if (itemType === 'DOCUMENT') {
         status = await this.gateway.checkDocumentIntegrity(idNum);
       } else {
-        // Aggregate maps to Process in our routing
         status = await this.gateway.checkProcessIntegrity(idNum);
       }
-      this.cacheService.invalidate(`${itemType === 'DOCUMENT' ? 'document' : 'aggregate'}:${itemId}`);
-      // To be safe, invalidate all if an aggregate is verified as it checks children
-      if (itemType === 'AGGREGATE') { this.cacheService.invalidatePrefix('document:'); }
+
+      if (itemType === 'DOCUMENT') {
+        this.cacheService.invalidate(`document:${itemId}`);
+      } else if (itemType === 'PROCESS') {
+        this.cacheService.invalidate(`process:${itemId}`);
+        this.cacheService.invalidate(`aggregate:${itemId}`);
+        this.cacheService.invalidatePrefix('document:');
+      } else {
+        this.cacheService.invalidate(`aggregate:${itemId}`);
+        this.cacheService.invalidate(`process:${itemId}`);
+        this.cacheService.invalidatePrefix('document:');
+      }
+
       return status;
     } catch (rawError: unknown) {
       const enrichedError =

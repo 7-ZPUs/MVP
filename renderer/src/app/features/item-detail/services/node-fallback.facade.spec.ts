@@ -105,7 +105,7 @@ describe('NodeFallbackFacade', () => {
     expect(facade.getState()().detail?.title).toBe('Classe Contratti');
     expect(facade.getState()().detail?.relatedSection?.items).toEqual([
       {
-        itemType: 'AGGREGATE',
+        itemType: 'PROCESS',
         itemId: '31',
         label: 'Processo Contratti',
         description: 'UUID: PROC-31 - Stato: UNKNOWN',

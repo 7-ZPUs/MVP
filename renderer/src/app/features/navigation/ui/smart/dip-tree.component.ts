@@ -28,20 +28,7 @@ import {
       DipTreeNodeComponent,
     ],
     templateUrl: './dip-tree.html',
-    styles: [
-      `
-        :host {
-          display: block;
-          height: 100%;
-          min-height: 0;
-        }
-
-        cdk-virtual-scroll-viewport {
-          height: 100%;
-          width: 100%;
-        }
-      `,
-    ],
+    styleUrl: './dip-tree.component.scss',
   })
   export class DipTree {
     // Se assente usa i rootNodes dal facade (pagina /dip)

@@ -10,68 +10,7 @@ import { InlineErrorComponent } from "./inline-error.component";
     templateUrl: './dip-tree-node.html',  
     imports: [CommonModule, InlineErrorComponent],
         changeDetection: ChangeDetectionStrategy.OnPush,
-        styles: [
-            `
-                .tree-node {
-                    display: flex;
-                    align-items: center;
-                    gap: 8px;
-                    min-height: 40px;
-                    border-radius: 6px;
-                    margin: 2px 6px;
-                    padding-right: 8px;
-                    cursor: pointer;
-                    user-select: none;
-                }
-
-                .tree-node:hover {
-                    background: #f8fafc;
-                }
-
-                .tree-node.tree-node-selected {
-                    background: #e2e8f0;
-                }
-
-                .toggle-icon {
-                    width: 24px;
-                    height: 24px;
-                    border: none;
-                    border-radius: 4px;
-                    background: transparent;
-                    color: #334155;
-                    cursor: pointer;
-                    display: inline-flex;
-                    align-items: center;
-                    justify-content: center;
-                    padding: 0;
-                }
-
-                .toggle-icon:disabled {
-                    cursor: progress;
-                    opacity: 0.7;
-                }
-
-                .leaf-placeholder {
-                    width: 24px;
-                    height: 24px;
-                    display: inline-block;
-                }
-
-                .node-name {
-                    flex: 1;
-                    min-width: 0;
-                    color: #0f172a;
-                    font-size: 0.92rem;
-                    white-space: nowrap;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                }
-
-                .node-error {
-                    margin-left: 8px;
-                }
-            `,
-        ],
+        styleUrl: './dip-tree-node.component.scss',
 })
 export class DipTreeNodeComponent {
     @Input() flatNode!: FlatNode;

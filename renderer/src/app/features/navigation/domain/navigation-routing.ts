@@ -1,6 +1,6 @@
 import { DipTreeNode } from '../contracts/dip-tree-node';
 
-export type RichDetailRouteItemType = 'DOCUMENT' | 'AGGREGATE';
+export type RichDetailRouteItemType = 'DOCUMENT' | 'AGGREGATE' | 'PROCESS';
 export type NodeFallbackRouteItemType = 'DIP' | 'DOCUMENT_CLASS' | 'FILE';
 export type DetailRouteItemType = RichDetailRouteItemType | NodeFallbackRouteItemType;
 
@@ -8,6 +8,8 @@ const SEARCH_RESULT_TYPE_TO_DETAIL_ITEM_TYPE: Record<string, RichDetailRouteItem
   AGGREGAZIONE_DOCUMENTALE: 'AGGREGATE',
   DOCUMENTO_INFORMATICO: 'DOCUMENT',
   DOCUMENTO_AMMINISTRATIVO_INFORMATICO: 'DOCUMENT',
+  PROCESSO: 'PROCESS',
+  PROCESS: 'PROCESS',
 };
 
 function normalizeSearchResultType(type: string): string {
@@ -27,14 +29,14 @@ export function mapDipNodeTypeToDetailItemType(
     case 'document':
       return 'DOCUMENT';
     case 'process':
-      return 'AGGREGATE';
+      return 'PROCESS';
   }
 }
 
 export function isRichDetailRouteItemType(
   itemType: DetailRouteItemType,
 ): itemType is RichDetailRouteItemType {
-  return itemType === 'AGGREGATE' || itemType === 'DOCUMENT';
+  return itemType === 'AGGREGATE' || itemType === 'DOCUMENT' || itemType === 'PROCESS';
 }
 
 export function mapSearchResultTypeToDetailItemType(resultType: string): DetailRouteItemType | null {

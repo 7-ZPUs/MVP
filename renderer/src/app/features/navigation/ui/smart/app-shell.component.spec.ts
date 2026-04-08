@@ -80,7 +80,7 @@ describe('AppShellComponent', () => {
     expect(routerMock.navigate).toHaveBeenCalledWith(['/detail', 'DOCUMENT', '1']);
   });
 
-  it('dovrebbe navigare al dettaglio AGGREGATE per nodo process', () => {
+  it('dovrebbe navigare al dettaglio PROCESS per nodo process', () => {
     const node: DipTreeNode = {
       id: 42,
       name: 'Process',
@@ -90,7 +90,7 @@ describe('AppShellComponent', () => {
 
     component.onNodeSelected(node);
 
-    expect(routerMock.navigate).toHaveBeenCalledWith(['/detail', 'AGGREGATE', '42']);
+    expect(routerMock.navigate).toHaveBeenCalledWith(['/detail', 'PROCESS', '42']);
   });
 
   it('dovrebbe navigare al dettaglio DIP per nodo dip', () => {

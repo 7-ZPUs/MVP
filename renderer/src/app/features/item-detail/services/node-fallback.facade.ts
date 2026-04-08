@@ -1,4 +1,4 @@
-import { Inject, Injectable, Signal, signal } from '@angular/core';
+import { Injectable, Signal, inject, signal } from '@angular/core';
 import { INodeFallbackFacade } from '../contracts/INodeFallbackFacade';
 import {
   NodeFallbackDetail,
@@ -6,7 +6,7 @@ import {
   NodeFallbackRelatedItem,
   NodeFallbackState,
 } from '../domain/node-fallback.models';
-import { IPC_GATEWAY_TOKEN, IIpcGateway } from '../../../shared/interfaces/ipc-gateway.interfaces';
+import { IPC_GATEWAY_TOKEN } from '../../../shared/interfaces/ipc-gateway.interfaces';
 import { IpcCacheService } from '../../../shared/infrastructure/ipc-cache.service';
 import { IpcErrorHandlerService } from '../../../shared/infrastructure/ipc-error-handler.service';
 import { TelemetryService } from '../../../shared/infrastructure/telemetry.service';
@@ -18,9 +18,15 @@ import { FileDTO } from '../../../shared/domain/dto/FileDTO';
 import { ProcessDTO } from '../../../shared/domain/dto/ProcessDTO';
 import { MetadataExtractor } from '../../../shared/utils/metadata-extractor.util';
 import { normalizeDisplayFileName } from '../../../shared/utils/display-file-name.util';
+import { normalizeMetadataNodes } from '../../../shared/utils/metadata-nodes.util';
 
 @Injectable()
 export class NodeFallbackFacade implements INodeFallbackFacade {
+  private readonly ipcGateway = inject(IPC_GATEWAY_TOKEN);
+  private readonly cache = inject(IpcCacheService);
+  private readonly telemetry = inject(TelemetryService);
+  private readonly errorHandler = inject(IpcErrorHandlerService);
+
   private readonly state = signal<NodeFallbackState>({
     detail: null,
     loading: false,
@@ -30,13 +36,6 @@ export class NodeFallbackFacade implements INodeFallbackFacade {
   private readonly CACHE_TTL_MS = 5 * 60 * 1000;
   private readonly CACHE_PREFIX = 'node-fallback:';
   private activeLoadRequestId = 0;
-
-  constructor(
-    @Inject(IPC_GATEWAY_TOKEN) private readonly ipcGateway: IIpcGateway,
-    private readonly cache: IpcCacheService,
-    private readonly telemetry: TelemetryService,
-    private readonly errorHandler: IpcErrorHandlerService,
-  ) {}
 
   getState(): Signal<NodeFallbackState> {
     return this.state.asReadonly();
@@ -186,7 +185,7 @@ export class NodeFallbackFacade implements INodeFallbackFacade {
     }
 
     return processes.map((process) => ({
-      itemType: 'AGGREGATE',
+      itemType: 'PROCESS',
       itemId: String(process.id),
       label: this.resolveProcessLabel(process),
       description: `UUID: ${process.uuid || 'N/D'} - Stato: ${process.integrityStatus || 'UNKNOWN'}`,
@@ -194,7 +193,7 @@ export class NodeFallbackFacade implements INodeFallbackFacade {
   }
 
   private resolveProcessLabel(process: ProcessDTO): string {
-    const extractor = new MetadataExtractor(Array.isArray(process.metadata) ? process.metadata : []);
+    const extractor = new MetadataExtractor(normalizeMetadataNodes(process.metadata));
     const candidates = [
       extractor.getString('Oggetto', '').trim(),
       extractor.getString('Procedimento', '').trim(),

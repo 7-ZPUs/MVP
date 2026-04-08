@@ -11,6 +11,7 @@ import { FileDTO } from '../../../shared/domain/dto/FileDTO';
 import { ProcessDTO } from '../../../shared/domain/dto/ProcessDTO';
 import { MetadataExtractor } from '../../../shared/utils/metadata-extractor.util';
 import { normalizeDisplayFileName } from '../../../shared/utils/display-file-name.util';
+import { normalizeMetadataNodes } from '../../../shared/utils/metadata-nodes.util';
 
 @Injectable({ providedIn: 'root' })
 export class IpcGateway {
@@ -151,11 +152,13 @@ export class IpcGateway {
   }
 
   private extractMetadataName(metadata: unknown, keys: string[]): string | null {
-    if (!Array.isArray(metadata) || metadata.length === 0) {
+    const nodes = normalizeMetadataNodes(metadata);
+
+    if (nodes.length === 0) {
       return null;
     }
 
-    const extractor = new MetadataExtractor(metadata as Array<{ name: string; value: unknown }>);
+    const extractor = new MetadataExtractor(nodes);
     for (const key of keys) {
       const value = extractor.getString(key, '').trim();
       if (value.length > 0) {

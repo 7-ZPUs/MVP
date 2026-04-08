@@ -6,16 +6,22 @@ import {
   VerificationInfo,
   AttachmentData,
   ChangeTrackingData,
-  AipInfo,
   ConservationProcessData,
   RegistrationData,
   MimeType,
   Subject,
   SubjectType,
 } from '../domain/document.models';
-import { DocumentDTO } from '../../../shared/domain/dto/indexDTO';
 import { MetadataExtractor } from '../../../shared/utils/metadata-extractor.util';
 import { normalizeDisplayFileName } from '../../../shared/utils/display-file-name.util';
+import { normalizeMetadataNodes } from '../../../shared/utils/metadata-nodes.util';
+
+interface DocumentSourceDto {
+  id?: unknown;
+  uuid?: unknown;
+  integrityStatus?: unknown;
+  metadata?: unknown;
+}
 
 // List of all expected parent XML blocks that we already parse manually
 const KNOWN_DOCUMENT_XSD_ROOT_BLOCKS = new Set<string>([
@@ -48,11 +54,13 @@ const KNOWN_DOCUMENT_XSD_ROOT_BLOCKS = new Set<string>([
  * Maps the core identity details of the document.
  */
 function mapIdentityAndMimeType(
-  dto: DocumentDTO,
+  dto: DocumentSourceDto,
   extractor: MetadataExtractor,
 ): { id: string; fileName: string; mimeType: MimeType } {
-  const extractedFileName = extractor.getString('NomeDelDocumento', `Documento ${dto.id}`);
-  const fileName = normalizeDisplayFileName(extractedFileName) || `Documento ${dto.id}`;
+  const rawId = String(dto.id ?? '').trim();
+  const fallbackFileName = rawId.length > 0 ? `Documento ${rawId}` : 'Documento';
+  const extractedFileName = extractor.getString('NomeDelDocumento', fallbackFileName);
+  const fileName = normalizeDisplayFileName(extractedFileName) || fallbackFileName;
   let mimeType = MimeType.UNSUPPORTED;
 
   const ext = fileName.split('.').pop()?.toLowerCase();
@@ -70,7 +78,7 @@ function mapIdentityAndMimeType(
   }
 
   return {
-    id: String(dto.id),
+    id: rawId,
     fileName,
     mimeType,
   };
@@ -153,10 +161,11 @@ function mapVerification(extractor: MetadataExtractor): VerificationInfo {
  */
 function mapAttachments(extractor: MetadataExtractor): AttachmentData {
   const numeroAllegati = extractor.getNumber('NumeroAllegati', 0);
-  const indiciAllegati = extractor.findAllValues('IndiceAllegati');
-  const allegatiList = indiciAllegati.map((i: any) => {
-    const ident = extractor.findValue('Identificativo', Array.isArray(i) ? i : [i]) || '';
-    const descr = extractor.findValue('Descrizione', Array.isArray(i) ? i : [i]) || '';
+  const indiciAllegati = extractor.findAllValues('IndiceAllegati') as unknown[];
+  const allegatiList = indiciAllegati.map((attachmentNode) => {
+    const nodeArray = Array.isArray(attachmentNode) ? attachmentNode : [attachmentNode];
+    const ident = extractor.findValue('Identificativo', nodeArray) || '';
+    const descr = extractor.findValue('Descrizione', nodeArray) || '';
     const displayIdentifier = normalizeDisplayFileName(String(ident)) || String(ident);
     return { id: displayIdentifier, descrizione: String(descr) };
   });
@@ -182,11 +191,11 @@ function mapConservationProcess(extractor: MetadataExtractor): ConservationProce
  * Maps Subjects based on XSD.
  */
 function mapSubjects(extractor: MetadataExtractor): Subject[] {
-  const ruoli = extractor.findAllValues('Ruolo');
+  const ruoli = extractor.findAllValues('Ruolo') as unknown[];
   if (!ruoli || ruoli.length === 0) return [];
 
-  return ruoli.map((ruoloNode: any) => {
-    const rExtractor = new MetadataExtractor(Array.isArray(ruoloNode) ? ruoloNode : [ruoloNode]);
+  return ruoli.map((ruoloNode) => {
+    const rExtractor = new MetadataExtractor(normalizeMetadataNodes(ruoloNode));
     const tipoRuolo = rExtractor.getString('TipoRuolo', 'Sconosciuto');
 
     // Tentativo di inferire il tipo in base ai tag XSD (PF, PG, PAI, PAE, SW, AS)
@@ -236,10 +245,11 @@ function mapChangeTracking(extractor: MetadataExtractor): ChangeTrackingData {
 /**
  * Defines the main mapping entry point.
  */
-export function mapDocumentDtoToDetail(dto: any): DocumentDetail {
-  const nodes = Array.isArray(dto.metadata) ? dto.metadata : dto.metadata?.value || [];
+export function mapDocumentDtoToDetail(dto: unknown): DocumentDetail {
+  const source: DocumentSourceDto = dto && typeof dto === 'object' ? (dto as DocumentSourceDto) : {};
+  const nodes = normalizeMetadataNodes(source.metadata);
   const extractor = new MetadataExtractor(nodes);
-  const identity = mapIdentityAndMimeType(dto, extractor);
+  const identity = mapIdentityAndMimeType(source, extractor);
 
   // We bring in both formally packed custom pairs + all randomly unmapped external nodes
   const explicitCustomData = extractor.extractCustomDataPairs(['CustomMetadata', 'ArchimemoData']);
@@ -266,9 +276,9 @@ export function mapDocumentDtoToDetail(dto: any): DocumentDetail {
     idAggregazione: extractor.getString('IdAggregazione') || extractor.getString('IdAgg'),
     aipInfo: {
       classeDocumentale: extractor.getString('ClasseDocumentale', 'N/A'),
-      uuid: dto.uuid || 'N/A',
+      uuid: String(source.uuid || 'N/A'),
     },
     customMetadata: mergedCustomMetadata,
-    integrityStatus: dto.integrityStatus,
+    integrityStatus: source.integrityStatus ? String(source.integrityStatus) : undefined,
   };
 }

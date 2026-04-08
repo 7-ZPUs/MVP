@@ -10,7 +10,7 @@ describe('navigation-routing', () => {
   it('mappa tutti i tipi nodo del tree verso un tipo detail', () => {
     expect(mapDipNodeTypeToDetailItemType('dip')).toBe('DIP');
     expect(mapDipNodeTypeToDetailItemType('documentClass')).toBe('DOCUMENT_CLASS');
-    expect(mapDipNodeTypeToDetailItemType('process')).toBe('AGGREGATE');
+    expect(mapDipNodeTypeToDetailItemType('process')).toBe('PROCESS');
     expect(mapDipNodeTypeToDetailItemType('document')).toBe('DOCUMENT');
     expect(mapDipNodeTypeToDetailItemType('file')).toBe('FILE');
   });
@@ -21,12 +21,14 @@ describe('navigation-routing', () => {
     expect(mapSearchResultTypeToDetailItemType('documento amministrativo informatico')).toBe(
       'DOCUMENT',
     );
+    expect(mapSearchResultTypeToDetailItemType('processo')).toBe('PROCESS');
     expect(mapSearchResultTypeToDetailItemType('tipo sconosciuto')).toBeNull();
   });
 
   it('riconosce i tipi rich detail', () => {
     expect(isRichDetailRouteItemType('AGGREGATE')).toBe(true);
     expect(isRichDetailRouteItemType('DOCUMENT')).toBe(true);
+    expect(isRichDetailRouteItemType('PROCESS')).toBe(true);
     expect(isRichDetailRouteItemType('DIP')).toBe(false);
   });
 

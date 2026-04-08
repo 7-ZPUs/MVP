@@ -1,19 +1,24 @@
-import { Injectable, Inject, signal, Signal } from '@angular/core';
+import { Injectable, Signal, inject, signal } from '@angular/core';
 import { IAggregateFacade } from '../contracts/IAggregateFacade';
 import { AggregateState } from '../domain/aggregate.models';
-import { AggregateDetailDTO, DocumentIndexEntryDTO } from '../../../shared/domain/dto/AggregateDTO';
+import { AggregateDetailDTO } from '../../../shared/domain/dto/AggregateDTO';
 import { IpcCacheService } from '../../../shared/infrastructure/ipc-cache.service';
 import { TelemetryService } from '../../../shared/infrastructure/telemetry.service';
 import { IpcErrorHandlerService } from '../../../shared/infrastructure/ipc-error-handler.service';
-import { IPC_GATEWAY_TOKEN, IIpcGateway } from '../../../shared/interfaces/ipc-gateway.interfaces';
+import { IPC_GATEWAY_TOKEN } from '../../../shared/interfaces/ipc-gateway.interfaces';
 import { TelemetryMetric } from '../../../shared/domain';
 import { mapProcessDtoToAggregateDetail } from '../mappers/aggregate.mapper';
 import { IpcChannels } from '../../../../../../shared/ipc-channels';
 import { DocumentDTO } from '../../../shared/domain/dto/DocumentDTO';
-import { MetadataExtractor } from '../../../shared/utils/metadata-extractor.util';
+import { mapDocumentsToIndexEntries } from '../../../shared/utils/document-index.util';
 
 @Injectable() // Injectable senza 'root' perché verrà fornito dalle rotte
 export class AggregateFacade implements IAggregateFacade {
+  private readonly ipcGateway = inject(IPC_GATEWAY_TOKEN);
+  private readonly cache = inject(IpcCacheService);
+  private readonly telemetry = inject(TelemetryService);
+  private readonly errorHandler = inject(IpcErrorHandlerService);
+
   // Stato reattivo usando i Signal di Angular 17
   private readonly state = signal<AggregateState>({
     detail: null,
@@ -26,13 +31,6 @@ export class AggregateFacade implements IAggregateFacade {
   private readonly CACHE_PREFIX = 'aggregate:';
   private readonly EMPTY_DOCUMENTS_RETRY_DELAY_MS = 120;
   private activeLoadRequestId = 0;
-
-  constructor(
-    @Inject(IPC_GATEWAY_TOKEN) private readonly ipcGateway: IIpcGateway,
-    private readonly cache: IpcCacheService,
-    private readonly telemetry: TelemetryService,
-    private readonly errorHandler: IpcErrorHandlerService,
-  ) {}
 
   public getState(): Signal<AggregateState> {
     return this.state.asReadonly();
@@ -79,7 +77,7 @@ export class AggregateFacade implements IAggregateFacade {
         return;
       }
 
-      aggregateDetail.indiceDocumenti = this.mapDocumentIndexEntries(relatedDocuments);
+      aggregateDetail.indiceDocumenti = mapDocumentsToIndexEntries(relatedDocuments);
 
       // 3. Salvataggio in Cache
       this.cache.set(cacheKey, aggregateDetail, this.CACHE_TTL_MS);
@@ -99,39 +97,6 @@ export class AggregateFacade implements IAggregateFacade {
       this.state.update((s) => ({ ...s, error: appError, loading: false }));
       this.telemetry.trackError(appError);
     }
-  }
-
-  private mapDocumentIndexEntries(documents: DocumentDTO[] | null | undefined): DocumentIndexEntryDTO[] {
-    if (!Array.isArray(documents) || documents.length === 0) {
-      return [];
-    }
-
-    return documents.map((document) => {
-      const extractor = new MetadataExtractor(Array.isArray(document.metadata) ? document.metadata : []);
-      const displayLabel = this.resolveDocumentLabel(document, extractor);
-
-      return {
-        tipoDocumento: 'Documento',
-        identificativo: displayLabel,
-        routeId: String(document.id),
-      };
-    });
-  }
-
-  private resolveDocumentLabel(document: DocumentDTO, extractor: MetadataExtractor): string {
-    const candidates = [
-      extractor.getString('NomeDelDocumento', '').trim(),
-      extractor.getString('Oggetto', '').trim(),
-      document.uuid?.trim() || '',
-    ];
-
-    for (const candidate of candidates) {
-      if (candidate.length > 0) {
-        return candidate;
-      }
-    }
-
-    return 'Documento';
   }
 
   private async fetchDocumentsByProcessWithRetry(processId: number): Promise<DocumentDTO[]> {
