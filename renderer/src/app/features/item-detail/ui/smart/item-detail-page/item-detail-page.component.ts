@@ -1,5 +1,5 @@
 import { Component, inject, input, computed, effect, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import { Router } from '@angular/router';
 
 // Iniezione dei Token separati come da C4
@@ -52,7 +52,7 @@ import { NodeFallbackPanelComponent } from '../../dumb/node-fallback-panel/node-
               ? documentState().detail?.integrityStatus
               : richType === 'PROCESS'
                 ? processState().detail?.integrityStatus
-              : aggregateState().detail?.processSummary?.integrityStatus
+                : aggregateState().detail?.processSummary?.integrityStatus
           "
         ></app-document-actions>
 
@@ -79,7 +79,8 @@ import { NodeFallbackPanelComponent } from '../../dumb/node-fallback-panel/node-
       }
 
       @if (currentError()) {
-        <app-error-dialog [error]="currentError()!" (retry)="retryLoad()"> </app-error-dialog>
+        <app-error-dialog [error]="currentError()!" (onRetry)="retryLoad()" (onClose)="goBack()">
+        </app-error-dialog>
       }
 
       @if (!isLoading() && !currentError()) {
@@ -99,6 +100,7 @@ import { NodeFallbackPanelComponent } from '../../dumb/node-fallback-panel/node-
                   data-testid="document-viewer"
                   [documentId]="doc.documentId"
                   [mimeType]="doc.mimeType"
+                  (closePreview)="onClosePreview()"
                 ></app-document-viewer>
               </main>
             }
@@ -157,6 +159,7 @@ export class ItemDetailPageComponent {
   private readonly documentFacade = inject(DOCUMENT_FACADE_TOKEN);
   private readonly nodeFallbackFacade = inject(NODE_FALLBACK_FACADE_TOKEN);
   private readonly router = inject(Router);
+  private readonly location = inject(Location);
 
   // 2. INPUT DALLA ROTTA (es. /detail/AGGREGATE/123)
   itemId = input.required<string>();
@@ -275,5 +278,9 @@ export class ItemDetailPageComponent {
   onOpenPreview() {
     // Mostra nuovamente la preview
     this.isPreviewVisible.set(true);
+  }
+
+  goBack() {
+    this.location.back();
   }
 }
