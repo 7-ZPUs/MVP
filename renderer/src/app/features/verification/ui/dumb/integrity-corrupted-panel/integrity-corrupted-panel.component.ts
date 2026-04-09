@@ -17,64 +17,7 @@ interface ClassErrorGroup {
 @Component({
   selector: 'app-integrity-corrupted-panel',
   standalone: true,
-  template: `
-    @if (nodes().length > 0) {
-      <section class="alert-container" aria-labelledby="alert-heading" role="alert">
-        <header class="alert-header">
-          <div class="alert-title">
-            <i class="pulse-icon bi bi-exclamation-octagon-fill" aria-hidden="true"></i>
-            <h3 id="alert-heading">Rilevate Anomalie di Integrità ({{ nodes().length }})</h3>
-          </div>
-          <p>
-            I seguenti elementi presentano un'impronta crittografica alterata e non sono validi.
-          </p>
-        </header>
-
-        <ul class="alert-body" aria-label="Elenco degli elementi corrotti raggruppati per classe e processo">
-          @for (classGroup of groupedErrors(); track classGroup.classKey; let classFirst = $first) {
-            <li class="corrupted-item">
-              <details class="error-group class-group" [open]="classFirst || groupedErrors().length === 1">
-                <summary>
-                  <span class="summary-main">
-                    <span class="summary-label">Classe</span>
-                    <strong class="summary-name">{{ classGroup.className }}</strong>
-                  </span>
-                  <span class="summary-count">{{ classGroup.totalDocuments }} errore/i</span>
-                </summary>
-
-                <ul class="process-list">
-                  @for (processGroup of classGroup.processes; track processGroup.processKey; let processFirst = $first) {
-                    <li>
-                      <details class="error-group process-group" [open]="processFirst && classGroup.totalDocuments <= 3">
-                        <summary>
-                          <span class="summary-main">
-                            <span class="summary-label">Processo</span>
-                            <strong class="summary-name">{{ processGroup.processName }}</strong>
-                          </span>
-                          <span class="summary-count">{{ processGroup.documents.length }} documento/i</span>
-                        </summary>
-
-                        <ul class="document-list">
-                          @for (node of processGroup.documents; track node.id) {
-                            <li class="document-row">
-                              <span class="type-badge" [class]="node.type.toLowerCase()">
-                                <span class="sr-only">Tipo: </span>{{ formatType(node.type) }}
-                              </span>
-                              <strong class="item-name">{{ node.name }}</strong>
-                            </li>
-                          }
-                        </ul>
-                      </details>
-                    </li>
-                  }
-                </ul>
-              </details>
-            </li>
-          }
-        </ul>
-      </section>
-    }
-  `,
+  templateUrl: './integrity-corrupted-panel.component.html',
   styleUrl: './integrity-corrupted-panel.component.scss',
 })
 export class IntegrityCorruptedPanelComponent {

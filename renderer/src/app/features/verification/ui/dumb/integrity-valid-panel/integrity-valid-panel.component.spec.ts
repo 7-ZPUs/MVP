@@ -121,32 +121,4 @@ describe('IntegrityValidPanelComponent', () => {
     );
   });
 
-  it('should map error description correctly by node type', () => {
-    expect(
-      component.getErrorDescription({
-        id: 1,
-        type: 'CLASS',
-        name: 'Classe A',
-        status: IntegrityStatusEnum.INVALID,
-      }),
-    ).toContain('classe contiene almeno un documento');
-
-    expect(
-      component.getErrorDescription({
-        id: 2,
-        type: 'PROCESS',
-        name: 'Processo A',
-        status: IntegrityStatusEnum.INVALID,
-      }),
-    ).toContain('processo contiene almeno un elemento');
-
-    expect(
-      component.getErrorDescription({
-        id: 3,
-        type: 'DOCUMENT',
-        name: 'Documento A',
-        status: IntegrityStatusEnum.INVALID,
-      }),
-    ).toContain('impronta crittografica del documento');
-  });
 });
