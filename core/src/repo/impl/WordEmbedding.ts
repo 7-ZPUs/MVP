@@ -20,7 +20,7 @@ const modelsPath = isDev
   ? path.join(__dirname, "..", "..", "models", "Xenova")
   : path.join(process.resourcesPath, "models", "Xenova");
 
-const numThreads = Math.max(1, Math.floor(os.cpus().length / 2));
+const numThreads = Math.max(1, Math.floor(os.cpus().length));
 
 @injectable()
 export class WordEmbedding implements IWordEmbedding {

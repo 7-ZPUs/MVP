@@ -76,7 +76,15 @@ export class IntegrityFacade implements IIntegrityFacade {
       return;
     }
 
-    await this.collectProcessOverview(cls, processes, valid, corrupted);
+    const hasInvalidDocument = await this.collectProcessOverview(cls, processes, valid, corrupted);
+    if (hasInvalidDocument) {
+      valid.push({
+        id: cls.id,
+        type: 'CLASS',
+        name: cls.name,
+        status: IntegrityStatusEnum.INVALID,
+      });
+    }
   }
 
   private async collectProcessOverview(
@@ -84,7 +92,9 @@ export class IntegrityFacade implements IIntegrityFacade {
     processes: ProcessDTO[],
     valid: IntegrityNodeVM[],
     corrupted: IntegrityNodeVM[],
-  ): Promise<void> {
+  ): Promise<boolean> {
+    let hasInvalidDocument = false;
+
     for (const process of processes) {
       if (process.integrityStatus === IntegrityStatusEnum.VALID) {
         valid.push({
@@ -98,8 +108,11 @@ export class IntegrityFacade implements IIntegrityFacade {
       }
 
       const docs = await this.gateway.getDocumentsByProcessId(process.id);
-      this.collectDocumentOverview(cls, process, docs, valid, corrupted);
+      hasInvalidDocument = this.collectDocumentOverview(cls, process, docs, valid, corrupted)
+        || hasInvalidDocument;
     }
+
+    return hasInvalidDocument;
   }
 
   private collectDocumentOverview(
@@ -108,7 +121,9 @@ export class IntegrityFacade implements IIntegrityFacade {
     docs: DocumentDTO[],
     valid: IntegrityNodeVM[],
     corrupted: IntegrityNodeVM[],
-  ): void {
+  ): boolean {
+    let hasInvalidDocument = false;
+
     for (const doc of docs) {
       if (doc.integrityStatus === IntegrityStatusEnum.VALID) {
         valid.push({
@@ -122,6 +137,7 @@ export class IntegrityFacade implements IIntegrityFacade {
       }
 
       if (doc.integrityStatus === IntegrityStatusEnum.INVALID) {
+        hasInvalidDocument = true;
         corrupted.push({
           id: doc.id,
           type: 'DOCUMENT',
@@ -131,6 +147,8 @@ export class IntegrityFacade implements IIntegrityFacade {
         });
       }
     }
+
+    return hasInvalidDocument;
   }
 
   /**
