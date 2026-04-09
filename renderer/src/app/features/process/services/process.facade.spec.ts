@@ -73,6 +73,7 @@ describe('ProcessFacade', () => {
         documentClassTimestamp: 'N/A',
       },
       overview: { oggetto: 'P', procedimento: 'P', materiaArgomentoStruttura: 'P' },
+      submission: { processo: 'PROC-31', sessione: 'S1', dataInizio: '2026-01-01' },
       conservation: { processo: 'PROC-31', sessione: 'S1', dataInizio: '2026-01-01' },
       documentClass: { id: 22, name: 'Classe', uuid: 'N/A', timestamp: 'N/A' },
       customMetadata: [],

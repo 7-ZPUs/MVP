@@ -2,25 +2,77 @@ import { describe, expect, it } from 'vitest';
 import { mapProcessDtoToDetail } from './process.mapper';
 
 describe('process.mapper', () => {
-  it('mappa correttamente metadati ricorsivi e processo conservazione', () => {
+  it('mappa correttamente sessioni di versamento e conservazione da metadati annidati', () => {
     const detail = mapProcessDtoToDetail({
       id: 31,
       uuid: 'PROC-31',
       integrityStatus: 'VALID',
       documentClassId: 22,
       metadata: {
-        name: 'Root',
+        name: 'AiPInfo',
         type: 'composite',
         value: [
-          { name: 'Oggetto', value: 'Processo Contratti', type: 'string' },
-          { name: 'Procedimento', value: 'Gestione Contratti', type: 'string' },
-          { name: 'PreservationProcessUUID', value: 'PRES-31', type: 'string' },
-          { name: 'Sessione', value: 'SESSION-99', type: 'string' },
-          { name: 'PreservationProcessDate', value: '2026-04-08', type: 'string' },
           {
-            name: 'CustomMetadata',
+            name: 'Process',
             type: 'composite',
-            value: [{ name: 'CanaleOrigine', value: 'PEC', type: 'string' }],
+            value: [
+              {
+                name: '$',
+                type: 'composite',
+                value: [{ name: 'uuid', value: 'PROC-XML-UUID', type: 'string' }],
+              },
+              { name: 'Oggetto', value: 'Processo Contratti', type: 'string' },
+              { name: 'Procedimento', value: 'Gestione Contratti', type: 'string' },
+              {
+                name: 'SubmissionSession',
+                type: 'composite',
+                value: [
+                  {
+                    name: '$',
+                    type: 'composite',
+                    value: [{ name: 'uuid', value: 'SUB-SESSION-01', type: 'string' }],
+                  },
+                  {
+                    name: 'Start',
+                    type: 'composite',
+                    value: [
+                      { name: 'Date', value: '2025-12-11T16:48:48.087Z', type: 'string' },
+                      { name: 'UserUUID', value: 'USR-001', type: 'string' },
+                      { name: 'Source', value: 'WebGui', type: 'string' },
+                    ],
+                  },
+                  {
+                    name: 'End',
+                    type: 'composite',
+                    value: [
+                      { name: 'Date', value: '2025-12-11T16:50:39.671Z', type: 'string' },
+                      { name: 'UserUUID', value: 'USR-001', type: 'string' },
+                      { name: 'Source', value: 'WebGui', type: 'string' },
+                    ],
+                  },
+                ],
+              },
+              {
+                name: 'PreservationSession',
+                type: 'composite',
+                value: [
+                  {
+                    name: '$',
+                    type: 'composite',
+                    value: [{ name: 'uuid', value: 'PRES-SESSION-01', type: 'string' }],
+                  },
+                  {
+                    name: 'Start',
+                    type: 'composite',
+                    value: [
+                      { name: 'Date', value: '2025-12-11T16:50:39.671Z', type: 'string' },
+                      { name: 'UserUUID', value: 'USR-001', type: 'string' },
+                      { name: 'Source', value: 'Other', type: 'string' },
+                    ],
+                  },
+                ],
+              },
+            ],
           },
         ],
       },
@@ -31,15 +83,44 @@ describe('process.mapper', () => {
     expect(detail.integrityStatus).toBe('VALID');
     expect(detail.metadata.processId).toBe('31');
     expect(detail.metadata.processUuid).toBe('PROC-31');
+    expect(detail.submission.processo).toBe('PROC-XML-UUID');
+    expect(detail.submission.sessione).toBe('SUB-SESSION-01');
+    expect(detail.submission.dataInizio).toBe('2025-12-11T16:48:48.087Z');
+    expect(detail.submission.dataFine).toBe('2025-12-11T16:50:39.671Z');
+    expect(detail.conservation.processo).toBe('PROC-XML-UUID');
+    expect(detail.conservation.sessione).toBe('PRES-SESSION-01');
+    expect(detail.conservation.dataInizio).toBe('2025-12-11T16:50:39.671Z');
+    expect(detail.conservation.dataFine).toBeUndefined();
+    expect(detail.documentClass.id).toBe(22);
+    expect(detail.metadata.documentClassName).toBe('N/A');
+  });
+
+  it('mantiene fallback legacy per metadata piatti di conservazione', () => {
+    const detail = mapProcessDtoToDetail({
+      id: 31,
+      uuid: 'PROC-31',
+      integrityStatus: 'VALID',
+      documentClassId: 22,
+      metadata: [
+        { name: 'PreservationProcessUUID', value: 'PRES-31', type: 'string' },
+        { name: 'Sessione', value: 'SESSION-99', type: 'string' },
+        { name: 'PreservationProcessDate', value: '2026-04-08', type: 'string' },
+        { name: 'PreservationProcessEnd', value: '2026-04-09', type: 'string' },
+        { name: 'DataApertura', value: '2026-04-01', type: 'string' },
+      ],
+    });
+
+    expect(detail.submission.processo).toBe('PRES-31');
+    expect(detail.submission.sessione).toBe('SESSION-99');
+    expect(detail.submission.dataInizio).toBe('2026-04-01');
+    expect(detail.submission.dataFine).toBeUndefined();
     expect(detail.conservation.processo).toBe('PRES-31');
     expect(detail.conservation.sessione).toBe('SESSION-99');
     expect(detail.conservation.dataInizio).toBe('2026-04-08');
-    expect(detail.documentClass.id).toBe(22);
-    expect(detail.metadata.documentClassName).toBe('N/A');
-    expect(detail.customMetadata.some((entry) => entry.nome === 'CanaleOrigine')).toBe(true);
+    expect(detail.conservation.dataFine).toBe('2026-04-09');
   });
 
-  it('usa fallback robusti con metadata array piatto', () => {
+  it('usa fallback robusti con metadata minimali', () => {
     const detail = mapProcessDtoToDetail({
       id: 7,
       uuid: '',
@@ -53,6 +134,8 @@ describe('process.mapper', () => {
     expect(detail.integrityStatus).toBe('UNKNOWN');
     expect(detail.overview.oggetto).toBe('N/D Test');
     expect(detail.conservation.processo).toBe('N/A');
+    expect(detail.submission.processo).toBe('N/A');
+    expect(detail.submission.dataInizio).toBe('N/A');
     expect(detail.documentClass.id).toBeNull();
     expect(detail.documentClass.name).toBe('N/A');
     expect(detail.metadata.documentClassUuid).toBe('N/A');

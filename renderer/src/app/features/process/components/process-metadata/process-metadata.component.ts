@@ -2,12 +2,11 @@ import { Component, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ProcessDetail } from '../../domain/process.models';
 import { OptionalFieldAbsentComponent } from '../../../../shared/components/optional-field-absent/optional-field-absent.component';
-import { CustomMetadataComponent } from '../../../document/components/custom-metadata/custom-metadata.component';
 
 @Component({
   selector: 'app-process-metadata',
   standalone: true,
-  imports: [CommonModule, OptionalFieldAbsentComponent, CustomMetadataComponent],
+  imports: [CommonModule, OptionalFieldAbsentComponent],
   template: `
     <div class="metadata-card" data-testid="process-metadata-card-anagrafica">
       <h3 data-testid="process-metadata-heading-anagrafica">Anagrafica Processo</h3>
@@ -61,6 +60,43 @@ import { CustomMetadataComponent } from '../../../document/components/custom-met
       </div>
     }
 
+    <div class="metadata-card" data-testid="process-metadata-card-submission">
+      <h3 data-testid="process-metadata-heading-submission">Processo di Versamento</h3>
+      <div class="data-row" data-testid="process-metadata-row-submission-processo">
+        <span class="label">Processo:</span>
+        <span class="value">{{ data().submission.processo }}</span>
+      </div>
+      <div class="data-row" data-testid="process-metadata-row-submission-sessione">
+        <span class="label">Sessione:</span>
+        <span class="value">{{ data().submission.sessione }}</span>
+      </div>
+      <div class="data-row" data-testid="process-metadata-row-submission-data-inizio">
+        <span class="label">Data inizio:</span>
+        <span class="value">{{ data().submission.dataInizio }}</span>
+      </div>
+
+      @if (data().submission.dataFine) {
+        <div class="data-row" data-testid="process-metadata-row-submission-data-fine">
+          <span class="label">Data fine:</span>
+          <span class="value">{{ data().submission.dataFine }}</span>
+        </div>
+      }
+
+      @if (data().submission.uuidTerminatore) {
+        <div class="data-row" data-testid="process-metadata-row-submission-uuid-terminatore">
+          <span class="label">UUID terminatore:</span>
+          <span class="value">{{ data().submission.uuidTerminatore }}</span>
+        </div>
+      }
+
+      @if (data().submission.canaleTerminazione) {
+        <div class="data-row" data-testid="process-metadata-row-submission-canale-terminazione">
+          <span class="label">Canale terminazione:</span>
+          <span class="value">{{ data().submission.canaleTerminazione }}</span>
+        </div>
+      }
+    </div>
+
     <div class="metadata-card" data-testid="process-metadata-card-conservation">
       <h3 data-testid="process-metadata-heading-conservation">Processo di Conservazione</h3>
       <div class="data-row" data-testid="process-metadata-row-conservation-processo">
@@ -97,21 +133,6 @@ import { CustomMetadataComponent } from '../../../document/components/custom-met
         </div>
       }
     </div>
-
-    @if (data().customMetadata.length > 0) {
-      <div data-testid="process-metadata-card-custom">
-        <app-custom-metadata
-          [entries]="data().customMetadata"
-          [simplifyNames]="true"
-        ></app-custom-metadata>
-      </div>
-    } @else {
-      <div data-testid="process-metadata-custom-empty">
-        <app-optional-field-absent
-          message="Nessun metadato aggiuntivo presente per questo processo"
-        ></app-optional-field-absent>
-      </div>
-    }
   `,
   styleUrl: './process-metadata.component.scss',
 })
