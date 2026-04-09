@@ -83,11 +83,19 @@ function mapIdentityAndMimeType(
   const mimeTypeFromMeta = extractor.getString('mimetype') ?? extractor.getString('mimeType');
 
   if (mimeTypeFromMeta) {
-    if (mimeTypeFromMeta.toLowerCase().includes('pdf')) mimeType = MimeType.PDF;
-    else if (mimeTypeFromMeta.toLowerCase().includes('image')) mimeType = MimeType.IMAGE;
-    else if (mimeTypeFromMeta.toLowerCase().includes('text')) mimeType = MimeType.TEXT;
-    else if (mimeTypeFromMeta.toLowerCase().includes('xml')) mimeType = MimeType.XML;
-  } else {
+    const mimeStr = mimeTypeFromMeta.toLowerCase();
+    if (mimeStr.includes('pdf')) mimeType = MimeType.PDF;
+    else if (
+      mimeStr.includes('image') ||
+      ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'].includes(mimeStr)
+    )
+      mimeType = MimeType.IMAGE;
+    else if (mimeStr.includes('text') || ['txt', 'csv', 'md'].includes(mimeStr))
+      mimeType = MimeType.TEXT;
+    else if (mimeStr.includes('xml')) mimeType = MimeType.XML;
+  }
+
+  if (mimeType === MimeType.UNSUPPORTED) {
     const ext = fileName.split('.').pop()?.toLowerCase();
     if (ext) {
       if (['pdf'].includes(ext)) {
