@@ -202,7 +202,9 @@ export class IntegrityFacade implements IIntegrityFacade {
       // 1. Comando di verifica (Command)
       const status = await this.gateway.checkDipIntegrity(dipId);
       this.cacheService.invalidatePrefix('aggregate:');
+      this.cacheService.invalidatePrefix('process:');
       this.cacheService.invalidatePrefix('document:');
+      this.cacheService.invalidatePrefix('node-fallback:');
       this._currentDipStatus.set(status);
 
       // 2. Query per ricaricare l'albero UI

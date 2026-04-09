@@ -21,7 +21,7 @@ import { FilterValidatorService } from './feature/validation/services/filter-val
 import { IpcErrorHandlerService } from './shared/services/ipc-error-handler.service';
 import { TelemetryService } from './shared/services/telemetry.service';
 import { LiveAnnouncerService } from './shared/services/live-announcer.service';
-import { IpcCacheService } from './shared/services/ipc-cache.service';
+import { IpcCacheService } from './shared/infrastructure/ipc-cache.service';
 import { ElectronLoggingGateway } from './shared/services/electron-logging-gateway';
 import { SearchFacade } from './feature/search/services';
 import { IPC_GATEWAY_TOKEN } from './shared/interfaces/ipc-gateway.interfaces';
@@ -62,8 +62,8 @@ export const appConfig: ApplicationConfig = {
       },
     },
 
-    // Cache
-    { provide: CACHE_SERVICE_TOKEN, useClass: IpcCacheService },
+    // Cache: token and class must resolve to the same singleton store instance.
+    { provide: CACHE_SERVICE_TOKEN, useExisting: IpcCacheService },
 
     // Logging
     { provide: LOGGING_CHANNEL_TOKEN, useClass: ElectronLoggingGateway },
