@@ -19,6 +19,7 @@ import { ProcessDTO } from '../../../shared/domain/dto/ProcessDTO';
 import { MetadataExtractor } from '../../../shared/utils/metadata-extractor.util';
 import { normalizeDisplayFileName } from '../../../shared/utils/display-file-name.util';
 import { normalizeMetadataNodes } from '../../../shared/utils/metadata-nodes.util';
+import { formatReadableDate } from '../../../shared/utils/date.util';
 
 @Injectable()
 export class NodeFallbackFacade implements INodeFallbackFacade {
@@ -79,7 +80,10 @@ export class NodeFallbackFacade implements INodeFallbackFacade {
     }
   }
 
-  private async fetchDetail(itemType: NodeFallbackItemType, nodeId: number): Promise<NodeFallbackDetail> {
+  private async fetchDetail(
+    itemType: NodeFallbackItemType,
+    nodeId: number,
+  ): Promise<NodeFallbackDetail> {
     switch (itemType) {
       case 'DIP':
         return this.loadDipDetail(nodeId);
@@ -91,7 +95,11 @@ export class NodeFallbackFacade implements INodeFallbackFacade {
   }
 
   private async loadDipDetail(nodeId: number): Promise<NodeFallbackDetail> {
-    const dto = await this.ipcGateway.invoke<DipDTO | null>(IpcChannels.BROWSE_GET_DIP_BY_ID, nodeId, null);
+    const dto = await this.ipcGateway.invoke<DipDTO | null>(
+      IpcChannels.BROWSE_GET_DIP_BY_ID,
+      nodeId,
+      null,
+    );
     if (!dto) {
       throw new Error(`DIP non trovato: ${nodeId}`);
     }
@@ -141,7 +149,7 @@ export class NodeFallbackFacade implements INodeFallbackFacade {
         { label: 'Nome', value: title },
         { label: 'UUID', value: dto.uuid || 'N/D' },
         { label: 'Stato verifica', value: dto.integrityStatus || 'UNKNOWN' },
-        { label: 'Marcatura temporale', value: dto.timestamp || 'N/D' },
+        { label: 'Marcatura temporale', value: formatReadableDate(dto.timestamp) || 'N/D' },
       ],
       relatedSection: {
         title: 'Processi associati',
@@ -156,7 +164,11 @@ export class NodeFallbackFacade implements INodeFallbackFacade {
   }
 
   private async loadFileDetail(nodeId: number): Promise<NodeFallbackDetail> {
-    const dto = await this.ipcGateway.invoke<FileDTO | null>(IpcChannels.BROWSE_GET_FILE_BY_ID, nodeId, null);
+    const dto = await this.ipcGateway.invoke<FileDTO | null>(
+      IpcChannels.BROWSE_GET_FILE_BY_ID,
+      nodeId,
+      null,
+    );
     if (!dto) {
       throw new Error(`File non trovato: ${nodeId}`);
     }
@@ -179,7 +191,9 @@ export class NodeFallbackFacade implements INodeFallbackFacade {
     };
   }
 
-  private mapRelatedProcesses(processes: ProcessDTO[] | null | undefined): NodeFallbackRelatedItem[] {
+  private mapRelatedProcesses(
+    processes: ProcessDTO[] | null | undefined,
+  ): NodeFallbackRelatedItem[] {
     if (!Array.isArray(processes) || processes.length === 0) {
       return [];
     }

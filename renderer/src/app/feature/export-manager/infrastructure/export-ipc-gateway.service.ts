@@ -1,7 +1,7 @@
-import { Injectable }          from '@angular/core';
-import { IExportChannel }      from '../contracts/i-export-channel';
-import { ExportResult }        from '../../../../../../shared/domain/ExportResult';
-import { SaveDialogResponseDto , FileDTO} from '../domain/dtos';
+import { Injectable } from '@angular/core';
+import { IExportChannel } from '../contracts/i-export-channel';
+import { ExportResult } from '../../../../../../shared/domain/ExportResult';
+import { SaveDialogResponseDto, FileDTO } from '../domain/dtos';
 
 @Injectable({ providedIn: 'root' })
 export class ExportIpcGateway implements IExportChannel {
@@ -43,9 +43,23 @@ export class ExportIpcGateway implements IExportChannel {
         await this.ipc.invoke('file:open-external', filePath);
     }
 
-    // export-ipc-gateway.service.ts
     async getFilesByDocumentId(documentId: number): Promise<FileDTO[]> {
         if (!this.ipc) return [];
         return await this.ipc.invoke('browse:get-file-by-document', documentId);
+    }
+
+    async printFile(fileId: number): Promise<{ success: boolean; error?: string }> {
+        if (!this.ipc) return { success: false, error: 'Bridge non disponibile' };
+        return await this.ipc.invoke('file:print', fileId);
+    }
+
+    async printFiles(fileIds: number[]): Promise<{ canceled: boolean; results: { fileId: number; success: boolean; error?: string }[]; }> {
+        if (!this.ipc) return { canceled: false, results: [] };
+        return await this.ipc.invoke('file:print-many', fileIds);
+    }
+
+    onPrintProgress(callback: (data: { current: number; total: number }) => void): () => void {
+        const unsubscribe = this.ipc?.on('file:print-progress', (data: any) => callback(data));
+        return unsubscribe ?? (() => { });
     }
 }

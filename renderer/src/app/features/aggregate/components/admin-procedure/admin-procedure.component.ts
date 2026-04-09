@@ -1,6 +1,7 @@
 import { Component, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AggregateDetailDTO } from '../../../../shared/domain/dto/AggregateDTO';
+import { formatReadableDate } from '../../../../shared/utils/date.util';
 
 @Component({
   selector: 'app-admin-procedure',
@@ -25,16 +26,20 @@ import { AggregateDetailDTO } from '../../../../shared/domain/dto/AggregateDTO';
       <ul class="phases-list" data-testid="admin-procedure-phases-list">
         @for (fase of data().procedimentoAmministrativo?.fasi; track fase.tipoFase) {
           <li class="phase-item" [attr.data-testid]="'admin-procedure-phase-' + $index">
-            <span class="phase-type" data-testid="admin-procedure-phase-type">{{ fase.tipoFase }}</span>
+            <span class="phase-type" data-testid="admin-procedure-phase-type">{{
+              fase.tipoFase
+            }}</span>
             <span class="phase-dates" data-testid="admin-procedure-phase-dates">
-              {{ fase.dataInizio }}
+              {{ formatReadableDate(fase.dataInizio) }}
               @if (fase.dataFine) {
-                - {{ fase.dataFine }}
+                - {{ formatReadableDate(fase.dataFine) }}
               }
             </span>
           </li>
         } @empty {
-          <li class="empty-msg" data-testid="admin-procedure-phases-empty">Nessuna fase registrata</li>
+          <li class="empty-msg" data-testid="admin-procedure-phases-empty">
+            Nessuna fase registrata
+          </li>
         }
       </ul>
     </div>
@@ -125,4 +130,6 @@ import { AggregateDetailDTO } from '../../../../shared/domain/dto/AggregateDTO';
 })
 export class AdminProcedureComponent {
   data = input.required<AggregateDetailDTO>();
+
+  protected readonly formatReadableDate = formatReadableDate;
 }

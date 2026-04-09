@@ -5,6 +5,7 @@ import { ExportIpcGateway } from '../infrastructure/export-ipc-gateway.service';
 import { ExportState } from '../domain/export.state';
 import { DownloadQueueItem, ExportError, ExportItemError, ExportResult } from '../domain/models';
 import { ExportErrorCode, ExportPhase, OutputContext } from '../domain/enums';
+import { FileDTO } from '../domain/dtos';
 
 const PRINTABLE_FORMATS = ['pdf', 'png', 'jpg', 'jpeg', 'tiff'];
 
@@ -121,48 +122,91 @@ export class ExportFacade implements IExportFacade {
         }
     }
 
-    // ------------------------------------------------------------------
-    // UC-22 — stampa singolo file tramite OS
-    // ------------------------------------------------------------------
+    // UC-22 — stampa singolo file
     async printDocument(fileId: number): Promise<void> {
         this.exportState.setProcessing(OutputContext.SINGLE_PRINT);
         try {
+            // la validazione del formato la facciamo ancora qui per UX immediata
             const dto = await this.ipcGateway.getFileDto(fileId);
-            console.log('DTO per stampa:', fileId);
             if (!dto) throw new Error('File non trovato');
 
             if (!this.checkPrintable(dto.filename)) {
                 this.exportState.setUnavailable(new ExportError(
                     ExportErrorCode.PRINT_UNAVAILABLE,
                     'VALIDATION' as any,
-                    'printFile',
-                    `Formato non supportato per la stampa: ${dto.filename}`,
+                    'printDocument',
+                    `Formato non supportato: ${dto.filename}`,
                     false,
                 ));
                 return;
             }
 
-            await this.ipcGateway.openExternal(dto.path);
+            // passa solo fileId, il path lo risolve PrintFileUC nel main process
+            const result = await this.ipcGateway.printFile(fileId);
+            if (!result.success) throw new Error(result.error ?? 'Stampa fallita');
+
             this.exportState.setSuccess(
-                new ExportResult(OutputContext.SINGLE_PRINT, 1, 1, 0, dto.path)
+                new ExportResult(OutputContext.SINGLE_PRINT, 1, 1, 0, '')
             );
         } catch (err) {
-            this.handleError(ExportErrorCode.PRINT_FAILED, err, 'printFile');
+            this.handleError(ExportErrorCode.PRINT_FAILED, err, 'printDocument');
         }
     }
 
     async printDocuments(fileIds: number[]): Promise<void> {
-        this.exportState.setProcessing(OutputContext.SINGLE_PRINT);
+        this.exportState.setProcessing(OutputContext.MULTI_PRINT);
         try {
-            for (const fileId of fileIds) {
-                const dto = await this.ipcGateway.getFileDto(fileId);
-                if (!dto) continue;
-                if (!this.checkPrintable(dto.filename)) continue;
-                await this.ipcGateway.openExternal(dto.path);
-            }
-            this.exportState.setSuccess(
-                new ExportResult(OutputContext.SINGLE_PRINT, fileIds.length, fileIds.length, 0, '')
+            // valida i formati prima di inviare al main process
+            const dtos = await Promise.all(
+                fileIds.map(id => this.ipcGateway.getFileDto(id))
             );
+
+            const printableIds = fileIds.filter((_, i) => {
+                const dto = dtos[i];
+                return !!dto && this.checkPrintable(dto.filename);
+            });
+
+            if (printableIds.length === 0) {
+                this.exportState.setUnavailable(new ExportError(
+                    ExportErrorCode.PRINT_UNAVAILABLE,
+                    'VALIDATION' as any,
+                    'printDocuments',
+                    'Nessun file supportato per la stampa',
+                    false,
+                ));
+                return;
+            }
+
+            const unsubscribe = this.ipcGateway.onPrintProgress(({ current, total }) => {
+                this.exportState.setProgress((current / total) * 100);
+            });
+
+            // passa fileIds, non path
+            const { canceled, results } = await this.ipcGateway.printFiles(printableIds);
+
+            unsubscribe();
+
+            if (canceled) {
+                this.exportState.reset();
+                return;
+            }
+
+            const errors: ExportItemError[] = results
+                .filter(r => !r.success)
+                .map(r => ({
+                    nodeId: String(r.fileId),
+                    nodeName: String(r.fileId),
+                    reason: r.error ?? 'Errore sconosciuto',
+                }));
+
+            this.exportState.setSuccess(new ExportResult(
+                OutputContext.MULTI_PRINT,
+                printableIds.length,
+                results.filter(r => r.success).length,
+                errors.length,
+                '',
+                errors,
+            ));
         } catch (err) {
             this.handleError(ExportErrorCode.PRINT_FAILED, err, 'printDocuments');
         }

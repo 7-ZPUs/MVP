@@ -51,6 +51,7 @@ import { GetFileByStatusUC } from "./use-case/file/impl/GetFileByStatusUC";
 import { CheckFileIntegrityStatusUC } from "./use-case/file/impl/CheckFileIntegrityStatusUC";
 import { ExportFileUC } from "./use-case/file/impl/ExportFileUC";
 import { GetFileContentUC } from "./use-case/file/impl/GetFileContentUC";
+import { PrintFileUC } from "./use-case/file/impl/PrintFileUC";
 
 // ---- Process use cases ----
 import { ProcessUC } from "./use-case/process/token";
@@ -73,6 +74,8 @@ import { PACKAGE_READER_PORT_TOKEN } from "./repo/IPackageReaderPort";
 import { LocalPackageReaderAdapter } from "./repo/impl/LocalPackageReaderAdapter";
 import { EXPORT_TOKEN } from "./repo/IExportPort";
 import { LocalExportPort } from "./repo/impl/LocalExportPort";
+import { PRINT_PORT_TOKEN } from "./repo/IPrintPort";
+import { PrintPort } from "./repo/impl/PrintPort";
 import { DATA_MAPPER_TOKEN } from "./repo/impl/utils/IDataMapper";
 import { DataMapper } from "./repo/impl/utils/DataMapper";
 import { FILE_SYSTEM_PROVIDER_TOKEN } from "./repo/impl/utils/IFileSystemProvider";
@@ -94,6 +97,9 @@ container.register(PACKAGE_READER_PORT_TOKEN, {
 });
 container.register(EXPORT_TOKEN, {
   useClass: LocalExportPort,
+});
+container.register(PRINT_PORT_TOKEN,{ 
+  useClass: PrintPort 
 });
 container.register(TRANSACTION_MANAGER_TOKEN, {
   useClass: SqliteTransactionManager,
@@ -174,6 +180,7 @@ container.register(FileUC.CHECK_INTEGRITY_STATUS, {
 });
 container.register(FileUC.EXPORT_FILE, { useClass: ExportFileUC });
 container.register(FileUC.GET_CONTENT, { useClass: GetFileContentUC });
+container.register(FileUC.PRINT_FILE, { useClass: PrintFileUC });
 
 // Process use cases
 container.register(ProcessUC.GET_BY_STATUS, { useClass: GetProcessByStatusUC });
