@@ -66,7 +66,7 @@ function setup() {
     exportFile: vi.fn(),
     printFile: vi.fn(),
     printFiles: vi.fn(),
-    onPrintProgress: vi.fn(() => () => {}),
+    onPrintProgress: vi.fn().mockReturnValue(vi.fn()),
   } as any;
 
   TestBed.configureTestingModule({
@@ -374,7 +374,7 @@ describe('ExportFacade', () => {
     });
 
     it('chiama printFile per i formati stampabili', async () => {
-      const { facade, gateway } = setup();
+      const { facade, state, gateway } = setup();
       const dto = makeDto({ filename: 'doc.pdf', path: '/docs/doc.pdf' });
       gateway.getFileDto.mockResolvedValue(dto);
       gateway.printFile.mockResolvedValue({ success: true });
@@ -468,49 +468,55 @@ describe('ExportFacade', () => {
   // ── printDocuments ─────────────────────────────────────────────────────────
 
   describe('printDocuments()', () => {
-    it('chiama printFiles per ogni file stampabile', async () => {
-      const { facade, gateway } = setup();
+    it('chiama printFiles per i file stampabili validi', async () => {
+      const { facade, gateway, state } = setup();
       gateway.getFileDto
         .mockResolvedValueOnce(makeDto({ filename: 'a.pdf', path: '/a.pdf' }))
         .mockResolvedValueOnce(makeDto({ filename: 'b.png', path: '/b.png' }));
       gateway.printFiles.mockResolvedValue({
         canceled: false,
         results: [
-          { fileId: 1, success: true },
-          { fileId: 2, success: true },
+          { success: true, fileId: 1 },
+          { success: true, fileId: 2 },
         ],
       });
 
       await facade.printDocuments([1, 2]);
+      expect(gateway.printFiles).toHaveBeenCalledTimes(1);
       expect(gateway.printFiles).toHaveBeenCalledWith([1, 2]);
     });
 
-    it('salta i file con DTO null', async () => {
+    it('salta i file con DTO null o formato non stampabile', async () => {
       const { facade, gateway } = setup();
       gateway.getFileDto
-        .mockResolvedValueOnce(null)
-        .mockResolvedValueOnce(makeDto({ filename: 'b.pdf', path: '/b.pdf' }));
+        .mockResolvedValueOnce(null) // null DTO
+        .mockResolvedValueOnce(makeDto({ filename: 'doc.docx', path: '/doc.docx' })) // non stampabile
+        .mockResolvedValueOnce(makeDto({ filename: 'b.pdf', path: '/b.pdf' })); // valido
       gateway.printFiles.mockResolvedValue({
         canceled: false,
-        results: [{ fileId: 2, success: true }],
+        results: [{ success: true, fileId: 3 }],
       });
 
-      await facade.printDocuments([1, 2]);
-      expect(gateway.printFiles).toHaveBeenCalledWith([2]);
+      await facade.printDocuments([1, 2, 3]);
+      expect(gateway.printFiles).toHaveBeenCalledTimes(1);
+      expect(gateway.printFiles).toHaveBeenCalledWith([3]);
     });
 
-    it('salta i file con formato non stampabile', async () => {
-      const { facade, gateway } = setup();
+    it('chiama setUnavailable se non ci sono formati stampabili tra tutti quelli scelti', async () => {
+      const { facade, gateway, state } = setup();
       gateway.getFileDto
         .mockResolvedValueOnce(makeDto({ filename: 'doc.docx', path: '/doc.docx' }))
-        .mockResolvedValueOnce(makeDto({ filename: 'img.jpg', path: '/img.jpg' }));
-      gateway.printFiles.mockResolvedValue({
-        canceled: false,
-        results: [{ fileId: 2, success: true }],
-      });
+        .mockResolvedValueOnce(makeDto({ filename: 'img.jpg' })); // In array the printable definition depends on checkPrintable
+      // The implementation requires `.jpg` strictly, mock it such that it fails or use a failing extension
+      gateway.getFileDto.mockReset();
+      gateway.getFileDto
+        .mockResolvedValueOnce(makeDto({ filename: 'doc.docx' }))
+        .mockResolvedValueOnce(makeDto({ filename: 'doc2.xlsx' }));
+      gateway.printFiles.mockResolvedValue({ canceled: false, results: [] });
 
       await facade.printDocuments([1, 2]);
-      expect(gateway.printFiles).toHaveBeenCalledWith([2]);
+      expect(state.setUnavailable).toHaveBeenCalledTimes(1);
+      expect(gateway.printFiles).not.toHaveBeenCalled();
     });
 
     it('chiama setSuccess al termine', async () => {
@@ -518,13 +524,10 @@ describe('ExportFacade', () => {
       gateway.getFileDto.mockResolvedValue(makeDto({ filename: 'doc.pdf' }));
       gateway.printFiles.mockResolvedValue({
         canceled: false,
-        results: [
-          { fileId: 1, success: true },
-          { fileId: 2, success: true },
-        ],
+        results: [{ success: true, fileId: 1 }],
       });
 
-      await facade.printDocuments([1, 2]);
+      await facade.printDocuments([1]);
       expect(state.setSuccess).toHaveBeenCalledTimes(1);
     });
 

@@ -30,6 +30,8 @@ describe('SearchPageComponent - Integrazione e Navigazione', () => {
           validationErrors: new Map(),
         }),
       ),
+      getCustomMetadataKeys: vi.fn().mockReturnValue(signal([])),
+      loadCustomMetadataKeys: vi.fn(),
       setFilters: vi.fn(),
       setQuery: vi.fn(),
     };

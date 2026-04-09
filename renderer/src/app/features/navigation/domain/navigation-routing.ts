@@ -9,16 +9,16 @@ const SEARCH_RESULT_TYPE_TO_DETAIL_ITEM_TYPE: Record<string, DetailRouteItemType
   DOCUMENTO_INFORMATICO: 'DOCUMENT',
   DOCUMENTO_AMMINISTRATIVO_INFORMATICO: 'DOCUMENT',
   PROCESSO: 'PROCESS',
+  PROCESS: 'PROCESS',
   CLASSE: 'DOCUMENT_CLASS',
+  CLASS: 'DOCUMENT_CLASS',
 };
 
 function normalizeSearchResultType(type: string): string {
   return type.trim().replaceAll(/\s+/g, '_').toUpperCase();
 }
 
-export function mapDipNodeTypeToDetailItemType(
-  nodeType: DipTreeNode['type'],
-): DetailRouteItemType {
+export function mapDipNodeTypeToDetailItemType(nodeType: DipTreeNode['type']): DetailRouteItemType {
   switch (nodeType) {
     case 'dip':
       return 'DIP';
@@ -39,7 +39,9 @@ export function isRichDetailRouteItemType(
   return itemType === 'AGGREGATE' || itemType === 'DOCUMENT' || itemType === 'PROCESS';
 }
 
-export function mapSearchResultTypeToDetailItemType(resultType: string): DetailRouteItemType | null {
+export function mapSearchResultTypeToDetailItemType(
+  resultType: string,
+): DetailRouteItemType | null {
   const normalizedType = normalizeSearchResultType(resultType);
   return SEARCH_RESULT_TYPE_TO_DETAIL_ITEM_TYPE[normalizedType] ?? null;
 }

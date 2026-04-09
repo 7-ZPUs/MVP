@@ -21,9 +21,7 @@ import {
 import { SearchQueryType } from '../../../../../../shared/domain/metadata/search.enum';
 import { SEARCH_CHANNEL_TOKEN } from '../contracts/search-channel.interface';
 import { FILTER_VALIDATOR_TOKEN } from '../../validation/contracts/filter-validator.interface';
-import {
-  SEMANTIC_INDEX_STATUS_TOKEN,
-} from '../contracts/semantic-index.interface';
+import { SEMANTIC_INDEX_STATUS_TOKEN } from '../contracts/semantic-index.interface';
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -157,6 +155,7 @@ describe('Broad Integration: Full Search Engine Flow (Servizi Reali)', () => {
     });
 
     const filterPanel = fixture.debugElement.query(By.directive(AdvancedFilterPanelComponent));
+    mockElectronBridge.invoke.mockClear();
     filterPanel.triggerEventHandler('filtersSubmit', invalidFilters);
 
     await sleep(350);

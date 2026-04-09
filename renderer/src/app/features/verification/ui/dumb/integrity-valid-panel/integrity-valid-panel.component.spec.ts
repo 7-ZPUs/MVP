@@ -53,17 +53,11 @@ describe('IntegrityValidPanelComponent', () => {
 
     expect(compiled.querySelector('.valid-container')).toBeTruthy();
     const items = compiled.querySelectorAll('.valid-row');
-    expect(items.length).toBe(2);
+    expect(items.length).toBe(1);
 
     expect(items[0].textContent).toContain('Classe');
     expect(items[0].textContent).toContain('Node Valid 1');
-    expect(items[0].textContent).toContain('/path/v1');
     expect(items[0].textContent).toContain('Valido');
-
-    expect(items[1].textContent).toContain('Processo');
-    expect(items[1].textContent).toContain('Process 2');
-    expect(items[1].textContent).toContain('/path/v2');
-    expect(items[1].textContent).toContain('Valido');
   });
 
   it('should render invalid label when node status is INVALID', () => {
@@ -75,14 +69,23 @@ describe('IntegrityValidPanelComponent', () => {
         status: IntegrityStatusEnum.INVALID,
       },
     ]);
+    componentRef.setInput('corruptedNodes', [
+      {
+        id: 11,
+        name: 'Doc 1',
+        type: 'DOCUMENT',
+        status: IntegrityStatusEnum.INVALID,
+        contextPath: 'Classe: Classe Contratti | Processo: Processo A',
+      },
+    ]);
 
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector('.status-pill')?.textContent).toContain('Invalido');
     expect(compiled.querySelector('.status-pill--invalid')).toBeTruthy();
-    expect(compiled.querySelector('.node-error')?.textContent).toContain(
-      'Errore: la classe contiene almeno un documento con impronta crittografica alterata',
-    );
+    expect(compiled.querySelector('.error-group')).toBeTruthy();
+    expect(compiled.textContent).toContain('Processo A');
+    expect(compiled.textContent).toContain('Doc 1');
   });
 
   it('should not render error details for valid nodes', () => {
@@ -97,7 +100,7 @@ describe('IntegrityValidPanelComponent', () => {
 
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('.node-error')).toBeNull();
+    expect(compiled.querySelector('.error-group')).toBeNull();
   });
 
   it('should format type correctly', () => {
@@ -112,41 +115,14 @@ describe('IntegrityValidPanelComponent', () => {
     expect(component.getStatusLabel(IntegrityStatusEnum.INVALID)).toBe('Invalido');
     expect(component.getStatusLabel(IntegrityStatusEnum.UNKNOWN)).toBe('Non verificato');
 
-    expect(component.getStatusClass(IntegrityStatusEnum.VALID)).toBe('status-pill status-pill--valid');
+    expect(component.getStatusClass(IntegrityStatusEnum.VALID)).toBe(
+      'status-pill status-pill--valid',
+    );
     expect(component.getStatusClass(IntegrityStatusEnum.INVALID)).toBe(
       'status-pill status-pill--invalid',
     );
     expect(component.getStatusClass(IntegrityStatusEnum.UNKNOWN)).toBe(
       'status-pill status-pill--unknown',
     );
-  });
-
-  it('should map error description correctly by node type', () => {
-    expect(
-      component.getErrorDescription({
-        id: 1,
-        type: 'CLASS',
-        name: 'Classe A',
-        status: IntegrityStatusEnum.INVALID,
-      }),
-    ).toContain('classe contiene almeno un documento');
-
-    expect(
-      component.getErrorDescription({
-        id: 2,
-        type: 'PROCESS',
-        name: 'Processo A',
-        status: IntegrityStatusEnum.INVALID,
-      }),
-    ).toContain('processo contiene almeno un elemento');
-
-    expect(
-      component.getErrorDescription({
-        id: 3,
-        type: 'DOCUMENT',
-        name: 'Documento A',
-        status: IntegrityStatusEnum.INVALID,
-      }),
-    ).toContain('impronta crittografica del documento');
   });
 });

@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { vi } from 'vitest';
 import { CUSTOM_ELEMENTS_SCHEMA, signal } from '@angular/core';
+import { Subject } from 'rxjs';
 
 import { AppShellComponent } from './app-shell.component';
 import { DipFacade } from '../../services/dip-facade';
@@ -30,6 +31,8 @@ describe('AppShellComponent', () => {
 
   const routerMock = {
     navigate: vi.fn(),
+    url: '/',
+    events: new Subject(),
   };
 
   beforeEach(async () => {

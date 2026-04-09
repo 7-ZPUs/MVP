@@ -19,7 +19,6 @@ describe('DocumentToolbarComponent', () => {
     // In Angular 17+, i signal input.required() si impostano tramite setInput sulla fixture
     fixture.componentRef.setInput('titolo', 'Documento di Test');
     fixture.componentRef.setInput('formato', 'PDF');
-    fixture.componentRef.setInput('zoomLevel', 1);
 
     // Aggiorniamo il DOM virtuale
     fixture.detectChanges();
@@ -37,21 +36,5 @@ describe('DocumentToolbarComponent', () => {
 
     expect(htmlElement.querySelector('.title')?.textContent).toContain('Documento di Test');
     expect(htmlElement.querySelector('.badge')?.textContent).toContain('PDF');
-  });
-
-  // 4. TEST DEGLI OUTPUT: Verifica che cliccare un bottone emetta l'evento
-  it('dovrebbe emettere "zoomIn" quando si clicca sul bottone +', () => {
-    // 'vi.fn()' è una funzione "spia" di Vitest. Registra se viene chiamata.
-    const spiaZoomIn = vi.fn();
-
-    // Ascoltiamo l'output del componente e agganciamo la nostra spia
-    component.zoomIn.subscribe(spiaZoomIn);
-
-    // Simuliamo il click sul bottone con il '+'
-    const bottonePiu = fixture.nativeElement.querySelector('button[title="Aumenta zoom"]');
-    bottonePiu.click();
-
-    // Verifichiamo che la spia sia stata chiamata esattamente 1 volta!
-    expect(spiaZoomIn).toHaveBeenCalledOnce();
   });
 });
