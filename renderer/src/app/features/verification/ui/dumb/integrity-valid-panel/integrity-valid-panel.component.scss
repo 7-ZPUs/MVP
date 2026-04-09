@@ -84,13 +84,33 @@
   color: #94a3b8;
   font-size: 0.8rem;
 }
+.node-error {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: #b91c1c;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
 .status-pill {
-  background: #d1fae5;
-  color: #065f46;
   padding: 0.35rem 1rem;
   border-radius: 20px;
   font-size: 0.8rem;
   font-weight: 700;
+}
+.status-pill--valid {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.status-pill--invalid {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.status-pill--unknown {
+  background: #e2e8f0;
+  color: #334155;
 }
 .sr-only {
   position: absolute;

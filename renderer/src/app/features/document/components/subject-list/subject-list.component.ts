@@ -1,6 +1,7 @@
 import { Component, input } from '@angular/core';
 import { Subject, SubjectType } from '../../domain/document.models';
 import { KeyValuePipe } from '@angular/common';
+import { toSpacedMetadataLabel } from '../../../../shared/utils/custom-metadata-label.util';
 
 @Component({
   selector: 'app-subject-list',
@@ -16,13 +17,13 @@ import { KeyValuePipe } from '@angular/common';
           @for (subject of subjects(); track subject.ruolo + subject.tipo) {
             <div class="subject-card" [attr.data-testid]="'subject-card-' + toTestIdSuffix(subject.ruolo)">
               <div class="card-header" [attr.data-testid]="'subject-header-' + toTestIdSuffix(subject.ruolo)">
-                <span class="role" data-testid="subject-role">{{ subject.ruolo }}</span>
+                <span class="role" data-testid="subject-role">{{ formatLabel(subject.ruolo) }}</span>
                 <span class="type-badge" data-testid="subject-type">{{ formatType(subject.tipo) }}</span>
               </div>
               <div class="card-body" [attr.data-testid]="'subject-body-' + toTestIdSuffix(subject.ruolo)">
                 @for (campo of subject.campiSpecifici | keyvalue; track campo.key) {
                   <div class="data-row" [attr.data-testid]="'subject-field-' + toTestIdSuffix(subject.ruolo) + '-' + toTestIdSuffix(campo.key)">
-                    <span class="label" data-testid="subject-field-label">{{ campo.key }}:</span>
+                    <span class="label" data-testid="subject-field-label">{{ formatLabel(campo.key) }}:</span>
                     <span class="value" data-testid="subject-field-value">{{ campo.value }}</span>
                   </div>
                 }
@@ -117,6 +118,10 @@ import { KeyValuePipe } from '@angular/common';
 })
 export class SubjectListComponent {
   subjects = input<Subject[]>();
+
+  formatLabel(value: string): string {
+    return toSpacedMetadataLabel(value) || value;
+  }
 
   formatType(tipo: SubjectType): string {
     return tipo.replaceAll('_', ' ');

@@ -76,7 +76,10 @@ import { ProcessMetadataComponent } from '../../../../process/components/process
             }
 
             @if (agg.customMetadata?.length) {
-              <app-custom-metadata [entries]="agg.customMetadata"></app-custom-metadata>
+              <app-custom-metadata
+                [entries]="agg.customMetadata"
+                [simplifyNames]="true"
+              ></app-custom-metadata>
             }
           }
         }
@@ -148,7 +151,10 @@ import { ProcessMetadataComponent } from '../../../../process/components/process
             }
 
             @if (doc.customMetadata?.length) {
-              <app-custom-metadata [entries]="doc.customMetadata"></app-custom-metadata>
+              <app-custom-metadata
+                [entries]="doc.customMetadata"
+                [simplifyNames]="true"
+              ></app-custom-metadata>
             } @else {
               <app-optional-field-absent
                 message="Nessuna metadato personalizzato presente"

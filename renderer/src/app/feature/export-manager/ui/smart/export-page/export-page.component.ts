@@ -6,6 +6,7 @@ import { ExportResultComponent } from '../../../ui/dumb/export-result/export-res
 import { ExportProgressComponent } from '../../../ui/dumb/export-progress/export-progress.component';
 import { ExportIpcGateway } from '../../../infrastructure/export-ipc-gateway.service';
 import { FileDTO } from '../../../domain/dtos';
+import { ExportState } from '../../../domain/export.state';
 
 @Component({
   selector: 'app-export-page',
@@ -13,10 +14,10 @@ import { FileDTO } from '../../../domain/dtos';
   imports: [CommonModule, ExportResultComponent, ExportProgressComponent],
   templateUrl: './export-page.component.html',
   styleUrl: './export-page.component.scss',
+  providers: [ExportFacade, ExportState],
 })
 export class ExportPageComponent implements OnInit {
   documentId = input.required<string>();
-  itemType = input.required<'DOCUMENT' | 'AGGREGATE' | 'PROCESS'>();
 
   private readonly exportFacade = inject(ExportFacade);
   private readonly ipcGateway = inject(ExportIpcGateway);
@@ -27,28 +28,32 @@ export class ExportPageComponent implements OnInit {
   readonly result = this.exportFacade.result;
   readonly progress = this.exportFacade.progress;
   readonly error = this.exportFacade.error;
-  readonly loading = this.exportFacade.loading;
   readonly queue = this.exportFacade.queue;
   readonly ExportPhase = ExportPhase;
 
-  readonly isWorking = computed(() => this.loading());
   readonly isMulti = computed(() => this._fileIds().length > 1);
 
   // ----------------------------------------------------------------
-  // Stato UI (signal modificabili)
+  // Loading separati per operazione
   // ----------------------------------------------------------------
 
-  showProgress = signal(false);
-  showQueue = signal(false);
-  showResult = signal(false);
+  readonly isPrinting = signal(false);
+  readonly isDownloading = signal(false);
+  readonly isWorking = computed(() => this.isPrinting() || this.isDownloading());
 
-  // Flag per sapere se ci sono file stampabili
+  // ----------------------------------------------------------------
+  // Stato UI
+  // ----------------------------------------------------------------
+
+  readonly showProgress = signal(false);
+  readonly showQueue = signal(false);
+  readonly showResult = signal(false);
   readonly hasPrintableFiles = signal(false);
 
   constructor() {
     // Reset completo al cambio di documentId
     effect(() => {
-      this.documentId(); // traccia l'input
+      this.documentId();
       this.exportFacade.reset();
       this.showResult.set(false);
       this.showQueue.set(false);
@@ -62,19 +67,17 @@ export class ExportPageComponent implements OnInit {
       }
     });
 
-    // Mostra il progresso durante un'esportazione multi‑file
+    // Mostra il progresso durante un'esportazione multi-file
     effect(() => {
-      const loading = this.loading();
+      const downloading = this.isDownloading();
       const ctx = this.outputContext();
       const multi = this.isMulti();
 
-      if (loading && multi && ctx === OutputContext.MULTI_EXPORT) {
+      if (downloading && multi && ctx === OutputContext.MULTI_EXPORT) {
         this.showProgress.set(true);
-      } else if (!loading) {
+      } else if (!downloading) {
         this.showProgress.set(false);
       }
-      // Se loading è true ma le altre condizioni non sono soddisfatte,
-      // non modifichiamo showProgress (l'utente potrebbe averlo chiuso manualmente)
     });
 
     // Mostra il pannello del risultato quando la fase diventa terminale
@@ -130,7 +133,12 @@ export class ExportPageComponent implements OnInit {
     if (printable.length === 0) return;
 
     if (printable.length === 1) {
-      await this.exportFacade.printDocument(printable[0].id);
+      this.isPrinting.set(true);
+      try {
+        await this.exportFacade.printDocument(printable[0].id);
+      } finally {
+        this.isPrinting.set(false);
+      }
       return;
     }
 
@@ -153,7 +161,12 @@ export class ExportPageComponent implements OnInit {
     const ids = [...this.selectedPrintIds()];
     if (ids.length === 0) return;
     this.showPrintSelector.set(false);
-    await this.exportFacade.printDocuments(ids);
+    this.isPrinting.set(true);
+    try {
+      await this.exportFacade.printDocuments(ids);
+    } finally {
+      this.isPrinting.set(false);
+    }
   }
 
   cancelPrint(): void {
@@ -179,7 +192,12 @@ export class ExportPageComponent implements OnInit {
     if (files.length === 0) return;
 
     if (files.length === 1) {
-      await this.exportFacade.exportFile(files[0].id);
+      this.isDownloading.set(true);
+      try {
+        await this.exportFacade.exportFile(files[0].id);
+      } finally {
+        this.isDownloading.set(false);
+      }
       return;
     }
 
@@ -207,10 +225,15 @@ export class ExportPageComponent implements OnInit {
     const ids = [...this.selectedDownloadIds()];
     if (ids.length === 0) return;
     this.showDownloadSelector.set(false);
-    if (ids.length === 1) {
-      await this.exportFacade.exportFile(ids[0]);
-    } else {
-      await this.exportFacade.exportFiles(ids);
+    this.isDownloading.set(true);
+    try {
+      if (ids.length === 1) {
+        await this.exportFacade.exportFile(ids[0]);
+      } else {
+        await this.exportFacade.exportFiles(ids);
+      }
+    } finally {
+      this.isDownloading.set(false);
     }
   }
 

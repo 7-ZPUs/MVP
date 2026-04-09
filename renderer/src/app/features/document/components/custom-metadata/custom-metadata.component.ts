@@ -105,7 +105,7 @@ import { simplifyCustomMetadataLabel } from '../../../../shared/utils/custom-met
 })
 export class CustomMetadataComponent {
   entries = input<CustomMetadataEntry[]>();
-  simplifyNames = input<boolean>(false);
+  simplifyNames = input<boolean>(true);
 
   displayName(value: string): string {
     if (!this.simplifyNames()) {

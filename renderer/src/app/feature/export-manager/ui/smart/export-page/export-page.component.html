@@ -1,12 +1,16 @@
 @if (hasPrintableFiles()) {
-  <button class="action-btn btn-print" [disabled]="isWorking()" (click)="onPrint()">
-    <i class="icon bi bi-printer" aria-hidden="true"></i>
-    Stampa documento
+  <button class="action-btn btn-print" [disabled]="isPrinting()" (click)="onPrint()">
+    @if (isPrinting()) {
+      <span class="spinner-small"></span> Attendere...
+    } @else {
+      <i class="icon bi bi-printer" aria-hidden="true"></i>
+      Stampa documento
+    }
   </button>
 }
 
-<button class="action-btn btn-export" [disabled]="isWorking()" (click)="onExport()">
-  @if (isWorking()) {
+<button class="action-btn btn-export" [disabled]="isDownloading()" (click)="onExport()">
+  @if (isDownloading()) {
     <span class="spinner-small"></span> Attendere...
   } @else {
     <i class="icon bi bi-download" aria-hidden="true"></i>
@@ -30,7 +34,7 @@
       </button>
       @for (item of queue(); track item.fileId) {
         <div class="queue-item queue-item--{{ item.status }}">
-          <span>{{ item.filename }}</span>
+          <span>{{ getBaseName(item.filename) }}</span>
           <span>{{ item.status }}</span>
         </div>
       }
