@@ -179,7 +179,9 @@ function mapRegistration(extractor: MetadataExtractor): RegistrationData {
       // Fallback: check if the first node contains the real TipoRegistro
       const firstObj = rawTipo[0];
       if (firstObj && Array.isArray(firstObj.value)) {
-        const nestedNode = firstObj.value.find((n: any) => n.name === 'TipoRegistro');
+        const nestedNode = firstObj.value.find(
+          (n: { name?: string; value?: unknown }) => n.name === 'TipoRegistro',
+        );
         if (nestedNode && typeof nestedNode.value === 'string') {
           tipoRegistro = nestedNode.value;
         } else {
@@ -189,7 +191,7 @@ function mapRegistration(extractor: MetadataExtractor): RegistrationData {
     }
   } else if (rawTipo && typeof rawTipo === 'object') {
     if ('TipoRegistro' in rawTipo) {
-      tipoRegistro = String((rawTipo as any).TipoRegistro);
+      tipoRegistro = String((rawTipo as Record<string, unknown>)['TipoRegistro']);
     } else {
       const keys = Object.keys(rawTipo).filter((k) => k !== '_' && k !== '$');
       if (keys.length > 0) {

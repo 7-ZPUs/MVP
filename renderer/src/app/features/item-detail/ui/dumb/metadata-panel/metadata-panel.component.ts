@@ -8,6 +8,7 @@ import { ProcessDetail } from '../../../../process/domain/process.models';
 // Importiamo i Dumb Component di Epica 1
 import { AdminProcedureComponent } from '../../../../aggregate/components/admin-procedure/admin-procedure.component';
 import { AggregateMetadataComponent } from '../../../../aggregate/components/aggregate-metadata/aggregate-metadata.component';
+import { AggregateSubjectListComponent } from '../../../../aggregate/components/aggregate-subjects/aggregate-subjects.component';
 import { RegistrationDataComponent } from '../../../../document/components/registration-data/registration-data.component';
 import { OptionalFieldAbsentComponent } from '../../../../../shared/components/optional-field-absent/optional-field-absent.component';
 // (Importa qui gli altri componenti come FormatInfo, VerificationInfo ecc.)
@@ -40,6 +41,7 @@ import { ProcessMetadataComponent } from '../../../../process/components/process
     SubjectListComponent,
     VerificationInfoComponent,
     AggregateMetadataComponent,
+    AggregateSubjectListComponent,
     ProcessMetadataComponent,
   ],
   template: `
@@ -63,6 +65,18 @@ import { ProcessMetadataComponent } from '../../../../process/components/process
               <app-optional-field-absent
                 message="Nessun procedimento amministrativo associato"
               ></app-optional-field-absent>
+            }
+
+            @if (agg.soggetti.length) {
+              <app-aggregate-subject-list [subjects]="agg.soggetti"></app-aggregate-subject-list>
+            } @else {
+              <app-optional-field-absent
+                message="Nessun soggetto associato al fascicolo"
+              ></app-optional-field-absent>
+            }
+
+            @if (agg.customMetadata?.length) {
+              <app-custom-metadata [entries]="agg.customMetadata"></app-custom-metadata>
             }
           }
         }

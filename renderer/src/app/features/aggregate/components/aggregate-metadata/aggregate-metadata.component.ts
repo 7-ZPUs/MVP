@@ -56,7 +56,14 @@ import { AggregateDetailDTO } from '../../../../shared/domain/dto/AggregateDTO';
 
       <div class="data-row" data-testid="aggregate-row-soggetto-assegnatario">
         <span class="label">Soggetto Assegnatario</span>
-        <span class="value">{{ data().assegnazione.soggettoAssegnatario.denominazione }}</span>
+        <span class="value">
+          {{ data().assegnazione.soggettoAssegnatario.denominazione }}
+          @if (data().assegnazione.soggettoAssegnatario.codiceFiscale) {
+            <br /><span class="sub-value" style="font-size: 0.8em; color: #64748b;"
+              >(CF/P.Iva: {{ data().assegnazione.soggettoAssegnatario.codiceFiscale }})</span
+            >
+          }
+        </span>
       </div>
 
       <div class="data-row" data-testid="aggregate-row-data-inizio-assegnazione">
@@ -102,10 +109,15 @@ import { AggregateDetailDTO } from '../../../../shared/domain/dto/AggregateDTO';
 
       <div class="data-row" data-testid="aggregate-row-classificazione">
         <span class="label">Classificazione</span>
-        <span class="value"
-          >{{ data().classificazione.indiceDiClassificazione }} -
-          {{ data().classificazione.descrizione }}</span
-        >
+        <span class="value">
+          {{ data().classificazione.indiceDiClassificazione }} -
+          {{ data().classificazione.descrizione }}
+          @if (data().classificazione.pianoDiClassificazione) {
+            <br /><span class="sub-value" style="font-size: 0.8em; color: #64748b;"
+              >(Piano: {{ data().classificazione.pianoDiClassificazione }})</span
+            >
+          }
+        </span>
       </div>
 
       <div class="data-row">

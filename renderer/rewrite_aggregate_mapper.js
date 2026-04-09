@@ -1,10 +1,11 @@
-import {
+const fs = require('fs');
+
+const fileContent = `import {
   AggregateDetailDTO,
   TipologiaFascicoloEnum,
   TipoAggregazioneEnum,
   SoggettoDTO,
-  FaseDTO,
-  DocumentIndexEntryDTO,
+  DocumentIndexEntryDTO
 } from '../../../shared/domain/dto/AggregateDTO';
 import { MetadataExtractor } from '../../../shared/utils/metadata-extractor.util';
 import { normalizeMetadataNodes } from '../../../shared/utils/metadata-nodes.util';
@@ -49,7 +50,7 @@ function extractIpa(rExtractor: MetadataExtractor, field: string): string {
     return String(
       rExtractor.findValue('CodiceIPA', block) ||
         rExtractor.findValue('Denominazione', block) ||
-        '',
+        ''
     );
   }
   return rExtractor.getString(field, '');
@@ -73,48 +74,38 @@ function mapSubjects(extractor: MetadataExtractor): SoggettoDTO[] {
       }
     };
 
-    if (
-      rExtractor.findValue('AmministrazioneTitolare') ||
-      rExtractor.findValue('AmministrazionePartecipante')
-    ) {
+    if (rExtractor.findValue('AmministrazioneTitolare') || rExtractor.findValue('AmministrazionePartecipante')) {
       tipoRuolo = rExtractor.getString('TipoRuolo', tipoRuolo);
-      denominazione =
-        rExtractor.getString('DenominazioneAmministrazione') ||
-        extractIpa(rExtractor, 'IPAAmm') ||
-        extractIpa(rExtractor, 'IPAAOO');
+      denominazione = rExtractor.getString('DenominazioneAmministrazione') || extractIpa(rExtractor, 'IPAAmm') || extractIpa(rExtractor, 'IPAAOO');
       extractIndirizzi();
     } else if (rExtractor.findValue('PF')) {
       tipoRuolo = rExtractor.getString('TipoRuolo', tipoRuolo);
       const nome = rExtractor.getString('Nome', '');
       const cognome = rExtractor.getString('Cognome', '');
-      denominazione = `${nome} ${cognome}`.trim();
+      denominazione = \`\${nome} \${cognome}\`.trim();
       codiceFiscale = rExtractor.getString('CodiceFiscale');
       extractIndirizzi();
     } else if (rExtractor.findValue('PG')) {
       tipoRuolo = rExtractor.getString('TipoRuolo', tipoRuolo);
       denominazione = rExtractor.getString('DenominazioneOrganizzazione');
-      codiceFiscale =
-        rExtractor.getString('CodiceFiscale_PartitaIva') || rExtractor.getString('CodiceFiscale');
+      codiceFiscale = rExtractor.getString('CodiceFiscale_PartitaIva') || rExtractor.getString('CodiceFiscale');
       extractIndirizzi();
     } else if (rExtractor.findValue('RUP')) {
       tipoRuolo = 'RUP';
       const nome = rExtractor.getString('Nome', '');
       const cognome = rExtractor.getString('Cognome', '');
-      denominazione =
-        `${nome} ${cognome}`.trim() || rExtractor.getString('DenominazioneOrganizzazione');
+      denominazione = \`\${nome} \${cognome}\`.trim() || rExtractor.getString('DenominazioneOrganizzazione');
       codiceFiscale = rExtractor.getString('CodiceFiscale');
       extractIndirizzi();
     } else if (rExtractor.findValue('AS') || rExtractor.findValue('Assegnatario')) {
       tipoRuolo = 'Assegnatario';
       const nome = rExtractor.getString('Nome', '');
       const cognome = rExtractor.getString('Cognome', '');
-      denominazione =
-        `${nome} ${cognome}`.trim() || rExtractor.getString('DenominazioneOrganizzazione');
+      denominazione = \`\${nome} \${cognome}\`.trim() || rExtractor.getString('DenominazioneOrganizzazione');
       codiceFiscale = rExtractor.getString('CodiceFiscale');
       extractIndirizzi();
     } else {
-      const fullName =
-        `${rExtractor.getString('Nome', '')} ${rExtractor.getString('Cognome', '')}`.trim();
+      const fullName = \`\${rExtractor.getString('Nome', '')} \${rExtractor.getString('Cognome', '')}\`.trim();
       denominazione = fullName.length > 0 ? fullName : rExtractor.getString('Denominazione', 'N/A');
     }
 
@@ -122,7 +113,7 @@ function mapSubjects(extractor: MetadataExtractor): SoggettoDTO[] {
       tipoRuolo,
       denominazione: denominazione || 'N/A',
       codiceFiscale: codiceFiscale || undefined,
-      indirizzoDigitale: indirizzoDigitale || undefined,
+      indirizzoDigitale: indirizzoDigitale || undefined
     };
   });
 }
@@ -130,13 +121,12 @@ function mapSubjects(extractor: MetadataExtractor): SoggettoDTO[] {
 function mapDocumentIndices(extractor: MetadataExtractor): DocumentIndexEntryDTO[] {
   const tipi = extractor.findAllValues('TipoDocumento') as unknown[];
   if (!tipi || tipi.length === 0) return [];
-
+  
   return tipi.map((docNode) => {
     const dExtractor = new MetadataExtractor(normalizeMetadataNodes(docNode));
     let idValue = '';
     let impronta = '';
-    let type: 'DocumentoAmministativoinformatico' | 'Documentoinformatico' | 'Documento' =
-      'Documento';
+    let type: 'DocumentoAmministativoinformatico' | 'Documentoinformatico' | 'Documento' = 'Documento';
 
     if (dExtractor.findValue('DocumentoAmministrativoInformatico')) {
       type = 'DocumentoAmministativoinformatico';
@@ -149,11 +139,11 @@ function mapDocumentIndices(extractor: MetadataExtractor): DocumentIndexEntryDTO
     } else {
       idValue = dExtractor.getString('Identificativo', 'N/A');
     }
-
+    
     return {
       tipoDocumento: type,
       identificativo: idValue,
-      impronta: impronta || undefined,
+      impronta: impronta || undefined
     };
   });
 }
@@ -163,8 +153,7 @@ function mapDocumentIndices(extractor: MetadataExtractor): DocumentIndexEntryDTO
  * into the frontend's AggregateDetailDTO (Fascicolo).
  */
 export function mapProcessDtoToAggregateDetail(dto: unknown): AggregateDetailDTO {
-  const source: AggregateSourceDto =
-    dto && typeof dto === 'object' ? (dto as AggregateSourceDto) : {};
+  const source: AggregateSourceDto = dto && typeof dto === 'object' ? (dto as AggregateSourceDto) : {};
   // We retrieve the metadata array if it's a wrapper, or directly if it's already unwrapped
   const nodes = normalizeMetadataNodes(source.metadata);
   const extractor = new MetadataExtractor(nodes);
@@ -179,14 +168,8 @@ export function mapProcessDtoToAggregateDetail(dto: unknown): AggregateDetailDTO
   const fasi = rawFasi.map((faseNode) => {
     const faseExtractor = new MetadataExtractor(normalizeMetadataNodes(faseNode));
     return {
-      tipoFase: faseExtractor.getString(
-        'Fase',
-        faseExtractor.getString('TipoFase', 'Preparatoria'),
-      ) as FaseDTO['tipoFase'],
-      dataInizio: faseExtractor.getString(
-        'DataInizioFase',
-        faseExtractor.getString('DataInizio', 'N/A'),
-      ),
+      tipoFase: faseExtractor.getString('Fase', faseExtractor.getString('TipoFase', 'Preparatoria')) as any,
+      dataInizio: faseExtractor.getString('DataInizioFase', faseExtractor.getString('DataInizio', 'N/A')),
       dataFine: faseExtractor.getString('DataFineFase', faseExtractor.getString('DataFine', '')),
     };
   });
@@ -205,17 +188,15 @@ export function mapProcessDtoToAggregateDetail(dto: unknown): AggregateDetailDTO
     ) as TipologiaFascicoloEnum,
     soggetti: mapSubjects(extractor),
     assegnazione: {
-      tipoAssegnazione: extractor.getString(
-        'TipoAssegnazioneRuolo',
-        extractor.getString('TipoAssegnazione', 'Per competenza'),
-      ) as 'Per competenza' | 'Per conoscenza',
+      tipoAssegnazione: extractor.getString('TipoAssegnazioneRuolo', extractor.getString('TipoAssegnazione', 'Per competenza')) as
+        | 'Per competenza'
+        | 'Per conoscenza',
       soggettoAssegnatario: {
         tipoRuolo: 'Assegnatario',
-        denominazione:
-          extractor.getString('Nome') && extractor.getString('Cognome')
-            ? `${extractor.getString('Nome')} ${extractor.getString('Cognome')}`
-            : extractor.getString('DenominazioneOrganizzazione', 'N/A'),
-        codiceFiscale: extractor.getString('CodiceFiscale'),
+        denominazione: extractor.getString('Nome') && extractor.getString('Cognome') 
+          ? \`\${extractor.getString('Nome')} \${extractor.getString('Cognome')}\`
+          : extractor.getString('DenominazioneOrganizzazione', 'N/A'),
+        codiceFiscale: extractor.getString('CodiceFiscale')
       },
       dataInizioAssegnazione: extractor.getString('DataInizioAssegnazione', 'N/A'),
       dataFineAssegnazione: extractor.getString('DataFineAssegnazione'),
@@ -225,27 +206,20 @@ export function mapProcessDtoToAggregateDetail(dto: unknown): AggregateDetailDTO
     classificazione: {
       indiceDiClassificazione: extractor.getString('IndiceDiClassificazione', 'N/A'),
       descrizione: extractor.getString('Descrizione', 'N/A'),
-      pianoDiClassificazione: extractor.getString('PianoDiClassificazione'),
+      pianoDiClassificazione: extractor.getString('PianoDiClassificazione')
     },
     progressivo: extractor.getNumber('Progressivo', 1),
     chiaveDescrittiva: {
-      oggetto: extractor.getString('Oggetto', `Fascicolo n. ${toSafeString(source.id, '')}`),
-      paroleChiave: extractor.getString('ParoleChiave'),
+      oggetto: extractor.getString('Oggetto', \`Fascicolo n. \${toSafeString(source.id, '')}\`),
+      paroleChiave: extractor.getString('ParoleChiave')
     },
     procedimentoAmministrativo: {
       materiaArgomentoStruttura: extractor.getString('MateriaArgomentoStruttura', 'Standard'),
       procedimento: extractor.getString('Procedimento', 'N/A'),
-      uriProcedimento: extractor.getString(
-        'CatalogoProcedimenti',
-        extractor.getString('URIProcedimento', ''),
-      ),
+      uriProcedimento: extractor.getString('CatalogoProcedimenti', extractor.getString('URIProcedimento', '')),
       fasi,
     },
-    idAggPrimario: extractor.findValue('IdAggPrimario')
-      ? new MetadataExtractor(
-          normalizeMetadataNodes(extractor.findValue('IdAggPrimario')),
-        ).getString('IdAggregazione')
-      : undefined,
+    idAggPrimario: extractor.getString('IdAggregazione', undefined, extractor.findValue('IdAggPrimario')),
     posizioneFisicaAggregazioneDocumentale: extractor.getString(
       'PosizioneFisicaAggregazioneDocumentale',
       'Archivio',
@@ -264,3 +238,6 @@ export function mapProcessDtoToAggregateDetail(dto: unknown): AggregateDetailDTO
     customMetadata: mergedCustomMetadata,
   };
 }
+`;
+
+fs.writeFileSync('src/app/features/aggregate/mappers/aggregate.mapper.ts', fileContent);
