@@ -109,8 +109,5 @@
       "**/sharp/**/*",
       "**/sqlite-vss-*/**/*"
     ]
-  },
-  "overrides": {
-    "onnxruntime-node": "1.20.0"
   }
 }
