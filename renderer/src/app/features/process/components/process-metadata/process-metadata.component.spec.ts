@@ -91,12 +91,23 @@ describe('ProcessMetadataComponent', () => {
       el.querySelector('[data-testid="process-metadata-heading-overview"]')?.textContent?.trim(),
     ).toBe('Contesto del Processo');
 
-    expect(el.querySelector('[data-testid="process-metadata-row-process-id"]')?.textContent).toContain(
-      '31',
-    );
-    expect(el.querySelector('[data-testid="process-metadata-row-process-status"]')?.textContent).toContain(
-      'TERMINATO',
-    );
+    expect(
+      el.querySelector('[data-testid="process-metadata-row-process-id"]')?.textContent,
+    ).toContain('31');
+    expect(
+      el.querySelector('[data-testid="process-metadata-row-process-status"]')?.textContent,
+    ).toContain('TERMINATO');
+    expect(
+      el.querySelector('[data-testid="process-metadata-row-document-class-timestamp"]')
+        ?.textContent,
+    ).toContain('2026-04-08 10:30');
+    expect(
+      el.querySelector('[data-testid="process-metadata-row-submission-data-inizio"]')?.textContent,
+    ).toContain('2026-04-08 00:00');
+    expect(
+      el.querySelector('[data-testid="process-metadata-row-conservation-data-inizio"]')
+        ?.textContent,
+    ).toContain('2026-04-08 00:00');
     expect(
       el.querySelector('[data-testid="process-metadata-row-overview-oggetto"]')?.textContent,
     ).toContain('Processo Contratti');
@@ -105,7 +116,9 @@ describe('ProcessMetadataComponent', () => {
   it('mostra i campi opzionali di conservazione quando presenti', () => {
     const el = render(makeDetail());
 
-    expect(el.querySelector('[data-testid="process-metadata-row-conservation-data-fine"]')).toBeTruthy();
+    expect(
+      el.querySelector('[data-testid="process-metadata-row-conservation-data-fine"]'),
+    ).toBeTruthy();
     expect(
       el.querySelector('[data-testid="process-metadata-row-conservation-uuid-attivatore"]'),
     ).toBeTruthy();
@@ -118,13 +131,17 @@ describe('ProcessMetadataComponent', () => {
     expect(
       el.querySelector('[data-testid="process-metadata-row-conservation-canale-terminazione"]'),
     ).toBeTruthy();
-    expect(el.querySelector('[data-testid="process-metadata-row-conservation-stato"]')).toBeTruthy();
+    expect(
+      el.querySelector('[data-testid="process-metadata-row-conservation-stato"]'),
+    ).toBeTruthy();
   });
 
   it('mostra i campi opzionali di versamento quando presenti', () => {
     const el = render(makeDetail());
 
-    expect(el.querySelector('[data-testid="process-metadata-row-submission-data-fine"]')).toBeTruthy();
+    expect(
+      el.querySelector('[data-testid="process-metadata-row-submission-data-fine"]'),
+    ).toBeTruthy();
     expect(
       el.querySelector('[data-testid="process-metadata-row-submission-uuid-attivatore"]'),
     ).toBeTruthy();
@@ -153,9 +170,9 @@ describe('ProcessMetadataComponent', () => {
 
     expect(el.querySelector('[data-testid="process-metadata-card-overview"]')).toBeNull();
     expect(el.querySelector('[data-testid="process-metadata-overview-empty"]')).toBeTruthy();
-    expect(el.querySelector('[data-testid="optional-field-absent-message"]')?.textContent).toContain(
-      'Nessun contesto del processo disponibile nei metadati',
-    );
+    expect(
+      el.querySelector('[data-testid="optional-field-absent-message"]')?.textContent,
+    ).toContain('Nessun contesto del processo disponibile nei metadati');
   });
 
   it('nasconde i campi opzionali di conservazione quando assenti', () => {
@@ -169,7 +186,9 @@ describe('ProcessMetadataComponent', () => {
       }),
     );
 
-    expect(el.querySelector('[data-testid="process-metadata-row-conservation-data-fine"]')).toBeNull();
+    expect(
+      el.querySelector('[data-testid="process-metadata-row-conservation-data-fine"]'),
+    ).toBeNull();
     expect(
       el.querySelector('[data-testid="process-metadata-row-conservation-uuid-attivatore"]'),
     ).toBeNull();
@@ -196,7 +215,9 @@ describe('ProcessMetadataComponent', () => {
       }),
     );
 
-    expect(el.querySelector('[data-testid="process-metadata-row-submission-data-fine"]')).toBeNull();
+    expect(
+      el.querySelector('[data-testid="process-metadata-row-submission-data-fine"]'),
+    ).toBeNull();
     expect(
       el.querySelector('[data-testid="process-metadata-row-submission-uuid-attivatore"]'),
     ).toBeNull();
@@ -239,7 +260,8 @@ describe('ProcessMetadataComponent', () => {
       el.querySelector('[data-testid="process-metadata-row-document-class-uuid"]')?.textContent,
     ).toContain('N/A');
     expect(
-      el.querySelector('[data-testid="process-metadata-row-document-class-timestamp"]')?.textContent,
+      el.querySelector('[data-testid="process-metadata-row-document-class-timestamp"]')
+        ?.textContent,
     ).toContain('N/A');
   });
 

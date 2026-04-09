@@ -1,5 +1,6 @@
 import { Component, input } from '@angular/core';
 import { DocumentMetadata } from '../../domain/document.models'; // Assicurati di averlo nel file models
+import { formatReadableDate } from '../../../../shared/utils/date.util';
 
 @Component({
   selector: 'app-document-metadata',
@@ -23,7 +24,7 @@ import { DocumentMetadata } from '../../domain/document.models'; // Assicurati d
       @if (data().dataCreazione) {
         <div class="data-row" data-testid="document-metadata-row-data-creazione">
           <span class="label">Data Creazione:</span>
-          <span class="value">{{ data().dataCreazione }}</span>
+          <span class="value">{{ formatReadableDate(data().dataCreazione) }}</span>
         </div>
       }
       <div class="data-row" data-testid="document-metadata-row-tipo-doc">
@@ -105,4 +106,5 @@ import { DocumentMetadata } from '../../domain/document.models'; // Assicurati d
 })
 export class DocumentMetadataComponent {
   data = input.required<DocumentMetadata>();
+  protected readonly formatReadableDate = formatReadableDate;
 }

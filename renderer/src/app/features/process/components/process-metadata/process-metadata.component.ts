@@ -2,6 +2,7 @@ import { Component, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ProcessDetail } from '../../domain/process.models';
 import { OptionalFieldAbsentComponent } from '../../../../shared/components/optional-field-absent/optional-field-absent.component';
+import { formatReadableDate } from '../../../../shared/utils/date.util';
 
 @Component({
   selector: 'app-process-metadata',
@@ -36,7 +37,7 @@ import { OptionalFieldAbsentComponent } from '../../../../shared/components/opti
       </div>
       <div class="data-row" data-testid="process-metadata-row-document-class-timestamp">
         <span class="label">Timestamp Classe:</span>
-        <span class="value">{{ data().metadata.documentClassTimestamp }}</span>
+        <span class="value">{{ formatReadableDate(data().metadata.documentClassTimestamp) }}</span>
       </div>
     </div>
 
@@ -76,13 +77,13 @@ import { OptionalFieldAbsentComponent } from '../../../../shared/components/opti
       </div>
       <div class="data-row" data-testid="process-metadata-row-submission-data-inizio">
         <span class="label">Data inizio:</span>
-        <span class="value">{{ data().submission.dataInizio }}</span>
+        <span class="value">{{ formatReadableDate(data().submission.dataInizio) }}</span>
       </div>
 
       @if (data().submission.dataFine) {
         <div class="data-row" data-testid="process-metadata-row-submission-data-fine">
           <span class="label">Data fine:</span>
-          <span class="value">{{ data().submission.dataFine }}</span>
+          <span class="value">{{ formatReadableDate(data().submission.dataFine) }}</span>
         </div>
       }
 
@@ -134,13 +135,13 @@ import { OptionalFieldAbsentComponent } from '../../../../shared/components/opti
       </div>
       <div class="data-row" data-testid="process-metadata-row-conservation-data-inizio">
         <span class="label">Data inizio:</span>
-        <span class="value">{{ data().conservation.dataInizio }}</span>
+        <span class="value">{{ formatReadableDate(data().conservation.dataInizio) }}</span>
       </div>
 
       @if (data().conservation.dataFine) {
         <div class="data-row" data-testid="process-metadata-row-conservation-data-fine">
           <span class="label">Data fine:</span>
-          <span class="value">{{ data().conservation.dataFine }}</span>
+          <span class="value">{{ formatReadableDate(data().conservation.dataFine) }}</span>
         </div>
       }
 
@@ -184,6 +185,8 @@ import { OptionalFieldAbsentComponent } from '../../../../shared/components/opti
 })
 export class ProcessMetadataComponent {
   data = input.required<ProcessDetail>();
+
+  protected readonly formatReadableDate = formatReadableDate;
 
   protected hasOverviewContext(): boolean {
     const overview = this.data().overview;

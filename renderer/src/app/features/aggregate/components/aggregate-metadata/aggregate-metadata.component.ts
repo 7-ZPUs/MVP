@@ -1,6 +1,7 @@
 import { Component, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AggregateDetailDTO } from '../../../../shared/domain/dto/AggregateDTO';
+import { formatReadableDate } from '../../../../shared/utils/date.util';
 
 @Component({
   selector: 'app-aggregate-metadata',
@@ -21,7 +22,7 @@ import { AggregateDetailDTO } from '../../../../shared/domain/dto/AggregateDTO';
         </div>
         <div class="data-row" data-testid="aggregate-row-process-timestamp">
           <span class="label">Marcatura Temporale</span>
-          <span class="value">{{ processSummary.timestamp }}</span>
+          <span class="value">{{ formatReadableDate(processSummary.timestamp) }}</span>
         </div>
       }
 
@@ -68,24 +69,24 @@ import { AggregateDetailDTO } from '../../../../shared/domain/dto/AggregateDTO';
 
       <div class="data-row" data-testid="aggregate-row-data-inizio-assegnazione">
         <span class="label">Data Inizio Assegnazione</span>
-        <span class="value">{{ data().assegnazione.dataInizioAssegnazione }}</span>
+        <span class="value">{{
+          formatReadableDate(data().assegnazione.dataInizioAssegnazione)
+        }}</span>
       </div>
 
       @if (data().assegnazione.dataFineAssegnazione) {
         <div class="data-row" data-testid="aggregate-row-data-fine-assegnazione">
           <span class="label">Data Fine Assegnazione</span>
-          <span class="value">{{ data().assegnazione.dataFineAssegnazione }}</span>
+          <span class="value">{{
+            formatReadableDate(data().assegnazione.dataFineAssegnazione)
+          }}</span>
         </div>
       }
 
       <div class="data-row" data-testid="aggregate-row-data-apertura">
         <span class="label">Apertura</span>
         <span class="value">
-          @if (isValidDate(data().dataApertura)) {
-            {{ data().dataApertura | date: 'longDate' }}
-          } @else {
-            {{ data().dataApertura || 'N/D' }}
-          }
+          {{ formatReadableDate(data().dataApertura) || 'N/D' }}
         </span>
       </div>
 
@@ -93,11 +94,7 @@ import { AggregateDetailDTO } from '../../../../shared/domain/dto/AggregateDTO';
         <div class="data-row" data-testid="aggregate-row-data-chiusura">
           <span class="label">Chiusura</span>
           <span class="value">
-            @if (isValidDate(data().dataChiusura)) {
-              {{ data().dataChiusura | date: 'longDate' }}
-            } @else {
-              {{ data().dataChiusura }}
-            }
+            {{ formatReadableDate(data().dataChiusura) || 'N/D' }}
           </span>
         </div>
       }
@@ -241,11 +238,5 @@ import { AggregateDetailDTO } from '../../../../shared/domain/dto/AggregateDTO';
 export class AggregateMetadataComponent {
   data = input.required<AggregateDetailDTO>();
 
-  protected isValidDate(value: string | null | undefined): boolean {
-    if (!value) {
-      return false;
-    }
-
-    return !Number.isNaN(new Date(value).getTime());
-  }
+  protected readonly formatReadableDate = formatReadableDate;
 }

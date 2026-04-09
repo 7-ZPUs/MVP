@@ -1,6 +1,7 @@
 import { Component, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RegistrationData } from '../../domain/document.models';
+import { formatReadableDate } from '../../../../shared/utils/date.util';
 
 @Component({
   selector: 'app-registration-data',
@@ -19,7 +20,7 @@ import { RegistrationData } from '../../domain/document.models';
       </div>
       <div class="data-row" data-testid="registration-row-protocollo">
         <span class="label">Protocollo:</span>
-        <span class="value">N. {{ data().numero }} del {{ data().data }}</span>
+        <span class="value">N. {{ data().numero }} del {{ formatReadableDate(data().data) }}</span>
       </div>
       <div class="data-row" data-testid="registration-row-codice">
         <span class="label">Codice:</span>
@@ -84,4 +85,5 @@ import { RegistrationData } from '../../domain/document.models';
 })
 export class RegistrationDataComponent {
   data = input.required<RegistrationData>();
+  protected readonly formatReadableDate = formatReadableDate;
 }
