@@ -1,4 +1,4 @@
-import { Component, inject, input, computed, effect, signal } from '@angular/core';
+import { Component, inject, input, computed, effect, signal, HostListener } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { Router } from '@angular/router';
 
@@ -87,17 +87,19 @@ import { NodeFallbackPanelComponent } from '../../dumb/node-fallback-panel/node-
       }
 
       @if (!isLoading() && !currentError()) {
-        <div class="content-layout">
+        <div class="content-layout" #container>
           @if (itemType() === 'DOCUMENT' && documentState().detail; as doc) {
             <aside
               class="sidebar"
-              [style.flex-basis]="isPreviewVisible() ? '350px' : '100%'"
-              [style.max-width]="isPreviewVisible() ? '50vw' : '100%'"
+              [style.width.px]="isPreviewVisible() ? sidebarWidth() : null"
+              [style.flex-basis]="isPreviewVisible() ? sidebarWidth() + 'px' : '100%'"
+              [style.max-width]="isPreviewVisible() ? 'min(80vw, 800px)' : '100%'"
             >
               <app-metadata-panel [itemType]="'DOCUMENT'" [documentData]="doc"></app-metadata-panel>
             </aside>
 
             @if (isPreviewVisible()) {
+              <div class="resizer" (mousedown)="startResize($event, 'DOCUMENT')"></div>
               <main class="main-content">
                 <app-document-viewer
                   data-testid="document-viewer"
@@ -110,12 +112,18 @@ import { NodeFallbackPanelComponent } from '../../dumb/node-fallback-panel/node-
           }
 
           @if (itemType() === 'AGGREGATE' && aggregateState().detail; as agg) {
-            <aside class="sidebar">
+            <aside
+              class="sidebar"
+              [style.width.px]="sidebarWidth()"
+              [style.flex-basis.px]="sidebarWidth()"
+            >
               <app-metadata-panel
                 [itemType]="'AGGREGATE'"
                 [aggregateData]="agg"
               ></app-metadata-panel>
             </aside>
+
+            <div class="resizer" (mousedown)="startResize($event, 'AGGREGATE')"></div>
 
             <main class="main-content">
               <app-document-index
@@ -126,12 +134,18 @@ import { NodeFallbackPanelComponent } from '../../dumb/node-fallback-panel/node-
           }
 
           @if (itemType() === 'PROCESS' && processState().detail; as process) {
-            <aside class="sidebar process-sidebar">
+            <aside
+              class="sidebar process-sidebar"
+              [style.width.px]="sidebarWidth()"
+              [style.flex-basis.px]="sidebarWidth()"
+            >
               <app-metadata-panel
                 [itemType]="'PROCESS'"
                 [processData]="process"
               ></app-metadata-panel>
             </aside>
+
+            <div class="resizer" (mousedown)="startResize($event, 'PROCESS')"></div>
 
             <main class="main-content process-main-content">
               <app-document-index
@@ -303,6 +317,42 @@ export class ItemDetailPageComponent {
   onOpenPreview() {
     // Mostra nuovamente la preview
     this.isPreviewVisible.set(true);
+  }
+
+  isResizing = signal(false);
+  sidebarWidth = signal(380); // Larghezza iniziale predefinita (es: DOCUMENT ha ~350px e gli altri erano flessibili)
+  private currentContext: string | null = null;
+  private startX = 0;
+  private startWidth = 0;
+
+  startResize(event: MouseEvent, context: string) {
+    event.preventDefault();
+    this.isResizing.set(true);
+    this.currentContext = context;
+    this.startX = event.clientX;
+    this.startWidth = this.sidebarWidth();
+  }
+
+  @HostListener('window:mousemove', ['$event'])
+  onMouseMove(event: MouseEvent) {
+    if (!this.isResizing()) return;
+
+    // Disabilita selezione testo
+    document.body.style.userSelect = 'none';
+
+    const deltaX = event.clientX - this.startX;
+    // Impostiamo la larghezza aggiornata bloccandola in un range minimo/massimo sensato
+    const newWidth = Math.max(250, Math.min(this.startWidth + deltaX, window.innerWidth - 250));
+    this.sidebarWidth.set(newWidth);
+  }
+
+  @HostListener('window:mouseup', ['$event'])
+  onMouseUp(event: MouseEvent) {
+    if (this.isResizing()) {
+      this.isResizing.set(false);
+      this.currentContext = null;
+      document.body.style.userSelect = '';
+    }
   }
 
   goBack() {

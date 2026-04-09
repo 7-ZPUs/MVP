@@ -15,15 +15,38 @@ import { toSpacedMetadataLabel } from '../../../../shared/utils/custom-metadata-
       } @else {
         <div class="subject-grid" data-testid="subjects-grid">
           @for (subject of subjects(); track subject.ruolo + subject.tipo) {
-            <div class="subject-card" [attr.data-testid]="'subject-card-' + toTestIdSuffix(subject.ruolo)">
-              <div class="card-header" [attr.data-testid]="'subject-header-' + toTestIdSuffix(subject.ruolo)">
-                <span class="role" data-testid="subject-role">{{ formatLabel(subject.ruolo) }}</span>
-                <span class="type-badge" data-testid="subject-type">{{ formatType(subject.tipo) }}</span>
+            <div
+              class="subject-card"
+              [attr.data-testid]="'subject-card-' + toTestIdSuffix(subject.ruolo)"
+            >
+              <div
+                class="card-header"
+                [attr.data-testid]="'subject-header-' + toTestIdSuffix(subject.ruolo)"
+              >
+                <span class="role" data-testid="subject-role">{{
+                  formatLabel(subject.ruolo)
+                }}</span>
+                <span class="type-badge" data-testid="subject-type">{{
+                  formatType(subject.tipo)
+                }}</span>
               </div>
-              <div class="card-body" [attr.data-testid]="'subject-body-' + toTestIdSuffix(subject.ruolo)">
+              <div
+                class="card-body"
+                [attr.data-testid]="'subject-body-' + toTestIdSuffix(subject.ruolo)"
+              >
                 @for (campo of subject.campiSpecifici | keyvalue; track campo.key) {
-                  <div class="data-row" [attr.data-testid]="'subject-field-' + toTestIdSuffix(subject.ruolo) + '-' + toTestIdSuffix(campo.key)">
-                    <span class="label" data-testid="subject-field-label">{{ formatLabel(campo.key) }}:</span>
+                  <div
+                    class="data-row"
+                    [attr.data-testid]="
+                      'subject-field-' +
+                      toTestIdSuffix(subject.ruolo) +
+                      '-' +
+                      toTestIdSuffix(campo.key)
+                    "
+                  >
+                    <span class="label" data-testid="subject-field-label"
+                      >{{ formatLabel(campo.key) }}:</span
+                    >
                     <span class="value" data-testid="subject-field-value">{{ campo.value }}</span>
                   </div>
                 }
@@ -96,8 +119,6 @@ import { toSpacedMetadataLabel } from '../../../../shared/utils/custom-metadata-
         display: flex;
         margin-bottom: 0.5rem;
         font-size: 0.85rem;
-        flex-wrap: wrap;
-        gap: 0.25rem;
       }
       .data-row:last-child {
         margin-bottom: 0;
@@ -105,10 +126,12 @@ import { toSpacedMetadataLabel } from '../../../../shared/utils/custom-metadata-
       .label {
         font-weight: 600;
         color: #64748b;
-        min-width: 120px;
+        width: 140px;
         flex-shrink: 0;
       }
       .value {
+        flex: 1;
+        min-width: 0;
         word-break: break-word;
         overflow-wrap: anywhere;
         color: #1e293b;
@@ -128,6 +151,9 @@ export class SubjectListComponent {
   }
 
   toTestIdSuffix(value: string): string {
-    return value.toLowerCase().replaceAll(/[^a-z0-9]+/g, '-').replaceAll(/(^-|-$)/g, '');
+    return value
+      .toLowerCase()
+      .replaceAll(/[^a-z0-9]+/g, '-')
+      .replaceAll(/(^-|-$)/g, '');
   }
 }
