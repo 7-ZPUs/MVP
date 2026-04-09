@@ -3,15 +3,14 @@
 }
 
 .export-overlays {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  z-index: 100;
+  position: fixed;
+  top: 1.5rem;
+  right: 1.5rem;
+  z-index: 1000;
   min-width: 320px;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  padding-top: 0.5rem;
 }
 
 .queue-container {

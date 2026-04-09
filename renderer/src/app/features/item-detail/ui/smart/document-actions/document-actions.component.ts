@@ -54,7 +54,7 @@ import { ExportPageComponent } from '../../../../../feature/export-manager/ui/sm
         </button>
 
         @if (itemType() === 'DOCUMENT') {
-          <app-export-page [documentId]="itemId()" itemType="DOCUMENT"></app-export-page>
+          <app-export-page [documentId]="itemId()"></app-export-page>
         }
       </div>
     </div>

@@ -12,7 +12,7 @@ export class FileViewerIpcAdapter {
 
         // non ha UC dedicati, perché è una semplice operazione di sistema che non coinvolge la logica di dominio
         ipcMain.handle(IpcChannels.FILE_OPEN_EXTERNAL, async (_event, filePath: string) => {
-            const absolutePath = path.resolve(app.getAppPath()+"/resources/test-dip/", filePath); // DA CORREGGERE QUANDO SI VA IN PRODUZIONE ( SEPLICEMENTE NON SERVE IL PEZZO HARDCODED)
+            const absolutePath = path.resolve(app.getAppPath()+"/resources/test-dip/", filePath); // DA CORREGGERE QUANDO SI VA IN PRODUZIONE ( SEPLICEMENTE NON SERVE IL PEZZO HARDCODED )
             const error = await shell.openPath(absolutePath);
             return { success: error === '' };
         });

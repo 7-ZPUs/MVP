@@ -8,7 +8,7 @@ import { ExportErrorCode, ExportPhase, OutputContext } from '../domain/enums';
 
 const PRINTABLE_FORMATS = ['pdf', 'png', 'jpg', 'jpeg', 'tiff'];
 
-@Injectable({ providedIn: 'root' })
+@Injectable()
 export class ExportFacade implements IExportFacade {
 
     constructor(
