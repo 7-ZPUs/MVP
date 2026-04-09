@@ -6,7 +6,10 @@ import { signal } from '@angular/core';
 
 import { SearchPageComponent } from '../ui/smart/search-page/search-page.component';
 import { SearchFacade } from '../services';
-import { IFilterValidator } from '../../validation/contracts/filter-validator.interface';
+import {
+  IFilterValidator,
+  FILTER_VALIDATOR_TOKEN,
+} from '../../validation/contracts/filter-validator.interface';
 import { ElementType } from '../../../../../../shared/domain/metadata/search.enum';
 
 describe('SearchPageComponent - Integrazione e Navigazione', () => {
@@ -40,7 +43,7 @@ describe('SearchPageComponent - Integrazione e Navigazione', () => {
       imports: [SearchPageComponent],
       providers: [
         { provide: SearchFacade, useValue: mockFacade },
-        { provide: 'IFilterValidator', useValue: mockValidator },
+        { provide: FILTER_VALIDATOR_TOKEN, useValue: mockValidator },
       ],
     }).compileComponents();
 

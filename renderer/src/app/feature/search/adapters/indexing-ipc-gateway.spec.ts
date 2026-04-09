@@ -15,8 +15,15 @@ import {
   ELECTRON_CONTEXT_BRIDGE_TOKEN,
   CACHE_SERVICE_TOKEN,
   ERROR_HANDLER_TOKEN,
+  LIVE_ANNOUNCER_TOKEN,
+  TELEMETRY_TOKEN,
 } from '../../../shared/contracts';
 import { SearchQueryType } from '../../../../../../shared/domain/metadata/search.enum';
+import { SEARCH_CHANNEL_TOKEN } from '../contracts/search-channel.interface';
+import { FILTER_VALIDATOR_TOKEN } from '../../validation/contracts/filter-validator.interface';
+import {
+  SEMANTIC_INDEX_STATUS_TOKEN,
+} from '../contracts/semantic-index.interface';
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -36,21 +43,20 @@ describe('Broad Integration: Full Search Engine Flow (Servizi Reali)', () => {
         SearchIpcGateway,
         FilterValidatorService,
         IpcErrorHandlerService,
-        { provide: 'ISearchChannel', useExisting: SearchIpcGateway },
-        { provide: 'IFilterValidator', useExisting: FilterValidatorService },
+        { provide: SEARCH_CHANNEL_TOKEN, useExisting: SearchIpcGateway },
+        { provide: FILTER_VALIDATOR_TOKEN, useExisting: FilterValidatorService },
         { provide: ERROR_HANDLER_TOKEN, useClass: IpcErrorHandlerService },
-        { provide: 'IErrorHandler', useClass: IpcErrorHandlerService },
         { provide: ELECTRON_CONTEXT_BRIDGE_TOKEN, useValue: mockElectronBridge },
         {
           provide: CACHE_SERVICE_TOKEN,
           useValue: { get: () => null, set: () => {}, invalidatePrefix: () => {} },
         },
-        { provide: 'ITelemetry', useValue: { trackEvent: vi.fn(), trackError: vi.fn() } },
+        { provide: TELEMETRY_TOKEN, useValue: { trackEvent: vi.fn(), trackError: vi.fn() } },
         {
-          provide: 'ISemanticIndexStatus',
+          provide: SEMANTIC_INDEX_STATUS_TOKEN,
           useValue: { getStatus: () => signal({ status: 'READY' }) },
         },
-        { provide: 'ILiveAnnouncer', useValue: { announce: vi.fn() } },
+        { provide: LIVE_ANNOUNCER_TOKEN, useValue: { announce: vi.fn() } },
       ],
     }).compileComponents();
 

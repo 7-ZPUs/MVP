@@ -11,6 +11,16 @@ import {
 import { SearchFilters } from '../../../../../../shared/domain/metadata';
 import { RegisterType, DIDAIFormation } from '../../../../../../shared/domain/metadata/search.enum';
 import { FilterValidatorService } from '../../validation/services/filter-validator.service';
+import { SEARCH_CHANNEL_TOKEN } from '../contracts/search-channel.interface';
+import { FILTER_VALIDATOR_TOKEN } from '../../validation/contracts/filter-validator.interface';
+import {
+  SEMANTIC_INDEX_STATUS_TOKEN,
+} from '../contracts/semantic-index.interface';
+import {
+  ERROR_HANDLER_TOKEN,
+  LIVE_ANNOUNCER_TOKEN,
+  TELEMETRY_TOKEN,
+} from '../../../shared/contracts';
 
 describe('Search Domain Integration (Facade + Validator + Strategies)', () => {
   let facade: SearchFacade;
@@ -33,14 +43,14 @@ describe('Search Domain Integration (Facade + Validator + Strategies)', () => {
       providers: [
         SearchFacade,
         FilterValidatorService,
-        { provide: 'IFilterValidator', useExisting: FilterValidatorService },
+        { provide: FILTER_VALIDATOR_TOKEN, useExisting: FilterValidatorService },
 
         // Mock infrastrutturali
-        { provide: 'ISearchChannel', useValue: mockSearchChannel },
-        { provide: 'IErrorHandler', useValue: mockErrorHandler },
-        { provide: 'ITelemetry', useValue: mockTelemetry },
-        { provide: 'ISemanticIndexStatus', useValue: mockSemanticStatus },
-        { provide: 'ILiveAnnouncer', useValue: mockLiveAnnouncer },
+        { provide: SEARCH_CHANNEL_TOKEN, useValue: mockSearchChannel },
+        { provide: ERROR_HANDLER_TOKEN, useValue: mockErrorHandler },
+        { provide: TELEMETRY_TOKEN, useValue: mockTelemetry },
+        { provide: SEMANTIC_INDEX_STATUS_TOKEN, useValue: mockSemanticStatus },
+        { provide: LIVE_ANNOUNCER_TOKEN, useValue: mockLiveAnnouncer },
       ],
     });
     const validatorService = TestBed.inject(FilterValidatorService);

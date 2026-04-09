@@ -4,6 +4,16 @@ import { SearchFacade } from './search-facade';
 import { of, Subject, throwError, Observable } from 'rxjs';
 import { SearchQueryType } from '../../../../../../shared/domain/metadata/search.enum';
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
+import { SEARCH_CHANNEL_TOKEN } from '../contracts/search-channel.interface';
+import { FILTER_VALIDATOR_TOKEN } from '../../validation/contracts/filter-validator.interface';
+import {
+  SEMANTIC_INDEX_STATUS_TOKEN,
+} from '../contracts/semantic-index.interface';
+import {
+  ERROR_HANDLER_TOKEN,
+  LIVE_ANNOUNCER_TOKEN,
+  TELEMETRY_TOKEN,
+} from '../../../shared/contracts';
 
 // Helper nativo per attendere il completamento di RxJS e Promise senza usare fakeAsync
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -44,13 +54,12 @@ describe('SearchFacade', () => {
     TestBed.configureTestingModule({
       providers: [
         SearchFacade,
-        { provide: 'ISearchChannel', useValue: mockSearchChannel },
-        { provide: 'IFilterValidator', useValue: mockValidator },
-        { provide: 'IErrorHandler', useValue: mockErrorHandler },
-        { provide: 'ITelemetry', useValue: mockTelemetry },
-        { provide: 'ITelemetryService', useValue: mockTelemetry },
-        { provide: 'ISemanticIndexStatus', useValue: mockSemanticStatus },
-        { provide: 'ILiveAnnouncer', useValue: mockLiveAnnouncer },
+        { provide: SEARCH_CHANNEL_TOKEN, useValue: mockSearchChannel },
+        { provide: FILTER_VALIDATOR_TOKEN, useValue: mockValidator },
+        { provide: ERROR_HANDLER_TOKEN, useValue: mockErrorHandler },
+        { provide: TELEMETRY_TOKEN, useValue: mockTelemetry },
+        { provide: SEMANTIC_INDEX_STATUS_TOKEN, useValue: mockSemanticStatus },
+        { provide: LIVE_ANNOUNCER_TOKEN, useValue: mockLiveAnnouncer },
       ],
     });
 

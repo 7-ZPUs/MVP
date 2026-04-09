@@ -6,6 +6,10 @@ export interface ISemanticIndexStatus {
   getStatus(): Signal<SemanticIndexState>;
 }
 
+export const SEMANTIC_INDEX_STATUS_TOKEN = new InjectionToken<ISemanticIndexStatus>(
+  'ISemanticIndexStatus',
+);
+
 export interface IIndexingChannel {
   getIndexingStatus(): Observable<SemanticIndexState>;
 }

@@ -6,8 +6,9 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { SearchPageComponent } from './search-page.component';
 import { SearchFacade } from '../../../services';
 import { SearchQueryType } from '../../../../../../../../shared/domain/metadata/search.enum';
-import { SearchState, ISearchResult } from '../../../../../../../../shared/domain/metadata';
+import { SearchState } from '../../../../../../../../shared/domain/metadata';
 import { SearchBarComponent } from '../../dumb/search-bar.component/search-bar.component';
+import { FILTER_VALIDATOR_TOKEN } from '../../../../validation/contracts/filter-validator.interface';
 
 describe('SearchPageComponent', () => {
   let component: SearchPageComponent;
@@ -55,7 +56,7 @@ describe('SearchPageComponent', () => {
       imports: [SearchPageComponent],
       providers: [
         { provide: SearchFacade, useValue: mockFacade },
-        { provide: 'IFilterValidator', useValue: mockFilterValidator },
+        { provide: FILTER_VALIDATOR_TOKEN, useValue: mockFilterValidator },
       ],
     }).compileComponents();
 

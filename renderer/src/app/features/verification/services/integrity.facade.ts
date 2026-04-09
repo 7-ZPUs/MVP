@@ -1,19 +1,23 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { IntegrityIpcGateway } from '../infrastructure/integrity-ipc.gateway';
-import { IpcErrorHandlerService } from '../../../core/services/ipc-error-handler.service';
-import { DocumentClassDTO } from '../../../shared/domain/dto/indexDTO';
+import { DocumentClassDTO, DocumentDTO, ProcessDTO } from '../../../shared/domain/dto/indexDTO';
 import { IntegrityStatusEnum } from '../../../shared/domain/value-objects/IntegrityStatusEnum';
 import { IntegrityNodeVM, IntegrityOverviewStats } from '../domain/integrity.view-models';
 
 import { IIntegrityFacade } from '../contracts/IIntegrityFacade';
 import { AppError } from '../../../shared/domain';
-import { IpcCacheService } from '../../../shared/infrastructure/ipc-cache.service';
+import {
+  CACHE_SERVICE_TOKEN,
+  ERROR_HANDLER_TOKEN,
+  ICacheService,
+  IErrorHandler,
+} from '../../../shared/contracts';
 
 @Injectable()
 export class IntegrityFacade implements IIntegrityFacade {
   private readonly gateway = inject(IntegrityIpcGateway);
-  private readonly errorHandler = inject(IpcErrorHandlerService);
-  private readonly cacheService = inject(IpcCacheService);
+  private readonly errorHandler = inject<IErrorHandler>(ERROR_HANDLER_TOKEN);
+  private readonly cacheService = inject<ICacheService>(CACHE_SERVICE_TOKEN);
 
   private readonly _isVerifying = signal<boolean>(false);
   private readonly _error = signal<string | null>(null);
@@ -38,6 +42,97 @@ export class IntegrityFacade implements IIntegrityFacade {
   public readonly corruptedNodes = computed(() => this._corruptedNodes());
   public readonly validRolledUpNodes = computed(() => this._validRolledUpNodes());
 
+  private createEmptyOverviewStats(): IntegrityOverviewStats {
+    return {
+      validProcesses: 0,
+      invalidProcesses: 0,
+      unverifiedProcesses: 0,
+    };
+  }
+
+  private updateProcessStats(stats: IntegrityOverviewStats, processes: ProcessDTO[]): void {
+    for (const process of processes) {
+      if (process.integrityStatus === IntegrityStatusEnum.VALID) {
+        stats.validProcesses++;
+      } else if (process.integrityStatus === IntegrityStatusEnum.INVALID) {
+        stats.invalidProcesses++;
+      } else {
+        stats.unverifiedProcesses++;
+      }
+    }
+  }
+
+  private async collectClassOverview(
+    cls: DocumentClassDTO,
+    stats: IntegrityOverviewStats,
+    valid: IntegrityNodeVM[],
+    corrupted: IntegrityNodeVM[],
+  ): Promise<void> {
+    const processes = await this.gateway.getProcessesByClassId(cls.id);
+    this.updateProcessStats(stats, processes);
+
+    if (cls.integrityStatus === IntegrityStatusEnum.VALID) {
+      valid.push({ id: cls.id, type: 'CLASS', name: cls.name, status: cls.integrityStatus });
+      return;
+    }
+
+    await this.collectProcessOverview(cls, processes, valid, corrupted);
+  }
+
+  private async collectProcessOverview(
+    cls: DocumentClassDTO,
+    processes: ProcessDTO[],
+    valid: IntegrityNodeVM[],
+    corrupted: IntegrityNodeVM[],
+  ): Promise<void> {
+    for (const process of processes) {
+      if (process.integrityStatus === IntegrityStatusEnum.VALID) {
+        valid.push({
+          id: process.id,
+          type: 'PROCESS',
+          name: `Processo ${process.uuid}`,
+          status: process.integrityStatus,
+          contextPath: cls.name,
+        });
+        continue;
+      }
+
+      const docs = await this.gateway.getDocumentsByProcessId(process.id);
+      this.collectDocumentOverview(cls, process, docs, valid, corrupted);
+    }
+  }
+
+  private collectDocumentOverview(
+    cls: DocumentClassDTO,
+    process: ProcessDTO,
+    docs: DocumentDTO[],
+    valid: IntegrityNodeVM[],
+    corrupted: IntegrityNodeVM[],
+  ): void {
+    for (const doc of docs) {
+      if (doc.integrityStatus === IntegrityStatusEnum.VALID) {
+        valid.push({
+          id: doc.id,
+          type: 'DOCUMENT',
+          name: `Doc ${doc.uuid}`,
+          status: doc.integrityStatus,
+          contextPath: `${cls.name} > ${process.uuid}`,
+        });
+        continue;
+      }
+
+      if (doc.integrityStatus === IntegrityStatusEnum.INVALID) {
+        corrupted.push({
+          id: doc.id,
+          type: 'DOCUMENT',
+          name: `Documento ${doc.uuid}`,
+          status: doc.integrityStatus,
+          contextPath: `Classe: ${cls.name} | Processo: ${process.uuid}`,
+        });
+      }
+    }
+  }
+
   /**
    * Carica la fotografia attuale del DIP navigando l'albero via IPC.
    */
@@ -48,64 +143,12 @@ export class IntegrityFacade implements IIntegrityFacade {
     try {
       const classes = await this.gateway.getClassesByDipId(dipId);
 
-      const stats = { validProcesses: 0, invalidProcesses: 0, unverifiedProcesses: 0 };
+      const stats = this.createEmptyOverviewStats();
       const corrupted: IntegrityNodeVM[] = [];
       const valid: IntegrityNodeVM[] = [];
 
       for (const cls of classes) {
-        const processes = await this.gateway.getProcessesByClassId(cls.id);
-
-        // 1. Calcolo Statistiche sui Processi
-        for (const p of processes) {
-          if (p.integrityStatus === IntegrityStatusEnum.VALID) stats.validProcesses++;
-          else if (p.integrityStatus === IntegrityStatusEnum.INVALID) stats.invalidProcesses++;
-          else stats.unverifiedProcesses++;
-        }
-
-        // 2. Logica di Roll-up (Elementi Validi)
-        if (cls.integrityStatus === IntegrityStatusEnum.VALID) {
-          // Se tutta la classe è valida, mostriamo solo lei!
-          valid.push({ id: cls.id, type: 'CLASS', name: cls.name, status: cls.integrityStatus });
-        } else {
-          // Se la classe ha problemi o è da verificare, analizziamo i figli
-          for (const p of processes) {
-            if (p.integrityStatus === IntegrityStatusEnum.VALID) {
-              // Se il processo è valido, mostriamo lui
-              valid.push({
-                id: p.id,
-                type: 'PROCESS',
-                name: `Processo ${p.uuid}`,
-                status: p.integrityStatus,
-                contextPath: cls.name,
-              });
-            } else {
-              // Se il processo è corrotto o non verificato, scendiamo ai documenti
-              const docs = await this.gateway.getDocumentsByProcessId(p.id);
-              for (const d of docs) {
-                if (d.integrityStatus === IntegrityStatusEnum.VALID) {
-                  valid.push({
-                    id: d.id,
-                    type: 'DOCUMENT',
-                    name: `Doc ${d.uuid}`,
-                    status: d.integrityStatus,
-                    contextPath: `${cls.name} > ${p.uuid}`,
-                  });
-                }
-                // 3. Logica di Drill-down (Elementi Corrotti)
-                else if (d.integrityStatus === IntegrityStatusEnum.INVALID) {
-                  // Mettiamo in evidenza il documento esatto che ha fallito
-                  corrupted.push({
-                    id: d.id,
-                    type: 'DOCUMENT',
-                    name: `Documento ${d.uuid}`,
-                    status: d.integrityStatus,
-                    contextPath: `Classe: ${cls.name} | Processo: ${p.uuid}`,
-                  });
-                }
-              }
-            }
-          }
-        }
+        await this.collectClassOverview(cls, stats, valid, corrupted);
       }
 
       this._overviewStats.set(stats);

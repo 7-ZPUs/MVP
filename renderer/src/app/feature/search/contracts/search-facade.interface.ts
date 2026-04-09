@@ -1,4 +1,4 @@
-import { Signal } from '@angular/core';
+import { InjectionToken, Signal } from '@angular/core';
 import {
   SearchFilters,
   SearchQuery,
@@ -14,3 +14,5 @@ export interface ISearchFacade {
   cancelSearch(): void;
   retry(): void;
 }
+
+export const SEARCH_FACADE_TOKEN = new InjectionToken<ISearchFacade>('ISearchFacade');

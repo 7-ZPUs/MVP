@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, ProviderToken } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { SearchFacade } from '../../../services';
 import { AdvancedFilterPanelComponent } from '../advanced-filter-panel/advanced-filter-panel';
@@ -10,7 +10,10 @@ import {
   ValidationResult,
   PartialSearchFilters,
 } from '../../../../../../../../shared/domain/metadata';
-import { IFilterValidator } from '../../../../validation/contracts/filter-validator.interface';
+import {
+  IFilterValidator,
+  FILTER_VALIDATOR_TOKEN,
+} from '../../../../validation/contracts/filter-validator.interface';
 import { SearchBarComponent } from '../../dumb/search-bar.component/search-bar.component';
 import {
   buildDetailRoute,
@@ -27,9 +30,7 @@ import {
 export class SearchPageComponent implements OnInit {
   protected readonly searchFacade = inject(SearchFacade);
   protected readonly router = inject(Router);
-  private readonly filterValidator: IFilterValidator = inject(
-    'IFilterValidator' as unknown as ProviderToken<IFilterValidator>,
-  );
+  private readonly filterValidator: IFilterValidator = inject(FILTER_VALIDATOR_TOKEN);
   public readonly state = this.searchFacade.getState();
   public externalValidation: ValidationResult | null = null;
 
@@ -105,7 +106,7 @@ export class SearchPageComponent implements OnInit {
 
   public onLiveValidationChanged(result: ValidationResult): void {
     this.externalValidation = result;
-    if( result.isValid === false) {
+    if (result.isValid === false) {
       this.isSidebarCollapsed = false;
     }
   }

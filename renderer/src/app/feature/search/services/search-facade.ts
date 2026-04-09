@@ -9,12 +9,25 @@ import {
   ISearchResult,
 } from '../../../../../../shared/domain/metadata';
 import { SearchQueryType } from '../../../../../../shared/domain/metadata/search.enum';
-import { IErrorHandler, ITelemetry, ILiveAnnouncer } from '../../../shared/contracts';
+import {
+  IErrorHandler,
+  ITelemetry,
+  ILiveAnnouncer,
+  ERROR_HANDLER_TOKEN,
+  TELEMETRY_TOKEN,
+  LIVE_ANNOUNCER_TOKEN,
+} from '../../../shared/contracts';
 import { debounceTime } from 'rxjs/internal/operators/debounceTime';
-import { ISemanticIndexStatus } from '../contracts/semantic-index.interface';
-import { IFilterValidator } from '../../validation/contracts/filter-validator.interface';
+import {
+  ISemanticIndexStatus,
+  SEMANTIC_INDEX_STATUS_TOKEN,
+} from '../contracts/semantic-index.interface';
+import {
+  IFilterValidator,
+  FILTER_VALIDATOR_TOKEN,
+} from '../../validation/contracts/filter-validator.interface';
 import { firstValueFrom, Subject } from 'rxjs';
-import { ISearchChannel } from '../contracts/search-channel.interface';
+import { ISearchChannel, SEARCH_CHANNEL_TOKEN } from '../contracts/search-channel.interface';
 import { TelemetryEvent } from '../../../shared/domain/';
 import { hasMeaningfulAdvancedFilters } from '../adapters/search-request.mapper';
 
@@ -40,12 +53,12 @@ export class SearchFacade implements ISearchFacade {
   private readonly searchTrigger = new Subject<void>();
 
   constructor(
-    @Inject('ISearchChannel') private readonly ipcGateway: ISearchChannel,
-    @Inject('IFilterValidator') private readonly filterValidator: IFilterValidator,
-    @Inject('IErrorHandler') private readonly errorHandler: IErrorHandler,
-    @Inject('ITelemetry') private readonly telemetryService: ITelemetry,
-    @Inject('ISemanticIndexStatus') private readonly semanticIndexStatus: ISemanticIndexStatus,
-    @Inject('ILiveAnnouncer') private readonly liveAnnouncer: ILiveAnnouncer,
+    @Inject(SEARCH_CHANNEL_TOKEN) private readonly ipcGateway: ISearchChannel,
+    @Inject(FILTER_VALIDATOR_TOKEN) private readonly filterValidator: IFilterValidator,
+    @Inject(ERROR_HANDLER_TOKEN) private readonly errorHandler: IErrorHandler,
+    @Inject(TELEMETRY_TOKEN) private readonly telemetryService: ITelemetry,
+    @Inject(SEMANTIC_INDEX_STATUS_TOKEN) private readonly semanticIndexStatus: ISemanticIndexStatus,
+    @Inject(LIVE_ANNOUNCER_TOKEN) private readonly liveAnnouncer: ILiveAnnouncer,
   ) {
     this.searchTrigger.pipe(debounceTime(300)).subscribe(() => this.executeFullTextSearch());
   }

@@ -12,9 +12,16 @@ import {
   ELECTRON_CONTEXT_BRIDGE_TOKEN,
   CACHE_SERVICE_TOKEN,
   ERROR_HANDLER_TOKEN,
+  LIVE_ANNOUNCER_TOKEN,
+  TELEMETRY_TOKEN,
 } from '../../../shared/contracts';
 import { SearchFacade } from '../services';
 import { SearchQueryType } from '../../../../../../shared/domain/metadata/search.enum';
+import { SEARCH_CHANNEL_TOKEN } from '../contracts/search-channel.interface';
+import { FILTER_VALIDATOR_TOKEN } from '../../validation/contracts/filter-validator.interface';
+import {
+  SEMANTIC_INDEX_STATUS_TOKEN,
+} from '../contracts/semantic-index.interface';
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -51,18 +58,16 @@ describe('Integration: Search Flow (UI -> Facade -> IPC Gateway)', () => {
       providers: [
         SearchFacade,
         SearchIpcGateway,
-        { provide: 'ISearchChannel', useExisting: SearchIpcGateway },
+        { provide: SEARCH_CHANNEL_TOKEN, useExisting: SearchIpcGateway },
         { provide: ELECTRON_CONTEXT_BRIDGE_TOKEN, useValue: mockElectronBridge },
 
         { provide: CACHE_SERVICE_TOKEN, useValue: mockCache },
         { provide: ERROR_HANDLER_TOKEN, useValue: mockErrorHandler },
-        { provide: 'IErrorHandler', useValue: mockErrorHandler },
 
-        { provide: 'IFilterValidator', useValue: mockValidator },
-        { provide: 'ITelemetry', useValue: mockTelemetry },
-        { provide: 'ITelemetryService', useValue: mockTelemetry },
-        { provide: 'ISemanticIndexStatus', useValue: mockSemanticStatus },
-        { provide: 'ILiveAnnouncer', useValue: mockLiveAnnouncer },
+        { provide: FILTER_VALIDATOR_TOKEN, useValue: mockValidator },
+        { provide: TELEMETRY_TOKEN, useValue: mockTelemetry },
+        { provide: SEMANTIC_INDEX_STATUS_TOKEN, useValue: mockSemanticStatus },
+        { provide: LIVE_ANNOUNCER_TOKEN, useValue: mockLiveAnnouncer },
       ],
     }).compileComponents();
 

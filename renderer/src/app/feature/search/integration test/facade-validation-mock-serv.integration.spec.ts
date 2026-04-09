@@ -9,6 +9,16 @@ import { SearchFilters, ISearchResult } from '../../../../../../shared/domain/me
 import { ElementType } from '../../../../../../shared/domain/metadata/search.enum';
 import { IntegrityStatusEnum } from '../../../../../../core/src/value-objects/IntegrityStatusEnum';
 import { TelemetryEvent } from '../../../shared/domain';
+import { SEARCH_CHANNEL_TOKEN } from '../contracts/search-channel.interface';
+import { FILTER_VALIDATOR_TOKEN } from '../../validation/contracts/filter-validator.interface';
+import {
+  SEMANTIC_INDEX_STATUS_TOKEN,
+} from '../contracts/semantic-index.interface';
+import {
+  ERROR_HANDLER_TOKEN,
+  LIVE_ANNOUNCER_TOKEN,
+  TELEMETRY_TOKEN,
+} from '../../../shared/contracts';
 
 // Strategie Reali
 import {
@@ -38,13 +48,13 @@ describe('Search Ecosystem (Facade + Domain + Infrastructure)', () => {
       providers: [
         SearchFacade,
         FilterValidatorService,
-        { provide: 'IFilterValidator', useExisting: FilterValidatorService },
-        { provide: 'ISearchChannel', useValue: mockSearchChannel },
-        { provide: 'IErrorHandler', useValue: mockErrorHandler },
-        { provide: 'ITelemetry', useValue: mockTelemetry },
-        { provide: 'ILiveAnnouncer', useValue: mockLiveAnnouncer },
+        { provide: FILTER_VALIDATOR_TOKEN, useExisting: FilterValidatorService },
+        { provide: SEARCH_CHANNEL_TOKEN, useValue: mockSearchChannel },
+        { provide: ERROR_HANDLER_TOKEN, useValue: mockErrorHandler },
+        { provide: TELEMETRY_TOKEN, useValue: mockTelemetry },
+        { provide: LIVE_ANNOUNCER_TOKEN, useValue: mockLiveAnnouncer },
         {
-          provide: 'ISemanticIndexStatus',
+          provide: SEMANTIC_INDEX_STATUS_TOKEN,
           useValue: { getStatus: vi.fn().mockReturnValue(signal({ status: 'READY' })) },
         },
       ],
