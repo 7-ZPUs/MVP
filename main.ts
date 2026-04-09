@@ -147,15 +147,13 @@ function exportDb(dstPath: string): void {
   };
   const bootstrapAdapter = new ApplicationBootstrapAdapter(lazyIndexDip);
   process.env.DIP_PATH = dipPath;
-  try {
-    bootstrapAdapter.bootstrap(dipPath);
-  } catch (error) {
+  bootstrapAdapter.bootstrap(dipPath).catch((error) => {
     console.warn(
       "[BOOTSTRAP] Skipping automatic DIP indexing:",
       error instanceof Error ? error.message : String(error),
     );
     bootstrapAdapter.markBootstrapCompleted();
-  }
+  });
 
   // Register all IPC adapters before creating the window
   ipcMain.on(IPC_CHANNEL_REGISTRY_CHANNEL, (event) => {

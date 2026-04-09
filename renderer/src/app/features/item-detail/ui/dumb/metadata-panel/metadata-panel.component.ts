@@ -15,7 +15,6 @@ import { AipInfoComponent } from '../../../../document/components/aip-info/aip-i
 import { AttachmentsComponent } from '../../../../document/components/attachments/attachments.component';
 import { ChangeTrackingComponent } from '../../../../document/components/change-tracking/change-tracking.component';
 import { ClassificationInfoComponent } from '../../../../document/components/classification-info/classification-info.component';
-import { ConservationProcessComponent } from '../../../../document/components/conservation-process/conservation-process.component';
 import { CustomMetadataComponent } from '../../../../document/components/custom-metadata/custom-metadata.component';
 import { DocumentMetadataComponent } from '../../../../document/components/document-metadata/document-metadata.component';
 import { FormatInfoComponent } from '../../../../document/components/format-info/format-info.component';
@@ -35,7 +34,6 @@ import { ProcessMetadataComponent } from '../../../../process/components/process
     AttachmentsComponent,
     ChangeTrackingComponent,
     ClassificationInfoComponent,
-    ConservationProcessComponent,
     CustomMetadataComponent,
     DocumentMetadataComponent,
     FormatInfoComponent,
@@ -93,14 +91,15 @@ import { ProcessMetadataComponent } from '../../../../process/components/process
             }
 
             @if (
-              doc.idAggregazione || (doc.documentiCollegati && doc.documentiCollegati.length > 0)
+              doc.aggregation?.idAggregazione ||
+              (doc.documentiCollegati && doc.documentiCollegati.length > 0)
             ) {
               <div class="metadata-card relation-card">
                 <h3>Relazioni</h3>
-                @if (doc.idAggregazione) {
+                @if (doc.aggregation?.idAggregazione) {
                   <div class="data-row">
                     <span class="label">Aggregazione collegata:</span>
-                    <span class="value">{{ doc.idAggregazione }}</span>
+                    <span class="value">{{ doc.aggregation?.idAggregazione }}</span>
                   </div>
                 }
                 @if (doc.documentiCollegati && doc.documentiCollegati.length > 0) {
@@ -132,9 +131,6 @@ import { ProcessMetadataComponent } from '../../../../process/components/process
             }
             @if (doc.aipInfo) {
               <app-aip-info [data]="doc.aipInfo"></app-aip-info>
-            }
-            @if (doc.conservationProcess) {
-              <app-conservation-process [data]="doc.conservationProcess"></app-conservation-process>
             }
 
             @if (doc.customMetadata?.length) {
