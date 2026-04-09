@@ -13,7 +13,7 @@ import { IDocumentChunker } from "../IDocumentChunker";
 const CHUNK_SIZE = 500;
 const CHUNK_OVERLAP = 200;
 const MAX_TEXT_BYTES = 100_000;
-const MAX_EMBEDDING_CHUNKS = 4;
+const MAX_EMBEDDING_CHUNKS = 8;
 
 @injectable()
 export class DocumentChunker implements IDocumentChunker {

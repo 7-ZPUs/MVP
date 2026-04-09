@@ -1,21 +1,20 @@
-import { TestBed }           from '@angular/core/testing';
-import { describe, it, expect, beforeEach, vi, type Mock } from 'vitest';
+import { TestBed } from '@angular/core/testing';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 
-import { ExportIpcGateway }  from './export-ipc-gateway.service';
-import { ExportResult }      from '../../../../../../shared/domain/ExportResult';
+import { ExportIpcGateway } from './export-ipc-gateway.service';
 import { FileDTO, SaveDialogResponseDto } from '../domain/dtos';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function makeFileDTO(overrides: Partial<FileDTO> = {}): FileDTO {
   return {
-    id:              1,
-    documentId:      10,
-    filename:        'documento.pdf',
-    path:            '/tmp/documento.pdf',
-    hash:            'abc123',
+    id: 1,
+    documentId: 10,
+    filename: 'documento.pdf',
+    path: '/tmp/documento.pdf',
+    hash: 'abc123',
     integrityStatus: 'ok',
-    isMain:          true,
+    isMain: true,
     ...overrides,
   };
 }
@@ -45,7 +44,6 @@ function setupNoElectron() {
 // ─── Tests ────────────────────────────────────────────────────────────────────
 
 describe('ExportIpcGateway', () => {
-
   beforeEach(() => {
     TestBed.resetTestingModule();
     delete (globalThis as any).electronAPI;
@@ -84,11 +82,6 @@ describe('ExportIpcGateway', () => {
       expect(result).toBeNull();
     });
 
-    it('openExternal ritorna senza errori', async () => {
-      const { gateway } = setupNoElectron();
-      await expect(gateway.openExternal('/file.pdf')).resolves.toBeUndefined();
-    });
-
     it('getFilesByDocumentId ritorna array vuoto', async () => {
       const { gateway } = setupNoElectron();
       const result = await gateway.getFilesByDocumentId(10);
@@ -105,7 +98,10 @@ describe('ExportIpcGateway', () => {
       const { gateway } = setup(ipc);
 
       await gateway.exportFile(42, '/dest/file.pdf');
-      expect(ipc.invoke).toHaveBeenCalledWith('file:download', { fileId: 42, destPath: '/dest/file.pdf' });
+      expect(ipc.invoke).toHaveBeenCalledWith('file:download', {
+        fileId: 42,
+        destPath: '/dest/file.pdf',
+      });
     });
 
     it('ritorna il risultato IPC invariato', async () => {
@@ -118,7 +114,7 @@ describe('ExportIpcGateway', () => {
       expect(result).toEqual(ipcResult);
     });
 
-    it('propaga l\'eccezione se ipc.invoke rigetta', async () => {
+    it("propaga l'eccezione se ipc.invoke rigetta", async () => {
       const ipc = makeIpcMock();
       ipc.invoke.mockRejectedValue(new Error('IPC crash'));
       const { gateway } = setup(ipc);
@@ -158,7 +154,7 @@ describe('ExportIpcGateway', () => {
       expect(result).toEqual(response);
     });
 
-    it('ritorna { canceled: true } se l\'utente annulla', async () => {
+    it("ritorna { canceled: true } se l'utente annulla", async () => {
       const ipc = makeIpcMock();
       ipc.invoke.mockResolvedValue({ canceled: true });
       const { gateway } = setup(ipc);
@@ -189,7 +185,7 @@ describe('ExportIpcGateway', () => {
       expect(result.folderPath).toBe('/tmp/export');
     });
 
-    it('ritorna { canceled: true } se l\'utente annulla', async () => {
+    it("ritorna { canceled: true } se l'utente annulla", async () => {
       const ipc = makeIpcMock();
       ipc.invoke.mockResolvedValue({ canceled: true });
       const { gateway } = setup(ipc);
@@ -232,35 +228,6 @@ describe('ExportIpcGateway', () => {
     });
   });
 
-  // ── openExternal ───────────────────────────────────────────────────────────
-
-  describe('openExternal()', () => {
-    it('invoca il canale corretto con filePath', async () => {
-      const ipc = makeIpcMock();
-      ipc.invoke.mockResolvedValue(undefined);
-      const { gateway } = setup(ipc);
-
-      await gateway.openExternal('/docs/report.pdf');
-      expect(ipc.invoke).toHaveBeenCalledWith('file:open-external', '/docs/report.pdf');
-    });
-
-    it('risolve senza valore di ritorno', async () => {
-      const ipc = makeIpcMock();
-      ipc.invoke.mockResolvedValue(undefined);
-      const { gateway } = setup(ipc);
-
-      await expect(gateway.openExternal('/file.pdf')).resolves.toBeUndefined();
-    });
-
-    it('propaga l\'eccezione se ipc.invoke rigetta', async () => {
-      const ipc = makeIpcMock();
-      ipc.invoke.mockRejectedValue(new Error('OS error'));
-      const { gateway } = setup(ipc);
-
-      await expect(gateway.openExternal('/file.pdf')).rejects.toThrow('OS error');
-    });
-  });
-
   // ── getFilesByDocumentId ───────────────────────────────────────────────────
 
   describe('getFilesByDocumentId()', () => {
@@ -273,7 +240,7 @@ describe('ExportIpcGateway', () => {
       expect(ipc.invoke).toHaveBeenCalledWith('browse:get-file-by-document', 10);
     });
 
-    it('ritorna l\'array di FileDTO dalla risposta IPC', async () => {
+    it("ritorna l'array di FileDTO dalla risposta IPC", async () => {
       const dtos = [makeFileDTO({ id: 1 }), makeFileDTO({ id: 2 })];
       const ipc = makeIpcMock();
       ipc.invoke.mockResolvedValue(dtos);
