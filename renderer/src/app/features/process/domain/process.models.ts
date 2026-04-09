@@ -1,6 +1,15 @@
 import { AppError } from '../../../shared/domain';
 import { DocumentIndexEntryDTO } from '../../../shared/domain/dto/AggregateDTO';
 
+export interface ProcessCoreMetadata {
+  processId: string;
+  processUuid: string;
+  integrityStatus: string;
+  documentClassName: string;
+  documentClassUuid: string;
+  documentClassTimestamp: string;
+}
+
 export interface ProcessConservationData {
   processo: string;
   sessione: string;
@@ -18,9 +27,9 @@ export interface ProcessOverviewData {
 
 export interface ProcessDocumentClassInfo {
   id: number | null;
-  name?: string;
-  uuid?: string;
-  timestamp?: string;
+  name: string;
+  uuid: string;
+  timestamp: string;
 }
 
 export interface ProcessCustomMetadataEntry {
@@ -32,6 +41,7 @@ export interface ProcessDetail {
   processId: string;
   processUuid: string;
   integrityStatus: string;
+  metadata: ProcessCoreMetadata;
   overview: ProcessOverviewData;
   conservation: ProcessConservationData;
   documentClass: ProcessDocumentClassInfo;

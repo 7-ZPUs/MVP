@@ -1,8 +1,8 @@
-import { Injectable, Signal, inject, signal } from '@angular/core';
+import { Inject, Injectable, Signal, signal } from '@angular/core';
 import { IProcessFacade } from '../contracts/IProcessFacade';
 import { ProcessDetail, ProcessState } from '../domain/process.models';
 import { mapProcessDtoToDetail } from '../mappers/process.mapper';
-import { IPC_GATEWAY_TOKEN } from '../../../shared/interfaces/ipc-gateway.interfaces';
+import { IPC_GATEWAY_TOKEN, IIpcGateway } from '../../../shared/interfaces/ipc-gateway.interfaces';
 import { IpcCacheService } from '../../../shared/infrastructure/ipc-cache.service';
 import { TelemetryService } from '../../../shared/infrastructure/telemetry.service';
 import { IpcErrorHandlerService } from '../../../shared/infrastructure/ipc-error-handler.service';
@@ -18,10 +18,12 @@ interface ProcessProbe {
 
 @Injectable()
 export class ProcessFacade implements IProcessFacade {
-  private readonly ipcGateway = inject(IPC_GATEWAY_TOKEN);
-  private readonly cache = inject(IpcCacheService);
-  private readonly telemetry = inject(TelemetryService);
-  private readonly errorHandler = inject(IpcErrorHandlerService);
+  constructor(
+    @Inject(IPC_GATEWAY_TOKEN) private readonly ipcGateway: IIpcGateway,
+    private readonly cache: IpcCacheService,
+    private readonly telemetry: TelemetryService,
+    private readonly errorHandler: IpcErrorHandlerService,
+  ) {}
 
   private readonly state = signal<ProcessState>({
     detail: null,
@@ -107,14 +109,7 @@ export class ProcessFacade implements IProcessFacade {
       }
 
       processDetail.indiceDocumenti = mapDocumentsToIndexEntries(documents);
-      if (documentClass) {
-        processDetail.documentClass = {
-          id: documentClass.id,
-          name: documentClass.name,
-          uuid: documentClass.uuid,
-          timestamp: documentClass.timestamp,
-        };
-      }
+      this.applyDocumentClassEnrichment(processDetail, documentClass);
 
       this.cache.set(cacheKey, processDetail, this.CACHE_TTL_MS);
 
@@ -187,5 +182,40 @@ export class ProcessFacade implements IProcessFacade {
     return new Promise((resolve) => {
       setTimeout(resolve, ms);
     });
+  }
+
+  private normalizeDisplayValue(value: unknown, fallback = 'N/A'): string {
+    if (value === null || value === undefined) {
+      return fallback;
+    }
+
+    const normalized = String(value).trim();
+    return normalized.length > 0 ? normalized : fallback;
+  }
+
+  private applyDocumentClassEnrichment(
+    processDetail: ProcessDetail,
+    documentClass: DocumentClassDTO | null,
+  ): void {
+    const name = this.normalizeDisplayValue(documentClass?.name, processDetail.documentClass.name);
+    const uuid = this.normalizeDisplayValue(documentClass?.uuid, processDetail.documentClass.uuid);
+    const timestamp = this.normalizeDisplayValue(
+      documentClass?.timestamp,
+      processDetail.documentClass.timestamp,
+    );
+
+    processDetail.documentClass = {
+      id: documentClass?.id ?? processDetail.documentClass.id,
+      name,
+      uuid,
+      timestamp,
+    };
+
+    processDetail.metadata = {
+      ...processDetail.metadata,
+      documentClassName: name,
+      documentClassUuid: uuid,
+      documentClassTimestamp: timestamp,
+    };
   }
 }
