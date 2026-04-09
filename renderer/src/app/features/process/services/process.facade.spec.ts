@@ -64,9 +64,17 @@ describe('ProcessFacade', () => {
       processId: '31',
       processUuid: 'PROC-31',
       integrityStatus: 'VALID',
+      metadata: {
+        processId: '31',
+        processUuid: 'PROC-31',
+        integrityStatus: 'VALID',
+        documentClassName: 'Classe',
+        documentClassUuid: 'N/A',
+        documentClassTimestamp: 'N/A',
+      },
       overview: { oggetto: 'P', procedimento: 'P', materiaArgomentoStruttura: 'P' },
       conservation: { processo: 'PROC-31', sessione: 'S1', dataInizio: '2026-01-01' },
-      documentClass: { id: 22, name: 'Classe' },
+      documentClass: { id: 22, name: 'Classe', uuid: 'N/A', timestamp: 'N/A' },
       customMetadata: [],
       indiceDocumenti: [],
     };
@@ -124,6 +132,7 @@ describe('ProcessFacade', () => {
 
     expect(facade.getState()().detail?.processUuid).toBe('PROC-31');
     expect(facade.getState()().detail?.documentClass.name).toBe('Classe Contratti');
+    expect(facade.getState()().detail?.metadata.documentClassName).toBe('Classe Contratti');
     expect(facade.getState()().detail?.indiceDocumenti.length).toBe(1);
     expect(mockCache.set).toHaveBeenCalledWith('process:31', expect.any(Object), 300000);
   });

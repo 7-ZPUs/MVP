@@ -25,8 +25,8 @@ function loadSqliteVssExtensions(db: Database.Database): void {
   const packageJsonPath = require.resolve(`${packageName}/package.json`);
   let packageDir = path.dirname(packageJsonPath);
 
-  if (packageDir.includes('app.asar')) {
-    packageDir = packageDir.replace('app.asar', 'app.asar.unpacked');
+  if (packageDir.includes("app.asar")) {
+    packageDir = packageDir.replace("app.asar", "app.asar.unpacked");
   }
 
   const vectorPath = path.join(packageDir, "lib", "vector0");
@@ -85,28 +85,33 @@ bootstrapDatabase(appBasePath: string): string {
     ? process.resourcesPath
     : path.join(appBasePath,'db')
 
-  const schemaPath = path.join(basePath, "schema.sql");
+    const schemaPath =
+      process.env["NODE_ENV"] === "development"
+        ? path.join(basePath, "db", "schema.sql")
+        : path.join(basePath, "schema.sql");
 
-  // Defensive check: catch packaging issues early
-  if (!existsSync(schemaPath)) {
-    throw new Error(`[BOOTSTRAP] CRITICAL: Schema not found at ${schemaPath}`);
+    // Defensive check: catch packaging issues early
+    if (!existsSync(schemaPath)) {
+      throw new Error(
+        `[BOOTSTRAP] CRITICAL: Schema not found at ${schemaPath}`,
+      );
+    }
+
+    // 2. Resolve Database Path (Writable user directory)
+    const dbPath = path.join(app.getPath("userData"), "dip-viewer.db");
+
+    // Always rebuild DB from scratch before indexing.
+    rmSync(dbPath, { force: true });
+
+    // 3. Read and execute schema
+    const schema = readFileSync(schemaPath, "utf-8");
+    const db = new Database(dbPath);
+    db.exec(schema);
+    db.close();
+
+    console.log(`[BOOTSTRAP] Database bootstrapped successfully at ${dbPath}.`);
+    return dbPath;
   }
-
-  // 2. Resolve Database Path (Writable user directory)
-  const dbPath = path.join(app.getPath("userData"), "dip-viewer.db");
-
-  // Always rebuild DB from scratch before indexing.
-  rmSync(dbPath, { force: true });
-
-  // 3. Read and execute schema
-  const schema = readFileSync(schemaPath, "utf-8");
-  const db = new Database(dbPath);
-  db.exec(schema);
-  db.close();
-  
-  console.log(`[BOOTSTRAP] Database bootstrapped successfully at ${dbPath}.`);
-  return dbPath;
-}
 
   private registerRuntimeDatabase(dbPath: string): void {
     const db = new Database(dbPath);

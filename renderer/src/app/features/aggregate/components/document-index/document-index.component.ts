@@ -16,6 +16,7 @@ import { DocumentIndexEntryDTO } from '../../../../shared/domain/dto/AggregateDT
             <tr>
               <th>Tipo</th>
               <th>Documento</th>
+              <th>Impronta</th>
               <th>Azione</th>
             </tr>
           </thead>
@@ -23,11 +24,24 @@ import { DocumentIndexEntryDTO } from '../../../../shared/domain/dto/AggregateDT
             @for (doc of items(); track doc.routeId || doc.identificativo) {
               <tr class="table-row" [attr.data-testid]="'document-index-row-' + $index">
                 <td>
-                  <span class="badge" data-testid="document-index-row-tipo">{{ doc.tipoDocumento }}</span>
+                  <span class="badge" data-testid="document-index-row-tipo">{{
+                    doc.tipoDocumento
+                  }}</span>
                 </td>
                 <td data-testid="document-index-row-identificativo">{{ doc.identificativo }}</td>
+                <td
+                  class="mono"
+                  style="font-size: 0.8rem; overflow-wrap: anywhere; word-break: break-all; max-width: 250px;"
+                  data-testid="document-index-row-impronta"
+                >
+                  {{ doc.impronta || 'N/D' }}
+                </td>
                 <td>
-                  <button class="btn-view" data-testid="document-index-row-action" (click)="onView(doc.routeId || doc.identificativo)">
+                  <button
+                    class="btn-view"
+                    data-testid="document-index-row-action"
+                    (click)="onView(doc.routeId || doc.identificativo)"
+                  >
                     <i class="bi bi-eye" aria-hidden="true"></i>
                     Visualizza
                   </button>
@@ -35,7 +49,7 @@ import { DocumentIndexEntryDTO } from '../../../../shared/domain/dto/AggregateDT
               </tr>
             } @empty {
               <tr>
-                <td colspan="3" class="empty-state" data-testid="document-index-empty">
+                <td colspan="4" class="empty-state" data-testid="document-index-empty">
                   Nessun documento presente in questo fascicolo.
                 </td>
               </tr>

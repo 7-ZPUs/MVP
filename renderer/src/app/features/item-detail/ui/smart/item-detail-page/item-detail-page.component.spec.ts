@@ -173,6 +173,14 @@ describe('ItemDetailPageComponent', () => {
         processId: '31',
         processUuid: 'PROC-31',
         integrityStatus: 'VALID',
+        metadata: {
+          processId: '31',
+          processUuid: 'PROC-31',
+          integrityStatus: 'VALID',
+          documentClassName: 'Classe Contratti',
+          documentClassUuid: 'CLASS-22',
+          documentClassTimestamp: '2026-04-08',
+        },
         overview: {
           oggetto: 'Processo Contratti',
           procedimento: 'Gestione Contratti',
@@ -186,6 +194,8 @@ describe('ItemDetailPageComponent', () => {
         documentClass: {
           id: 22,
           name: 'Classe Contratti',
+          uuid: 'CLASS-22',
+          timestamp: '2026-04-08',
         },
         customMetadata: [],
         indiceDocumenti: [],

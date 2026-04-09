@@ -7,6 +7,10 @@ import { DocumentMetadata } from '../../domain/document.models'; // Assicurati d
   template: `
     <div class="metadata-card" data-testid="document-metadata-card">
       <h3 data-testid="document-metadata-heading">Metadati Principali</h3>
+      <div class="data-row" data-testid="document-metadata-row-identificativo">
+        <span class="label">Identificativo:</span>
+        <span class="value">{{ data().identificativo }}</span>
+      </div>
       <div class="data-row" data-testid="document-metadata-row-nome">
         <span class="label">Nome:</span> <span class="value">{{ data().nome }}</span>
       </div>
@@ -48,6 +52,24 @@ import { DocumentMetadata } from '../../domain/document.models'; // Assicurati d
       <div class="data-row" data-testid="document-metadata-row-versione">
         <span class="label">Versione:</span> <span class="value">{{ data().versione }}</span>
       </div>
+      @if (data().tempoDiConservazione) {
+        <div class="data-row" data-testid="document-metadata-row-tempo-conservazione">
+          <span class="label">Tempo Conservazione:</span>
+          <span class="value">{{ data().tempoDiConservazione }}</span>
+        </div>
+      }
+      @if (data().idIdentificativoDocumentoPrimario) {
+        <div class="data-row" data-testid="document-metadata-row-id-doc-primario">
+          <span class="label">ID Documento Primario:</span>
+          <span class="value">{{ data().idIdentificativoDocumentoPrimario }}</span>
+        </div>
+      }
+      @if (data().impronta !== 'N/A') {
+        <div class="data-row" data-testid="document-metadata-row-impronta">
+          <span class="label">Impronta ({{ data().algoritmoImpronta }}):</span>
+          <span class="value hash-val" style="word-break: break-all;">{{ data().impronta }}</span>
+        </div>
+      }
     </div>
   `,
   styles: [

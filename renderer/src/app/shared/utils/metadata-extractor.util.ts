@@ -1,18 +1,22 @@
+import { MetadataNode } from './metadata-nodes.util';
+
 export class MetadataExtractor {
-  constructor(private readonly metadataNodes: any[]) {}
+  constructor(private readonly metadataNodes: MetadataNode[]) {}
 
   /**
    * Deeply search for the first metadata node whose name matches `pathName`
    */
-  public findValue(pathName: string, nodes: any[] = this.metadataNodes): any {
+  public findValue(pathName: string, nodes: unknown[] = this.metadataNodes): unknown {
     if (!nodes || !Array.isArray(nodes)) return undefined;
     for (const node of nodes) {
-      if (node.name === pathName) {
-        return node.value;
-      }
-      if (Array.isArray(node.value)) {
-        const found = this.findValue(pathName, node.value);
-        if (found !== undefined) return found;
+      if (typeof node === 'object' && node !== null && 'name' in node && 'value' in node) {
+        if (node.name === pathName) {
+          return node.value;
+        }
+        if (Array.isArray(node.value)) {
+          const found = this.findValue(pathName, node.value);
+          if (found !== undefined) return found;
+        }
       }
     }
     return undefined;
@@ -21,14 +25,20 @@ export class MetadataExtractor {
   /**
    * Returns all matching values for the specified node name
    */
-  public findAllValues(pathName: string, nodes: any[] = this.metadataNodes, results: any[] = []): any[] {
+  public findAllValues(
+    pathName: string,
+    nodes: unknown[] = this.metadataNodes,
+    results: unknown[] = [],
+  ): unknown[] {
     if (!nodes || !Array.isArray(nodes)) return results;
     for (const node of nodes) {
-      if (node.name === pathName) {
-        results.push(node.value);
-      }
-      if (Array.isArray(node.value)) {
-        this.findAllValues(pathName, node.value, results);
+      if (typeof node === 'object' && node !== null && 'name' in node && 'value' in node) {
+        if (node.name === pathName) {
+          results.push(node.value);
+        }
+        if (Array.isArray(node.value)) {
+          this.findAllValues(pathName, node.value, results);
+        }
       }
     }
     return results;
@@ -54,14 +64,26 @@ export class MetadataExtractor {
   /**
    * Used to extract generic Custom and Archimemo data that act as key value pairs
    */
-  public extractCustomDataPairs(nodeNames: string[] = ['CustomMetadata', 'ArchimemoData']): { nome: string; valore: string }[] {
+  public extractCustomDataPairs(
+    nodeNames: string[] = ['CustomMetadata', 'ArchimemoData'],
+  ): { nome: string; valore: string }[] {
     const pairs: { nome: string; valore: string }[] = [];
     for (const name of nodeNames) {
-      const nodeBlock = this.metadataNodes.find((m: any) => m.name === name);
+      const nodeBlock = this.metadataNodes.find((m) => m.name === name);
       if (nodeBlock && Array.isArray(nodeBlock.value)) {
         for (const prop of nodeBlock.value) {
-          if (typeof prop.value === 'string' || typeof prop.value === 'number') {
-            pairs.push({ nome: prop.name, valore: String(prop.value) });
+          if (
+            typeof prop === 'object' &&
+            prop !== null &&
+            'value' in prop &&
+            'name' in prop &&
+            (typeof (prop as MetadataNode).value === 'string' ||
+              typeof (prop as MetadataNode).value === 'number')
+          ) {
+            pairs.push({
+              nome: String((prop as MetadataNode).name),
+              valore: String((prop as MetadataNode).value),
+            });
           }
         }
       }
@@ -70,32 +92,39 @@ export class MetadataExtractor {
   }
 
   /**
-   * Iterates through the entire metadata tree. 
+   * Iterates through the entire metadata tree.
    * If a node branch isn't in 'knownXsdSchemaTags', it collapses those structures into flattened key values.
    * This is fantastic for unbridled / unverified metadata properties appended outside the standard XML.
    */
-  public extractGenericUnmappedCustomMetadata(knownXsdSchemaTags: Set<string>): { nome: string; valore: string }[] {
+  public extractGenericUnmappedCustomMetadata(
+    knownXsdSchemaTags: Set<string>,
+  ): { nome: string; valore: string }[] {
     const pairs: { nome: string; valore: string }[] = [];
 
-    const traverse = (nodes: any[], pathName = '', rootLevel = true) => {
+    const traverse = (nodes: unknown[], pathName = '', rootLevel = true) => {
       if (!nodes || !Array.isArray(nodes)) return;
 
       for (const node of nodes) {
+        if (typeof node !== 'object' || node === null || !('name' in node) || !('value' in node))
+          continue;
+
+        const mNode = node as MetadataNode;
+
         // Skip explicitly known standard core XSD blocks so we don't duplicate them as 'custom' metadata
-        if (rootLevel && knownXsdSchemaTags.has(node.name)) {
+        if (rootLevel && knownXsdSchemaTags.has(mNode.name)) {
           continue;
         }
 
         // If it's a known generic custom-data block (handled above), or we want to flatten it too?
         // Let's flatten everything not known!
-        const currentPath = pathName ? `${pathName}.${node.name}` : node.name;
+        const currentPath = pathName ? `${pathName}.${mNode.name}` : mNode.name;
 
-        if (Array.isArray(node.value)) {
-          traverse(node.value, currentPath, false); // Deeper levels are not root level
-        } else if (node.value !== null && node.value !== undefined) {
-          pairs.push({ 
-            nome: currentPath, 
-            valore: String(node.value) 
+        if (Array.isArray(mNode.value)) {
+          traverse(mNode.value, currentPath, false); // Deeper levels are not root level
+        } else if (mNode.value !== null && mNode.value !== undefined) {
+          pairs.push({
+            nome: currentPath,
+            valore: String(mNode.value),
           });
         }
       }

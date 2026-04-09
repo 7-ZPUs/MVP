@@ -17,14 +17,6 @@ import { FormatInfo } from '../../domain/document.models';
       <div class="data-row" data-testid="format-info-row-produttore">
         <span class="label">Produttore:</span> <span class="value">{{ data().produttore }}</span>
       </div>
-      <div class="data-row" data-testid="format-info-row-algoritmo-impronta">
-        <span class="label">Algoritmo Impronta:</span>
-        <span class="value">{{ data().algoritmoImpronta }}</span>
-      </div>
-      <div class="data-row" data-testid="format-info-row-impronta">
-        <span class="label">Impronta:</span>
-        <span class="value hash-val">{{ data().impronta }}</span>
-      </div>
     </div>
   `,
   styles: [

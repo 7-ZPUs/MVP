@@ -5,7 +5,7 @@ import { Component } from '@angular/core';
   standalone: true,
   template: `
     <section class="browse-home" aria-live="polite" role="region" aria-label="Introduzione alla pagina Esplora">
-      <p class="eyebrow">Esplora</p>
+      <p class="bi bi-eye">Esplora</p>
       <h2>Lavora sul DiP partendo dall albero di navigazione</h2>
       <p class="lead">
         Apri una classe documentale, un processo o un documento per visualizzare subito dettagli,

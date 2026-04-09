@@ -8,6 +8,7 @@ import { ProcessDetail } from '../../../../process/domain/process.models';
 // Importiamo i Dumb Component di Epica 1
 import { AdminProcedureComponent } from '../../../../aggregate/components/admin-procedure/admin-procedure.component';
 import { AggregateMetadataComponent } from '../../../../aggregate/components/aggregate-metadata/aggregate-metadata.component';
+import { AggregateSubjectListComponent } from '../../../../aggregate/components/aggregate-subjects/aggregate-subjects.component';
 import { RegistrationDataComponent } from '../../../../document/components/registration-data/registration-data.component';
 import { OptionalFieldAbsentComponent } from '../../../../../shared/components/optional-field-absent/optional-field-absent.component';
 // (Importa qui gli altri componenti come FormatInfo, VerificationInfo ecc.)
@@ -15,7 +16,6 @@ import { AipInfoComponent } from '../../../../document/components/aip-info/aip-i
 import { AttachmentsComponent } from '../../../../document/components/attachments/attachments.component';
 import { ChangeTrackingComponent } from '../../../../document/components/change-tracking/change-tracking.component';
 import { ClassificationInfoComponent } from '../../../../document/components/classification-info/classification-info.component';
-import { ConservationProcessComponent } from '../../../../document/components/conservation-process/conservation-process.component';
 import { CustomMetadataComponent } from '../../../../document/components/custom-metadata/custom-metadata.component';
 import { DocumentMetadataComponent } from '../../../../document/components/document-metadata/document-metadata.component';
 import { FormatInfoComponent } from '../../../../document/components/format-info/format-info.component';
@@ -35,13 +35,13 @@ import { ProcessMetadataComponent } from '../../../../process/components/process
     AttachmentsComponent,
     ChangeTrackingComponent,
     ClassificationInfoComponent,
-    ConservationProcessComponent,
     CustomMetadataComponent,
     DocumentMetadataComponent,
     FormatInfoComponent,
     SubjectListComponent,
     VerificationInfoComponent,
     AggregateMetadataComponent,
+    AggregateSubjectListComponent,
     ProcessMetadataComponent,
   ],
   template: `
@@ -65,6 +65,18 @@ import { ProcessMetadataComponent } from '../../../../process/components/process
               <app-optional-field-absent
                 message="Nessun procedimento amministrativo associato"
               ></app-optional-field-absent>
+            }
+
+            @if (agg.soggetti.length) {
+              <app-aggregate-subject-list [subjects]="agg.soggetti"></app-aggregate-subject-list>
+            } @else {
+              <app-optional-field-absent
+                message="Nessun soggetto associato al fascicolo"
+              ></app-optional-field-absent>
+            }
+
+            @if (agg.customMetadata?.length) {
+              <app-custom-metadata [entries]="agg.customMetadata"></app-custom-metadata>
             }
           }
         }
@@ -93,14 +105,15 @@ import { ProcessMetadataComponent } from '../../../../process/components/process
             }
 
             @if (
-              doc.idAggregazione || (doc.documentiCollegati && doc.documentiCollegati.length > 0)
+              doc.aggregation?.idAggregazione ||
+              (doc.documentiCollegati && doc.documentiCollegati.length > 0)
             ) {
               <div class="metadata-card relation-card">
                 <h3>Relazioni</h3>
-                @if (doc.idAggregazione) {
+                @if (doc.aggregation?.idAggregazione) {
                   <div class="data-row">
                     <span class="label">Aggregazione collegata:</span>
-                    <span class="value">{{ doc.idAggregazione }}</span>
+                    <span class="value">{{ doc.aggregation?.idAggregazione }}</span>
                   </div>
                 }
                 @if (doc.documentiCollegati && doc.documentiCollegati.length > 0) {
@@ -132,9 +145,6 @@ import { ProcessMetadataComponent } from '../../../../process/components/process
             }
             @if (doc.aipInfo) {
               <app-aip-info [data]="doc.aipInfo"></app-aip-info>
-            }
-            @if (doc.conservationProcess) {
-              <app-conservation-process [data]="doc.conservationProcess"></app-conservation-process>
             }
 
             @if (doc.customMetadata?.length) {

@@ -29,10 +29,13 @@ describe('process.mapper', () => {
     expect(detail.processId).toBe('31');
     expect(detail.processUuid).toBe('PROC-31');
     expect(detail.integrityStatus).toBe('VALID');
+    expect(detail.metadata.processId).toBe('31');
+    expect(detail.metadata.processUuid).toBe('PROC-31');
     expect(detail.conservation.processo).toBe('PRES-31');
     expect(detail.conservation.sessione).toBe('SESSION-99');
     expect(detail.conservation.dataInizio).toBe('2026-04-08');
     expect(detail.documentClass.id).toBe(22);
+    expect(detail.metadata.documentClassName).toBe('N/A');
     expect(detail.customMetadata.some((entry) => entry.nome === 'CanaleOrigine')).toBe(true);
   });
 
@@ -46,10 +49,12 @@ describe('process.mapper', () => {
     });
 
     expect(detail.processId).toBe('7');
-    expect(detail.processUuid).toBe('N/D');
+    expect(detail.processUuid).toBe('N/A');
     expect(detail.integrityStatus).toBe('UNKNOWN');
     expect(detail.overview.oggetto).toBe('N/D Test');
-    expect(detail.conservation.processo).toBe('N/D');
+    expect(detail.conservation.processo).toBe('N/A');
     expect(detail.documentClass.id).toBeNull();
+    expect(detail.documentClass.name).toBe('N/A');
+    expect(detail.metadata.documentClassUuid).toBe('N/A');
   });
 });
