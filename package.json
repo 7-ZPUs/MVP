@@ -100,7 +100,8 @@
       "target": "portable"
     },
     "mac": {
-      "target": "dmg"
+      "target": "dmg",
+      "identity": null
     },
     "asar": true,
     "asarUnpack": [

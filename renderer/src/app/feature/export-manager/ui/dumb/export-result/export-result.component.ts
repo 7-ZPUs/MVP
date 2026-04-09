@@ -29,8 +29,8 @@ export class ExportResultComponent {
     switch (r.outputContext) {
       case OutputContext.SINGLE_EXPORT: return 'Documento salvato con successo';
       case OutputContext.MULTI_EXPORT:  return `${r.successCount} documenti salvati`;
-      case OutputContext.SINGLE_PRINT:  return 'Documento aperto con lettore predefinito';
-      case OutputContext.MULTI_PRINT:   return `${r.successCount} documenti aperti con lettore predefinito`;
+      case OutputContext.SINGLE_PRINT:  return 'Documento inviato alla stampante';
+      case OutputContext.MULTI_PRINT:   return `${r.successCount} documenti inviati alla stampante`;
       case OutputContext.REPORT_PDF:    return 'Report PDF esportato con successo';
       default:                          return 'Operazione completata';
     }

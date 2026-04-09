@@ -6,4 +6,5 @@ export const FileUC = {
   CHECK_INTEGRITY_STATUS: Symbol("ICheckFileIntegrityStatusUC"),
   EXPORT_FILE: Symbol("IExportFileUC"),
   GET_CONTENT: Symbol("IGetFileContentUC"),
+  PRINT_FILE: Symbol("IPrintFileUC"),
 } as const;

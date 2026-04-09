@@ -120,10 +120,10 @@ describe('ExportResultComponent', () => {
 
     const cases: Array<[OutputContext, string | ((r: ExportResult) => string)]> = [
       [OutputContext.SINGLE_EXPORT, 'Documento salvato con successo'],
-      [OutputContext.SINGLE_PRINT,  'Documento aperto con lettore predefinito'],
+      [OutputContext.SINGLE_PRINT,  'Documento inviato alla stampante'],
       [OutputContext.REPORT_PDF,    'Report PDF esportato con successo'],
       [OutputContext.MULTI_EXPORT,  (r) => `${r.successCount} documenti salvati`],
-      [OutputContext.MULTI_PRINT,   (r) => `${r.successCount} documenti aperti con lettore predefinito`],
+      [OutputContext.MULTI_PRINT,   (r) => `${r.successCount} documenti inviati alla stampante`],
     ];
 
     cases.forEach(([ctx, expected]) => {
