@@ -91,6 +91,40 @@ describe("DocumentClassMapper", () => {
     );
   });
 
+  it("maps domain to search result including name", () => {
+    const entity = new DocumentClass(
+      "dip-uuid",
+      "dc-uuid",
+      "Classe Risorse Umane",
+      "2026-01-01T00:00:00Z",
+      IntegrityStatusEnum.VALID,
+      21,
+      6,
+    );
+
+    const result = DocumentClassMapper.toSearchResult(entity);
+    expect(result).toEqual({
+      id: 21,
+      uuid: "dc-uuid",
+      integrityStatus: IntegrityStatusEnum.VALID,
+      name: "Classe Risorse Umane",
+      type: "CLASSE",
+    });
+  });
+
+  it("throws when converting to search result with null id", () => {
+    const entity = new DocumentClass(
+      "dip-uuid",
+      "dc-uuid",
+      "Classe",
+      "2026-01-01T00:00:00Z",
+    );
+
+    expect(() => DocumentClassMapper.toSearchResult(entity)).toThrow(
+      "Cannot convert to SearchResult: DocumentClass entity is not yet persisted and has no ID.",
+    );
+  });
+
   it("maps domain to persistence model", () => {
     const entity = new DocumentClass(
       "dip-uuid",
