@@ -16,7 +16,7 @@ import { CommonModule } from '@angular/common';
 
       <div class="actions-section">
         @if (isPreviewVisible()) {
-          <div class="zoom-controls">
+          <!-- <div class="zoom-controls">
             <button
               class="icon-btn"
               (click)="zoomOut.emit()"
@@ -37,7 +37,7 @@ import { CommonModule } from '@angular/common';
             <button class="icon-btn reset-btn" (click)="resetZoom.emit()" title="Ripristina zoom">
               Ripristina
             </button>
-          </div>
+          </div> -->
 
           <button
             class="close-btn"
