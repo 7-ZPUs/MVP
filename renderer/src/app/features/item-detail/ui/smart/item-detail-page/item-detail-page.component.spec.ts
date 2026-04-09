@@ -186,6 +186,11 @@ describe('ItemDetailPageComponent', () => {
           procedimento: 'Gestione Contratti',
           materiaArgomentoStruttura: 'Contratti',
         },
+        submission: {
+          processo: 'PROC-31',
+          sessione: 'VERS-1',
+          dataInizio: '2026-04-08',
+        },
         conservation: {
           processo: 'PROC-31',
           sessione: 'SESS-1',

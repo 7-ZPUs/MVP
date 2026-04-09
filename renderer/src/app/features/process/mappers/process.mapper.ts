@@ -5,6 +5,7 @@ import {
   ProcessDetail,
   ProcessDocumentClassInfo,
   ProcessOverviewData,
+  ProcessSubmissionData,
 } from '../domain/process.models';
 import { MetadataExtractor } from '../../../shared/utils/metadata-extractor.util';
 import { normalizeMetadataNodes } from '../../../shared/utils/metadata-nodes.util';
@@ -33,11 +34,6 @@ const KNOWN_PROCESS_XSD_ROOT_BLOCKS = new Set<string>([
   'ArchimemoData',
 ]);
 
-function optionalString(value: string): string | undefined {
-  const trimmed = value.trim();
-  return trimmed.length > 0 ? trimmed : undefined;
-}
-
 function requiredString(value: unknown, fallback = 'N/A'): string {
   if (value === null || value === undefined) {
     return fallback;
@@ -56,6 +52,73 @@ function optionalNumber(value: unknown): number | null {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
+function firstDefined(...values: Array<string | undefined>): string | undefined {
+  for (const value of values) {
+    if (!value) {
+      continue;
+    }
+
+    const normalized = value.trim();
+    if (normalized.length > 0) {
+      return normalized;
+    }
+  }
+
+  return undefined;
+}
+
+function createScopedExtractor(value: unknown): MetadataExtractor | null {
+  const scopedNodes = normalizeMetadataNodes(value);
+  return scopedNodes.length > 0 ? new MetadataExtractor(scopedNodes) : null;
+}
+
+function getScopedExtractor(
+  extractor: MetadataExtractor | null,
+  blockName: string,
+): MetadataExtractor | null {
+  if (!extractor) {
+    return null;
+  }
+
+  return createScopedExtractor(extractor.findValue(blockName));
+}
+
+function getScopedValue(
+  extractor: MetadataExtractor | null,
+  blockName: string,
+  fieldName: string,
+): string | undefined {
+  const blockExtractor = getScopedExtractor(extractor, blockName);
+  return blockExtractor ? firstDefined(blockExtractor.getString(fieldName, '')) : undefined;
+}
+
+function getAttributeValue(
+  extractor: MetadataExtractor | null,
+  attributeName: string,
+): string | undefined {
+  if (!extractor) {
+    return undefined;
+  }
+
+  const attributeExtractor = createScopedExtractor(extractor.findValue('$'));
+  const fromAttributeBlock = attributeExtractor
+    ? firstDefined(
+        attributeExtractor.getString(attributeName, ''),
+        attributeExtractor.getString(`@_${attributeName}`, ''),
+        attributeExtractor.getString(`ark-aip:${attributeName}`, ''),
+      )
+    : undefined;
+
+  return (
+    fromAttributeBlock ??
+    firstDefined(
+      extractor.getString(attributeName, ''),
+      extractor.getString(`@_${attributeName}`, ''),
+      extractor.getString(`ark-aip:${attributeName}`, ''),
+    )
+  );
+}
+
 function mapProcessOverview(extractor: MetadataExtractor): ProcessOverviewData {
   return {
     oggetto: extractor.getString('Oggetto', 'N/A'),
@@ -64,20 +127,70 @@ function mapProcessOverview(extractor: MetadataExtractor): ProcessOverviewData {
   };
 }
 
+function mapProcessSubmission(
+  rootExtractor: MetadataExtractor,
+  processExtractor: MetadataExtractor,
+  fallbackProcessUuid: string,
+): ProcessSubmissionData {
+  const submissionExtractor = getScopedExtractor(processExtractor, 'SubmissionSession');
+
+  return {
+    processo: fallbackProcessUuid,
+    sessione:
+      firstDefined(
+        getAttributeValue(submissionExtractor, 'uuid'),
+        rootExtractor.getString('Sessione', ''),
+      ) ?? 'N/A',
+    dataInizio:
+      firstDefined(
+        getScopedValue(submissionExtractor, 'Start', 'Date'),
+        getScopedValue(processExtractor, 'Start', 'Date'),
+        rootExtractor.getString('DataApertura', ''),
+      ) ?? 'N/A',
+    dataFine: firstDefined(getScopedValue(submissionExtractor, 'End', 'Date')),
+    uuidTerminatore: firstDefined(
+      getScopedValue(submissionExtractor, 'End', 'UserUUID'),
+      rootExtractor.getString('UUIDTerminatore', ''),
+    ),
+    canaleTerminazione: firstDefined(
+      getScopedValue(submissionExtractor, 'End', 'Source'),
+      rootExtractor.getString('TipoTerminazione', ''),
+    ),
+  };
+}
+
 function mapProcessConservation(
-  extractor: MetadataExtractor,
+  rootExtractor: MetadataExtractor,
+  processExtractor: MetadataExtractor,
   fallbackProcessUuid: string,
 ): ProcessConservationData {
+  const preservationExtractor = getScopedExtractor(processExtractor, 'PreservationSession');
+
   return {
-    processo: extractor.getString('PreservationProcessUUID', fallbackProcessUuid),
-    sessione: extractor.getString('Sessione', 'N/A'),
-    dataInizio: extractor.getString(
-      'PreservationProcessDate',
-      extractor.getString('DataApertura', 'N/A'),
+    processo: firstDefined(rootExtractor.getString('PreservationProcessUUID', ''), fallbackProcessUuid) ?? 'N/A',
+    sessione:
+      firstDefined(
+        getAttributeValue(preservationExtractor, 'uuid'),
+        rootExtractor.getString('Sessione', ''),
+      ) ?? 'N/A',
+    dataInizio:
+      firstDefined(
+        getScopedValue(preservationExtractor, 'Start', 'Date'),
+        rootExtractor.getString('PreservationProcessDate', ''),
+        rootExtractor.getString('DataApertura', ''),
+      ) ?? 'N/A',
+    dataFine: firstDefined(
+      getScopedValue(preservationExtractor, 'End', 'Date'),
+      rootExtractor.getString('PreservationProcessEnd', ''),
     ),
-    dataFine: optionalString(extractor.getString('PreservationProcessEnd', '')),
-    uuidTerminatore: optionalString(extractor.getString('UUIDTerminatore', '')),
-    canaleTerminazione: optionalString(extractor.getString('TipoTerminazione', '')),
+    uuidTerminatore: firstDefined(
+      getScopedValue(preservationExtractor, 'End', 'UserUUID'),
+      rootExtractor.getString('UUIDTerminatore', ''),
+    ),
+    canaleTerminazione: firstDefined(
+      getScopedValue(preservationExtractor, 'End', 'Source'),
+      rootExtractor.getString('TipoTerminazione', ''),
+    ),
   };
 }
 
@@ -127,6 +240,14 @@ export function mapProcessDtoToDetail(dto: unknown): ProcessDetail {
   const processUuid = requiredString(source.uuid);
   const integrityStatus = requiredString(source.integrityStatus, 'UNKNOWN');
   const documentClass = mapProcessDocumentClass(source, extractor);
+  const processExtractor = getScopedExtractor(extractor, 'Process');
+  const scopedProcessExtractor = processExtractor ?? extractor;
+  const resolvedProcessUuid =
+    firstDefined(
+      extractor.getString('PreservationProcessUUID', ''),
+      getAttributeValue(scopedProcessExtractor, 'uuid'),
+      processUuid,
+    ) ?? 'N/A';
 
   return {
     processId,
@@ -134,7 +255,8 @@ export function mapProcessDtoToDetail(dto: unknown): ProcessDetail {
     integrityStatus,
     metadata: mapProcessCoreMetadata(processId, processUuid, integrityStatus, documentClass),
     overview: mapProcessOverview(extractor),
-    conservation: mapProcessConservation(extractor, processUuid),
+    submission: mapProcessSubmission(extractor, scopedProcessExtractor, resolvedProcessUuid),
+    conservation: mapProcessConservation(extractor, scopedProcessExtractor, resolvedProcessUuid),
     documentClass,
     customMetadata: mapProcessCustomMetadata(extractor),
     indiceDocumenti: [],

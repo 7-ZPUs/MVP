@@ -22,6 +22,14 @@ function makeDetail(overrides: Partial<ProcessDetail> = {}): ProcessDetail {
       procedimento: 'Gestione Contratti',
       materiaArgomentoStruttura: 'Contratti Pubblici',
     },
+    submission: {
+      processo: 'PROC-31',
+      sessione: 'VERS-2026',
+      dataInizio: '2026-04-08',
+      dataFine: '2026-04-09',
+      uuidTerminatore: 'TERM-VERS-123',
+      canaleTerminazione: 'WebGui',
+    },
     conservation: {
       processo: 'PRES-31',
       sessione: 'SESS-2026',
@@ -69,9 +77,9 @@ describe('ProcessMetadataComponent', () => {
 
     expect(el.querySelector('[data-testid="process-metadata-card-anagrafica"]')).toBeTruthy();
     expect(el.querySelector('[data-testid="process-metadata-card-overview"]')).toBeTruthy();
+    expect(el.querySelector('[data-testid="process-metadata-card-submission"]')).toBeTruthy();
     expect(el.querySelector('[data-testid="process-metadata-card-conservation"]')).toBeTruthy();
-    expect(el.querySelector('[data-testid="process-metadata-card-custom"]')).toBeTruthy();
-    expect(el.querySelector('[data-testid="custom-metadata-table"]')).toBeTruthy();
+    expect(el.querySelector('[data-testid="process-metadata-card-custom"]')).toBeNull();
     expect(
       el.querySelector('[data-testid="process-metadata-heading-overview"]')?.textContent?.trim(),
     ).toBe('Contesto del Processo');
@@ -93,6 +101,18 @@ describe('ProcessMetadataComponent', () => {
     ).toBeTruthy();
     expect(
       el.querySelector('[data-testid="process-metadata-row-conservation-canale-terminazione"]'),
+    ).toBeTruthy();
+  });
+
+  it('mostra i campi opzionali di versamento quando presenti', () => {
+    const el = render(makeDetail());
+
+    expect(el.querySelector('[data-testid="process-metadata-row-submission-data-fine"]')).toBeTruthy();
+    expect(
+      el.querySelector('[data-testid="process-metadata-row-submission-uuid-terminatore"]'),
+    ).toBeTruthy();
+    expect(
+      el.querySelector('[data-testid="process-metadata-row-submission-canale-terminazione"]'),
     ).toBeTruthy();
   });
 
@@ -134,6 +154,26 @@ describe('ProcessMetadataComponent', () => {
     ).toBeNull();
   });
 
+  it('nasconde i campi opzionali di versamento quando assenti', () => {
+    const el = render(
+      makeDetail({
+        submission: {
+          processo: 'PROC-31',
+          sessione: 'VERS-2026',
+          dataInizio: '2026-04-08',
+        },
+      }),
+    );
+
+    expect(el.querySelector('[data-testid="process-metadata-row-submission-data-fine"]')).toBeNull();
+    expect(
+      el.querySelector('[data-testid="process-metadata-row-submission-uuid-terminatore"]'),
+    ).toBeNull();
+    expect(
+      el.querySelector('[data-testid="process-metadata-row-submission-canale-terminazione"]'),
+    ).toBeNull();
+  });
+
   it('usa il fallback N/A per campi classe documentale non valorizzati', () => {
     const el = render(
       makeDetail({
@@ -165,26 +205,10 @@ describe('ProcessMetadataComponent', () => {
     ).toContain('N/A');
   });
 
-  it('renderizza metadata custom in tabella con naming semplificato e coerente', () => {
+  it('non visualizza la sezione metadati aggiuntivi anche se presenti', () => {
     const el = render(makeDetail());
 
-    const customRow = el.querySelector('[data-testid="custom-metadata-row-end-date"]');
-    expect(customRow).toBeTruthy();
-    expect(customRow?.textContent).toContain('End.Date');
-    expect(customRow?.textContent).toContain('2026-04-09');
-  });
-
-  it('mostra il box di assenza quando non ci sono metadata custom', () => {
-    const el = render(
-      makeDetail({
-        customMetadata: [],
-      }),
-    );
-
     expect(el.querySelector('[data-testid="process-metadata-card-custom"]')).toBeNull();
-    expect(el.querySelector('[data-testid="process-metadata-custom-empty"]')).toBeTruthy();
-    expect(el.querySelector('[data-testid="optional-field-absent-message"]')?.textContent).toContain(
-      'Nessun metadato aggiuntivo presente per questo processo',
-    );
+    expect(el.querySelector('[data-testid="process-metadata-custom-empty"]')).toBeNull();
   });
 });

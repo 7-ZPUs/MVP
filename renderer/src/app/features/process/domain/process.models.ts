@@ -19,6 +19,15 @@ export interface ProcessConservationData {
   canaleTerminazione?: string;
 }
 
+export interface ProcessSubmissionData {
+  processo: string;
+  sessione: string;
+  dataInizio: string;
+  dataFine?: string;
+  uuidTerminatore?: string;
+  canaleTerminazione?: string;
+}
+
 export interface ProcessOverviewData {
   oggetto: string;
   procedimento: string;
@@ -43,6 +52,7 @@ export interface ProcessDetail {
   integrityStatus: string;
   metadata: ProcessCoreMetadata;
   overview: ProcessOverviewData;
+  submission: ProcessSubmissionData;
   conservation: ProcessConservationData;
   documentClass: ProcessDocumentClassInfo;
   customMetadata: ProcessCustomMetadataEntry[];
