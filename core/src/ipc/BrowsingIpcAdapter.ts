@@ -34,6 +34,7 @@ import { IGetDipByIdUC } from "../use-case/dip/IGetDipByIdUC";
 import { IGetDipByStatusUC } from "../use-case/dip/IGetDipByStatusUC";
 import { DipUC } from "../use-case/dip/token";
 import { IpcChannels } from "../../../shared/ipc-channels";
+import { IGetFileContentUC } from "../use-case/file/IGetFileContentUC";
 
 export class BrowsingIpcAdapter {
   static register(ipcMain: IpcMain): void {
@@ -81,6 +82,9 @@ export class BrowsingIpcAdapter {
     );
     const getDipByStatusUC: IGetDipByStatusUC =
       container.resolve<IGetDipByStatusUC>(DipUC.GET_BY_STATUS);
+    const getFileBytesByIdUC = container.resolve<IGetFileContentUC>(
+      FileUC.GET_CONTENT,
+    );
 
     // ------------------------------------------------------------------ //
     // Documento channels
@@ -124,23 +128,7 @@ export class BrowsingIpcAdapter {
     ipcMain.handle(
       IpcChannels.BROWSE_GET_FILE_BUFFER_BY_ID,
       (_event, id: number) => {
-        const file = getFileByIdUC.execute(id);
-        if (!file) return null;
-        const fs = require("fs");
-        const path = require("path");
-        const dipPath = container.resolve<string>("DIP_PATH_TOKEN");
-        try {
-          const dipPath = process.env.DIP_PATH || process.cwd();
-          const absolutePath = path.resolve(dipPath, file.getPath());
-          return fs.readFileSync(absolutePath);
-        } catch (err) {
-          const errorMsg = err instanceof Error ? err.message : String(err);
-          console.error(
-            `[FILE_READ] Error reading file with ID ${id}: ${errorMsg}`,
-            err,
-          );
-          return null;
-        }
+        return getFileBytesByIdUC.execute(id);
       },
     );
 

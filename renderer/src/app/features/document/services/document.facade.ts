@@ -92,6 +92,13 @@ export class DocumentFacade implements IDocumentFacade {
   public async getFileBlob(documentId: string): Promise<Uint8Array> {
     const startTime = Date.now();
     const cacheKey = `${this.PREFIX_BLOB}${documentId}`;
+    const numericDocumentId = Number(documentId);
+
+    if (!Number.isFinite(numericDocumentId)) {
+      throw this.errorHandler.handle(
+        new Error(`ID documento non numerico per il recupero file: ${documentId}`),
+      );
+    }
 
     try {
       // Strategia Cache-First (1 min)
@@ -103,7 +110,7 @@ export class DocumentFacade implements IDocumentFacade {
       // Passaggio 1: Trovare l'ID del File associato a questo Documento
       const files = (await this.ipcGateway.invoke(
         IpcChannels.BROWSE_GET_FILE_BY_DOCUMENT,
-        Number(documentId),
+        numericDocumentId,
         null,
       )) as { id: number; isMain: boolean }[];
 

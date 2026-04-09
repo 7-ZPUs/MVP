@@ -68,7 +68,10 @@ function mapIdentityAndMimeType(
     extractor.getString('id') ||
     (rootIdent ? String(rootIdent) : '') ||
     extractor.getString('Identificativo');
-  const rawId = String((rawIdFromMeta || dto.id) ?? '').trim();
+  const rawIdFromDto = String(dto.id ?? '').trim();
+  // Prefer the persisted DTO id (DB identity) for app flows like preview/export.
+  // Domain/business identifiers from metadata are still exposed in metadata.identificativo.
+  const rawId = rawIdFromDto || String(rawIdFromMeta ?? '').trim();
   const rawUuid = String((extractor.getString('uuid') || dto.uuid) ?? '').trim();
 
   const fallbackFileName = rawId.length > 0 ? `Documento ${rawId}` : 'Documento';

@@ -5,4 +5,5 @@ export const FileUC = {
   CREATE: Symbol("ICreateFileUC"),
   CHECK_INTEGRITY_STATUS: Symbol("ICheckFileIntegrityStatusUC"),
   EXPORT_FILE: Symbol("IExportFileUC"),
+  GET_CONTENT: Symbol("IGetFileContentUC"),
 } as const;
