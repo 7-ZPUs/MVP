@@ -16,7 +16,6 @@ import { DocumentIndexEntryDTO } from '../../../../shared/domain/dto/AggregateDT
             <tr>
               <th>Tipo</th>
               <th>Documento</th>
-              <th>Impronta</th>
               <th>Azione</th>
             </tr>
           </thead>
@@ -29,13 +28,6 @@ import { DocumentIndexEntryDTO } from '../../../../shared/domain/dto/AggregateDT
                   }}</span>
                 </td>
                 <td data-testid="document-index-row-identificativo">{{ doc.identificativo }}</td>
-                <td
-                  class="mono"
-                  style="font-size: 0.8rem; overflow-wrap: anywhere; word-break: break-all; max-width: 250px;"
-                  data-testid="document-index-row-impronta"
-                >
-                  {{ doc.impronta || 'N/D' }}
-                </td>
                 <td>
                   <button
                     class="btn-view"

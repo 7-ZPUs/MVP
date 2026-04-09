@@ -43,20 +43,23 @@ import { NodeFallbackPanelComponent } from '../../dumb/node-fallback-panel/node-
   ],
   template: `
     <div class="page-layout">
-      @if (!isLoading() && !currentError() && richItemType(); as richType) {
+      @if (!isLoading() && !currentError() && actionableItemType(); as actionableType) {
         <app-document-actions
           [itemId]="itemId()"
-          [itemType]="richType"
+          [itemType]="actionableType"
           [initialVerificationStatus]="
-            richType === 'DOCUMENT'
+            actionableType === 'DOCUMENT'
               ? documentState().detail?.integrityStatus
-              : richType === 'PROCESS'
+              : actionableType === 'PROCESS'
                 ? processState().detail?.integrityStatus
-                : aggregateState().detail?.processSummary?.integrityStatus
+                : actionableType === 'AGGREGATE'
+                  ? aggregateState().detail?.processSummary?.integrityStatus
+                  : getDocumentClassVerificationStatus()
           "
+          (actionCompleted)="retryLoad()"
         ></app-document-actions>
 
-        @if (richType === 'DOCUMENT') {
+        @if (actionableType === 'DOCUMENT') {
           <app-document-toolbar
             [titolo]="pageTitle()"
             [formato]="documentState().detail?.mimeType || ''"
@@ -174,6 +177,28 @@ export class ItemDetailPageComponent {
   richItemType = computed<RichDetailRouteItemType | null>(() => {
     const currentType = this.itemType();
     return isRichDetailRouteItemType(currentType) ? currentType : null;
+  });
+
+  actionableItemType = computed<'DOCUMENT' | 'AGGREGATE' | 'PROCESS' | 'DOCUMENT_CLASS' | null>(
+    () => {
+      const currentType = this.itemType();
+      if (isRichDetailRouteItemType(currentType)) {
+        return currentType;
+      }
+      if (currentType === 'DOCUMENT_CLASS') {
+        return 'DOCUMENT_CLASS';
+      }
+      return null;
+    },
+  );
+
+  getDocumentClassVerificationStatus = computed(() => {
+    const fallback = this.fallbackState().detail;
+    if (fallback?.type === 'DOCUMENT_CLASS') {
+      const field = fallback.fields.find((f) => f.label === 'Stato verifica');
+      return field?.value || 'UNKNOWN';
+    }
+    return null;
   });
 
   isFallbackRoute = computed(() => !isRichDetailRouteItemType(this.itemType()));

@@ -9,7 +9,6 @@ import { IIntegrityFacade } from '../contracts/IIntegrityFacade';
 import { AppError } from '../../../shared/domain';
 import { IpcCacheService } from '../../../shared/infrastructure/ipc-cache.service';
 
-
 @Injectable()
 export class IntegrityFacade implements IIntegrityFacade {
   private readonly gateway = inject(IntegrityIpcGateway);
@@ -168,7 +167,10 @@ export class IntegrityFacade implements IIntegrityFacade {
     }
   }
 
-  async verifyItem(itemId: string, itemType: 'DOCUMENT' | 'AGGREGATE' | 'PROCESS'): Promise<string> {
+  async verifyItem(
+    itemId: string,
+    itemType: 'DOCUMENT' | 'AGGREGATE' | 'PROCESS' | 'DOCUMENT_CLASS',
+  ): Promise<string> {
     if (this._isVerifying()) return 'UNKNOWN';
 
     this._isVerifying.set(true);
@@ -180,8 +182,10 @@ export class IntegrityFacade implements IIntegrityFacade {
       const idNum = Number(itemId);
       if (itemType === 'DOCUMENT') {
         status = await this.gateway.checkDocumentIntegrity(idNum);
-      } else {
+      } else if (itemType === 'PROCESS' || itemType === 'AGGREGATE') {
         status = await this.gateway.checkProcessIntegrity(idNum);
+      } else if (itemType === 'DOCUMENT_CLASS') {
+        status = await this.gateway.checkDocumentClassIntegrity(idNum);
       }
 
       if (itemType === 'DOCUMENT') {
@@ -190,9 +194,14 @@ export class IntegrityFacade implements IIntegrityFacade {
         this.cacheService.invalidate(`process:${itemId}`);
         this.cacheService.invalidate(`aggregate:${itemId}`);
         this.cacheService.invalidatePrefix('document:');
-      } else {
+      } else if (itemType === 'AGGREGATE') {
         this.cacheService.invalidate(`aggregate:${itemId}`);
         this.cacheService.invalidate(`process:${itemId}`);
+        this.cacheService.invalidatePrefix('document:');
+      } else if (itemType === 'DOCUMENT_CLASS') {
+        this.cacheService.invalidate(`node-fallback:DOCUMENT_CLASS:${itemId}`);
+        this.cacheService.invalidatePrefix('process:');
+        this.cacheService.invalidatePrefix('aggregate:');
         this.cacheService.invalidatePrefix('document:');
       }
 
