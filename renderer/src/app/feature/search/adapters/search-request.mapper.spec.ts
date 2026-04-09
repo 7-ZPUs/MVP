@@ -221,6 +221,58 @@ describe('search-request.mapper', () => {
     );
   });
 
+  it('maps subject ELEM_MATCH under DAI root when tipoDocumento is DAI', () => {
+    const dto = toSearchRequestDTO({
+      common: { tipoDocumento: 'DOCUMENTO AMMINISTRATIVO INFORMATICO' },
+      diDai: {},
+      aggregate: {},
+      customMeta: null,
+      subject: [
+        {
+          role: SubjectRoleType.RGD,
+          type: SubjectType.PF,
+          details: { cognomeRUP: 'Colombo' },
+        },
+      ],
+    } as any);
+
+    const subjectGroup = (dto?.filter.items as any[]).find((g) => g.logicOperator === 'OR');
+    expect(subjectGroup).toBeDefined();
+    expect(subjectGroup.items).toHaveLength(1);
+    expect(subjectGroup.items[0]).toEqual(
+      expect.objectContaining({
+        path: 'DocumentoAmministrativoInformatico.Soggetti.Ruolo',
+        operator: 'ELEM_MATCH',
+      }),
+    );
+  });
+
+  it('maps subject ELEM_MATCH across all roots when tipoDocumento is not specified', () => {
+    const dto = toSearchRequestDTO({
+      common: {},
+      diDai: {},
+      aggregate: {},
+      customMeta: null,
+      subject: [
+        {
+          role: SubjectRoleType.MITTENTE,
+          type: SubjectType.PF,
+          details: { cognomePF: 'Rossi' },
+        },
+      ],
+    } as any);
+
+    const subjectGroup = (dto?.filter.items as any[]).find((g) => g.logicOperator === 'OR');
+    expect(subjectGroup).toBeDefined();
+
+    const paths = (subjectGroup.items as any[]).map((item) => item.path).sort();
+    expect(paths).toEqual([
+      'AggregazioneDocumentale.Soggetti.Ruolo',
+      'DocumentoAmministrativoInformatico.Soggetti.Ruolo',
+      'DocumentoInformatico.Soggetti.Ruolo',
+    ]);
+  });
+
   it('maps PG Codice Fiscale / Partita IVA to CodiceFiscale_PartitaIva', () => {
     const dto = toSearchRequestDTO({
       common: {},

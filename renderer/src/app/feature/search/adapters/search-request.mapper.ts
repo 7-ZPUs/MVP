@@ -27,6 +27,7 @@ const DOC_ADMIN_ROOT = 'DocumentoAmministrativoInformatico';
 const AGG_ROOT = 'AggregazioneDocumentale';
 const AGG_CUSTOM_META_ROOT = 'AggregazioneDocumentaliInformatiche';
 const CUSTOM_METADATA_ROOTS = [DOC_ROOT, DOC_ADMIN_ROOT, AGG_CUSTOM_META_ROOT] as const;
+const SUBJECT_ROOTS = [DOC_ROOT, DOC_ADMIN_ROOT, AGG_ROOT] as const;
 const PATH_REGEX = /^\w+(\.\w+)*$/;
 
 const SUBJECT_ROLE_WRAPPER: Record<string, string> = {
@@ -716,6 +717,22 @@ function normalizeCustomMetadataPaths(field: string, documentType: unknown): str
   return roots.map((root) => `${root}.CustomMetadata.${keySegment}`);
 }
 
+function resolveSubjectRoots(documentType: unknown): string[] {
+  if (documentType === DocumentType.DOCUMENTO_INFORMATICO) {
+    return [DOC_ROOT];
+  }
+
+  if (documentType === DocumentType.DOCUMENTO_AMMINISTRATIVO_INFORMATICO) {
+    return [DOC_ADMIN_ROOT];
+  }
+
+  if (documentType === DocumentType.AGGREGAZIONE_DOCUMENTALE) {
+    return [AGG_ROOT];
+  }
+
+  return [...SUBJECT_ROOTS];
+}
+
 function mapSubjectDetailKey(key: string): string {
   const explicit: Record<string, string> = {
     denominazioneOrga: 'DenominazioneOrganizzazione',
@@ -747,7 +764,10 @@ function mapSubjectDetailKey(key: string): string {
   return toPascalCase(stripped);
 }
 
-function buildSingleSubjectMatch(criteria: SubjectCriteria): SearchConditionDTO | null {
+function buildSingleSubjectMatch(
+  criteria: SubjectCriteria,
+  subjectRoot: string,
+): SearchConditionDTO | null {
   const role = (criteria as any).role;
   const type = (criteria as any).type;
   const details = (criteria as any).details as Record<string, unknown> | null;
@@ -786,17 +806,26 @@ function buildSingleSubjectMatch(criteria: SubjectCriteria): SearchConditionDTO 
   if (!nested) return null;
 
   return {
-    path: `${DOC_ROOT}.Soggetti.Ruolo`,
+    path: `${subjectRoot}.Soggetti.Ruolo`,
     operator: 'ELEM_MATCH',
     value: nested,
   };
 }
 
-function buildSubjectGroup(subjects: SubjectCriteria[]): SearchGroupDTO | null {
+function buildSubjectGroup(
+  subjects: SubjectCriteria[],
+  documentType: unknown,
+): SearchGroupDTO | null {
   if (!Array.isArray(subjects) || subjects.length === 0) return null;
 
+  const roots = resolveSubjectRoots(documentType);
+
   const items = subjects
-    .map((criteria) => buildSingleSubjectMatch(criteria))
+    .flatMap((criteria) =>
+      roots
+        .map((root) => buildSingleSubjectMatch(criteria, root))
+        .filter((match): match is SearchConditionDTO => match !== null),
+    )
     .filter((i): i is SearchConditionDTO => i !== null);
 
   return orGroup(items);
@@ -812,7 +841,10 @@ export function toSearchRequestDTO(filters: SearchFilters): SearchRequestDTO | n
     groups,
     buildCustomMetaGroup((filters as any)?.customMeta, (filters as any)?.common?.tipoDocumento),
   );
-  appendIfPresent(groups, buildSubjectGroup((filters as any)?.subject ?? []));
+  appendIfPresent(
+    groups,
+    buildSubjectGroup((filters as any)?.subject ?? [], (filters as any)?.common?.tipoDocumento),
+  );
 
   const root = andGroup(groups);
   if (!root) return null;
