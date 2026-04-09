@@ -19,5 +19,7 @@ export interface IDocumentRepository {
     queryVector: Float32Array,
   ): Promise<Array<{ document: Document; score: number }>>;
 
+  getDistinctCustomMetadataKeys(dipId: number | null): string[];
+
   getIndexedDocumentsCount(): number;
 }

@@ -16,6 +16,7 @@ import {
   ValidationResult,
   ValidationError,
 } from '../../../../../../../../shared/domain/metadata';
+import { simplifyCustomMetadataLabel } from '../../../../../shared/utils/custom-metadata-label.util';
 
 @Component({
   selector: 'app-custom-meta-filters',
@@ -26,6 +27,7 @@ import {
 export class CustomMetaFiltersComponent implements OnChanges, OnDestroy {
   @Input() filters: CustomFilterValues[] | null = null;
   @Input() validationResult: ValidationResult | null = null;
+  @Input() availableKeys: string[] = [];
 
   @Output() filtersChanged = new EventEmitter<CustomFilterValues[] | null>();
 
@@ -136,5 +138,27 @@ export class CustomMetaFiltersComponent implements OnChanges, OnDestroy {
     return Array.from(this.validationResult.errors.keys()).some((key) =>
       key.startsWith('customMeta['),
     );
+  }
+
+  public getSelectableKeys(index: number): string[] {
+    const normalizedKeys = Array.from(
+      new Set(
+        (this.availableKeys || [])
+          .filter((key): key is string => typeof key === 'string')
+          .map((key) => key.trim())
+          .filter((key) => key.length > 0),
+      ),
+    ).sort((left, right) => left.localeCompare(right));
+
+    const currentValue = String(this.entries.at(index)?.get('field')?.value ?? '').trim();
+    if (!currentValue) {
+      return normalizedKeys;
+    }
+
+    return normalizedKeys.includes(currentValue) ? normalizedKeys : [currentValue, ...normalizedKeys];
+  }
+
+  public getSelectableKeyLabel(key: string): string {
+    return simplifyCustomMetadataLabel(key) || key;
   }
 }

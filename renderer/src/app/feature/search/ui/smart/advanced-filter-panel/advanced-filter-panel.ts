@@ -4,8 +4,6 @@ import {
   Input,
   Output,
   OnInit,
-  OnChanges,
-  SimpleChanges,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
@@ -48,9 +46,10 @@ import { DocContext } from '../../../../../../../../shared/domain/metadata/subje
   templateUrl: './advanced-filter-panel.html',
   styleUrl: './advanced-filter-panel.scss',
 })
-export class AdvancedFilterPanelComponent implements OnInit, OnChanges {
+export class AdvancedFilterPanelComponent implements OnInit {
   @Input() validator?: FilterValidatorFn;
   @Input() externalValidation: ValidationResult | null = null;
+  @Input() customMetadataKeys: string[] = [];
 
   private _filters: SearchFilters = {
     common: {},
@@ -153,8 +152,6 @@ export class AdvancedFilterPanelComponent implements OnInit, OnChanges {
 
   return DocContext.ALL;
 }
-
-  public ngOnChanges(changes: SimpleChanges): void {}
 
   public get effectiveValidationResult(): ValidationResult | null {
     if (this.externalValidation?.isValid === false) {

@@ -192,6 +192,41 @@ describe('SearchIpcGateway', () => {
       expect(mockCache.get).toHaveBeenCalledWith(`search:semantic:${JSON.stringify(mockQuery)}`);
       expect(cachedResult).toEqual(mockResults);
     });
+
+    it('dovrebbe caricare le chiavi custom da IPC e cachearle', async () => {
+      (mockCache.get as Mock).mockReturnValue(null);
+      (mockBridge.invoke as Mock).mockResolvedValue(['NomeCliente', 'NumeroPratica']);
+      const abortController = new AbortController();
+
+      const result = await new Promise((resolve) => {
+        gateway.getCustomMetadataKeys(1, abortController.signal).subscribe(resolve);
+      });
+
+      expect(mockBridge.invoke).toHaveBeenCalledWith(
+        'search:get-custom-metadata-keys',
+        1,
+        abortController.signal,
+      );
+      expect(mockCache.set).toHaveBeenCalled();
+      expect(result).toEqual(['NomeCliente', 'NumeroPratica']);
+    });
+
+    it('dovrebbe restituire le chiavi custom dalla cache senza chiamare IPC', () => {
+      const cachedKeys = ['ChiaveA', 'ChiaveB'];
+      (mockCache.get as Mock).mockReturnValue(cachedKeys);
+      const abortController = new AbortController();
+
+      let result: any;
+      gateway.getCustomMetadataKeys(1, abortController.signal).subscribe((res) => (result = res));
+
+      expect(mockCache.get).toHaveBeenCalledWith('search:custom-metadata-keys:1');
+      expect(mockBridge.invoke).not.toHaveBeenCalledWith(
+        'search:get-custom-metadata-keys',
+        expect.anything(),
+        expect.anything(),
+      );
+      expect(result).toEqual(cachedKeys);
+    });
   });
 
   describe('Edge Cases del Segnale di Annullamento (AbortSignal)', () => {

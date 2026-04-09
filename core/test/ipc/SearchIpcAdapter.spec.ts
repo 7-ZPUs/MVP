@@ -1,5 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { SearchRequestDTO } from "../../../shared/domain/metadata/search.models";
+import {
+  DocumentTypeEnum,
+  SearchRequestDTO,
+} from "../../../shared/domain/metadata/search.models";
 import { SearchDocumentsQuery } from "../../src/entity/search/SearchQuery.model";
 
 vi.mock("electron", () => ({
@@ -15,14 +18,10 @@ vi.mock("tsyringe", () => ({
 import { container } from "tsyringe";
 import { SearchIpcAdapter } from "../../src/ipc/SearchIpcAdapter";
 import { IpcChannels } from "../../../shared/ipc-channels";
-import { DocumentClass } from "../../src/entity/DocumentClass";
-import { Process } from "../../src/entity/Process";
-import { Document } from "../../src/entity/Document";
 import { DocumentClassMapper } from "../../src/dao/mappers/DocumentClassMapper";
 import { ProcessMapper } from "../../src/dao/mappers/ProcessMapper";
 import { DocumentMapper } from "../../src/dao/mappers/DocumentMapper";
 import { MetadataType } from "../../src/value-objects/Metadata";
-import { DocumentTypeEnum } from "../../../shared/domain/metadata/search.models";
 
 const makeIpcMain = () => {
   const handlers = new Map<string, Function>();
@@ -108,6 +107,7 @@ describe("SearchIpcAdapter", () => {
   let searchProcessiUC: { execute: ReturnType<typeof vi.fn> };
   let searchDocumentsUC: { execute: ReturnType<typeof vi.fn> };
   let searchSemanticUC: { execute: ReturnType<typeof vi.fn> };
+  let getCustomMetadataKeysUC: { execute: ReturnType<typeof vi.fn> };
   let aiAdapter: { isInitialized: ReturnType<typeof vi.fn> };
   let documentRepo: { getIndexedDocumentsCount: ReturnType<typeof vi.fn> };
 
@@ -120,6 +120,7 @@ describe("SearchIpcAdapter", () => {
     searchProcessiUC = { execute: vi.fn().mockReturnValue([]) };
     searchDocumentsUC = { execute: vi.fn().mockResolvedValue([]) };
     searchSemanticUC = { execute: vi.fn().mockResolvedValue([]) };
+    getCustomMetadataKeysUC = { execute: vi.fn().mockReturnValue([]) };
     aiAdapter = { isInitialized: vi.fn().mockReturnValue(false) };
     documentRepo = { getIndexedDocumentsCount: vi.fn().mockReturnValue(0) };
 
@@ -128,6 +129,7 @@ describe("SearchIpcAdapter", () => {
       .mockReturnValueOnce(searchProcessiUC)
       .mockReturnValueOnce(searchDocumentsUC)
       .mockReturnValueOnce(searchSemanticUC)
+      .mockReturnValueOnce(getCustomMetadataKeysUC)
       .mockReturnValueOnce(aiAdapter)
       .mockReturnValueOnce(documentRepo);
 
@@ -147,6 +149,7 @@ describe("SearchIpcAdapter", () => {
     expect(registeredChannels).toContain(IpcChannels.SEARCH_SEMANTIC);
     expect(registeredChannels).toContain(IpcChannels.SEARCH_FULLTEXT);
     expect(registeredChannels).toContain(IpcChannels.SEARCH_GET_AI_STATE);
+    expect(registeredChannels).toContain(IpcChannels.SEARCH_CUSTOM_METADATA_KEYS);
   });
 
   // ─── SEARCH_CLASSES ───────────────────────────────────────────────────────
@@ -423,5 +426,27 @@ describe("SearchIpcAdapter", () => {
     await expect(
       ipcMain.invoke(IpcChannels.SEARCH_GET_AI_STATE),
     ).rejects.toThrow("ai state unavailable");
+  });
+
+  it("SEARCH_CUSTOM_METADATA_KEYS ritorna le chiavi custom distinte per dip", async () => {
+    getCustomMetadataKeysUC.execute.mockReturnValue([
+      "DataProtocollo",
+      "NomeCliente",
+      "NumeroPratica",
+    ]);
+
+    const result = await ipcMain.invoke(IpcChannels.SEARCH_CUSTOM_METADATA_KEYS, 7);
+
+    expect(getCustomMetadataKeysUC.execute).toHaveBeenCalledWith(7);
+    expect(result).toEqual(["DataProtocollo", "NomeCliente", "NumeroPratica"]);
+  });
+
+  it("SEARCH_CUSTOM_METADATA_KEYS usa null quando dipId non e fornito", async () => {
+    getCustomMetadataKeysUC.execute.mockReturnValue(["NomeCliente"]);
+
+    const result = await ipcMain.invoke(IpcChannels.SEARCH_CUSTOM_METADATA_KEYS, undefined);
+
+    expect(getCustomMetadataKeysUC.execute).toHaveBeenCalledWith(null);
+    expect(result).toEqual(["NomeCliente"]);
   });
 });

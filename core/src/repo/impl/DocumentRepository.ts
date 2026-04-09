@@ -48,6 +48,10 @@ export class DocumentRepository implements IDocumentRepository {
     return this.dao.searchDocumentSemantic(queryVector);
   }
 
+  getDistinctCustomMetadataKeys(dipId: number | null): string[] {
+    return this.dao.getDistinctCustomMetadataKeys(dipId);
+  }
+
   getIndexedDocumentsCount(): number {
     return this.dao.getIndexedDocumentsCount();
   }

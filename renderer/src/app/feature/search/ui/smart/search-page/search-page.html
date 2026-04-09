@@ -11,6 +11,7 @@
     <aside class="sidebar" [class.collapsed]="isSidebarCollapsed">
       <app-advanced-filter-panel
         [filters]="state().filters"
+        [customMetadataKeys]="customMetadataKeys()"
         [validator]="validateFilters"
         [externalValidation]="externalValidation"
         (filtersChanged)="onFiltersChanged($event)"

@@ -106,4 +106,17 @@ describe('CustomMetaFiltersComponent', () => {
 
     expect(component.hasAnyError()).toBe(false);
   });
+
+  it('getSelectableKeys dovrebbe usare availableKeys ordinate e includere il valore corrente se assente', () => {
+    component.availableKeys = ['B', 'A'];
+    component.addEntry({ field: 'Zeta', value: '' }, false);
+
+    expect(component.getSelectableKeys(0)).toEqual(['Zeta', 'A', 'B']);
+  });
+
+  it('getSelectableKeyLabel dovrebbe formattare la chiave come nel dettaglio metadati', () => {
+    expect(component.getSelectableKeyLabel('Process.PreservationSession.DocumentsStats.DocumentsFilesCount')).toBe(
+      'Documents Files Count',
+    );
+  });
 });

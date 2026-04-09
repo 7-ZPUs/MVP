@@ -165,6 +165,67 @@ export class DocumentDAO implements IDocumentDAO {
       .filter((r): r is { document: Document; score: number } => r !== null);
   }
 
+  getDistinctCustomMetadataKeys(dipId: number | null): string[] {
+    const rows = this.db
+      .prepare<
+        [number | null, number | null, number | null, number | null],
+        { keyName: string }
+      >(
+        `
+          WITH direct_custom_keys AS (
+            SELECT DISTINCT dm.name AS keyName
+            FROM document_metadata dm
+            JOIN document_metadata parent_dm ON parent_dm.id = dm.parent_id
+            JOIN document d ON d.id = dm.document_id
+            JOIN process p ON p.id = d.process_id
+            JOIN document_class dc ON dc.id = p.document_class_id
+            WHERE (? IS NULL OR dc.dip_id = ?)
+              AND parent_dm.name IN ('CustomMetadata', 'ArchimemoData')
+
+            UNION
+
+            SELECT DISTINCT pm.name AS keyName
+            FROM process_metadata pm
+            JOIN process_metadata parent_pm ON parent_pm.id = pm.parent_id
+            JOIN process p ON p.id = pm.process_id
+            JOIN document_class dc ON dc.id = p.document_class_id
+            WHERE (? IS NULL OR dc.dip_id = ?)
+              AND parent_pm.name IN ('CustomMetadata', 'ArchimemoData')
+          )
+          SELECT DISTINCT TRIM(keyName) AS keyName
+          FROM direct_custom_keys
+          WHERE keyName IS NOT NULL
+            AND TRIM(keyName) <> ''
+            AND keyName NOT IN ('CustomMetadata', 'ArchimemoData')
+          ORDER BY keyName COLLATE NOCASE ASC
+        `,
+      )
+      .all(dipId, dipId, dipId, dipId);
+
+    const directKeys = rows.map((row) => row.keyName);
+
+    const documentJsonRows = this.db
+      .prepare<[number | null, number | null], { metadataJson: string }>(
+        `
+          SELECT d.metadata as metadataJson
+          FROM document d
+          JOIN process p ON p.id = d.process_id
+          JOIN document_class dc ON dc.id = p.document_class_id
+          WHERE (? IS NULL OR dc.dip_id = ?)
+        `,
+      )
+      .all(dipId, dipId);
+
+    const jsonDerivedKeys = new Set<string>();
+    for (const row of documentJsonRows) {
+      DocumentDAO.collectCustomKeysFromDocumentJson(row.metadataJson, jsonDerivedKeys);
+    }
+
+    return Array.from(new Set([...directKeys, ...Array.from(jsonDerivedKeys)])).sort((a, b) =>
+      a.localeCompare(b),
+    );
+  }
+
   getIndexedDocumentsCount(): number {
     if (!this.hasTable("document_vector")) {
       return 0;
@@ -206,5 +267,84 @@ export class DocumentDAO implements IDocumentDAO {
     this.db
       .prepare("UPDATE document SET integrity_status = ? WHERE id = ?")
       .run(status, id);
+  }
+
+  private static collectCustomKeysFromDocumentJson(
+    metadataJson: string,
+    out: Set<string>,
+  ): void {
+    if (!metadataJson || typeof metadataJson !== "string") {
+      return;
+    }
+
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(metadataJson);
+    } catch {
+      return;
+    }
+
+    const customContainers = new Set(["CustomMetadata", "ArchimemoData"]);
+    DocumentDAO.walkAndCollectCustomKeys(parsed, customContainers, out);
+  }
+
+  private static walkAndCollectCustomKeys(
+    node: unknown,
+    customContainers: Set<string>,
+    out: Set<string>,
+  ): void {
+    if (Array.isArray(node)) {
+      for (const child of node) {
+        DocumentDAO.walkAndCollectCustomKeys(child, customContainers, out);
+      }
+      return;
+    }
+
+    if (!DocumentDAO.isPlainObject(node)) {
+      return;
+    }
+
+    for (const [key, value] of Object.entries(node)) {
+      if (customContainers.has(key)) {
+        DocumentDAO.addDirectKeysFromCustomContainer(value, customContainers, out);
+      }
+      DocumentDAO.walkAndCollectCustomKeys(value, customContainers, out);
+    }
+  }
+
+  private static addDirectKeysFromCustomContainer(
+    value: unknown,
+    customContainers: Set<string>,
+    out: Set<string>,
+  ): void {
+    if (Array.isArray(value)) {
+      for (const item of value) {
+        if (DocumentDAO.isPlainObject(item)) {
+          DocumentDAO.addObjectKeys(item, customContainers, out);
+        }
+      }
+      return;
+    }
+
+    if (DocumentDAO.isPlainObject(value)) {
+      DocumentDAO.addObjectKeys(value, customContainers, out);
+    }
+  }
+
+  private static addObjectKeys(
+    value: Record<string, unknown>,
+    customContainers: Set<string>,
+    out: Set<string>,
+  ): void {
+    for (const key of Object.keys(value)) {
+      const trimmed = key.trim();
+      if (trimmed.length > 0 && !customContainers.has(trimmed)) {
+        out.add(trimmed);
+      }
+    }
+  }
+
+  private static isPlainObject(value: unknown): value is Record<string, unknown> {
+    return !!value && typeof value === "object" && !Array.isArray(value);
   }
 }

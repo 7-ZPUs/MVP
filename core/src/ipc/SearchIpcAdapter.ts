@@ -7,6 +7,7 @@ import type { ISearchDocumentalClassUC } from "../use-case/classe-documentale/IS
 import type { ISearchProcessUC } from "../use-case/process/ISearchProcessUC";
 import type { ISearchDocumentsUC } from "../use-case/document/ISearchDocumentsUC";
 import type { ISearchSemanticUC } from "../use-case/document/ISearchSemanticUC";
+import type { IGetCustomMetadataKeysUC } from "../use-case/document/IGetCustomMetadataKeysUC";
 import type { IWordEmbedding } from "../repo/IWordEmbedding";
 import type { IDocumentRepository } from "../repo/IDocumentRepository";
 import {
@@ -42,6 +43,10 @@ export class SearchIpcAdapter {
       container.resolve<ISearchDocumentsUC>(DocumentoUC.SEARCH_BY_FILTERS);
     const searchSemanticUC: ISearchSemanticUC =
       container.resolve<ISearchSemanticUC>(DocumentoUC.SEARCH_SEMANTIC);
+    const getCustomMetadataKeysUC: IGetCustomMetadataKeysUC =
+      container.resolve<IGetCustomMetadataKeysUC>(
+        DocumentoUC.GET_CUSTOM_METADATA_KEYS,
+      );
     const aiAdapter: IWordEmbedding = container.resolve<IWordEmbedding>(
       WORD_EMBEDDING_PORT_TOKEN,
     );
@@ -150,5 +155,13 @@ export class SearchIpcAdapter {
         indexedDocuments,
       };
     });
+
+    ipcMain.handle(
+      IpcChannels.SEARCH_CUSTOM_METADATA_KEYS,
+      (_event, dipId?: number) => {
+        const dipIdentifier = Number.isFinite(dipId) ? Number(dipId) : null;
+        return getCustomMetadataKeysUC.execute(dipIdentifier);
+      },
+    );
   }
 }

@@ -32,12 +32,14 @@ export class SearchPageComponent implements OnInit {
   protected readonly router = inject(Router);
   private readonly filterValidator: IFilterValidator = inject(FILTER_VALIDATOR_TOKEN);
   public readonly state = this.searchFacade.getState();
+  public readonly customMetadataKeys = this.searchFacade.getCustomMetadataKeys();
   public externalValidation: ValidationResult | null = null;
 
   public isSidebarCollapsed = false;
 
   public ngOnInit(): void {
     const currentState = this.state();
+    void this.searchFacade.loadCustomMetadataKeys();
 
     if (currentState.filters?.subject === undefined) {
       this.searchFacade.setFilters({

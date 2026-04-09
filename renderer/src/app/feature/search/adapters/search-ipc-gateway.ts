@@ -80,6 +80,23 @@ export class SearchIpcGateway implements ISearchChannel {
     );
   }
 
+  public getCustomMetadataKeys(dipId: number | null, s: AbortSignal): Observable<string[]> {
+    const scope = dipId == null ? 'all' : String(dipId);
+    const cacheKey = `search:custom-metadata-keys:${scope}`;
+
+    const cached = this.cache.get<string[]>(cacheKey);
+    if (cached) {
+      return of(cached);
+    }
+
+    return this.invoke<string[]>(
+      'search:get-custom-metadata-keys',
+      dipId,
+      s,
+      'search:custom-metadata-keys',
+    ).pipe(tap((keys) => this.cache.set(cacheKey, keys, this.CACHE_TTL_MS)));
+  }
+
   private cancelAndInvalidate(cacheKeyPrefix: string): void {
     this.cache.invalidatePrefix(cacheKeyPrefix);
   }

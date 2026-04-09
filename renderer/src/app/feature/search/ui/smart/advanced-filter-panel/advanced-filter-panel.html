@@ -58,6 +58,7 @@
         <h4 style="margin-bottom: 0.5rem; color: #334155">Metadati Personalizzati</h4>
         <app-custom-meta-filters
           [filters]="filters.customMeta || null"
+          [availableKeys]="customMetadataKeys"
           [validationResult]="effectiveValidationResult"
           (filtersChanged)="onEntriesChanged($event)"
         >

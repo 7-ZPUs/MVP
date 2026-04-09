@@ -12,6 +12,7 @@ export interface IDocumentDAO {
   searchDocumentSemantic(
     queryVector: Float32Array,
   ): Promise<Array<{ document: Document; score: number }>>;
+  getDistinctCustomMetadataKeys(dipId: number | null): string[];
   getIndexedDocumentsCount(): number;
   save(document: Document): Document;
   updateIntegrityStatus(id: number, status: IntegrityStatusEnum): void;

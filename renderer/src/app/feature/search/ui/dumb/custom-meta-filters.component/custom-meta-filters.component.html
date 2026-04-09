@@ -22,12 +22,19 @@
             <div class="form-row">
               <div class="form-group">
                 <label [for]="'meta-field-' + i">Chiave</label>
-                <input
-                  type="text"
+                <select
                   [id]="'meta-field-' + i"
                   formControlName="field"
                   [attr.aria-invalid]="!!getError(i, 'field')"
-                />
+                >
+                  <option value="">Seleziona chiave</option>
+                  <option *ngFor="let key of getSelectableKeys(i)" [value]="key">
+                    {{ getSelectableKeyLabel(key) }}
+                  </option>
+                </select>
+                <small *ngIf="getSelectableKeys(i).length === 0" class="validation-error">
+                  Nessuna chiave custom disponibile nel DIP corrente.
+                </small>
                 <div *ngIf="getError(i, 'field') as err" class="validation-error">
                   {{ err.message }}
                 </div>

@@ -42,6 +42,7 @@ import { GetDocumentByStatusUC } from "./use-case/document/impl/GetDocumentBySta
 import { CheckDocumentIntegrityStatusUC } from "./use-case/document/impl/CheckDocumentIntegrityStatusUC";
 import { SearchDocumentsUC } from "./use-case/document/impl/SearchDocumentsUC";
 import { SearchSemanticUC } from "./use-case/document/impl/SearchSemanticUC";
+import { GetCustomMetadataKeysUC } from "./use-case/document/impl/GetCustomMetadataKeysUC";
 
 // ---- File use cases ----
 import { FileUC } from "./use-case/file/tokens";
@@ -170,6 +171,9 @@ container.register(DocumentoUC.SEARCH_BY_FILTERS, {
   useClass: SearchDocumentsUC,
 });
 container.register(DocumentoUC.SEARCH_SEMANTIC, { useClass: SearchSemanticUC });
+container.register(DocumentoUC.GET_CUSTOM_METADATA_KEYS, {
+  useClass: GetCustomMetadataKeysUC,
+});
 
 // File use cases
 container.register(FileUC.GET_BY_ID, { useClass: GetFileByIdUC });

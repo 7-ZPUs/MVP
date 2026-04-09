@@ -50,6 +50,7 @@ export class SearchFacade implements ISearchFacade {
   });
 
   private abortController: AbortController | null = null;
+  private readonly customMetadataKeys = signal<string[]>([]);
   private readonly searchTrigger = new Subject<void>();
 
   constructor(
@@ -65,6 +66,10 @@ export class SearchFacade implements ISearchFacade {
 
   public getState(): Signal<SearchState> {
     return this.state.asReadonly();
+  }
+
+  public getCustomMetadataKeys(): Signal<string[]> {
+    return this.customMetadataKeys.asReadonly();
   }
 
   public setQuery(query: SearchQuery): void {
@@ -129,6 +134,17 @@ export class SearchFacade implements ISearchFacade {
 
   public retry(): void {
     this.search();
+  }
+
+  public async loadCustomMetadataKeys(dipId: number | null = null): Promise<void> {
+    try {
+      const keys = await firstValueFrom(
+        this.ipcGateway.getCustomMetadataKeys(dipId, new AbortController().signal),
+      );
+      this.customMetadataKeys.set(Array.isArray(keys) ? keys : []);
+    } catch {
+      this.customMetadataKeys.set([]);
+    }
   }
 
   private async executeFullTextSearch(): Promise<void> {

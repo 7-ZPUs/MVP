@@ -22,6 +22,7 @@ export const IpcChannels = {
   SEARCH_CLASSES: "search:classes", // obsoleto
   SEARCH_PROCESSES: "search:processes", // obsoleto
   SEARCH_DOCUMENTS: "ipc:search:advanced",
+  SEARCH_CUSTOM_METADATA_KEYS: "search:get-custom-metadata-keys",
   SEARCH_GET_AI_STATE: "ipc:indexing:status",
 
   // ----- Integrity -----

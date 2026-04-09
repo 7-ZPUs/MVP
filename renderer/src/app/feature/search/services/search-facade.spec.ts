@@ -25,6 +25,7 @@ describe('SearchFacade', () => {
     search: ReturnType<typeof vi.fn>;
     searchAdvanced: ReturnType<typeof vi.fn>;
     searchSemantic: ReturnType<typeof vi.fn>;
+    getCustomMetadataKeys: ReturnType<typeof vi.fn>;
   };
   let mockValidator: { validate: ReturnType<typeof vi.fn> };
   let mockErrorHandler: { handle: ReturnType<typeof vi.fn> };
@@ -41,6 +42,7 @@ describe('SearchFacade', () => {
       search: vi.fn(),
       searchAdvanced: vi.fn(),
       searchSemantic: vi.fn(),
+      getCustomMetadataKeys: vi.fn().mockReturnValue(of([])),
     };
     mockValidator = { validate: vi.fn() };
     mockErrorHandler = { handle: vi.fn() };

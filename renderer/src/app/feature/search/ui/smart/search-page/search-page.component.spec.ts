@@ -15,6 +15,8 @@ describe('SearchPageComponent', () => {
   let fixture: ComponentFixture<SearchPageComponent>;
   let mockFacade: {
     getState: ReturnType<typeof vi.fn>;
+    getCustomMetadataKeys: ReturnType<typeof vi.fn>;
+    loadCustomMetadataKeys: ReturnType<typeof vi.fn>;
     setQuery: ReturnType<typeof vi.fn>;
     setFilters: ReturnType<typeof vi.fn>;
     search: ReturnType<typeof vi.fn>;
@@ -39,6 +41,8 @@ describe('SearchPageComponent', () => {
 
     mockFacade = {
       getState: vi.fn().mockReturnValue(mockStateSignal),
+      getCustomMetadataKeys: vi.fn().mockReturnValue(signal<string[]>([])),
+      loadCustomMetadataKeys: vi.fn().mockResolvedValue(undefined),
       setQuery: vi.fn(),
       setFilters: vi.fn(),
       search: vi.fn(),
@@ -68,6 +72,7 @@ describe('SearchPageComponent', () => {
   it('dovrebbe crearsi correttamente e leggere lo stato iniziale', () => {
     expect(component).toBeTruthy();
     expect(mockFacade.getState).toHaveBeenCalled();
+    expect(mockFacade.loadCustomMetadataKeys).toHaveBeenCalledWith();
   });
 
   describe('Interazione con la Barra di Ricerca (Eventi DOM)', () => {
