@@ -8,6 +8,7 @@ import { signal } from '@angular/core';
 import { By } from '@angular/platform-browser';
 import { ExportError, ExportResult } from '../../../domain/models';
 import { FileDTO } from '../../../domain/dtos';
+import { ExportState } from '../../../domain/export.state';
 
 // ----------------------------------------------------------------
 // Helpers
@@ -68,17 +69,25 @@ async function setup(files: FileDTO[] = [makeFile()]) {
 
   await TestBed.configureTestingModule({
     imports: [ExportPageComponent],
-    providers: [
-      { provide: ExportFacade, useValue: mockFacade },
-      { provide: ExportIpcGateway, useValue: mockGateway },
-    ],
-  }).compileComponents();
+    providers: [{ provide: ExportIpcGateway, useValue: mockGateway }],
+  })
+    .overrideComponent(ExportPageComponent, {
+      remove: {
+        providers: [ExportFacade, ExportState],
+      },
+      add: {
+        providers: [
+          { provide: ExportFacade, useValue: mockFacade },
+          { provide: ExportIpcGateway, useValue: mockGateway },
+        ],
+      },
+    })
+    .compileComponents();
 
   const fixture = TestBed.createComponent(ExportPageComponent);
   const component = fixture.componentInstance;
 
   fixture.componentRef.setInput('documentId', '42');
-  fixture.componentRef.setInput('itemType', 'DOCUMENT');
 
   await fixture.whenStable();
   fixture.detectChanges();
@@ -105,15 +114,21 @@ describe('ExportPageComponent', () => {
 
       await TestBed.configureTestingModule({
         imports: [ExportPageComponent],
-        providers: [
-          { provide: ExportFacade, useValue: mockFacade },
-          { provide: ExportIpcGateway, useValue: mockGateway },
-        ],
-      }).compileComponents();
+        providers: [{ provide: ExportIpcGateway, useValue: mockGateway }],
+      })
+        .overrideComponent(ExportPageComponent, {
+          remove: { providers: [ExportFacade, ExportState] },
+          add: {
+            providers: [
+              { provide: ExportFacade, useValue: mockFacade },
+              { provide: ExportIpcGateway, useValue: mockGateway },
+            ],
+          },
+        })
+        .compileComponents();
 
       const fixture = TestBed.createComponent(ExportPageComponent);
       fixture.componentRef.setInput('documentId', 'non-un-numero');
-      fixture.componentRef.setInput('itemType', 'DOCUMENT');
       await fixture.whenStable();
 
       expect(mockGateway.getFilesByDocumentId).not.toHaveBeenCalled();
@@ -137,9 +152,9 @@ describe('ExportPageComponent', () => {
   describe('overlay progress', () => {
     it('è visibile durante loading + multi-file', async () => {
       const files = [makeFile({ id: 1 }), makeFile({ id: 2, filename: 'b.pdf' })];
-      const { fixture, mockFacade } = await setup(files);
+      const { fixture, mockFacade, component } = await setup(files);
 
-      mockFacade.loading.set(true);
+      component.isDownloading.set(true);
       mockFacade.outputContext.set(OutputContext.MULTI_EXPORT);
       fixture.detectChanges();
 
@@ -147,9 +162,9 @@ describe('ExportPageComponent', () => {
     });
 
     it('non è visibile con un solo file', async () => {
-      const { fixture, mockFacade } = await setup([makeFile()]);
+      const { fixture, component } = await setup([makeFile()]);
 
-      mockFacade.loading.set(true);
+      component.isDownloading.set(true);
       // outputContext rimane null (diverso da MULTI_EXPORT)
       fixture.detectChanges();
 
@@ -213,9 +228,7 @@ describe('ExportPageComponent', () => {
       mockFacade.phase.set(ExportPhase.ERROR);
       fixture.detectChanges();
 
-      fixture.debugElement
-        .query(By.css('app-export-result'))
-        .triggerEventHandler('retry', null);
+      fixture.debugElement.query(By.css('app-export-result')).triggerEventHandler('retry', null);
 
       expect(mockFacade.reset).toHaveBeenCalled();
     });

@@ -14,11 +14,11 @@ export class PrintFileUC implements IPrintFileUC {
         private readonly printPort: IPrintPort
     ) { }
 
-    async execute(fileId: number): Promise<{ success: boolean; error?: string }> {
-        const file = this.fileRepo.getById(fileId);
-        if (!file) {
-            return { success: false, error: `File con id ${fileId} non trovato` };
-        }
+  async execute(fileId: number): Promise<{ success: boolean; error?: string }> {
+    const file = this.fileRepo.getById(fileId);
+    if (!file) {
+      return { success: false, error: `File con id ${fileId} non trovato` };
+    }
 
         const path = require('node:path');
         const absolutePath = path.resolve(this.dipPath, file.getPath());

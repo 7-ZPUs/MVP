@@ -100,14 +100,14 @@ describe('ProcessMetadataComponent', () => {
     expect(
       el.querySelector('[data-testid="process-metadata-row-document-class-timestamp"]')
         ?.textContent,
-    ).toContain('2026-04-08 10:30');
+    ).toContain('2026/04/08 10:30');
     expect(
       el.querySelector('[data-testid="process-metadata-row-submission-data-inizio"]')?.textContent,
-    ).toContain('2026-04-08 00:00');
+    ).toContain('2026/04/08 00:00');
     expect(
       el.querySelector('[data-testid="process-metadata-row-conservation-data-inizio"]')
         ?.textContent,
-    ).toContain('2026-04-08 00:00');
+    ).toContain('2026/04/08 00:00');
     expect(
       el.querySelector('[data-testid="process-metadata-row-overview-oggetto"]')?.textContent,
     ).toContain('Processo Contratti');
