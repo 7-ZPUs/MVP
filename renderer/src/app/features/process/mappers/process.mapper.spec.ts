@@ -21,6 +21,11 @@ describe('process.mapper', () => {
                 type: 'composite',
                 value: [{ name: 'uuid', value: 'PROC-XML-UUID', type: 'string' }],
               },
+              {
+                name: 'End',
+                type: 'composite',
+                value: [{ name: 'Status', value: 'CHIUSO', type: 'string' }],
+              },
               { name: 'Oggetto', value: 'Processo Contratti', type: 'string' },
               { name: 'Procedimento', value: 'Gestione Contratti', type: 'string' },
               {
@@ -48,6 +53,7 @@ describe('process.mapper', () => {
                       { name: 'Date', value: '2025-12-11T16:50:39.671Z', type: 'string' },
                       { name: 'UserUUID', value: 'USR-001', type: 'string' },
                       { name: 'Source', value: 'WebGui', type: 'string' },
+                      { name: 'Status', value: 'TERMINATA', type: 'string' },
                     ],
                   },
                 ],
@@ -87,10 +93,19 @@ describe('process.mapper', () => {
     expect(detail.submission.sessione).toBe('SUB-SESSION-01');
     expect(detail.submission.dataInizio).toBe('2025-12-11T16:48:48.087Z');
     expect(detail.submission.dataFine).toBe('2025-12-11T16:50:39.671Z');
+    expect(detail.submission.uuidAttivatore).toBe('USR-001');
+    expect(detail.submission.uuidTerminatore).toBe('USR-001');
+    expect(detail.submission.canaleAttivazione).toBe('WebGui');
+    expect(detail.submission.canaleTerminazione).toBe('WebGui');
+    expect(detail.submission.stato).toBe('TERMINATA');
     expect(detail.conservation.processo).toBe('PROC-XML-UUID');
     expect(detail.conservation.sessione).toBe('PRES-SESSION-01');
     expect(detail.conservation.dataInizio).toBe('2025-12-11T16:50:39.671Z');
     expect(detail.conservation.dataFine).toBeUndefined();
+    expect(detail.conservation.uuidAttivatore).toBe('USR-001');
+    expect(detail.conservation.canaleAttivazione).toBe('Other');
+    expect(detail.conservation.stato).toBeUndefined();
+    expect(detail.metadata.processStatus).toBe('CHIUSO');
     expect(detail.documentClass.id).toBe(22);
     expect(detail.metadata.documentClassName).toBe('N/A');
   });
@@ -106,6 +121,21 @@ describe('process.mapper', () => {
         { name: 'Sessione', value: 'SESSION-99', type: 'string' },
         { name: 'PreservationProcessDate', value: '2026-04-08', type: 'string' },
         { name: 'PreservationProcessEnd', value: '2026-04-09', type: 'string' },
+        { name: 'SessioneVersamento.UUIDAttivatore', value: 'USR-ATT-VERS-001', type: 'string' },
+        { name: 'SessioneVersamento.CanaleAttivazione', value: 'PortaleWeb', type: 'string' },
+        { name: 'SessioneVersamento.Stato', value: 'TERMINATA', type: 'string' },
+        {
+          name: 'SessioneConservazione.UUIDAttivatore',
+          value: 'USR-ATT-CONS-001',
+          type: 'string',
+        },
+        {
+          name: 'SessioneConservazione.CanaleAttivazione',
+          value: 'ConservazioneBatch',
+          type: 'string',
+        },
+        { name: 'SessioneConservazione.Stato', value: 'TERMINATA', type: 'string' },
+        { name: 'StatoProcesso', value: 'COMPLETATO', type: 'string' },
         { name: 'DataApertura', value: '2026-04-01', type: 'string' },
       ],
     });
@@ -114,10 +144,17 @@ describe('process.mapper', () => {
     expect(detail.submission.sessione).toBe('SESSION-99');
     expect(detail.submission.dataInizio).toBe('2026-04-01');
     expect(detail.submission.dataFine).toBeUndefined();
+    expect(detail.submission.uuidAttivatore).toBe('USR-ATT-VERS-001');
+    expect(detail.submission.canaleAttivazione).toBe('PortaleWeb');
+    expect(detail.submission.stato).toBe('TERMINATA');
     expect(detail.conservation.processo).toBe('PRES-31');
     expect(detail.conservation.sessione).toBe('SESSION-99');
     expect(detail.conservation.dataInizio).toBe('2026-04-08');
     expect(detail.conservation.dataFine).toBe('2026-04-09');
+    expect(detail.conservation.uuidAttivatore).toBe('USR-ATT-CONS-001');
+    expect(detail.conservation.canaleAttivazione).toBe('ConservazioneBatch');
+    expect(detail.conservation.stato).toBe('TERMINATA');
+    expect(detail.metadata.processStatus).toBe('COMPLETATO');
   });
 
   it('usa fallback robusti con metadata minimali', () => {

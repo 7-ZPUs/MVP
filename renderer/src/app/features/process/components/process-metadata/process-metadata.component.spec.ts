@@ -13,6 +13,7 @@ function makeDetail(overrides: Partial<ProcessDetail> = {}): ProcessDetail {
       processId: '31',
       processUuid: 'PROC-31',
       integrityStatus: 'VALID',
+      processStatus: 'TERMINATO',
       documentClassName: 'Classe Contratti',
       documentClassUuid: 'CLASS-UUID-22',
       documentClassTimestamp: '2026-04-08T10:30:00Z',
@@ -27,16 +28,22 @@ function makeDetail(overrides: Partial<ProcessDetail> = {}): ProcessDetail {
       sessione: 'VERS-2026',
       dataInizio: '2026-04-08',
       dataFine: '2026-04-09',
+      uuidAttivatore: 'ATT-VERS-123',
       uuidTerminatore: 'TERM-VERS-123',
+      canaleAttivazione: 'PortaleWeb',
       canaleTerminazione: 'WebGui',
+      stato: 'TERMINATA',
     },
     conservation: {
       processo: 'PRES-31',
       sessione: 'SESS-2026',
       dataInizio: '2026-04-08',
       dataFine: '2026-04-09',
+      uuidAttivatore: 'ATT-CONS-123',
       uuidTerminatore: 'TERM-UUID-123',
+      canaleAttivazione: 'ConservazioneBatch',
       canaleTerminazione: 'AUTOMATIC',
+      stato: 'TERMINATA',
     },
     documentClass: {
       id: 22,
@@ -87,6 +94,9 @@ describe('ProcessMetadataComponent', () => {
     expect(el.querySelector('[data-testid="process-metadata-row-process-id"]')?.textContent).toContain(
       '31',
     );
+    expect(el.querySelector('[data-testid="process-metadata-row-process-status"]')?.textContent).toContain(
+      'TERMINATO',
+    );
     expect(
       el.querySelector('[data-testid="process-metadata-row-overview-oggetto"]')?.textContent,
     ).toContain('Processo Contratti');
@@ -97,11 +107,18 @@ describe('ProcessMetadataComponent', () => {
 
     expect(el.querySelector('[data-testid="process-metadata-row-conservation-data-fine"]')).toBeTruthy();
     expect(
+      el.querySelector('[data-testid="process-metadata-row-conservation-uuid-attivatore"]'),
+    ).toBeTruthy();
+    expect(
       el.querySelector('[data-testid="process-metadata-row-conservation-uuid-terminatore"]'),
+    ).toBeTruthy();
+    expect(
+      el.querySelector('[data-testid="process-metadata-row-conservation-canale-attivazione"]'),
     ).toBeTruthy();
     expect(
       el.querySelector('[data-testid="process-metadata-row-conservation-canale-terminazione"]'),
     ).toBeTruthy();
+    expect(el.querySelector('[data-testid="process-metadata-row-conservation-stato"]')).toBeTruthy();
   });
 
   it('mostra i campi opzionali di versamento quando presenti', () => {
@@ -109,11 +126,18 @@ describe('ProcessMetadataComponent', () => {
 
     expect(el.querySelector('[data-testid="process-metadata-row-submission-data-fine"]')).toBeTruthy();
     expect(
+      el.querySelector('[data-testid="process-metadata-row-submission-uuid-attivatore"]'),
+    ).toBeTruthy();
+    expect(
       el.querySelector('[data-testid="process-metadata-row-submission-uuid-terminatore"]'),
+    ).toBeTruthy();
+    expect(
+      el.querySelector('[data-testid="process-metadata-row-submission-canale-attivazione"]'),
     ).toBeTruthy();
     expect(
       el.querySelector('[data-testid="process-metadata-row-submission-canale-terminazione"]'),
     ).toBeTruthy();
+    expect(el.querySelector('[data-testid="process-metadata-row-submission-stato"]')).toBeTruthy();
   });
 
   it('nasconde il contesto processo quando i campi sono tutti N/A', () => {
@@ -147,11 +171,18 @@ describe('ProcessMetadataComponent', () => {
 
     expect(el.querySelector('[data-testid="process-metadata-row-conservation-data-fine"]')).toBeNull();
     expect(
+      el.querySelector('[data-testid="process-metadata-row-conservation-uuid-attivatore"]'),
+    ).toBeNull();
+    expect(
       el.querySelector('[data-testid="process-metadata-row-conservation-uuid-terminatore"]'),
+    ).toBeNull();
+    expect(
+      el.querySelector('[data-testid="process-metadata-row-conservation-canale-attivazione"]'),
     ).toBeNull();
     expect(
       el.querySelector('[data-testid="process-metadata-row-conservation-canale-terminazione"]'),
     ).toBeNull();
+    expect(el.querySelector('[data-testid="process-metadata-row-conservation-stato"]')).toBeNull();
   });
 
   it('nasconde i campi opzionali di versamento quando assenti', () => {
@@ -167,11 +198,18 @@ describe('ProcessMetadataComponent', () => {
 
     expect(el.querySelector('[data-testid="process-metadata-row-submission-data-fine"]')).toBeNull();
     expect(
+      el.querySelector('[data-testid="process-metadata-row-submission-uuid-attivatore"]'),
+    ).toBeNull();
+    expect(
       el.querySelector('[data-testid="process-metadata-row-submission-uuid-terminatore"]'),
+    ).toBeNull();
+    expect(
+      el.querySelector('[data-testid="process-metadata-row-submission-canale-attivazione"]'),
     ).toBeNull();
     expect(
       el.querySelector('[data-testid="process-metadata-row-submission-canale-terminazione"]'),
     ).toBeNull();
+    expect(el.querySelector('[data-testid="process-metadata-row-submission-stato"]')).toBeNull();
   });
 
   it('usa il fallback N/A per campi classe documentale non valorizzati', () => {

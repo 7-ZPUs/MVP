@@ -22,14 +22,38 @@ const KNOWN_PROCESS_XSD_ROOT_BLOCKS = new Set<string>([
   'Oggetto',
   'Procedimento',
   'MateriaArgomentoStruttura',
+  'StatoProcesso',
+  'ProcessStatus',
+  'Status',
+  'Stato',
   'PreservationProcessUUID',
   'Sessione',
   'PreservationProcessDate',
   'PreservationProcessEnd',
+  'UUIDAttivatore',
   'UUIDTerminatore',
+  'TipoAttivazione',
   'TipoTerminazione',
   'DataApertura',
   'DataChiusura',
+  'SessioneVersamento.Processo',
+  'SessioneVersamento.Sessione',
+  'SessioneVersamento.DataInizio',
+  'SessioneVersamento.DataFine',
+  'SessioneVersamento.UUIDAttivatore',
+  'SessioneVersamento.UUIDTerminatore',
+  'SessioneVersamento.CanaleAttivazione',
+  'SessioneVersamento.CanaleTerminazione',
+  'SessioneVersamento.Stato',
+  'SessioneConservazione.Processo',
+  'SessioneConservazione.Sessione',
+  'SessioneConservazione.DataInizio',
+  'SessioneConservazione.DataFine',
+  'SessioneConservazione.UUIDAttivatore',
+  'SessioneConservazione.UUIDTerminatore',
+  'SessioneConservazione.CanaleAttivazione',
+  'SessioneConservazione.CanaleTerminazione',
+  'SessioneConservazione.Stato',
   'CustomMetadata',
   'ArchimemoData',
 ]);
@@ -65,6 +89,10 @@ function firstDefined(...values: Array<string | undefined>): string | undefined 
   }
 
   return undefined;
+}
+
+function getFirstString(extractor: MetadataExtractor, ...keys: string[]): string | undefined {
+  return firstDefined(...keys.map((key) => extractor.getString(key, '')));
 }
 
 function createScopedExtractor(value: unknown): MetadataExtractor | null {
@@ -135,26 +163,45 @@ function mapProcessSubmission(
   const submissionExtractor = getScopedExtractor(processExtractor, 'SubmissionSession');
 
   return {
-    processo: fallbackProcessUuid,
+    processo:
+      firstDefined(getFirstString(rootExtractor, 'SessioneVersamento.Processo'), fallbackProcessUuid) ??
+      'N/A',
     sessione:
       firstDefined(
         getAttributeValue(submissionExtractor, 'uuid'),
+        getFirstString(rootExtractor, 'SessioneVersamento.Sessione'),
         rootExtractor.getString('Sessione', ''),
       ) ?? 'N/A',
     dataInizio:
       firstDefined(
         getScopedValue(submissionExtractor, 'Start', 'Date'),
+        getFirstString(rootExtractor, 'SessioneVersamento.DataInizio'),
         getScopedValue(processExtractor, 'Start', 'Date'),
         rootExtractor.getString('DataApertura', ''),
       ) ?? 'N/A',
-    dataFine: firstDefined(getScopedValue(submissionExtractor, 'End', 'Date')),
+    dataFine: firstDefined(
+      getScopedValue(submissionExtractor, 'End', 'Date'),
+      getFirstString(rootExtractor, 'SessioneVersamento.DataFine'),
+    ),
+    uuidAttivatore: firstDefined(
+      getScopedValue(submissionExtractor, 'Start', 'UserUUID'),
+      getFirstString(rootExtractor, 'SessioneVersamento.UUIDAttivatore', 'UUIDAttivatore'),
+    ),
     uuidTerminatore: firstDefined(
       getScopedValue(submissionExtractor, 'End', 'UserUUID'),
-      rootExtractor.getString('UUIDTerminatore', ''),
+      getFirstString(rootExtractor, 'SessioneVersamento.UUIDTerminatore', 'UUIDTerminatore'),
+    ),
+    canaleAttivazione: firstDefined(
+      getScopedValue(submissionExtractor, 'Start', 'Source'),
+      getFirstString(rootExtractor, 'SessioneVersamento.CanaleAttivazione', 'TipoAttivazione'),
     ),
     canaleTerminazione: firstDefined(
       getScopedValue(submissionExtractor, 'End', 'Source'),
-      rootExtractor.getString('TipoTerminazione', ''),
+      getFirstString(rootExtractor, 'SessioneVersamento.CanaleTerminazione', 'TipoTerminazione'),
+    ),
+    stato: firstDefined(
+      getScopedValue(submissionExtractor, 'End', 'Status'),
+      getFirstString(rootExtractor, 'SessioneVersamento.Stato'),
     ),
   };
 }
@@ -167,31 +214,60 @@ function mapProcessConservation(
   const preservationExtractor = getScopedExtractor(processExtractor, 'PreservationSession');
 
   return {
-    processo: firstDefined(rootExtractor.getString('PreservationProcessUUID', ''), fallbackProcessUuid) ?? 'N/A',
+    processo:
+      firstDefined(
+        getFirstString(rootExtractor, 'SessioneConservazione.Processo', 'PreservationProcessUUID'),
+        fallbackProcessUuid,
+      ) ?? 'N/A',
     sessione:
       firstDefined(
         getAttributeValue(preservationExtractor, 'uuid'),
+        getFirstString(rootExtractor, 'SessioneConservazione.Sessione'),
         rootExtractor.getString('Sessione', ''),
       ) ?? 'N/A',
     dataInizio:
       firstDefined(
         getScopedValue(preservationExtractor, 'Start', 'Date'),
+        getFirstString(rootExtractor, 'SessioneConservazione.DataInizio'),
         rootExtractor.getString('PreservationProcessDate', ''),
         rootExtractor.getString('DataApertura', ''),
       ) ?? 'N/A',
     dataFine: firstDefined(
       getScopedValue(preservationExtractor, 'End', 'Date'),
+      getFirstString(rootExtractor, 'SessioneConservazione.DataFine'),
       rootExtractor.getString('PreservationProcessEnd', ''),
+    ),
+    uuidAttivatore: firstDefined(
+      getScopedValue(preservationExtractor, 'Start', 'UserUUID'),
+      getFirstString(rootExtractor, 'SessioneConservazione.UUIDAttivatore', 'UUIDAttivatore'),
     ),
     uuidTerminatore: firstDefined(
       getScopedValue(preservationExtractor, 'End', 'UserUUID'),
-      rootExtractor.getString('UUIDTerminatore', ''),
+      getFirstString(rootExtractor, 'SessioneConservazione.UUIDTerminatore', 'UUIDTerminatore'),
+    ),
+    canaleAttivazione: firstDefined(
+      getScopedValue(preservationExtractor, 'Start', 'Source'),
+      getFirstString(rootExtractor, 'SessioneConservazione.CanaleAttivazione', 'TipoAttivazione'),
     ),
     canaleTerminazione: firstDefined(
       getScopedValue(preservationExtractor, 'End', 'Source'),
-      rootExtractor.getString('TipoTerminazione', ''),
+      getFirstString(rootExtractor, 'SessioneConservazione.CanaleTerminazione', 'TipoTerminazione'),
+    ),
+    stato: firstDefined(
+      getScopedValue(preservationExtractor, 'End', 'Status'),
+      getFirstString(rootExtractor, 'SessioneConservazione.Stato'),
     ),
   };
+}
+
+function mapProcessStatus(
+  rootExtractor: MetadataExtractor,
+  processExtractor: MetadataExtractor,
+): string | undefined {
+  return firstDefined(
+    getScopedValue(processExtractor, 'End', 'Status'),
+    getFirstString(rootExtractor, 'StatoProcesso', 'ProcessStatus', 'Status', 'Stato'),
+  );
 }
 
 function mapProcessDocumentClass(
@@ -220,11 +296,13 @@ function mapProcessCoreMetadata(
   processUuid: string,
   integrityStatus: string,
   documentClass: ProcessDocumentClassInfo,
+  processStatus?: string,
 ): ProcessCoreMetadata {
   return {
     processId,
     processUuid,
     integrityStatus,
+    processStatus,
     documentClassName: requiredString(documentClass.name),
     documentClassUuid: requiredString(documentClass.uuid),
     documentClassTimestamp: requiredString(documentClass.timestamp),
@@ -242,6 +320,7 @@ export function mapProcessDtoToDetail(dto: unknown): ProcessDetail {
   const documentClass = mapProcessDocumentClass(source, extractor);
   const processExtractor = getScopedExtractor(extractor, 'Process');
   const scopedProcessExtractor = processExtractor ?? extractor;
+  const processStatus = mapProcessStatus(extractor, scopedProcessExtractor);
   const resolvedProcessUuid =
     firstDefined(
       extractor.getString('PreservationProcessUUID', ''),
@@ -253,7 +332,13 @@ export function mapProcessDtoToDetail(dto: unknown): ProcessDetail {
     processId,
     processUuid,
     integrityStatus,
-    metadata: mapProcessCoreMetadata(processId, processUuid, integrityStatus, documentClass),
+    metadata: mapProcessCoreMetadata(
+      processId,
+      processUuid,
+      integrityStatus,
+      documentClass,
+      processStatus,
+    ),
     overview: mapProcessOverview(extractor),
     submission: mapProcessSubmission(extractor, scopedProcessExtractor, resolvedProcessUuid),
     conservation: mapProcessConservation(extractor, scopedProcessExtractor, resolvedProcessUuid),

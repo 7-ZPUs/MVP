@@ -22,6 +22,10 @@ import { OptionalFieldAbsentComponent } from '../../../../shared/components/opti
         <span class="label">Stato verifica:</span>
         <span class="value">{{ data().metadata.integrityStatus }}</span>
       </div>
+      <div class="data-row" data-testid="process-metadata-row-process-status">
+        <span class="label">Stato processo:</span>
+        <span class="value">{{ data().metadata.processStatus ?? 'N/A' }}</span>
+      </div>
       <div class="data-row" data-testid="process-metadata-row-document-class-name">
         <span class="label">Classe documentale:</span>
         <span class="value">{{ data().metadata.documentClassName }}</span>
@@ -82,6 +86,13 @@ import { OptionalFieldAbsentComponent } from '../../../../shared/components/opti
         </div>
       }
 
+      @if (data().submission.uuidAttivatore) {
+        <div class="data-row" data-testid="process-metadata-row-submission-uuid-attivatore">
+          <span class="label">UUID attivatore:</span>
+          <span class="value">{{ data().submission.uuidAttivatore }}</span>
+        </div>
+      }
+
       @if (data().submission.uuidTerminatore) {
         <div class="data-row" data-testid="process-metadata-row-submission-uuid-terminatore">
           <span class="label">UUID terminatore:</span>
@@ -89,10 +100,24 @@ import { OptionalFieldAbsentComponent } from '../../../../shared/components/opti
         </div>
       }
 
+      @if (data().submission.canaleAttivazione) {
+        <div class="data-row" data-testid="process-metadata-row-submission-canale-attivazione">
+          <span class="label">Canale attivazione:</span>
+          <span class="value">{{ data().submission.canaleAttivazione }}</span>
+        </div>
+      }
+
       @if (data().submission.canaleTerminazione) {
         <div class="data-row" data-testid="process-metadata-row-submission-canale-terminazione">
           <span class="label">Canale terminazione:</span>
           <span class="value">{{ data().submission.canaleTerminazione }}</span>
+        </div>
+      }
+
+      @if (data().submission.stato) {
+        <div class="data-row" data-testid="process-metadata-row-submission-stato">
+          <span class="label">Stato:</span>
+          <span class="value">{{ data().submission.stato }}</span>
         </div>
       }
     </div>
@@ -119,6 +144,13 @@ import { OptionalFieldAbsentComponent } from '../../../../shared/components/opti
         </div>
       }
 
+      @if (data().conservation.uuidAttivatore) {
+        <div class="data-row" data-testid="process-metadata-row-conservation-uuid-attivatore">
+          <span class="label">UUID attivatore:</span>
+          <span class="value">{{ data().conservation.uuidAttivatore }}</span>
+        </div>
+      }
+
       @if (data().conservation.uuidTerminatore) {
         <div class="data-row" data-testid="process-metadata-row-conservation-uuid-terminatore">
           <span class="label">UUID terminatore:</span>
@@ -126,10 +158,24 @@ import { OptionalFieldAbsentComponent } from '../../../../shared/components/opti
         </div>
       }
 
+      @if (data().conservation.canaleAttivazione) {
+        <div class="data-row" data-testid="process-metadata-row-conservation-canale-attivazione">
+          <span class="label">Canale attivazione:</span>
+          <span class="value">{{ data().conservation.canaleAttivazione }}</span>
+        </div>
+      }
+
       @if (data().conservation.canaleTerminazione) {
         <div class="data-row" data-testid="process-metadata-row-conservation-canale-terminazione">
           <span class="label">Canale terminazione:</span>
           <span class="value">{{ data().conservation.canaleTerminazione }}</span>
+        </div>
+      }
+
+      @if (data().conservation.stato) {
+        <div class="data-row" data-testid="process-metadata-row-conservation-stato">
+          <span class="label">Stato:</span>
+          <span class="value">{{ data().conservation.stato }}</span>
         </div>
       }
     </div>

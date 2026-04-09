@@ -5,6 +5,7 @@ export interface ProcessCoreMetadata {
   processId: string;
   processUuid: string;
   integrityStatus: string;
+  processStatus?: string;
   documentClassName: string;
   documentClassUuid: string;
   documentClassTimestamp: string;
@@ -15,8 +16,11 @@ export interface ProcessConservationData {
   sessione: string;
   dataInizio: string;
   dataFine?: string;
+  uuidAttivatore?: string;
   uuidTerminatore?: string;
+  canaleAttivazione?: string;
   canaleTerminazione?: string;
+  stato?: string;
 }
 
 export interface ProcessSubmissionData {
@@ -24,8 +28,11 @@ export interface ProcessSubmissionData {
   sessione: string;
   dataInizio: string;
   dataFine?: string;
+  uuidAttivatore?: string;
   uuidTerminatore?: string;
+  canaleAttivazione?: string;
   canaleTerminazione?: string;
+  stato?: string;
 }
 
 export interface ProcessOverviewData {
