@@ -90,6 +90,7 @@ export interface ProcessSearchResult extends SearchResult {
 }
 
 export interface DocumentClassSearchResult extends SearchResult {
+  name: string;
   type: "CLASSE";
 }
 
