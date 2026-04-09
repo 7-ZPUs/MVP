@@ -1,5 +1,6 @@
 import { Component, input } from '@angular/core';
 import { IntegrityNodeVM } from '../../../domain/integrity.view-models';
+import { IntegrityStatusEnum } from '../../../../../shared/domain/value-objects/IntegrityStatusEnum';
 
 @Component({
   selector: 'app-integrity-valid-panel',
@@ -10,9 +11,9 @@ import { IntegrityNodeVM } from '../../../domain/integrity.view-models';
         <header class="panel-header">
           <h3 id="valid-heading">
             <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
-            Elementi Analizzati e Verificati
+            Elementi Analizzati
           </h3>
-          <p>Gli elementi raggruppati qui sotto sono intatti.</p>
+          <p>Gli elementi raggruppati qui sotto mostrano l'esito dell'analisi di integrità.</p>
         </header>
 
         <ul class="list-container" aria-label="Elenco degli elementi integri">
@@ -28,11 +29,22 @@ import { IntegrityNodeVM } from '../../../domain/integrity.view-models';
                   @if (node.contextPath) {
                     <span class="node-path">Trovato in: {{ node.contextPath }}</span>
                   }
+                  @if (node.status === 'INVALID') {
+                    <span class="node-error">
+                      <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+                      Errore: {{ getErrorDescription(node) }}
+                    </span>
+                  }
                 </div>
               </div>
 
               <div class="row-right">
-                <span class="status-pill" aria-label="Stato: Valido">Valido</span>
+                <span
+                  [class]="getStatusClass(node.status)"
+                  [attr.aria-label]="'Stato: ' + getStatusLabel(node.status)"
+                >
+                  {{ getStatusLabel(node.status) }}
+                </span>
               </div>
             </li>
           }
@@ -43,8 +55,8 @@ import { IntegrityNodeVM } from '../../../domain/integrity.view-models';
   styleUrl: './integrity-valid-panel.component.scss',
 })
 export class IntegrityValidPanelComponent {
-  /* Identico a prima */
   nodes = input.required<IntegrityNodeVM[]>();
+
   formatType(type: string): string {
     switch (type) {
       case 'CLASS':
@@ -54,5 +66,29 @@ export class IntegrityValidPanelComponent {
       default:
         return 'Documento';
     }
+  }
+
+  getStatusLabel(status: IntegrityStatusEnum): string {
+    if (status === IntegrityStatusEnum.VALID) return 'Valido';
+    if (status === IntegrityStatusEnum.INVALID) return 'Invalido';
+    return 'Non verificato';
+  }
+
+  getStatusClass(status: IntegrityStatusEnum): string {
+    if (status === IntegrityStatusEnum.VALID) return 'status-pill status-pill--valid';
+    if (status === IntegrityStatusEnum.INVALID) return 'status-pill status-pill--invalid';
+    return 'status-pill status-pill--unknown';
+  }
+
+  getErrorDescription(node: IntegrityNodeVM): string {
+    if (node.type === 'CLASS') {
+      return 'la classe contiene almeno un documento con impronta crittografica alterata';
+    }
+
+    if (node.type === 'PROCESS') {
+      return 'il processo contiene almeno un elemento con hash non coerente';
+    }
+
+    return 'l\'impronta crittografica del documento non coincide con quella attesa';
   }
 }
