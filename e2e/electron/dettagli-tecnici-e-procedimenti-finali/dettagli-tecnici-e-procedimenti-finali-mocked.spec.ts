@@ -48,7 +48,7 @@ function createDocumentMetadataNodes(options: DocumentMockOptions = {}): Metadat
     CodiceRegistro: 'REG-COD-01',
     Formato: 'application/pdf',
     NomeProdotto: 'DocSuite',
-    Versione: '5.4.1',
+    VersioneProdotto: '5.4.1',
     Produttore: 'ACME Software',
     Algoritmo: 'SHA-256',
     Impronta: 'A3F5D8E2C1B0',
@@ -114,10 +114,12 @@ function createAggregateMetadataNodes(options: AggregateMockOptions = {}): Metad
   const baseValues: Record<string, unknown> = {
     TipoAggregazione: 'Fascicolo',
     IdAggregazione: 'AGG-2026-001',
-    IdAggPrimario: 'AGG-PRIM-900',
+    IdAggPrimario: [{ name: 'IdAggregazione', value: 'AGG-PRIM-900' }],
     TipologiaFascicolo: 'procedimento amministrativo',
     TipoAssegnazione: 'Per competenza',
-    Nome: 'Ufficio Gare e Contratti',
+    Nome: 'Ufficio Gare',
+    Cognome: 'e Contratti',
+    DenominazioneOrganizzazione: 'Ufficio Gare e Contratti',
     DataInizioAssegnazione: '2026-04-01 09:00:00',
     DataFineAssegnazione: '2026-04-30 18:00:00',
     DataApertura: '2026-04-01',
@@ -276,7 +278,7 @@ test.describe('Dettagli Tecnici e Procedimenti Finali - Mocked', () => {
 
   test('[TS-243] Visualizzare la data di registrazione del documento selezionato', async ({ page }) => {
     const { technicalMetadataPage } = await openDocumentDetailWithMocks(page);
-    await expect(technicalMetadataPage.registrationProtocollo).toContainText('2026-04-08 11:00:00');
+    await expect(technicalMetadataPage.registrationProtocollo).toContainText('2026/04/08 11:00');
   });
 
   test('[TS-244] Visualizzare la data di registrazione del documento non protocollato selezionato', async ({ page }) => {
@@ -286,7 +288,7 @@ test.describe('Dettagli Tecnici e Procedimenti Finali - Mocked', () => {
         DataRegistrazioneDocumento: '2026-04-09 08:15:00',
       },
     });
-    await expect(technicalMetadataPage.registrationProtocollo).toContainText('2026-04-09 08:15:00');
+    await expect(technicalMetadataPage.registrationProtocollo).toContainText('2026/04/09 08:15');
   });
 
   test('[TS-245] Visualizzare la data di protocollazione del documento protocollato selezionato', async ({ page }) => {
@@ -296,7 +298,7 @@ test.describe('Dettagli Tecnici e Procedimenti Finali - Mocked', () => {
         DataProtocollazioneDocumento: '2026-04-10 09:45:00',
       },
     });
-    await expect(technicalMetadataPage.registrationProtocollo).toContainText('2026-04-10 09:45:00');
+    await expect(technicalMetadataPage.registrationProtocollo).toContainText('2026/04/10 09:45');
   });
 
   test('[TS-246] Visualizzare il numero del documento selezionato', async ({ page }) => {
@@ -507,12 +509,12 @@ test.describe('Dettagli Tecnici e Procedimenti Finali - Mocked', () => {
 
   test('[TS-282] Visualizzare la data e l ora di inizio dell assegnazione', async ({ page }) => {
     const { administrativeProceduresPage } = await openAggregateDetailWithMocks(page);
-    await expect(administrativeProceduresPage.dataInizioAssegnazione).toContainText('2026-04-01 09:00:00');
+    await expect(administrativeProceduresPage.dataInizioAssegnazione).toContainText('2026/04/01 09:00');
   });
 
   test('[TS-283] Visualizzare la data e l ora di fine dell assegnazione', async ({ page }) => {
     const { administrativeProceduresPage } = await openAggregateDetailWithMocks(page);
-    await expect(administrativeProceduresPage.dataFineAssegnazione).toContainText('2026-04-30 18:00:00');
+    await expect(administrativeProceduresPage.dataFineAssegnazione).toContainText('2026/04/30 18:00');
   });
 
   test('[TS-284] Visualizzare la data di apertura dell aggregazione documentale selezionata', async ({ page }) => {
@@ -561,8 +563,8 @@ test.describe('Dettagli Tecnici e Procedimenti Finali - Mocked', () => {
   test('[TS-292] Visualizzare le singole fasi della lista complete di dati della fase', async ({ page }) => {
     const { administrativeProceduresPage } = await openAggregateDetailWithMocks(page);
     await expect(administrativeProceduresPage.phaseType(0)).toContainText('Istruttoria');
-    await expect(administrativeProceduresPage.phaseDates(0)).toContainText('2026-04-03 10:00:00');
-    await expect(administrativeProceduresPage.phaseDates(0)).toContainText('2026-04-10 16:00:00');
+    await expect(administrativeProceduresPage.phaseDates(0)).toContainText('2026/04/03 10:00');
+    await expect(administrativeProceduresPage.phaseDates(0)).toContainText('2026/04/10 16:00');
   });
 
   test('[TS-293] Visualizzare il tipo di fase (Preparatoria, Istruttoria, Consultiva, Decisoria, ecc.)', async ({ page }) => {
@@ -572,12 +574,12 @@ test.describe('Dettagli Tecnici e Procedimenti Finali - Mocked', () => {
 
   test('[TS-294] Visualizzare la data e l ora di inizio della fase', async ({ page }) => {
     const { administrativeProceduresPage } = await openAggregateDetailWithMocks(page);
-    await expect(administrativeProceduresPage.phaseDates(0)).toContainText('2026-04-03 10:00:00');
+    await expect(administrativeProceduresPage.phaseDates(0)).toContainText('2026/04/03 10:00');
   });
 
   test('[TS-295] Visualizzare la data e l ora di fine della fase', async ({ page }) => {
     const { administrativeProceduresPage } = await openAggregateDetailWithMocks(page);
-    await expect(administrativeProceduresPage.phaseDates(0)).toContainText('2026-04-10 16:00:00');
+    await expect(administrativeProceduresPage.phaseDates(0)).toContainText('2026/04/10 16:00');
   });
 
   test('[TS-296] Visualizzare l indice dei documenti contenuti nell aggregazione documentale', async ({ page }) => {
@@ -625,7 +627,7 @@ test.describe('Dettagli Tecnici e Procedimenti Finali - Mocked', () => {
 
   test('[TS-304] Visualizzare il nome di ciascun metadato custom del documento selezionato', async ({ page }) => {
     const { technicalMetadataPage } = await openDocumentDetailWithMocks(page);
-    await expect(technicalMetadataPage.customMetadataRow('MetaCustom.CodiceInterno')).toContainText('MetaCustom.CodiceInterno');
+    await expect(technicalMetadataPage.customMetadataName('MetaCustom.CodiceInterno')).toContainText('Codice Interno');
   });
 
   test('[TS-305] Visualizzare il valore di ciascun metadato custom del documento selezionato', async ({ page }) => {
@@ -637,7 +639,8 @@ test.describe('Dettagli Tecnici e Procedimenti Finali - Mocked', () => {
     const { technicalMetadataPage } = await openDocumentDetailWithMocks(page, {
       includeCustomMetadata: false,
     });
-    await expect(technicalMetadataPage.customMetadataEmpty).toContainText('Nessuna metadato personalizzato presente');
+    await expect(technicalMetadataPage.customMetadataRow('MetaCustom.CodiceInterno')).toHaveCount(0);
+    await expect(technicalMetadataPage.customMetadataRow('MetaCustom.UfficioResponsabile')).toHaveCount(0);
   });
 
   test('[TS-307] Visualizzare i dati di registrazione del documento selezionato', async ({ page }) => {

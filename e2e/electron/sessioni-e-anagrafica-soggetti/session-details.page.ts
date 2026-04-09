@@ -1,11 +1,14 @@
 import { Locator, Page } from '@playwright/test';
 
-function toTestIdSuffix(value: string): string {
-  return value.toLowerCase().replaceAll(/[^a-z0-9]+/g, '-').replaceAll(/(^-|-$)/g, '');
-}
-
 export class SessionDetailsPage {
   constructor(private readonly page: Page) {}
+
+  private customMetadataRow(fieldName: string): Locator {
+    const escapedFieldName = fieldName.replaceAll('"', '\\"');
+    return this.page
+      .locator('[data-testid^="custom-metadata-row-"]')
+      .filter({ has: this.page.locator(`[data-testid="custom-metadata-name"][title="${escapedFieldName}"]`) });
+  }
 
   get conservationProcessHeading(): Locator {
     return this.page.getByTestId('conservation-process-heading');
@@ -24,6 +27,6 @@ export class SessionDetailsPage {
   }
 
   sessionMetadataValue(fieldName: string): Locator {
-    return this.page.getByTestId(`custom-metadata-row-${toTestIdSuffix(fieldName)}`).getByTestId('custom-metadata-value');
+    return this.customMetadataRow(fieldName).getByTestId('custom-metadata-value');
   }
 }

@@ -42,7 +42,7 @@ export class IntegrityPage {
   }
 
   get validPanelHeading(): Locator {
-    return this.page.getByRole('heading', { name: /elementi analizzati e verificati/i });
+    return this.page.getByRole('heading', { name: /classi analizzate|elementi analizzati e verificati/i });
   }
 
   get validRows(): Locator {

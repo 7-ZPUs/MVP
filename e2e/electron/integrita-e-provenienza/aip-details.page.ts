@@ -16,7 +16,7 @@ export class AipDetailsPage {
   }
 
   get exportButton(): Locator {
-    return this.page.getByRole('button', { name: /scarica \/ esporta/i });
+    return this.page.getByRole('button', { name: /scarica documento|scarica/i });
   }
 
   get verificationStatusLabel(): Locator {
@@ -28,27 +28,27 @@ export class AipDetailsPage {
   }
 
   get aipClassRow(): Locator {
-    return this.page.locator('.metadata-card .data-row').filter({ hasText: 'Classe Documentale:' });
+    return this.page.getByTestId('aip-info-row-classe-documentale');
   }
 
   get aipUuidRow(): Locator {
-    return this.page.locator('.metadata-card .data-row').filter({ hasText: 'UUID:' });
+    return this.page.getByTestId('aip-info-row-uuid');
   }
 
   get conservationHeading(): Locator {
-    return this.page.getByRole('heading', { name: /processo di conservazione/i });
+    return this.page.getByTestId('conservation-process-heading');
   }
 
   get conservationProcessRow(): Locator {
-    return this.page.locator('.metadata-card .data-row').filter({ hasText: 'Processo:' });
+    return this.page.getByTestId('conservation-process-row-processo');
   }
 
   get conservationSessionRow(): Locator {
-    return this.page.locator('.metadata-card .data-row').filter({ hasText: 'Sessione:' });
+    return this.page.getByTestId('conservation-process-row-sessione');
   }
 
   get conservationStartDateRow(): Locator {
-    return this.page.locator('.metadata-card .data-row').filter({ hasText: 'Data Inizio:' });
+    return this.page.getByTestId('conservation-process-row-data-inizio');
   }
 
   async openDocumentDetailFromTree(): Promise<void> {

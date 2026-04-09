@@ -1,4 +1,5 @@
 <div class="result-card-wrapper">
+<div class="result-card-wrapper" data-testid="search-result-card">
   <div
     class="result-card"
     role="button"
@@ -9,8 +10,8 @@
   >
     <i class="card-icon bi bi-file-earmark-text" aria-hidden="true"></i>
     <div class="card-content">
-      <h3 class="document-name">{{ result.name || 'Senza titolo' }}</h3>
-      <span class="document-id">UUID: {{ result.uuid }}</span>
+      <h3 class="document-name" data-testid="search-result-title">{{ result.name || 'Senza titolo' }}</h3>
+      <span class="document-id" data-testid="search-result-id">ID: {{ result.uuid }}</span>
     </div>
     <div class="card-meta">
       <span class="badge" [ngClass]="result.type | lowercase">{{ result.type }}</span>

@@ -10,7 +10,7 @@
   <i class="card-icon bi bi-gear" aria-hidden="true"></i>
   <div class="card-content">
     <h3 class="document-name">{{ result.name || 'Processo senza titolo' }}</h3>
-    <p class="document-id">ID Processo: {{ result.uuid }}</p>
+    <p class="document-id" data-testid="search-result-title">ID Processo: {{ result.uuid }}</p>
   </div>
   <div class="card-meta">
     <span class="badge process-badge">{{ result.type }}</span>

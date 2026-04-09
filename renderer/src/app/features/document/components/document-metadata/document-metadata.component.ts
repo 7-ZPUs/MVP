@@ -21,6 +21,12 @@ import { formatReadableDate } from '../../../../shared/utils/date.util';
       <div class="data-row" data-testid="document-metadata-row-descrizione">
         <span class="label">Descrizione:</span> <span class="value">{{ data().descrizione }}</span>
       </div>
+      @if (data().note) {
+        <div class="data-row" data-testid="document-metadata-row-note">
+          <span class="label">Note:</span>
+          <span class="value">{{ data().note }}</span>
+        </div>
+      }
       @if (data().dataCreazione) {
         <div class="data-row" data-testid="document-metadata-row-data-creazione">
           <span class="label">Data Creazione:</span>

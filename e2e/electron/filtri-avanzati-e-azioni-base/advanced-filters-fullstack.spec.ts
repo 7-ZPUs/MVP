@@ -3,6 +3,8 @@ import path from 'node:path';
 import { AdvancedFiltersPage } from './advanced-filters.page';
 
 test.describe('Filtri Avanzati e Azioni Base - Fullstack', () => {
+  test.describe.configure({ timeout: 60000 });
+
   let app: ElectronApplication;
   let page: Page;
 

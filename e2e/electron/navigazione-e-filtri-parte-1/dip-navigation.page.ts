@@ -27,10 +27,6 @@ export class DipNavigationPage {
     return this.page.getByTestId('search-type-process').or(this.page.getByLabel('ID Processo'));
   }
 
-  get freeTextRadio(): Locator {
-    return this.page.getByTestId('search-type-free').or(this.page.getByLabel('Testo Libero'));
-  }
-
   get treeNodes(): Locator {
     return this.page.getByTestId('dip-tree-node');
   }

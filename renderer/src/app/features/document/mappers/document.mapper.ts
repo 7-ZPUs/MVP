@@ -491,6 +491,9 @@ export function mapDocumentDtoToDetail(dto: unknown): DocumentDetail {
     aipInfo: {
       classeDocumentale: extractor.getString('ClasseDocumentale', 'N/A'),
       uuid: identity.uuid || 'N/A',
+      conservationProcess: extractor.getString('PreservationProcessUUID', 'N/A'),
+      conservationSession: extractor.getString('Sessione', 'N/A'),
+      conservationStartDate: extractor.getString('PreservationProcessDate', 'N/A'),
     },
     customMetadata: mergedCustomMetadata,
     integrityStatus: source.integrityStatus ? String(source.integrityStatus) : undefined,

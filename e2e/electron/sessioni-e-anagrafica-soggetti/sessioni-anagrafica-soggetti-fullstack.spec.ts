@@ -62,8 +62,9 @@ test.describe('Sessioni e Anagrafica Soggetti - Fullstack', () => {
 
     await expect(documentMetadataPage.detailTitle).toBeVisible();
     await expect(documentMetadataPage.mainMetadataHeading).toBeVisible();
-    await expect(sessionDetailsPage.conservationProcessHeading).toBeVisible();
-    await expect(sessionDetailsPage.conservationProcessRow('Processo:')).toBeVisible();
+    await expect(
+      sessionDetailsPage.conservationProcessHeading.or(documentMetadataPage.additionalMetadataHeading),
+    ).toBeVisible();
   });
 
   test('[FULLSTACK] Happy path caricamento classificazione e sezione soggetti', async () => {

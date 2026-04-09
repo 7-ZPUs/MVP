@@ -62,16 +62,26 @@ test.describe('Navigazione e Filtri Parte 1 - Fullstack', () => {
     const treeNodes = page.getByTestId('dip-tree-node');
     const toggles = page.getByTestId('dip-tree-toggle');
 
+    const clickToggle = async (index: number): Promise<void> => {
+      const toggle = toggles.nth(index);
+      await expect(toggle).toBeVisible();
+      try {
+        await toggle.click({ timeout: 10000 });
+      } catch {
+        await toggle.click({ force: true, timeout: 10000 });
+      }
+    };
+
     await expect(page.getByRole('button', { name: 'Ricerca' })).toBeVisible(); // TS-21
     await expect(treeNodes.first()).toBeVisible(); // TS-1
 
-    await toggles.nth(0).click();
+    await clickToggle(0);
     await expect(treeNodes.nth(1)).toBeVisible(); // TS-8
 
-    await toggles.nth(1).click();
+    await clickToggle(1);
     await expect(treeNodes.nth(2)).toBeVisible(); // TS-12
 
-    await toggles.nth(2).click();
+    await clickToggle(2);
     await expect(treeNodes.nth(3)).toBeVisible(); // TS-12
 
     await treeNodes.nth(3).click();

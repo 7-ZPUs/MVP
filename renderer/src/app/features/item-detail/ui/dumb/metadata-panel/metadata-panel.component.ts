@@ -156,9 +156,11 @@ import { ProcessMetadataComponent } from '../../../../process/components/process
                 [simplifyNames]="true"
               ></app-custom-metadata>
             } @else {
-              <app-optional-field-absent
-                message="Nessuna metadato personalizzato presente"
-              ></app-optional-field-absent>
+              <div data-testid="custom-metadata-empty-state">
+                <app-optional-field-absent
+                  message="Nessuna metadato personalizzato presente"
+                ></app-optional-field-absent>
+              </div>
             }
 
             @if (doc.subjects?.length) {

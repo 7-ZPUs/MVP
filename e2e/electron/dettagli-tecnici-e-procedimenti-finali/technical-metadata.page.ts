@@ -1,11 +1,14 @@
 import { expect, Locator, Page } from '@playwright/test';
 
-function toTestIdSuffix(value: string): string {
-  return value.toLowerCase().replaceAll(/[^a-z0-9]+/g, '-').replaceAll(/(^-|-$)/g, '');
-}
-
 export class TechnicalMetadataPage {
   constructor(private readonly page: Page) {}
+
+  private customMetadataRowByOriginalName(fieldName: string): Locator {
+    const escapedFieldName = fieldName.replaceAll('"', '\\"');
+    return this.page
+      .locator('[data-testid^="custom-metadata-row-"]')
+      .filter({ has: this.page.locator(`[data-testid="custom-metadata-name"][title="${escapedFieldName}"]`) });
+  }
 
   get detailTitle(): Locator {
     return this.page.getByText('Dettaglio Documento');
@@ -36,7 +39,9 @@ export class TechnicalMetadataPage {
   }
 
   get customMetadataEmpty(): Locator {
-    return this.page.getByTestId('optional-field-absent-message');
+    return this.page
+      .getByTestId('custom-metadata-empty-state')
+      .getByTestId('optional-field-absent-message');
   }
 
   get changeTrackingHeading(): Locator {
@@ -136,13 +141,15 @@ export class TechnicalMetadataPage {
   }
 
   customMetadataValue(fieldName: string): Locator {
-    return this.page
-      .getByTestId(`custom-metadata-row-${toTestIdSuffix(fieldName)}`)
-      .getByTestId('custom-metadata-value');
+    return this.customMetadataRowByOriginalName(fieldName).getByTestId('custom-metadata-value');
   }
 
   customMetadataRow(fieldName: string): Locator {
-    return this.page.getByTestId(`custom-metadata-row-${toTestIdSuffix(fieldName)}`);
+    return this.customMetadataRowByOriginalName(fieldName);
+  }
+
+  customMetadataName(fieldName: string): Locator {
+    return this.customMetadataRowByOriginalName(fieldName).getByTestId('custom-metadata-name');
   }
 
   async openDocumentDetail(documentId = '301'): Promise<void> {

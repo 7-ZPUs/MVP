@@ -11,6 +11,13 @@ function toTestIdSuffix(value: string): string {
 export class SubjectAnagraphicPage {
   constructor(private readonly page: Page) {}
 
+  private customMetadataRow(fieldName: string): Locator {
+    const escapedFieldName = fieldName.replaceAll('"', '\\"');
+    return this.page
+      .locator('[data-testid^="custom-metadata-row-"]')
+      .filter({ has: this.page.locator(`[data-testid="custom-metadata-name"][title="${escapedFieldName}"]`) });
+  }
+
   get subjectsHeading(): Locator {
     return this.page.getByTestId('subjects-heading');
   }
@@ -41,6 +48,6 @@ export class SubjectAnagraphicPage {
   }
 
   additionalSubjectMetadataValue(fieldName: string): Locator {
-    return this.page.getByTestId(`custom-metadata-row-${toTestIdSuffix(fieldName)}`).getByTestId('custom-metadata-value');
+    return this.customMetadataRow(fieldName).getByTestId('custom-metadata-value');
   }
 }

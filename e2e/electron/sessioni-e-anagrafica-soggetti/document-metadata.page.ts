@@ -1,8 +1,5 @@
 import { expect, Locator, Page } from '@playwright/test';
-
-function toTestIdSuffix(value: string): string {
-  return value.toLowerCase().replaceAll(/[^a-z0-9]+/g, '-').replaceAll(/(^-|-$)/g, '');
-}
+import { simplifyCustomMetadataLabel, toTestIdSuffix } from '../metadata-labels';
 
 export class DocumentMetadataPage {
   constructor(private readonly page: Page) {}
@@ -45,14 +42,20 @@ export class DocumentMetadataPage {
       return this.page.getByTestId('classification-row-uri-piano');
     }
 
+    if (cardHeading === 'Metadati Principali' && label === 'Note:') {
+      return this.page.getByTestId('document-metadata-row-note');
+    }
+
     throw new Error(`Unsupported row selector mapping for ${cardHeading} / ${label}`);
   }
 
   additionalMetadataRow(name: string): Locator {
-    return this.page.getByTestId(`custom-metadata-row-${toTestIdSuffix(name)}`);
+    return this.page.getByTestId(
+      `custom-metadata-row-${toTestIdSuffix(simplifyCustomMetadataLabel(name))}`,
+    );
   }
 
   additionalMetadataValue(name: string): Locator {
-    return this.additionalMetadataRow(name).locator('td').nth(1);
+    return this.additionalMetadataRow(name).getByTestId('custom-metadata-value');
   }
 }

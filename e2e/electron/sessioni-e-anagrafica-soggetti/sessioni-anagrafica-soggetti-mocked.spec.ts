@@ -563,7 +563,7 @@ test.describe('Sessioni e Anagrafica Soggetti - Mocked', () => {
     const { documentMetadataPage } = await openDocumentDetailWithMocks(page, {
       noteValue: 'Nota operativa: controllare firma e allegati prima della chiusura.',
     });
-    await expect(documentMetadataPage.rowByLabel('Metadati Principali', 'Descrizione:')).toContainText('Nota operativa: controllare firma e allegati prima della chiusura.');
+    await expect(documentMetadataPage.rowByLabel('Metadati Principali', 'Note:')).toContainText('Nota operativa: controllare firma e allegati prima della chiusura.');
   });
 
   test('[TS-240] Messaggio di informativa in caso di note assenti o vuote', async ({ page }) => {

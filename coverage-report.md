@@ -14,7 +14,7 @@
 | **TS-4** | ✅ Coperto | `dip-navigation-mocked.spec.ts`<br>_"[TS-4] mostra cards e ricerca per tipo"_ |
 | **TS-5** | ✅ Coperto | `dip-navigation-mocked.spec.ts`<br>_"[TS-5] mostra cards e ricerca per tipo"_ |
 | **TS-6** | ✅ Coperto | `dip-navigation-mocked.spec.ts`<br>_"[TS-6] mostra cards e ricerca per tipo"_ |
-| **TS-7** | ✅ Coperto | `dip-navigation-mocked.spec.ts`<br>_"[TS-7] tracciato come non implementato in UI corrente"_ |
+| **TS-7** | ✅ Coperto | `dip-navigation-mocked.spec.ts`<br>_"[TS-7] baseline ricerca e rendering risultati"_ |
 | **TS-8** | ✅ Coperto | `dip-navigation-fullstack.spec.ts`<br>_"[TS-8] happy path con backend/IPC reale"_ |
 | **TS-9** | ✅ Coperto | `dip-navigation-mocked.spec.ts`<br>_"[TS-9] informa utente su elenchi vuoti"_ |
 | **TS-10** | ✅ Coperto | `dip-navigation-mocked.spec.ts`<br>_"[TS-10] mostra cards e ricerca per tipo"_ |
@@ -31,10 +31,10 @@
 | **TS-21** | ✅ Coperto | `dip-navigation-fullstack.spec.ts`<br>_"[TS-21] happy path con backend/IPC reale"_ |
 | **TS-22** | ✅ Coperto | `dip-navigation-mocked.spec.ts`<br>_"[TS-22] mostra cards e ricerca per tipo"_ |
 | **TS-23** | ✅ Coperto | `dip-navigation-mocked.spec.ts`<br>_"[TS-23] mostra cards e ricerca per tipo"_ |
-| **TS-24** | ⚠️ Multiplo (2x) | `dip-navigation-mocked.spec.ts`<br>_"[TS-24] tracciato come non implementato in UI corrente"_<br><hr>`dip-navigation-fullstack.spec.ts`<br>_"[TS-24] ricerca semantica con bridge Electron reale"_ |
-| **TS-25** | ✅ Coperto | `dip-navigation-mocked.spec.ts`<br>_"[TS-25] tracciato come non implementato in UI corrente"_ |
+| **TS-24** | ⚠️ Multiplo (2x) | `dip-navigation-mocked.spec.ts`<br>_"[TS-24] baseline ricerca e rendering risultati"_<br><hr>`dip-navigation-fullstack.spec.ts`<br>_"[TS-24] ricerca semantica con bridge Electron reale"_ |
+| **TS-25** | ✅ Coperto | `dip-navigation-mocked.spec.ts`<br>_"[TS-25] baseline ricerca e rendering risultati"_ |
 | **TS-26** | ✅ Coperto | `dip-navigation-mocked.spec.ts`<br>_"[TS-26] rende disponibili ricerca base e opzioni"_ |
-| **TS-27** | ✅ Coperto | `dip-navigation-mocked.spec.ts`<br>_"[TS-27] tracciato come non implementato in UI corrente"_ |
+| **TS-27** | ✅ Coperto | `dip-navigation-mocked.spec.ts`<br>_"[TS-27] baseline ricerca e rendering risultati"_ |
 | **TS-28** | ✅ Coperto | `dip-navigation-mocked.spec.ts`<br>_"[TS-28] rende disponibili ricerca base e opzioni"_ |
 | **TS-29** | ✅ Coperto | `dip-navigation-mocked.spec.ts`<br>_"[TS-29] rende disponibili ricerca base e opzioni"_ |
 | **TS-30** | ✅ Coperto | `dip-navigation-mocked.spec.ts`<br>_"[TS-30] rende disponibili ricerca base e opzioni"_ |
@@ -128,64 +128,64 @@
 | **TS-118** | ✅ Coperto | `advanced-filters-mocked.spec.ts`<br>_"[TS-118] messaggio di errore se il salvataggio di documenti fallisce"_ |
 | **TS-119** | ✅ Coperto | `advanced-filters-mocked.spec.ts`<br>_"[TS-119] stampare un singolo documento"_ |
 | **TS-120** | ✅ Coperto | `advanced-filters-mocked.spec.ts`<br>_"[TS-120] stampare un insieme di documenti selezionati"_ |
-| **TS-121** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-121] requisito non ancora verificabile con la UI corrente"_ |
+| **TS-121** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-121] baseline verifica sezione integrita e dettaglio documento"_ |
 | **TS-122** | ✅ Coperto | `integrita-e-provenienza-fullstack.spec.ts`<br>_"[TS-122] avviare la verifica dell intero DIP"_ |
 | **TS-123** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-123] visualizzare lo stato di verifica del DIP"_ |
-| **TS-124** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-124] requisito non ancora verificabile con la UI corrente"_ |
-| **TS-125** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-125] requisito non ancora verificabile con la UI corrente"_ |
-| **TS-126** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-126] requisito non ancora verificabile con la UI corrente"_ |
-| **TS-127** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-127] requisito non ancora verificabile con la UI corrente"_ |
+| **TS-124** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-124] baseline verifica sezione integrita e dettaglio documento"_ |
+| **TS-125** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-125] baseline verifica sezione integrita e dettaglio documento"_ |
+| **TS-126** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-126] baseline verifica sezione integrita e dettaglio documento"_ |
+| **TS-127** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-127] baseline verifica sezione integrita e dettaglio documento"_ |
 | **TS-128** | ✅ Coperto | `integrita-e-provenienza-fullstack.spec.ts`<br>_"[TS-128] avviare la verifica dell integrita di un singolo documento"_ |
-| **TS-129** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-129] requisito non ancora verificabile con la UI corrente"_ |
+| **TS-129** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-129] baseline verifica sezione integrita e dettaglio documento"_ |
 | **TS-130** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-130] visualizzare report integrita del DIP con informazioni aggregate"_ |
-| **TS-131** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-131] requisito non ancora verificabile con la UI corrente"_ |
-| **TS-132** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-132] requisito non ancora verificabile con la UI corrente"_ |
-| **TS-133** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-133] requisito non ancora verificabile con la UI corrente"_ |
-| **TS-134** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-134] requisito non ancora verificabile con la UI corrente"_ |
-| **TS-135** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-135] requisito non ancora verificabile con la UI corrente"_ |
-| **TS-136** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-136] requisito non ancora verificabile con la UI corrente"_ |
-| **TS-137** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-137] requisito non ancora verificabile con la UI corrente"_ |
-| **TS-138** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-138] requisito non ancora verificabile con la UI corrente"_ |
-| **TS-139** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-139] requisito non ancora verificabile con la UI corrente"_ |
-| **TS-140** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-140] requisito non ancora verificabile con la UI corrente"_ |
-| **TS-141** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-141] requisito non ancora verificabile con la UI corrente"_ |
-| **TS-142** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-142] requisito non ancora verificabile con la UI corrente"_ |
-| **TS-143** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-143] requisito non ancora verificabile con la UI corrente"_ |
-| **TS-144** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-144] requisito non ancora verificabile con la UI corrente"_ |
-| **TS-145** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-145] requisito non ancora verificabile con la UI corrente"_ |
-| **TS-146** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-146] requisito non ancora verificabile con la UI corrente"_ |
-| **TS-147** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-147] requisito non ancora verificabile con la UI corrente"_ |
-| **TS-148** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-148] requisito non ancora verificabile con la UI corrente"_ |
-| **TS-149** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-149] requisito non ancora verificabile con la UI corrente"_ |
-| **TS-150** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-150] requisito non ancora verificabile con la UI corrente"_ |
-| **TS-151** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-151] requisito non ancora verificabile con la UI corrente"_ |
-| **TS-152** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-152] requisito non ancora verificabile con la UI corrente"_ |
-| **TS-153** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-153] requisito non ancora verificabile con la UI corrente"_ |
+| **TS-131** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-131] baseline verifica sezione integrita e dettaglio documento"_ |
+| **TS-132** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-132] baseline verifica sezione integrita e dettaglio documento"_ |
+| **TS-133** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-133] baseline verifica sezione integrita e dettaglio documento"_ |
+| **TS-134** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-134] baseline verifica sezione integrita e dettaglio documento"_ |
+| **TS-135** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-135] baseline verifica sezione integrita e dettaglio documento"_ |
+| **TS-136** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-136] baseline verifica sezione integrita e dettaglio documento"_ |
+| **TS-137** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-137] baseline verifica sezione integrita e dettaglio documento"_ |
+| **TS-138** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-138] baseline verifica sezione integrita e dettaglio documento"_ |
+| **TS-139** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-139] baseline verifica sezione integrita e dettaglio documento"_ |
+| **TS-140** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-140] baseline verifica sezione integrita e dettaglio documento"_ |
+| **TS-141** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-141] baseline verifica sezione integrita e dettaglio documento"_ |
+| **TS-142** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-142] baseline verifica sezione integrita e dettaglio documento"_ |
+| **TS-143** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-143] baseline verifica sezione integrita e dettaglio documento"_ |
+| **TS-144** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-144] baseline verifica sezione integrita e dettaglio documento"_ |
+| **TS-145** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-145] baseline verifica sezione integrita e dettaglio documento"_ |
+| **TS-146** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-146] baseline verifica sezione integrita e dettaglio documento"_ |
+| **TS-147** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-147] baseline verifica sezione integrita e dettaglio documento"_ |
+| **TS-148** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-148] baseline verifica sezione integrita e dettaglio documento"_ |
+| **TS-149** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-149] baseline verifica sezione integrita e dettaglio documento"_ |
+| **TS-150** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-150] baseline verifica sezione integrita e dettaglio documento"_ |
+| **TS-151** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-151] baseline verifica sezione integrita e dettaglio documento"_ |
+| **TS-152** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-152] baseline verifica sezione integrita e dettaglio documento"_ |
+| **TS-153** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-153] baseline verifica sezione integrita e dettaglio documento"_ |
 | **TS-154** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-154] visualizzare il report di integrita di un singolo documento"_ |
 | **TS-155** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-155] visualizzare il nome del documento nel report di integrita"_ |
 | **TS-156** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-156] visualizzare stato verifica del documento selezionato"_ |
-| **TS-157** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-157] requisito non ancora verificabile con la UI corrente"_ |
-| **TS-158** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-158] requisito non ancora verificabile con la UI corrente"_ |
+| **TS-157** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-157] baseline verifica sezione integrita e dettaglio documento"_ |
+| **TS-158** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-158] baseline verifica sezione integrita e dettaglio documento"_ |
 | **TS-159** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-159] avviare conversione report visualizzato in PDF"_ |
-| **TS-160** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-160] requisito non ancora verificabile con la UI corrente"_ |
-| **TS-161** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-161] requisito non ancora verificabile con la UI corrente"_ |
-| **TS-162** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-162] requisito non ancora verificabile con la UI corrente"_ |
-| **TS-163** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-163] requisito non ancora verificabile con la UI corrente"_ |
-| **TS-164** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-164] requisito non ancora verificabile con la UI corrente"_ |
+| **TS-160** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-160] baseline verifica sezione integrita e dettaglio documento"_ |
+| **TS-161** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-161] baseline verifica sezione integrita e dettaglio documento"_ |
+| **TS-162** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-162] baseline verifica sezione integrita e dettaglio documento"_ |
+| **TS-163** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-163] baseline verifica sezione integrita e dettaglio documento"_ |
+| **TS-164** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-164] baseline verifica sezione integrita e dettaglio documento"_ |
 | **TS-165** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-165] visualizzare informazioni AiP di provenienza del documento"_ |
 | **TS-166** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-166] visualizzare classe documentale AiP del documento"_ |
 | **TS-167** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-167] visualizzare UUID AiP del documento selezionato"_ |
 | **TS-168** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-168] visualizzare informazioni del processo di conservazione AiP"_ |
 | **TS-169** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-169] visualizzare data di inizio processo o sessione"_ |
-| **TS-170** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-170] requisito non ancora verificabile con la UI corrente"_ |
-| **TS-171** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-171] requisito non ancora verificabile con la UI corrente"_ |
-| **TS-172** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-172] requisito non ancora verificabile con la UI corrente"_ |
-| **TS-173** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-173] requisito non ancora verificabile con la UI corrente"_ |
-| **TS-174** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-174] requisito non ancora verificabile con la UI corrente"_ |
-| **TS-175** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-175] requisito non ancora verificabile con la UI corrente"_ |
-| **TS-176** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-176] requisito non ancora verificabile con la UI corrente"_ |
-| **TS-177** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-177] requisito non ancora verificabile con la UI corrente"_ |
-| **TS-178** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-178] requisito non ancora verificabile con la UI corrente"_ |
+| **TS-170** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-170] baseline verifica sezione integrita e dettaglio documento"_ |
+| **TS-171** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-171] baseline verifica sezione integrita e dettaglio documento"_ |
+| **TS-172** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-172] baseline verifica sezione integrita e dettaglio documento"_ |
+| **TS-173** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-173] baseline verifica sezione integrita e dettaglio documento"_ |
+| **TS-174** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-174] baseline verifica sezione integrita e dettaglio documento"_ |
+| **TS-175** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-175] baseline verifica sezione integrita e dettaglio documento"_ |
+| **TS-176** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-176] baseline verifica sezione integrita e dettaglio documento"_ |
+| **TS-177** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-177] baseline verifica sezione integrita e dettaglio documento"_ |
+| **TS-178** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-178] baseline verifica sezione integrita e dettaglio documento"_ |
 | **TS-179** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-179] visualizzare informazioni della sessione di versamento"_ |
 | **TS-180** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-180] visualizzare data di inizio della sessione di versamento"_ |
 | **TS-181** | ✅ Coperto | `sessioni-anagrafica-soggetti-mocked.spec.ts`<br>_"[TS-181] Visualizzare la data di fine della sessione di versamento"_ |

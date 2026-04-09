@@ -122,6 +122,9 @@ export interface CustomMetadataEntry {
 export interface AipInfo {
   classeDocumentale: string;
   uuid: string;
+  conservationProcess?: string;
+  conservationSession?: string;
+  conservationStartDate?: string;
 }
 
 export interface DocumentState {
