@@ -23,7 +23,8 @@ export class FileViewerIpcAdapter {
                 cancelId: 1,
                 title: 'Conferma stampa',
                 message: `Stai per stampare ${fileIds.length} document${fileIds.length === 1 ? 'o' : 'i'}.`,
-                detail: 'I file verranno inviati alla stampante predefinita.',
+                detail: `Attenzione che proseguendo verr${fileIds.length === 1 ? 'à' : 'anno'} aperte ${fileIds.length} finestr${fileIds.length === 1 ? 'a' : 'e'} di stampa.
+                Vuoi continuare?`,
             });
 
             if (response === 1) return { canceled: true, results: [] };

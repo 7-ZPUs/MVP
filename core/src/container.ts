@@ -74,6 +74,8 @@ import { PACKAGE_READER_PORT_TOKEN } from "./repo/IPackageReaderPort";
 import { LocalPackageReaderAdapter } from "./repo/impl/LocalPackageReaderAdapter";
 import { EXPORT_TOKEN } from "./repo/IExportPort";
 import { LocalExportPort } from "./repo/impl/LocalExportPort";
+import { PRINT_PORT_TOKEN } from "./repo/IPrintPort";
+import { PrintPort } from "./repo/impl/PrintPort";
 import { DATA_MAPPER_TOKEN } from "./repo/impl/utils/IDataMapper";
 import { DataMapper } from "./repo/impl/utils/DataMapper";
 import { FILE_SYSTEM_PROVIDER_TOKEN } from "./repo/impl/utils/IFileSystemProvider";
@@ -95,6 +97,9 @@ container.register(PACKAGE_READER_PORT_TOKEN, {
 });
 container.register(EXPORT_TOKEN, {
   useClass: LocalExportPort,
+});
+container.register(PRINT_PORT_TOKEN,{ 
+  useClass: PrintPort 
 });
 container.register(TRANSACTION_MANAGER_TOKEN, {
   useClass: SqliteTransactionManager,
