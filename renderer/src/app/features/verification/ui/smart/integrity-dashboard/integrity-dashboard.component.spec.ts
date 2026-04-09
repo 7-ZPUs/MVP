@@ -49,24 +49,23 @@ describe('IntegrityDashboardComponent', () => {
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector('.progress-section')).toBeTruthy();
     expect(compiled.querySelector('app-integrity-summary-cards')).toBeNull();
-    expect(compiled.querySelector('app-integrity-corrupted-panel')).toBeNull();
     expect(compiled.querySelector('app-integrity-valid-panel')).toBeNull();
   });
 
-  it('should display summary, corrupted, and valid panels when not verifying', () => {
+  it('should display summary and invalid-class panel when not verifying', () => {
     mockFacade.isVerifying.set(false);
     fixture.detectChanges();
 
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector('.progress-section')).toBeNull();
     expect(compiled.querySelector('app-integrity-summary-cards')).toBeTruthy();
-    expect(compiled.querySelector('app-integrity-corrupted-panel')).toBeTruthy();
     expect(compiled.querySelector('app-integrity-valid-panel')).toBeTruthy();
   });
 
   it('should start verification and reload overview when startVerification is called', async () => {
     fixture.detectChanges();
-    await component.startVerification();
+    component.startVerification();
+    await Promise.resolve();
 
     expect(mockFacade.verifyDip).toHaveBeenCalledWith(component.currentDipId);
     // Because verifyDip returns a Promise, loadOverview should have been called again

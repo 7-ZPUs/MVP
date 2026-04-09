@@ -2,7 +2,6 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { INTEGRITY_FACADE_TOKEN } from '../../../contracts/IIntegrityFacade';
 import { IntegritySummaryCardsComponent } from '../../dumb/integrity-summary-cards/integrity-summary-cards.component';
-import { IntegrityCorruptedPanelComponent } from '../../dumb/integrity-corrupted-panel/integrity-corrupted-panel.component';
 import { IntegrityValidPanelComponent } from '../../dumb/integrity-valid-panel/integrity-valid-panel.component';
 
 @Component({
@@ -11,7 +10,6 @@ import { IntegrityValidPanelComponent } from '../../dumb/integrity-valid-panel/i
   imports: [
     CommonModule,
     IntegritySummaryCardsComponent,
-    IntegrityCorruptedPanelComponent,
     IntegrityValidPanelComponent,
   ],
   template: `
@@ -51,11 +49,9 @@ import { IntegrityValidPanelComponent } from '../../dumb/integrity-valid-panel/i
         </section>
       } @else {
         <app-integrity-summary-cards [stats]="facade.overviewStats()"></app-integrity-summary-cards>
-        <app-integrity-corrupted-panel
-          [nodes]="facade.corruptedNodes()"
-        ></app-integrity-corrupted-panel>
         <app-integrity-valid-panel
           [nodes]="facade.validRolledUpNodes()"
+          [corruptedNodes]="facade.corruptedNodes()"
         ></app-integrity-valid-panel>
       }
     </main>
