@@ -79,11 +79,9 @@ export class ApplicationBootstrapAdapter {
     this.markBootstrapCompleted();
   }
 
-bootstrapDatabase(appBasePath: string): string {
-  // 1. Resolve Schema Path based on environment
-  const basePath = app.isPackaged
-    ? process.resourcesPath
-    : path.join(appBasePath,'db')
+  bootstrapDatabase(appBasePath: string): string {
+    // 1. Resolve Schema Path based on environment
+    const basePath = app.isPackaged ? process.resourcesPath : appBasePath;
 
     const schemaPath =
       process.env["NODE_ENV"] === "development"
