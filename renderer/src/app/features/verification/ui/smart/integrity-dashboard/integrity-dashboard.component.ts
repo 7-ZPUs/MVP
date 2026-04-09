@@ -18,7 +18,7 @@ import { IntegrityValidPanelComponent } from '../../dumb/integrity-valid-panel/i
     <main class="dashboard-container" aria-live="polite">
       <header class="dashboard-header">
         <div>
-          <h2 id="dashboard-title">Stato Integrità DIP (ID: {{ currentDipId }})</h2>
+          <h2 id="dashboard-title">Stato Integrità DIP</h2>
           <p class="subtitle">Fotografia attuale delle verifiche crittografiche.</p>
         </div>
         <button

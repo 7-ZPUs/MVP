@@ -1,4 +1,4 @@
-import { Component, inject, input, signal, computed, effect } from '@angular/core';
+import { Component, inject, input, signal, computed, effect, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 // Importiamo i Token appena creati!
@@ -14,12 +14,15 @@ import { ExportPageComponent } from '../../../../../feature/export-manager/ui/sm
     <div class="actions-bar">
       <div class="left-actions">
         <span class="context-label"
-          >Azioni su {{
+          >Azioni su
+          {{
             itemType() === 'DOCUMENT'
               ? 'Documento'
               : itemType() === 'PROCESS'
                 ? 'Processo'
-                : 'Fascicolo'
+                : itemType() === 'DOCUMENT_CLASS'
+                  ? 'Classe Documentale'
+                  : 'Fascicolo'
           }}</span
         >
       </div>
@@ -28,8 +31,13 @@ import { ExportPageComponent } from '../../../../../feature/export-manager/ui/sm
         <!-- Mostra etichetta di stato verifica -->
         @if (verificationStatus()) {
           <div class="status-label" [ngClass]="verificationStatus()?.toLowerCase() || ''">
-            {{ verificationStatus() === 'VALID' ? 'Verificato' : 
-               verificationStatus() === 'INVALID' ? 'Corrotto' : 'Sconosciuto' }}
+            {{
+              verificationStatus() === 'VALID'
+                ? 'Verificato'
+                : verificationStatus() === 'INVALID'
+                  ? 'Corrotto'
+                  : 'Sconosciuto'
+            }}
           </div>
         }
 
@@ -46,10 +54,7 @@ import { ExportPageComponent } from '../../../../../feature/export-manager/ui/sm
         </button>
 
         @if (itemType() === 'DOCUMENT') {
-          <app-export-page
-            [documentId]="itemId()"
-            [itemType]="itemType()"
-          ></app-export-page>
+          <app-export-page [documentId]="itemId()" itemType="DOCUMENT"></app-export-page>
         }
       </div>
     </div>
@@ -59,7 +64,10 @@ import { ExportPageComponent } from '../../../../../feature/export-manager/ui/sm
 export class DocumentActionsComponent {
   // Input di base
   itemId = input.required<string>();
-  itemType = input.required<'DOCUMENT' | 'AGGREGATE' | 'PROCESS'>();
+  itemType = input.required<'DOCUMENT' | 'AGGREGATE' | 'PROCESS' | 'DOCUMENT_CLASS'>();
+
+  // Notifica quando un'azione (es. verifica) è completata
+  actionCompleted = output<void>();
 
   // Stato iniziale preso da db/back-end
   initialVerificationStatus = input<string | undefined | null>();
@@ -72,12 +80,15 @@ export class DocumentActionsComponent {
   // altrimenti usiamo quello passato inizialmente dal parent
   manualStatus = signal<string | null>(null);
 
-  resetManualStatusEffect = effect(() => {
-    // Quando itemId() o itemType() cambiano, resettiamo il manualStatus locale
-    const _id = this.itemId();
-    const _type = this.itemType();
-    this.manualStatus.set(null);
-  }, { allowSignalWrites: true });
+  resetManualStatusEffect = effect(
+    () => {
+      // Quando itemId() o itemType() cambiano, resettiamo il manualStatus locale
+      const _id = this.itemId();
+      const _type = this.itemType();
+      this.manualStatus.set(null);
+    },
+    { allowSignalWrites: true },
+  );
 
   verificationStatus = computed(() => {
     return this.manualStatus() || this.initialVerificationStatus() || null;
@@ -86,23 +97,28 @@ export class DocumentActionsComponent {
   onExport() {
     this.outputFacade.exportPdf({
       documentId: this.itemId(),
-      tipo: this.itemType(),
+      tipo: this.itemType() as 'DOCUMENT' | 'AGGREGATE' | 'PROCESS',
     });
   }
 
   onPrint() {
     this.outputFacade.print({
       documentId: this.itemId(),
-      tipo: this.itemType(),
+      tipo: this.itemType() as 'DOCUMENT' | 'AGGREGATE' | 'PROCESS',
     });
   }
 
   onVerify() {
-    this.integrityFacade.verifyItem(this.itemId(), this.itemType()).then((status) => {
-      this.manualStatus.set(status);
-    }).catch(err => {
-      console.error('Verification failed', err);
-      this.manualStatus.set('UNKNOWN');
-    });
+    this.integrityFacade
+      .verifyItem(this.itemId(), this.itemType())
+      .then((status) => {
+        this.manualStatus.set(status);
+        this.actionCompleted.emit();
+      })
+      .catch((err) => {
+        console.error('Verification failed', err);
+        this.manualStatus.set('UNKNOWN');
+        this.actionCompleted.emit();
+      });
   }
 }
