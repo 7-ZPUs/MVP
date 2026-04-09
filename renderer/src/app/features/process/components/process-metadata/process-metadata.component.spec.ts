@@ -96,6 +96,24 @@ describe('ProcessMetadataComponent', () => {
     ).toBeTruthy();
   });
 
+  it('nasconde il contesto processo quando i campi sono tutti N/A', () => {
+    const el = render(
+      makeDetail({
+        overview: {
+          oggetto: 'N/A',
+          procedimento: 'N/A',
+          materiaArgomentoStruttura: 'N/A',
+        },
+      }),
+    );
+
+    expect(el.querySelector('[data-testid="process-metadata-card-overview"]')).toBeNull();
+    expect(el.querySelector('[data-testid="process-metadata-overview-empty"]')).toBeTruthy();
+    expect(el.querySelector('[data-testid="optional-field-absent-message"]')?.textContent).toContain(
+      'Nessun contesto del processo disponibile nei metadati',
+    );
+  });
+
   it('nasconde i campi opzionali di conservazione quando assenti', () => {
     const el = render(
       makeDetail({

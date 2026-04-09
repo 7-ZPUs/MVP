@@ -37,21 +37,29 @@ import { CustomMetadataComponent } from '../../../document/components/custom-met
       </div>
     </div>
 
-    <div class="metadata-card" data-testid="process-metadata-card-overview">
-      <h3 data-testid="process-metadata-heading-overview">Contesto del Processo</h3>
-      <div class="data-row" data-testid="process-metadata-row-overview-oggetto">
-        <span class="label">Oggetto:</span>
-        <span class="value">{{ data().overview.oggetto }}</span>
+    @if (hasOverviewContext()) {
+      <div class="metadata-card" data-testid="process-metadata-card-overview">
+        <h3 data-testid="process-metadata-heading-overview">Contesto del Processo</h3>
+        <div class="data-row" data-testid="process-metadata-row-overview-oggetto">
+          <span class="label">Oggetto:</span>
+          <span class="value">{{ data().overview.oggetto }}</span>
+        </div>
+        <div class="data-row" data-testid="process-metadata-row-overview-procedimento">
+          <span class="label">Procedimento:</span>
+          <span class="value">{{ data().overview.procedimento }}</span>
+        </div>
+        <div class="data-row" data-testid="process-metadata-row-overview-materia">
+          <span class="label">Materia/Argomento:</span>
+          <span class="value">{{ data().overview.materiaArgomentoStruttura }}</span>
+        </div>
       </div>
-      <div class="data-row" data-testid="process-metadata-row-overview-procedimento">
-        <span class="label">Procedimento:</span>
-        <span class="value">{{ data().overview.procedimento }}</span>
+    } @else {
+      <div data-testid="process-metadata-overview-empty">
+        <app-optional-field-absent
+          message="Nessun contesto del processo disponibile nei metadati"
+        ></app-optional-field-absent>
       </div>
-      <div class="data-row" data-testid="process-metadata-row-overview-materia">
-        <span class="label">Materia/Argomento:</span>
-        <span class="value">{{ data().overview.materiaArgomentoStruttura }}</span>
-      </div>
-    </div>
+    }
 
     <div class="metadata-card" data-testid="process-metadata-card-conservation">
       <h3 data-testid="process-metadata-heading-conservation">Processo di Conservazione</h3>
@@ -109,4 +117,16 @@ import { CustomMetadataComponent } from '../../../document/components/custom-met
 })
 export class ProcessMetadataComponent {
   data = input.required<ProcessDetail>();
+
+  protected hasOverviewContext(): boolean {
+    const overview = this.data().overview;
+    return [overview.oggetto, overview.procedimento, overview.materiaArgomentoStruttura].some(
+      (value) => this.isMeaningfulValue(value),
+    );
+  }
+
+  private isMeaningfulValue(value: string | undefined): boolean {
+    const normalized = (value ?? '').trim();
+    return normalized.length > 0 && normalized.toUpperCase() !== 'N/A';
+  }
 }
