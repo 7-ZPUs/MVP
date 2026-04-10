@@ -4,13 +4,13 @@ import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { of, throwError } from 'rxjs';
 
 import { SearchFacade } from '../services/search-facade';
-import { FilterValidatorService } from '../../../feature/validation/services/filter-validator.service';
+import { FilterValidatorService } from '../../validation/services/filter-validator.service';
 import { SearchFilters, ISearchResult } from '../../../../../../shared/domain/metadata';
 import { ElementType } from '../../../../../../shared/domain/metadata/search.enum';
 import { IntegrityStatusEnum } from '../../../../../../core/src/value-objects/IntegrityStatusEnum';
 import { TelemetryEvent } from '../../../shared/domain';
 import { SEARCH_CHANNEL_TOKEN } from '../contracts/search-channel.interface';
-import { FILTER_VALIDATOR_TOKEN } from '../../../feature/validation/contracts/filter-validator.interface';
+import { FILTER_VALIDATOR_TOKEN } from '../../validation/contracts/filter-validator.interface';
 import { SEMANTIC_INDEX_STATUS_TOKEN } from '../contracts/semantic-index.interface';
 import {
   ERROR_HANDLER_TOKEN,

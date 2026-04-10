@@ -74,8 +74,8 @@ function mapSubjects(extractor: MetadataExtractor): SoggettoDTO[] {
     };
 
     if (
-      rExtractor.findValue('AmministrazioneTitolare') ||
-      rExtractor.findValue('AmministrazionePartecipante')
+      rExtractor.findValue('AmministrazioneTitolare') !== undefined ||
+      rExtractor.findValue('AmministrazionePartecipante') !== undefined
     ) {
       tipoRuolo = rExtractor.getString('TipoRuolo', tipoRuolo);
       denominazione =
@@ -83,20 +83,20 @@ function mapSubjects(extractor: MetadataExtractor): SoggettoDTO[] {
         extractIpa(rExtractor, 'IPAAmm') ||
         extractIpa(rExtractor, 'IPAAOO');
       extractIndirizzi();
-    } else if (rExtractor.findValue('PF')) {
+    } else if (rExtractor.findValue('PF') !== undefined) {
       tipoRuolo = rExtractor.getString('TipoRuolo', tipoRuolo);
       const nome = rExtractor.getString('Nome', '');
       const cognome = rExtractor.getString('Cognome', '');
       denominazione = `${nome} ${cognome}`.trim();
       codiceFiscale = rExtractor.getString('CodiceFiscale');
       extractIndirizzi();
-    } else if (rExtractor.findValue('PG')) {
+    } else if (rExtractor.findValue('PG') !== undefined) {
       tipoRuolo = rExtractor.getString('TipoRuolo', tipoRuolo);
       denominazione = rExtractor.getString('DenominazioneOrganizzazione');
       codiceFiscale =
         rExtractor.getString('CodiceFiscale_PartitaIva') || rExtractor.getString('CodiceFiscale');
       extractIndirizzi();
-    } else if (rExtractor.findValue('RUP')) {
+    } else if (rExtractor.findValue('RUP') !== undefined) {
       tipoRuolo = 'RUP';
       const nome = rExtractor.getString('Nome', '');
       const cognome = rExtractor.getString('Cognome', '');
@@ -104,7 +104,10 @@ function mapSubjects(extractor: MetadataExtractor): SoggettoDTO[] {
         `${nome} ${cognome}`.trim() || rExtractor.getString('DenominazioneOrganizzazione');
       codiceFiscale = rExtractor.getString('CodiceFiscale');
       extractIndirizzi();
-    } else if (rExtractor.findValue('AS') || rExtractor.findValue('Assegnatario')) {
+    } else if (
+      rExtractor.findValue('AS') !== undefined ||
+      rExtractor.findValue('Assegnatario') !== undefined
+    ) {
       tipoRuolo = 'Assegnatario';
       const nome = rExtractor.getString('Nome', '');
       const cognome = rExtractor.getString('Cognome', '');
@@ -138,11 +141,11 @@ function mapDocumentIndices(extractor: MetadataExtractor): DocumentIndexEntryDTO
     let type: 'DocumentoAmministativoinformatico' | 'Documentoinformatico' | 'Documento' =
       'Documento';
 
-    if (dExtractor.findValue('DocumentoAmministrativoInformatico')) {
+    if (dExtractor.findValue('DocumentoAmministrativoInformatico') !== undefined) {
       type = 'DocumentoAmministativoinformatico';
       idValue = dExtractor.getString('Identificativo');
       impronta = dExtractor.getString('Impronta');
-    } else if (dExtractor.findValue('DocumentoInformatico')) {
+    } else if (dExtractor.findValue('DocumentoInformatico') !== undefined) {
       type = 'Documentoinformatico';
       idValue = dExtractor.getString('Identificativo');
       impronta = dExtractor.getString('Impronta');

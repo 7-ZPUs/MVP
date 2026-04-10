@@ -9,7 +9,7 @@ import { SearchFacade } from '../services';
 import {
   IFilterValidator,
   FILTER_VALIDATOR_TOKEN,
-} from '../../../feature/validation/contracts/filter-validator.interface';
+} from '../../validation/contracts/filter-validator.interface';
 import { ElementType } from '../../../../../../shared/domain/metadata/search.enum';
 
 describe('SearchPageComponent - Integrazione e Navigazione', () => {
