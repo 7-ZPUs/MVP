@@ -3,7 +3,7 @@
  *
  * Responsibilities:
  *  1. Bootstrap the DI container (side-effectful imports, reflect-metadata).
- *  2. Initialise the database (async, via DatabaseProvider.init()).
+ *  2. Initialise the database and register it in DI.
  *  3. Register all IPC adapters so that renderer IPC calls are handled.
  *  4. Create the BrowserWindow.
  *
@@ -26,7 +26,6 @@ import {
   ApplicationBootstrapAdapter,
   SQLITE_DB_TOKEN,
 } from "./db/DatabaseBootstrap";
-import { DATABASE_PROVIDER_PATH_TOKEN } from "./core/src/repo/impl/DatabaseProvider";
 import {
   INDEX_DIP_TOKEN,
   IIndexDip,
@@ -151,10 +150,6 @@ function exportDb(dstPath: string): void {
 
   container.register("DIP_PATH_TOKEN", {
     useValue: dipPath,
-  });
-
-  container.register(DATABASE_PROVIDER_PATH_TOKEN, {
-    useValue: dbPath,
   });
 
   console.warn("[BOOTSTRAP] NODE_ENV =", process.env["NODE_ENV"]);

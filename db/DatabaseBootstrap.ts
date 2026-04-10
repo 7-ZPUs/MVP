@@ -25,36 +25,92 @@ function sqliteVssPackageName(
   return `sqlite-vss-${osName}-${archName}`;
 }
 
-function loadSqliteVssExtensions(db: any): void {
-  const packageName = sqliteVssPackageName(process.platform, process.arch);
-  let packageDir: string;
+function sqliteExtensionSuffix(platformName: NodeJS.Platform): string {
+  if (platformName === "win32") {
+    return ".dll";
+  }
+  if (platformName === "darwin") {
+    return ".dylib";
+  }
+  return ".so";
+}
 
+function resolveSqliteVssPackageDir(packageName: string): string {
   if (app.isPackaged) {
-    packageDir = path.join(process.resourcesPath, "app.asar.unpacked", "node_modules", packageName);
-  } else {
-    packageDir = path.dirname(require.resolve(`${packageName}/package.json`));
+    return path.join(
+      process.resourcesPath,
+      "app.asar.unpacked",
+      "node_modules",
+      packageName,
+    );
   }
 
+  const packageJsonPath = require.resolve(`${packageName}/package.json`);
+  let packageDir = path.dirname(packageJsonPath);
+  if (packageDir.includes("app.asar")) {
+    packageDir = packageDir.replace("app.asar", "app.asar.unpacked");
+  }
+  return packageDir;
+}
+
+function prependWindowsPathEntries(entries: string[]): void {
+  const currentPath = process.env.PATH ?? "";
+  const parts = currentPath
+    .split(";")
+    .map((part) => part.trim())
+    .filter((part) => part.length > 0);
+
+  const next = [...entries.filter((entry) => entry.length > 0), ...parts];
+  process.env.PATH = Array.from(new Set(next)).join(";");
+}
+
+function loadExtensionFromCandidates(
+  db: Database.Database,
+  label: string,
+  candidates: string[],
+): void {
+  const errors: string[] = [];
+  for (const candidate of candidates) {
+    if (!existsSync(candidate)) {
+      continue;
+    }
+
+    try {
+      db.loadExtension(candidate);
+      return;
+    } catch (error) {
+      errors.push(
+        `${candidate}: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+  }
+
+  throw new Error(
+    `[BOOTSTRAP] Unable to load sqlite-vss ${label} extension. Candidates: ${candidates.join(", ")}. Errors: ${errors.join(" | ")}`,
+  );
+}
+
+function loadSqliteVssExtensions(db: Database.Database): void {
+  const packageName = sqliteVssPackageName(process.platform, process.arch);
+  const packageDir = resolveSqliteVssPackageDir(packageName);
   const libPath = path.join(packageDir, "lib");
+  const extensionSuffix = sqliteExtensionSuffix(process.platform);
+  const vectorCandidates = [
+    path.join(libPath, `vector0${extensionSuffix}`),
+    path.join(libPath, "vector0"),
+  ];
+  const vssCandidates = [
+    path.join(libPath, `vss0${extensionSuffix}`),
+    path.join(libPath, "vss0"),
+  ];
 
-  // --- FIX CRUCIALE PER WINDOWS ---
   if (process.platform === "win32") {
-    // Aggiungiamo la cartella 'lib' al PATH di sistema del processo corrente
-    // Questo permette a Windows di trovare le DLL di supporto (gcc, stdc++, ecc.)
-    process.env.PATH = `${libPath};${process.env.PATH}`;
+    prependWindowsPathEntries([libPath, packageDir]);
   }
-  // --------------------------------
 
-  const vectorPath = path.join(libPath, "vector0"); // better-sqlite3 aggiunge .dll
-  const vssPath = path.join(libPath, "vss0");
-
-  try {
-    db.loadExtension(vectorPath);
-    db.loadExtension(vssPath);
-    console.log("[VSS] Estensioni caricate con successo!");
-  } catch (err) {
-    console.error("[VSS] Errore caricamento:", err);
-  }
+  loadExtensionFromCandidates(db, "vector0", vectorCandidates);
+  loadExtensionFromCandidates(db, "vss0", vssCandidates);
+  console.log("[BOOTSTRAP] sqlite-vss extensions loaded successfully.");
 }
 
 function ensureVectorSearchSchema(db: Database.Database): void {
