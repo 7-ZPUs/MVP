@@ -41,6 +41,8 @@
     "reflect-metadata": "^0.2.2",
     "sharp": "^0.34.5",
     "sqlite-vss": "^0.1.2",
+    "sqlite-vss-windows-x64": "^0.1.2",
+    "sqlite-vss-linux-x64": "^0.1.2",
     "tsyringe": "^4.8.0",
     "zod": "^4.3.6"
   },
@@ -73,13 +75,11 @@
       "it"
     ],
     "files": [
-      "dist/DipReader/**/*",
       "dist/**/*",
       "schema.sql",
-      "!**/node_modules/onnxruntime-node/bin/napi-v{3,6}/{win32,darwin,linux/arm64}/**",
-      "!**/node_modules/@xenova/transformers/node_modules/onnxruntime-node/bin/napi-v{3,6}/{win32,darwin,linux/arm64}/**",
-      "!**/libonnxruntime_providers_cuda.so",
-      "!**/libonnxruntime_providers_tensorrt.so"
+      "node_modules/**/*",
+      "!**/node_modules/*/{test,tests,example,examples,src}/**",
+      "!**/node_modules/.bin/**"
     ],
     "extraResources": [
       {
@@ -108,10 +108,9 @@
     "win": {
       "target": "portable",
       "icon": "resources/icona.png",
-      "publish": null,
-      "verifyUpdateCodeSignature": false,
       "forceCodeSigning": false,
-      "signAndEditExecutable": false
+      "signAndEditExecutable": false,
+      "publisherName": "7-ZPU"
     },
     "mac": {
       "target": "dmg",
