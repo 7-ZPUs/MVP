@@ -1,4 +1,4 @@
-import { FILTER_VALIDATOR_TOKEN } from '../../../feature/validation/contracts/filter-validator.interface';
+import { FILTER_VALIDATOR_TOKEN } from '../../validation/contracts/filter-validator.interface';
 import { TestBed } from '@angular/core/testing';
 import { SearchResultFactoryService } from './search-result-factory.service';
 import {

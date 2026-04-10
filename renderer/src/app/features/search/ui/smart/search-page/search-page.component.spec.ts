@@ -8,7 +8,7 @@ import { SearchFacade } from '../../../services';
 import { SearchQueryType } from '../../../../../../../../shared/domain/metadata/search.enum';
 import { SearchState } from '../../../../../../../../shared/domain/metadata';
 import { SearchBarComponent } from '../../dumb/search-bar.component/search-bar.component';
-import { FILTER_VALIDATOR_TOKEN } from '../../../../../feature/validation/contracts/filter-validator.interface';
+import { FILTER_VALIDATOR_TOKEN } from '../../../../validation/contracts/filter-validator.interface';
 
 describe('SearchPageComponent', () => {
   let component: SearchPageComponent;

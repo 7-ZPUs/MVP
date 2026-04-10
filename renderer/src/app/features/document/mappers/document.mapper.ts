@@ -343,61 +343,66 @@ function mapSubjects(extractor: MetadataExtractor): Subject[] {
       }
     };
 
-    if (rExtractor.findValue('PF')) {
+    if (rExtractor.findValue('PF') !== undefined) {
       tipo = SubjectType.PF;
       campiSpecifici['Nome'] = rExtractor.getString('Nome');
       campiSpecifici['Cognome'] = rExtractor.getString('Cognome');
-      if (rExtractor.findValue('CodiceFiscale'))
+      if (rExtractor.findValue('CodiceFiscale') !== undefined)
         campiSpecifici['CodiceFiscale'] = rExtractor.getString('CodiceFiscale');
       extractIndirizzi();
-    } else if (rExtractor.findValue('PG')) {
+    } else if (rExtractor.findValue('PG') !== undefined) {
       tipo = SubjectType.PG;
       campiSpecifici['DenominazioneOrganizzazione'] = rExtractor.getString(
         'DenominazioneOrganizzazione',
       );
-      if (rExtractor.findValue('CodiceFiscale_PartitaIva'))
+      if (rExtractor.findValue('CodiceFiscale_PartitaIva') !== undefined)
         campiSpecifici['CodiceFiscale_PartitaIva'] = rExtractor.getString(
           'CodiceFiscale_PartitaIva',
         );
-      if (rExtractor.findValue('DenominazioneUfficio'))
+      if (rExtractor.findValue('DenominazioneUfficio') !== undefined)
         campiSpecifici['DenominazioneUfficio'] = rExtractor.getString('DenominazioneUfficio');
       extractIndirizzi();
-    } else if (rExtractor.findValue('PAI')) {
+    } else if (rExtractor.findValue('PAI') !== undefined) {
       tipo = SubjectType.PAI;
       setIpaFields();
       extractIndirizzi();
-    } else if (rExtractor.findValue('PAE')) {
+    } else if (rExtractor.findValue('PAE') !== undefined) {
       tipo = SubjectType.PAE;
       campiSpecifici['DenominazioneAmministrazione'] = rExtractor.getString(
         'DenominazioneAmministrazione',
       );
-      if (rExtractor.findValue('DenominazioneUfficio'))
+      if (rExtractor.findValue('DenominazioneUfficio') !== undefined)
         campiSpecifici['DenominazioneUfficio'] = rExtractor.getString('DenominazioneUfficio');
       extractIndirizzi();
-    } else if (rExtractor.findValue('AS') || rExtractor.findValue('Assegnatario')) {
+    } else if (
+      rExtractor.findValue('AS') !== undefined ||
+      rExtractor.findValue('Assegnatario') !== undefined
+    ) {
       tipo = SubjectType.AS;
-      if (rExtractor.findValue('Nome')) campiSpecifici['Nome'] = rExtractor.getString('Nome');
-      if (rExtractor.findValue('Cognome'))
+      if (rExtractor.findValue('Nome') !== undefined)
+        campiSpecifici['Nome'] = rExtractor.getString('Nome');
+      if (rExtractor.findValue('Cognome') !== undefined)
         campiSpecifici['Cognome'] = rExtractor.getString('Cognome');
-      if (rExtractor.findValue('CodiceFiscale'))
+      if (rExtractor.findValue('CodiceFiscale') !== undefined)
         campiSpecifici['CodiceFiscale'] = rExtractor.getString('CodiceFiscale');
-      if (rExtractor.findValue('DenominazioneOrganizzazione'))
+      if (rExtractor.findValue('DenominazioneOrganizzazione') !== undefined)
         campiSpecifici['DenominazioneOrganizzazione'] = rExtractor.getString(
           'DenominazioneOrganizzazione',
         );
-      if (rExtractor.findValue('DenominazioneUfficio'))
+      if (rExtractor.findValue('DenominazioneUfficio') !== undefined)
         campiSpecifici['DenominazioneUfficio'] = rExtractor.getString('DenominazioneUfficio');
       setIpaFields();
       extractIndirizzi();
-    } else if (rExtractor.findValue('SW')) {
+    } else if (rExtractor.findValue('SW') !== undefined) {
       tipo = SubjectType.SW;
       campiSpecifici['DenominazioneSistema'] = rExtractor.getString('DenominazioneSistema');
-    } else if (rExtractor.findValue('RUP')) {
+    } else if (rExtractor.findValue('RUP') !== undefined) {
       tipo = SubjectType.PF; // Mapped as Person
-      if (rExtractor.findValue('Nome')) campiSpecifici['Nome'] = rExtractor.getString('Nome');
-      if (rExtractor.findValue('Cognome'))
+      if (rExtractor.findValue('Nome') !== undefined)
+        campiSpecifici['Nome'] = rExtractor.getString('Nome');
+      if (rExtractor.findValue('Cognome') !== undefined)
         campiSpecifici['Cognome'] = rExtractor.getString('Cognome');
-      if (rExtractor.findValue('CodiceFiscale'))
+      if (rExtractor.findValue('CodiceFiscale') !== undefined)
         campiSpecifici['CodiceFiscale'] = rExtractor.getString('CodiceFiscale');
       setIpaFields();
       extractIndirizzi();

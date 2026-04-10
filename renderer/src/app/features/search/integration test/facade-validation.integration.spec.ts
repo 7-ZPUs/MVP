@@ -10,9 +10,9 @@ import {
 } from '../../validation/strategies';
 import { SearchFilters } from '../../../../../../shared/domain/metadata';
 import { RegisterType, DIDAIFormation } from '../../../../../../shared/domain/metadata/search.enum';
-import { FilterValidatorService } from '../../../feature/validation/services/filter-validator.service';
+import { FilterValidatorService } from '../../validation/services/filter-validator.service';
 import { SEARCH_CHANNEL_TOKEN } from '../contracts/search-channel.interface';
-import { FILTER_VALIDATOR_TOKEN } from '../../../feature/validation/contracts/filter-validator.interface';
+import { FILTER_VALIDATOR_TOKEN } from '../../validation/contracts/filter-validator.interface';
 import { SEMANTIC_INDEX_STATUS_TOKEN } from '../contracts/semantic-index.interface';
 import {
   ERROR_HANDLER_TOKEN,

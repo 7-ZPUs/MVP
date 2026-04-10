@@ -5,7 +5,7 @@ import { of, Subject, throwError, Observable } from 'rxjs';
 import { SearchQueryType } from '../../../../../../shared/domain/metadata/search.enum';
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { SEARCH_CHANNEL_TOKEN } from '../contracts/search-channel.interface';
-import { FILTER_VALIDATOR_TOKEN } from '../../../feature/validation/contracts/filter-validator.interface';
+import { FILTER_VALIDATOR_TOKEN } from '../../validation/contracts/filter-validator.interface';
 import { SEMANTIC_INDEX_STATUS_TOKEN } from '../contracts/semantic-index.interface';
 import {
   ERROR_HANDLER_TOKEN,
