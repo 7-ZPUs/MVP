@@ -13,14 +13,19 @@
 
 // Must be the very first import so that reflect-metadata is available for tsyringe
 // and all injectable classes are registered in the container.
+import "reflect-metadata";
 import "./core/src/container";
 import { container } from "tsyringe";
+import Database from "better-sqlite3";
 
 import { app, BrowserWindow, ipcMain } from "electron";
-import { existsSync, readdirSync } from "node:fs";
+import { existsSync, rmSync } from "node:fs";
 import * as path from "node:path";
 import { IpcChannels } from "./shared/ipc-channels";
-import { ApplicationBootstrapAdapter } from "./db/DatabaseBootstrap";
+import {
+  ApplicationBootstrapAdapter,
+  SQLITE_DB_TOKEN,
+} from "./db/DatabaseBootstrap";
 import { DATABASE_PROVIDER_PATH_TOKEN } from "./core/src/repo/impl/DatabaseProvider";
 import {
   INDEX_DIP_TOKEN,
@@ -41,11 +46,14 @@ import { FileViewerIpcAdapter } from "./core/src/ipc/FileViewerIpcAdapter";
 
 const IPC_CHANNEL_REGISTRY_CHANNEL = "__app:get-ipc-channels";
 
+app.name = "dip-reader";
+
 // ---------------------------------------------------------------------------
 // Window management
 // ---------------------------------------------------------------------------
 
 function createWindow(): BrowserWindow {
+  console.warn(path.join(__dirname, "core", "assets", "icona.png"));
   const win = new BrowserWindow({
     width: 1920,
     height: 800,
@@ -54,6 +62,8 @@ function createWindow(): BrowserWindow {
       contextIsolation: true,
       nodeIntegration: false,
     },
+    icon: path.join(__dirname, "core", "assets", "icona.png"),
+    title: "DIPReader 1.0.0",
   });
   win.removeMenu();
   // In development load the Angular dev server; in production load the built index.
@@ -70,18 +80,22 @@ function createWindow(): BrowserWindow {
 }
 
 function resolveProductionDipPath(): string {
-  const appBasePath = process.cwd();
-  const dipDirs = readdirSync(appBasePath, { withFileTypes: true })
-    .filter((entry) => entry.isDirectory() && entry.name.startsWith("dip."))
-    .map((entry) => path.join(appBasePath, entry.name));
-
-  if (dipDirs.length === 0) {
-    throw new Error(
-      `No dip.{uuid} directory found in application folder: ${appBasePath}`,
+  const appImagePath = process.env["APPIMAGE"];
+  if (appImagePath && existsSync(appImagePath)) {
+    const appPath = path.dirname(appImagePath);
+    console.log(
+      "[BOOTSTRAP] Resolving DIP path in production from APPIMAGE host path:",
+      appPath,
     );
+    return appPath;
   }
 
-  return dipDirs[0];
+  const appPath = path.dirname(process.cwd());
+  console.log(
+    "[BOOTSTRAP] Resolving DIP path in production. App path:",
+    appPath,
+  );
+  return appPath;
 }
 
 function resolveBootstrapDipPath(): string {
@@ -128,8 +142,12 @@ function exportDb(dstPath: string): void {
 (async () => {
   await app.whenReady();
 
+  const dbPath = path.join(app.getPath("userData"), "dip-viewer.db");
+  rmSync(dbPath, { force: true });
+  const db = new Database(dbPath);
+  container.register(SQLITE_DB_TOKEN, { useValue: db });
+
   // Ensure all DAOs/repositories use the same DB file created by bootstrap.
-  const appDbPath = path.resolve(process.cwd(), "dip-viewer.db");
   const dipPath = resolveBootstrapDipPath();
 
   container.register("DIP_PATH_TOKEN", {
@@ -137,7 +155,7 @@ function exportDb(dstPath: string): void {
   });
 
   container.register(DATABASE_PROVIDER_PATH_TOKEN, {
-    useValue: appDbPath,
+    useValue: dbPath,
   });
 
   console.warn("[BOOTSTRAP] NODE_ENV =", process.env["NODE_ENV"]);
@@ -147,13 +165,7 @@ function exportDb(dstPath: string): void {
   };
   const bootstrapAdapter = new ApplicationBootstrapAdapter(lazyIndexDip);
   process.env.DIP_PATH = dipPath;
-  bootstrapAdapter.bootstrap(dipPath).catch((error) => {
-    console.warn(
-      "[BOOTSTRAP] Skipping automatic DIP indexing:",
-      error instanceof Error ? error.message : String(error),
-    );
-    bootstrapAdapter.markBootstrapCompleted();
-  });
+  void bootstrapAdapter.bootstrap(dipPath);
 
   // Register all IPC adapters before creating the window
   ipcMain.on(IPC_CHANNEL_REGISTRY_CHANNEL, (event) => {
@@ -161,7 +173,7 @@ function exportDb(dstPath: string): void {
   });
 
   ipcMain.handle(IpcChannels.BOOTSTRAP_STATUS, () => {
-    return bootstrapAdapter.isBootstrapCompleted();
+    return bootstrapAdapter.getBootstrapStatus();
   });
 
   BrowsingIpcAdapter.register(ipcMain);

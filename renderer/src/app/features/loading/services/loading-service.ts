@@ -1,8 +1,13 @@
 import { Injectable, NgZone, inject } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { IpcChannels } from '@shared/ipc-channels';
+import {
+  BOOTSTRAP_LOADING_STATUS,
+  BootstrapStatus,
+  isBootstrapStatus,
+} from '@shared/bootstrap-status';
 
-type BootstrapEventHandler = () => void;
+type BootstrapEventHandler = (...args: unknown[]) => void;
 
 type ElectronBridge = {
   invoke?: <T = unknown>(channel: string, data?: unknown) => Promise<T>;
@@ -15,8 +20,10 @@ type ElectronBridge = {
 })
 export class LoadingService {
   private readonly ngZone = inject(NgZone);
-  private readonly isLoaded$ = new BehaviorSubject<boolean>(false);
-  public readonly loadingStatus$ = this.isLoaded$.asObservable();
+  private readonly bootstrapStatusSubject = new BehaviorSubject<BootstrapStatus>(
+    BOOTSTRAP_LOADING_STATUS,
+  );
+  public readonly bootstrapStatus$ = this.bootstrapStatusSubject.asObservable();
   private readonly bridge: ElectronBridge | null = null;
 
   constructor() {
@@ -28,8 +35,8 @@ export class LoadingService {
 
     const listen = this.bridge.on ?? this.bridge.receive;
     if (typeof listen === 'function') {
-      listen(IpcChannels.BOOTSTRAP_COMPLETE, () => {
-        this.markLoaded();
+      listen(IpcChannels.BOOTSTRAP_COMPLETE, (...args: unknown[]) => {
+        this.applyStatus(args[0]);
       });
     }
 
@@ -48,10 +55,8 @@ export class LoadingService {
     }
 
     try {
-      const isCompleted = await bridge.invoke<boolean>(IpcChannels.BOOTSTRAP_STATUS);
-      if (isCompleted) {
-        this.markLoaded();
-      }
+      const status = await bridge.invoke<unknown>(IpcChannels.BOOTSTRAP_STATUS);
+      this.applyStatus(status);
     } catch (error) {
       console.warn('[LoadingService] impossibile leggere lo stato bootstrap:', error);
     }
@@ -67,10 +72,26 @@ export class LoadingService {
     return w.electronAPI ?? w.electron ?? w.api ?? null;
   }
 
-  private markLoaded(): void {
+  private applyStatus(rawStatus: unknown): void {
+    if (typeof rawStatus === 'boolean') {
+      this.setStatus(rawStatus ? { state: 'success' } : BOOTSTRAP_LOADING_STATUS);
+      return;
+    }
+
+    if (isBootstrapStatus(rawStatus)) {
+      this.setStatus(rawStatus);
+    }
+  }
+
+  private setStatus(status: BootstrapStatus): void {
     this.ngZone.run(() => {
-      if (!this.isLoaded$.value) {
-        this.isLoaded$.next(true);
+      if (this.bootstrapStatusSubject.value.state !== status.state) {
+        this.bootstrapStatusSubject.next(status);
+        return;
+      }
+
+      if (status.message !== this.bootstrapStatusSubject.value.message) {
+        this.bootstrapStatusSubject.next(status);
       }
     });
   }

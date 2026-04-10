@@ -3,7 +3,9 @@
   "version": "0.1.0",
   "description": "DIP Viewer – Electron desktop application for reading and searching DIP packages",
   "main": "dist/main.js",
+  "author": "7-ZPUs Engineering Team",
   "scripts": {
+    "postinstall": "electron-builder install-app-deps",
     "setup:download-models": "ts-node --project tsconfig.json core/src/scripts/download-models.ts",
     "copy:models": "cpx \"core/src/models/**/*\" dist/core/src/models",
     "prestart": "electron-rebuild -f -w better-sqlite3",
@@ -24,7 +26,8 @@
     "test": "npm run test:core && npm run test:renderer",
     "test:coverage": "npm run test:core:coverage && npm run test:renderer:coverage",
     "lint": "eslint . --ext .ts,.tsx",
-    "dist": "npm run build:all && electron-builder"
+    "dist": "npm run build:all && electron-builder",
+    "dist:win": "npm run build:all && electron-rebuild --arch x64 --platform win32 && electron-builder --win --x64"
   },
   "dependencies": {
     "@angular/animations": "^21.2.6",
@@ -63,6 +66,7 @@
   "build": {
     "appId": "com.dipreader.app",
     "productName": "DIPReader",
+    "npmRebuild": true,
     "directories": {
       "output": "dist-deploy"
     },
@@ -74,8 +78,6 @@
       "dist/DipReader/**/*",
       "dist/**/*",
       "schema.sql",
-      "!**/node_modules/onnxruntime-node/bin/napi-v{3,6}/{win32,darwin,linux/arm64}/**",
-      "!**/node_modules/@xenova/transformers/node_modules/onnxruntime-node/bin/napi-v{3,6}/{win32,darwin,linux/arm64}/**",
       "!**/libonnxruntime_providers_cuda.so",
       "!**/libonnxruntime_providers_tensorrt.so"
     ],
@@ -94,14 +96,25 @@
     ],
     "linux": {
       "target": "AppImage",
-      "category": "Utility"
+      "icon": "resources/icona.png",
+      "category": "Utility",
+      "executableName": "dip-reader",
+      "desktop": {
+        "entry": {
+          "StartupWMClass": "dip-reader"
+        }
+      }
     },
     "win": {
-      "target": "portable"
+      "target": "portable",
+      "icon": "resources/icona.png",
+      "publish": null,
+      "verifyUpdateCodeSignature": false
     },
     "mac": {
       "target": "dmg",
-      "identity": null
+      "identity": null,
+      "icon": "resources/icona.icns"
     },
     "asar": true,
     "asarUnpack": [

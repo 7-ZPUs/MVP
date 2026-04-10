@@ -1,4 +1,6 @@
-@if ((isLoaded$ | async) !== true) {
+@let bootstrapStatus = bootstrapStatus$ | async;
+
+@if (bootstrapStatus?.state === 'loading') {
   <div class="loading-overlay">
     <div class="loading-panel" role="status" aria-live="polite" aria-busy="true">
       <h2 class="loading-title">Preparazione in corso</h2>
@@ -8,6 +10,15 @@
         <div class="loading-bar-indeterminate loading-bar-primary"></div>
         <div class="loading-bar-indeterminate loading-bar-secondary"></div>
       </div>
+    </div>
+  </div>
+}
+
+@if (bootstrapStatus?.state === 'failure') {
+  <div class="loading-overlay error-overlay">
+    <div class="loading-panel error-panel" role="alert" aria-live="assertive">
+      <h2 class="error-title">Errore di avvio</h2>
+      <p class="error-message">{{ bootstrapStatus?.message }}</p>
     </div>
   </div>
 }

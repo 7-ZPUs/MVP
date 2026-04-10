@@ -2,6 +2,7 @@ import { Component, inject } from '@angular/core';
 import { LoadingService } from '../../services/loading-service';
 import { Observable } from 'rxjs';
 import { AsyncPipe } from '@angular/common';
+import { BootstrapStatus } from '@shared/bootstrap-status';
 
 @Component({
   selector: 'app-loading-component',
@@ -11,8 +12,6 @@ import { AsyncPipe } from '@angular/common';
   standalone: true,
 })
 export class LoadingComponent {
-  // Usiamo un Observable per gestire lo stato in modo reattivo
-  // Il simbolo '$' alla fine è una convenzione per indicare un Observable
   private readonly loadingService = inject(LoadingService);
-  isLoaded$: Observable<boolean> = this.loadingService.loadingStatus$;
+  bootstrapStatus$: Observable<BootstrapStatus> = this.loadingService.bootstrapStatus$;
 }

@@ -1,5 +1,5 @@
 import Database from "better-sqlite3";
-import { existsSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { container, inject } from "tsyringe";
 import {
@@ -8,6 +8,11 @@ import {
 } from "../core/src/use-case/utils/indexing/IIndexDip";
 import { app, webContents } from "electron";
 import { IpcChannels } from "../shared/ipc-channels";
+import {
+  BOOTSTRAP_DIP_NOT_FOUND_MESSAGE,
+  BOOTSTRAP_LOADING_STATUS,
+  BootstrapStatus,
+} from "../shared/bootstrap-status";
 
 export const SQLITE_DB_TOKEN = Symbol("SqliteDatabase");
 const EMBEDDING_DIMENSION = 384;
@@ -43,7 +48,7 @@ function ensureVectorSearchSchema(db: Database.Database): void {
 }
 
 export class ApplicationBootstrapAdapter {
-  private bootstrapCompleted = false;
+  private bootstrapStatus: BootstrapStatus = BOOTSTRAP_LOADING_STATUS;
 
   constructor(
     @inject(INDEX_DIP_TOKEN)
@@ -51,35 +56,52 @@ export class ApplicationBootstrapAdapter {
   ) {}
 
   public isBootstrapCompleted(): boolean {
-    return this.bootstrapCompleted;
+    return this.bootstrapStatus.state !== "loading";
   }
 
-  public markBootstrapCompleted(): void {
-    if (this.bootstrapCompleted) {
+  public getBootstrapStatus(): BootstrapStatus {
+    return this.bootstrapStatus;
+  }
+
+  public markBootstrapCompleted(status: BootstrapStatus): void {
+    if (this.bootstrapStatus.state !== "loading") {
       return;
     }
 
-    this.bootstrapCompleted = true;
+    this.bootstrapStatus = status;
     webContents
       .getAllWebContents()
-      .forEach((wc) => wc.send(IpcChannels.BOOTSTRAP_COMPLETE));
+      .forEach((wc) => wc.send(IpcChannels.BOOTSTRAP_COMPLETE, status));
   }
 
   async bootstrap(dipPath: string): Promise<void> {
-    const appBasePath = this.getApplicationBasePath();
-    const dbPath = this.bootstrapDatabase(appBasePath);
-    this.registerRuntimeDatabase(dbPath);
+    try {
+      const appBasePath = this.getApplicationBasePath();
+      this.bootstrapDatabase(appBasePath);
+      this.configureRuntimeDatabase();
 
-    const resolvedDipPath = path.resolve(dipPath);
-    if (!existsSync(resolvedDipPath)) {
-      throw new Error(`DIP directory not found: ${resolvedDipPath}`);
+      const resolvedDipPath = path.resolve(dipPath);
+      if (!existsSync(resolvedDipPath)) {
+        throw new Error(`DIP directory not found: ${resolvedDipPath}`);
+      }
+
+      await this.indexDip.execute(resolvedDipPath);
+      this.markBootstrapCompleted({ state: "success" });
+    } catch (error) {
+      const message =
+        error instanceof Error &&
+        error.message.startsWith("DIP directory not found:")
+          ? BOOTSTRAP_DIP_NOT_FOUND_MESSAGE
+          : error instanceof Error
+            ? BOOTSTRAP_DIP_NOT_FOUND_MESSAGE
+            : String(BOOTSTRAP_DIP_NOT_FOUND_MESSAGE);
+
+      console.warn("[BOOTSTRAP] Skipping automatic DIP indexing:", message);
+      this.markBootstrapCompleted({ state: "failure", message });
     }
-
-    await this.indexDip.execute(resolvedDipPath);
-    this.markBootstrapCompleted();
   }
 
-  bootstrapDatabase(appBasePath: string): string {
+  bootstrapDatabase(appBasePath: string): void {
     // 1. Resolve Schema Path based on environment
     const basePath = app.isPackaged ? process.resourcesPath : appBasePath;
 
@@ -95,24 +117,16 @@ export class ApplicationBootstrapAdapter {
       );
     }
 
-    // 2. Resolve Database Path (Writable user directory)
-    const dbPath = path.join(app.getPath("userData"), "dip-viewer.db");
-
-    // Always rebuild DB from scratch before indexing.
-    rmSync(dbPath, { force: true });
-
-    // 3. Read and execute schema
+    // 2. Read and execute schema
     const schema = readFileSync(schemaPath, "utf-8");
-    const db = new Database(dbPath);
+    const db = container.resolve<Database.Database>(SQLITE_DB_TOKEN);
     db.exec(schema);
-    db.close();
 
-    console.log(`[BOOTSTRAP] Database bootstrapped successfully at ${dbPath}.`);
-    return dbPath;
+    console.log("[BOOTSTRAP] Database schema bootstrapped successfully.");
   }
 
-  private registerRuntimeDatabase(dbPath: string): void {
-    const db = new Database(dbPath);
+  private configureRuntimeDatabase(): void {
+    const db = container.resolve<Database.Database>(SQLITE_DB_TOKEN);
     db.pragma("journal_mode = WAL");
     db.pragma("foreign_keys = ON");
 
@@ -126,7 +140,6 @@ export class ApplicationBootstrapAdapter {
       );
     }
 
-    container.register(SQLITE_DB_TOKEN, { useValue: db });
   }
 
   private getApplicationBasePath(): string {

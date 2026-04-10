@@ -92,6 +92,7 @@ import { DOCUMENT_CHUNKER_TOKEN } from "./services/IDocumentChunker";
 import { DocumentChunker } from "./services/impl/DocumentChunker";
 import { INDEX_DIP_TOKEN } from "./use-case/utils/indexing/IIndexDip";
 import { IndexDip } from "./use-case/utils/indexing/impl/IndexDip";
+import { SQLITE_DB_TOKEN } from "../../db/DatabaseBootstrap";
 
 container.register(PACKAGE_READER_PORT_TOKEN, {
   useClass: LocalPackageReaderAdapter,

@@ -4,6 +4,7 @@ import { VectorDAO } from "../../src/dao/VectorDAO";
 import { Vector } from "../../src/entity/Vector";
 
 let db: Database.Database;
+const runSqliteVssTests = process.env.RUN_SQLITE_VSS_TESTS === "true";
 
 function sqliteVssPackageName(
   platformName: NodeJS.Platform,
@@ -27,7 +28,6 @@ function loadSqliteVssExtensions(database: Database.Database): void {
 describe("VectorDAO", () => {
   beforeEach(() => {
     db = new Database(":memory:");
-    loadSqliteVssExtensions(db);
     db.prepare(
       `CREATE TABLE document_vector (
                     document_id INTEGER PRIMARY KEY,
@@ -35,7 +35,10 @@ describe("VectorDAO", () => {
             )`,
     ).run();
     db.prepare(
-      "CREATE VIRTUAL TABLE document_vector_vss USING vss0(embedding(3))",
+      `CREATE TABLE document_vector_vss (
+                    rowid INTEGER PRIMARY KEY,
+                    embedding BLOB NOT NULL
+            )`,
     ).run();
   });
 
@@ -69,18 +72,27 @@ describe("VectorDAO", () => {
     expect(result).toEqual([]);
   });
 
-  it("should return nearest vectors using sqlite-vss", () => {
-    const dao = new VectorDAO(db);
-    dao.save(new Vector(1, new Float32Array([0.1, 0.2, 0.3])));
-    dao.save(new Vector(2, new Float32Array([0.1, 0.2, 0.4])));
-    dao.save(new Vector(3, new Float32Array([0.9, 0.8, 0.7])));
+  (runSqliteVssTests ? it : it.skip)(
+    "should return nearest vectors using sqlite-vss",
+    () => {
+      const dao = new VectorDAO(db);
+      loadSqliteVssExtensions(db);
+      db.prepare("DROP TABLE document_vector_vss").run();
+      db.prepare(
+        "CREATE VIRTUAL TABLE document_vector_vss USING vss0(embedding(3))",
+      ).run();
 
-    const queryVector = new Float32Array([0.1, 0.2, 0.3]);
-    const results = dao.searchSimilar(queryVector, 2);
+      dao.save(new Vector(1, new Float32Array([0.1, 0.2, 0.3])));
+      dao.save(new Vector(2, new Float32Array([0.1, 0.2, 0.4])));
+      dao.save(new Vector(3, new Float32Array([0.9, 0.8, 0.7])));
 
-    expect(results).toHaveLength(2);
-    expect(results[0].documentId).toBe(1);
-    expect(results[1].documentId).toBe(2);
-    expect(results[0].score).toBeGreaterThan(results[1].score);
-  });
+      const queryVector = new Float32Array([0.1, 0.2, 0.3]);
+      const results = dao.searchSimilar(queryVector, 2);
+
+      expect(results).toHaveLength(2);
+      expect(results[0].documentId).toBe(1);
+      expect(results[1].documentId).toBe(2);
+      expect(results[0].score).toBeGreaterThan(results[1].score);
+    },
+  );
 });
