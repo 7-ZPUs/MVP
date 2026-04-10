@@ -80,21 +80,21 @@ function createWindow(): BrowserWindow {
 }
 
 function resolveProductionDipPath(): string {
+  // 1. Caso LINUX (AppImage)
   const appImagePath = process.env["APPIMAGE"];
   if (appImagePath && existsSync(appImagePath)) {
     const appPath = path.dirname(appImagePath);
-    console.log(
-      "[BOOTSTRAP] Resolving DIP path in production from APPIMAGE host path:",
-      appPath,
-    );
+    console.log("[BOOTSTRAP] Linux AppImage host path:", appPath);
     return appPath;
   }
 
-  const appPath = path.dirname(process.cwd());
-  console.log(
-    "[BOOTSTRAP] Resolving DIP path in production. App path:",
-    appPath,
-  );
+  // 2. Caso WINDOWS (e altri)
+  // app.getPath('exe') restituisce il percorso reale dell'eseguibile,
+  // anche se l'app è stata estratta nei file temporanei.
+  const exePath = app.getPath('exe');
+  const appPath = path.dirname(exePath);
+
+  console.log("[BOOTSTRAP] Production Executable path:", appPath);
   return appPath;
 }
 

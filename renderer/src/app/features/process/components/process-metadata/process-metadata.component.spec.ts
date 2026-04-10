@@ -3,6 +3,7 @@ import { describe, expect, it, beforeEach } from 'vitest';
 
 import { ProcessMetadataComponent } from './process-metadata.component';
 import { ProcessDetail } from '../../domain/process.models';
+import { formatReadableDate } from '../../../../shared/utils/date.util';
 
 function makeDetail(overrides: Partial<ProcessDetail> = {}): ProcessDetail {
   return {
@@ -100,14 +101,14 @@ describe('ProcessMetadataComponent', () => {
     expect(
       el.querySelector('[data-testid="process-metadata-row-document-class-timestamp"]')
         ?.textContent,
-    ).toContain('2026/04/08 10:30');
+    ).toContain(formatReadableDate('2026-04-08T10:30:00Z'));
     expect(
       el.querySelector('[data-testid="process-metadata-row-submission-data-inizio"]')?.textContent,
-    ).toContain('2026/04/08 00:00');
+    ).toContain(formatReadableDate('2026-04-08'));
     expect(
       el.querySelector('[data-testid="process-metadata-row-conservation-data-inizio"]')
         ?.textContent,
-    ).toContain('2026/04/08 00:00');
+    ).toContain(formatReadableDate('2026-04-08'));
     expect(
       el.querySelector('[data-testid="process-metadata-row-overview-oggetto"]')?.textContent,
     ).toContain('Processo Contratti');

@@ -25,20 +25,44 @@ function sqliteVssPackageName(
   return `sqlite-vss-${osName}-${archName}`;
 }
 
-function loadSqliteVssExtensions(db: Database.Database): void {
+function loadSqliteVssExtensions(db: any): void {
+  // Usiamo la tua funzione per generare il nome del pacchetto
   const packageName = sqliteVssPackageName(process.platform, process.arch);
-  const packageJsonPath = require.resolve(`${packageName}/package.json`);
-  let packageDir = path.dirname(packageJsonPath);
+  
+  let packageDir: string;
 
-  if (packageDir.includes("app.asar")) {
-    packageDir = packageDir.replace("app.asar", "app.asar.unpacked");
+  if (app.isPackaged) {
+    // In produzione su Windows, i moduli spacchettati finiscono qui
+    packageDir = path.join(
+      process.resourcesPath,
+      "app.asar.unpacked",
+      "node_modules",
+      packageName
+    );
+  } else {
+    try {
+      // In sviluppo (Fedora/DevContainer)
+      const packageJsonPath = require.resolve(`${packageName}/package.json`);
+      packageDir = path.dirname(packageJsonPath);
+    } catch (e) {
+      console.error(`[VSS] Errore: impossibile trovare il pacchetto ${packageName}`, e);
+      return;
+    }
   }
 
+  // Costruiamo i percorsi delle librerie (senza .dll, better-sqlite3 lo aggiunge da solo)
   const vectorPath = path.join(packageDir, "lib", "vector0");
   const vssPath = path.join(packageDir, "lib", "vss0");
 
-  db.loadExtension(vectorPath);
-  db.loadExtension(vssPath);
+  try {
+    console.log(`[VSS] Tentativo caricamento da: ${packageDir}`);
+    db.loadExtension(vectorPath);
+    db.loadExtension(vssPath);
+    console.log("[VSS] Estensioni caricate correttamente!");
+  } catch (err) {
+    // Se fallisce qui su Windows, mancano quasi certamente le Visual C++ Redistributable
+    console.error("[VSS] Errore fatale durante il loadExtension:", err);
+  }
 }
 
 function ensureVectorSearchSchema(db: Database.Database): void {
