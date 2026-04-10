@@ -5,7 +5,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 import { SearchPageComponent } from '../ui/smart/search-page/search-page.component';
 import { SearchFacade } from '../services/search-facade';
-import { SearchIpcGateway } from '../adapters/search-ipc-gateway';
+import { SearchIpcGateway } from './search-ipc-gateway';
 import { FilterValidatorService } from '../../validation/services/filter-validator.service';
 import { IpcErrorHandlerService } from '../../../shared/services/ipc-error-handler.service';
 import { SearchBarComponent } from '../ui/dumb/search-bar.component/search-bar.component';

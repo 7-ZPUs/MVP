@@ -28,7 +28,7 @@ import {
 } from '../../validation/contracts/filter-validator.interface';
 import { firstValueFrom, Subject } from 'rxjs';
 import { ISearchChannel, SEARCH_CHANNEL_TOKEN } from '../contracts/search-channel.interface';
-import { TelemetryEvent } from '../../../shared/domain/';
+import { TelemetryEvent } from '../../../shared/domain';
 import { hasMeaningfulAdvancedFilters } from '../adapters/search-request.mapper';
 
 @Injectable({ providedIn: 'root' })

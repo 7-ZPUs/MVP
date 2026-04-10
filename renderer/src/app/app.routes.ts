@@ -18,7 +18,7 @@ export const routes: Routes = [
       },
       {
         path: 'search',
-        loadChildren: () => import('./feature/search/app.search.routes').then((m) => m.routes),
+        loadChildren: () => import('./features/search/app.search.routes').then((m) => m.routes),
       },
       {
         path: 'detail',

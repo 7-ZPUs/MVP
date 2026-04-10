@@ -6,7 +6,7 @@ import {
 } from '../../../../../../../../../shared/domain/metadata/search-result.models';
 import { ISearchResultItemComponent } from '../../../../contracts/search-result-item.interface';
 import { IntegrityClassPipe } from '../../../../services/integrity-class.pipe';
-import { ExportPageComponent } from '../../../../../../feature/export-manager/ui/smart/export-page/export-page.component';
+import { ExportPageComponent } from '../../../../../export-manager/ui/smart/export-page/export-page.component';
 
 @Component({
   selector: 'app-document-result-card',

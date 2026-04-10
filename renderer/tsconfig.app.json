@@ -9,7 +9,7 @@
   },
   "include": [
     "src/**/*.ts",
-    "src/app/feature/search/ui/dumb/result-types/process-result-card.component"
+    "src/app/features/search/ui/dumb/result-types/process-result-card.component"
   ],
   "exclude": ["src/**/*.spec.ts"]
 }

@@ -18,10 +18,8 @@ import {
 import { SearchFacade } from '../services';
 import { SearchQueryType } from '../../../../../../shared/domain/metadata/search.enum';
 import { SEARCH_CHANNEL_TOKEN } from '../contracts/search-channel.interface';
-import { FILTER_VALIDATOR_TOKEN } from '../../validation/contracts/filter-validator.interface';
-import {
-  SEMANTIC_INDEX_STATUS_TOKEN,
-} from '../contracts/semantic-index.interface';
+import { FILTER_VALIDATOR_TOKEN } from '../../../feature/validation/contracts/filter-validator.interface';
+import { SEMANTIC_INDEX_STATUS_TOKEN } from '../contracts/semantic-index.interface';
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -84,14 +82,14 @@ describe('Integration: Search Flow (UI -> Facade -> IPC Gateway)', () => {
 
     // Interazione tramite il componente figlio SearchBar (pattern corretto per componenti smart-dumb)
     const searchBar = fixture.debugElement.query(By.directive(SearchBarComponent));
-    
+
     // Simula la digitazione dell'utente
-    searchBar.triggerEventHandler('queryChanged', { 
-      text: 'Prova integrazione', 
-      type: SearchQueryType.FREE, 
-      useSemanticSearch: false 
+    searchBar.triggerEventHandler('queryChanged', {
+      text: 'Prova integrazione',
+      type: SearchQueryType.FREE,
+      useSemanticSearch: false,
     });
-    
+
     // Simula l'invio della ricerca
     searchBar.triggerEventHandler('searchRequested', null);
 
@@ -118,13 +116,13 @@ describe('Integration: Search Flow (UI -> Facade -> IPC Gateway)', () => {
     mockElectronBridge.invoke.mockRejectedValue(backendError);
 
     const searchBar = fixture.debugElement.query(By.directive(SearchBarComponent));
-    
-    searchBar.triggerEventHandler('queryChanged', { 
-      text: 'Test errore', 
-      type: SearchQueryType.FREE, 
-      useSemanticSearch: false 
+
+    searchBar.triggerEventHandler('queryChanged', {
+      text: 'Test errore',
+      type: SearchQueryType.FREE,
+      useSemanticSearch: false,
     });
-    
+
     searchBar.triggerEventHandler('searchRequested', null);
 
     await sleep(350);

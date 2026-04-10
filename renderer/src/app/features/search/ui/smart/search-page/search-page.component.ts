@@ -18,7 +18,7 @@ import { SearchBarComponent } from '../../dumb/search-bar.component/search-bar.c
 import {
   buildDetailRoute,
   mapSearchResultTypeToDetailItemType,
-} from '../../../../../features/navigation/domain/navigation-routing';
+} from '../../../../navigation/domain/navigation-routing';
 
 @Component({
   selector: 'app-search-page',

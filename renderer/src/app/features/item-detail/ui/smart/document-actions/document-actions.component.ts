@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 // Importiamo i Token appena creati!
 import { OUTPUT_FACADE_TOKEN } from '../../../../../shared/interfaces/output.interfaces';
 import { INTEGRITY_FACADE_TOKEN } from '../../../../../shared/interfaces/integrity.interfaces';
-import { ExportPageComponent } from '../../../../../feature/export-manager/ui/smart/export-page/export-page.component';
+import { ExportPageComponent } from '../../../../export-manager/ui/smart/export-page/export-page.component';
 
 @Component({
   selector: 'app-document-actions',

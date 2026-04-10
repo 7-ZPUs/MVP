@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { FilterValidatorService } from '../../validation/services/filter-validator.service';
+import { FilterValidatorService } from '../../../feature/validation/services/filter-validator.service';
 import {
   RegistryContradictionValidationStrategy,
   FormationModeContradictionStrategy,

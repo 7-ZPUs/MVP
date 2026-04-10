@@ -1,8 +1,4 @@
-import {
-  ApplicationConfig,
-  provideBrowserGlobalErrorListeners,
-  signal,
-} from '@angular/core';
+import { ApplicationConfig, provideBrowserGlobalErrorListeners, signal } from '@angular/core';
 import { provideRouter, withComponentInputBinding, withHashLocation } from '@angular/router';
 import { routes } from './app.routes';
 
@@ -16,28 +12,25 @@ import {
   ROUTER_TOKEN,
 } from './shared/contracts/index';
 
-import { SearchIpcGateway } from './feature/search/adapters/search-ipc-gateway';
-import { FilterValidatorService } from './feature/validation/services/filter-validator.service';
+import { SearchIpcGateway } from './features/search/adapters/search-ipc-gateway';
+import { FilterValidatorService } from './features/validation/services/filter-validator.service';
 import { IpcErrorHandlerService } from './shared/services/ipc-error-handler.service';
 import { TelemetryService } from './shared/services/telemetry.service';
-import { LiveAnnouncerService } from './shared/services/live-announcer.service';
 import { IpcCacheService } from './shared/infrastructure/ipc-cache.service';
 import { ElectronLoggingGateway } from './shared/services/electron-logging-gateway';
-import { SearchFacade } from './feature/search/services';
+import { SearchFacade } from './features/search/services';
 import { IPC_GATEWAY_TOKEN } from './shared/interfaces/ipc-gateway.interfaces';
 import { ElectronIpcGateway } from './shared/infrastructure/electron-ipc-gateway';
-import { FILTER_VALIDATOR_TOKEN } from './feature/validation/contracts/filter-validator.interface';
-import { SEARCH_CHANNEL_TOKEN } from './feature/search/contracts/search-channel.interface';
-import {
-  SEMANTIC_INDEX_STATUS_TOKEN,
-} from './feature/search/contracts/semantic-index.interface';
-import { SEARCH_FACADE_TOKEN } from './feature/search/contracts/search-facade.interface';
-
+import { FILTER_VALIDATOR_TOKEN } from './features/validation/contracts/filter-validator.interface';
+import { SEARCH_CHANNEL_TOKEN } from './features/search/contracts/search-channel.interface';
+import { SEMANTIC_INDEX_STATUS_TOKEN } from './features/search/contracts/semantic-index.interface';
+import { SEARCH_FACADE_TOKEN } from './features/search/contracts/search-facade.interface';
+import { LiveAnnouncerService } from './shared/services/live-announcer.service';
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
-    provideRouter(routes, withHashLocation(), withComponentInputBinding()),
-    // Electron bridge
+    provideRouter(routes, withComponentInputBinding(), withHashLocation()),
+    // Electron bridge./features/search/contracts/search-facade.interface
     {
       provide: ELECTRON_CONTEXT_BRIDGE_TOKEN,
       useFactory: () => {

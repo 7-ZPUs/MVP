@@ -1,6 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { LoadingComponent } from './feature/loading/components/loading-component/loading-component';
+import { LoadingComponent } from './features/loading/components/loading-component/loading-component';
 
 @Component({
   selector: 'app-root',
