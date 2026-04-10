@@ -110,7 +110,8 @@
       "icon": "resources/icona.png",
       "publish": null,
       "verifyUpdateCodeSignature": false,
-      "forceCodeSigning": false
+      "forceCodeSigning": false,
+      "signAndEditExecutable": false
     },
     "mac": {
       "target": "dmg",
