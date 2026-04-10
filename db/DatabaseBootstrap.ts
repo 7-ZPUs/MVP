@@ -26,42 +26,34 @@ function sqliteVssPackageName(
 }
 
 function loadSqliteVssExtensions(db: any): void {
-  // Usiamo la tua funzione per generare il nome del pacchetto
   const packageName = sqliteVssPackageName(process.platform, process.arch);
-  
   let packageDir: string;
 
   if (app.isPackaged) {
-    // In produzione su Windows, i moduli spacchettati finiscono qui
-    packageDir = path.join(
-      process.resourcesPath,
-      "app.asar.unpacked",
-      "node_modules",
-      packageName
-    );
+    packageDir = path.join(process.resourcesPath, "app.asar.unpacked", "node_modules", packageName);
   } else {
-    try {
-      // In sviluppo (Fedora/DevContainer)
-      const packageJsonPath = require.resolve(`${packageName}/package.json`);
-      packageDir = path.dirname(packageJsonPath);
-    } catch (e) {
-      console.error(`[VSS] Errore: impossibile trovare il pacchetto ${packageName}`, e);
-      return;
-    }
+    packageDir = path.dirname(require.resolve(`${packageName}/package.json`));
   }
 
-  // Costruiamo i percorsi delle librerie (senza .dll, better-sqlite3 lo aggiunge da solo)
-  const vectorPath = path.join(packageDir, "lib", "vector0");
-  const vssPath = path.join(packageDir, "lib", "vss0");
+  const libPath = path.join(packageDir, "lib");
+
+  // --- FIX CRUCIALE PER WINDOWS ---
+  if (process.platform === "win32") {
+    // Aggiungiamo la cartella 'lib' al PATH di sistema del processo corrente
+    // Questo permette a Windows di trovare le DLL di supporto (gcc, stdc++, ecc.)
+    process.env.PATH = `${libPath};${process.env.PATH}`;
+  }
+  // --------------------------------
+
+  const vectorPath = path.join(libPath, "vector0"); // better-sqlite3 aggiunge .dll
+  const vssPath = path.join(libPath, "vss0");
 
   try {
-    console.log(`[VSS] Tentativo caricamento da: ${packageDir}`);
     db.loadExtension(vectorPath);
     db.loadExtension(vssPath);
-    console.log("[VSS] Estensioni caricate correttamente!");
+    console.log("[VSS] Estensioni caricate con successo!");
   } catch (err) {
-    // Se fallisce qui su Windows, mancano quasi certamente le Visual C++ Redistributable
-    console.error("[VSS] Errore fatale durante il loadExtension:", err);
+    console.error("[VSS] Errore caricamento:", err);
   }
 }
 

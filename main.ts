@@ -88,14 +88,13 @@ function resolveProductionDipPath(): string {
     return appPath;
   }
 
-  // 2. Caso WINDOWS (e altri)
-  // app.getPath('exe') restituisce il percorso reale dell'eseguibile,
-  // anche se l'app è stata estratta nei file temporanei.
+  // Su Windows (Portable o Installer)
+  // app.getPath('exe') restituisce sempre il path dell'eseguibile reale
+  // es: C:\Users\Utente\Downloads\DIPReader.exe
   const exePath = app.getPath('exe');
-  const appPath = path.dirname(exePath);
-
-  console.log("[BOOTSTRAP] Production Executable path:", appPath);
-  return appPath;
+  
+  // Risaliamo alla cartella che lo contiene
+  return path.dirname(exePath);
 }
 
 function resolveBootstrapDipPath(): string {
