@@ -20,8 +20,11 @@ const EMBEDDING_DIMENSION = 384;
 function sqliteVssPackageName(
   platformName: NodeJS.Platform,
   archName: string,
-): string {
-  const osName = platformName === "win32" ? "windows" : platformName;
+): string | null {
+  if (platformName === "win32") {
+    return null;
+  }
+  const osName = platformName;
   return `sqlite-vss-${osName}-${archName}`;
 }
 
@@ -70,10 +73,13 @@ function loadExtensionFromCandidates(
   candidates: string[],
 ): void {
   const errors: string[] = [];
+  let hasExistingCandidate = false;
   for (const candidate of candidates) {
     if (!existsSync(candidate)) {
       continue;
     }
+
+    hasExistingCandidate = true;
 
     try {
       db.loadExtension(candidate);
@@ -85,13 +91,23 @@ function loadExtensionFromCandidates(
     }
   }
 
+  const details = hasExistingCandidate
+    ? errors.join(" | ")
+    : "no candidate files found";
   throw new Error(
-    `[BOOTSTRAP] Unable to load sqlite-vss ${label} extension. Candidates: ${candidates.join(", ")}. Errors: ${errors.join(" | ")}`,
+    `[BOOTSTRAP] Unable to load sqlite-vss ${label} extension. Candidates: ${candidates.join(", ")}. Details: ${details}`,
   );
 }
 
-function loadSqliteVssExtensions(db: Database.Database): void {
+function loadSqliteVssExtensions(db: Database.Database): boolean {
   const packageName = sqliteVssPackageName(process.platform, process.arch);
+  if (!packageName) {
+    console.warn(
+      "[BOOTSTRAP] sqlite-vss is not available for win32 in this distribution; vector search disabled.",
+    );
+    return false;
+  }
+
   const packageDir = resolveSqliteVssPackageDir(packageName);
   const libPath = path.join(packageDir, "lib");
   const extensionSuffix = sqliteExtensionSuffix(process.platform);
@@ -111,6 +127,7 @@ function loadSqliteVssExtensions(db: Database.Database): void {
   loadExtensionFromCandidates(db, "vector0", vectorCandidates);
   loadExtensionFromCandidates(db, "vss0", vssCandidates);
   console.log("[BOOTSTRAP] sqlite-vss extensions loaded successfully.");
+  return true;
 }
 
 function ensureVectorSearchSchema(db: Database.Database): void {
@@ -203,8 +220,10 @@ export class ApplicationBootstrapAdapter {
     db.pragma("foreign_keys = ON");
 
     try {
-      loadSqliteVssExtensions(db);
-      ensureVectorSearchSchema(db);
+      const extensionsLoaded = loadSqliteVssExtensions(db);
+      if (extensionsLoaded) {
+        ensureVectorSearchSchema(db);
+      }
     } catch (error) {
       console.warn(
         "[BOOTSTRAP] sqlite-vss extensions not loaded; vector search disabled:",

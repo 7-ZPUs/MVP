@@ -79,7 +79,7 @@ function createWindow(): BrowserWindow {
 }
 
 function resolveProductionDipPath(): string {
-  // 1. Caso LINUX (AppImage)
+  // 1. Linux AppImage host path
   const appImagePath = process.env["APPIMAGE"];
   if (appImagePath && existsSync(appImagePath)) {
     const appPath = path.dirname(appImagePath);
@@ -87,13 +87,25 @@ function resolveProductionDipPath(): string {
     return appPath;
   }
 
-  // Su Windows (Portable o Installer)
-  // app.getPath('exe') restituisce sempre il path dell'eseguibile reale
-  // es: C:\Users\Utente\Downloads\DIPReader.exe
-  const exePath = app.getPath('exe');
-  
-  // Risaliamo alla cartella che lo contiene
-  return path.dirname(exePath);
+  // 2. Windows portable: electron-builder exposes the original launcher path.
+  const portableExeDir = process.env["PORTABLE_EXECUTABLE_DIR"];
+  if (portableExeDir && existsSync(portableExeDir)) {
+    console.log("[BOOTSTRAP] Windows portable executable dir:", portableExeDir);
+    return portableExeDir;
+  }
+
+  const portableExeFile = process.env["PORTABLE_EXECUTABLE_FILE"];
+  if (portableExeFile && existsSync(portableExeFile)) {
+    const portableDir = path.dirname(portableExeFile);
+    console.log("[BOOTSTRAP] Windows portable executable file:", portableExeFile);
+    return portableDir;
+  }
+
+  // 3. Generic packaged fallback (installed app or non-portable launch).
+  const exePath = app.getPath("exe");
+  const exeDir = path.dirname(exePath);
+  console.log("[BOOTSTRAP] Fallback executable dir:", exeDir);
+  return exeDir;
 }
 
 function resolveBootstrapDipPath(): string {

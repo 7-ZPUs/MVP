@@ -40,12 +40,11 @@
     "onnxruntime-node": "^1.17.3",
     "reflect-metadata": "^0.2.2",
     "sharp": "^0.34.5",
+    "sqlite-vss": "^0.1.2",
     "tsyringe": "^4.8.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "electron": "^30.0.0",
-    "electron-builder": "^26.8.1",
     "@angular/cli": "^21.2.5",
     "@playwright/test": "^1.59.1",
     "@types/adm-zip": "^0.5.5",
@@ -54,12 +53,13 @@
     "@vitest/coverage-v8": "^1.6.1",
     "cpx": "^1.5.0",
     "defaults": "^3.0.0",
+    "electron": "^30.0.0",
+    "electron-builder": "^26.8.1",
     "electron-rebuild": "^3.2.9",
     "eslint": "^10.0.3",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.5",
-    "vitest": "^1.6.1",
-    "sqlite-vss": "^0.1.2"
+    "vitest": "^1.6.1"
   },
   "build": {
     "appId": "com.dipreader.app",
