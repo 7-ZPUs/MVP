@@ -73,8 +73,8 @@
       "it"
     ],
     "files": [
-      "dist/DipReader/**/*",
       "dist/**/*",
+      "package.json",
       "schema.sql",
       "!**/libonnxruntime_providers_cuda.so",
       "!**/libonnxruntime_providers_tensorrt.so"
@@ -119,6 +119,7 @@
     "asarUnpack": [
       "**/better-sqlite3/**/*",
       "**/onnxruntime-node/**/*",
+      "**/@xenova/transformers/node_modules/onnxruntime-node/**/*",
       "**/sharp/**/*",
       "**/sqlite-vss-*/**/*"
     ]
