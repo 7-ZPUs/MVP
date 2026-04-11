@@ -1,11 +1,11 @@
 import { describe, it, expect, vi } from "vitest";
 import { Readable } from "node:stream";
 
-import { DocumentChunker } from "../../../src/services/impl/DocumentChunker";
+import { EmbeddingService } from "../../../src/services/impl/EmbeddingService";
 import { IPackageReaderPort } from "../../../src/repo/IPackageReaderPort";
 import { IWordEmbedding } from "../../../src/repo/IWordEmbedding";
 
-describe("DocumentChunker", () => {
+describe("EmbeddingService", () => {
   it("limits streamed text size to avoid huge string allocations", async () => {
     const oneMb = Buffer.alloc(1024 * 1024, "a");
     const stream = Readable.from(Array.from({ length: 20 }, () => oneMb));
@@ -19,7 +19,7 @@ describe("DocumentChunker", () => {
       isInitialized: vi.fn(),
     } as unknown as IWordEmbedding;
 
-    const chunker = new DocumentChunker(packageReader, embeddingAdapter);
+    const chunker = new EmbeddingService(packageReader, embeddingAdapter);
     const text = await (chunker as any).readTextFromStream(
       "/tmp/huge-file.pdf",
     );
@@ -42,7 +42,7 @@ describe("DocumentChunker", () => {
       isInitialized: vi.fn(),
     } as unknown as IWordEmbedding;
 
-    const chunker = new DocumentChunker(packageReader, embeddingAdapter);
+    const chunker = new EmbeddingService(packageReader, embeddingAdapter);
     const embedding = await chunker.generateDocumentEmbedding("/tmp/small.txt");
 
     expect(embedding).toBeInstanceOf(Float32Array);
@@ -62,7 +62,7 @@ describe("DocumentChunker", () => {
       isInitialized: vi.fn(),
     } as unknown as IWordEmbedding;
 
-    const chunker = new DocumentChunker(packageReader, embeddingAdapter);
+    const chunker = new EmbeddingService(packageReader, embeddingAdapter);
     const embedding = await chunker.generateDocumentEmbedding("/tmp/large.txt");
 
     expect(embedding).toBeInstanceOf(Float32Array);

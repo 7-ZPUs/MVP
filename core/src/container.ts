@@ -88,8 +88,8 @@ import { SqliteTransactionManager } from "./repo/impl/SqliteTransactionManager";
 import { HashingService } from "./services/impl/HashingService";
 import { INTEGRITY_VERIFICATION_SERVICE_TOKEN } from "./services/IIntegrityVerificationService";
 import { IntegrityVerificationService } from "./services/impl/IntegrityVerificationService";
-import { DOCUMENT_CHUNKER_TOKEN } from "./services/IDocumentChunker";
-import { DocumentChunker } from "./services/impl/DocumentChunker";
+import { DOCUMENT_CHUNKER_TOKEN } from "./services/IEmbeddingService";
+import { EmbeddingService } from "./services/impl/EmbeddingService";
 import { INDEX_DIP_TOKEN } from "./use-case/utils/indexing/IIndexDip";
 import { IndexDip } from "./use-case/utils/indexing/impl/IndexDip";
 import { SQLITE_DB_TOKEN } from "../../db/DatabaseBootstrap";
@@ -100,8 +100,8 @@ container.register(PACKAGE_READER_PORT_TOKEN, {
 container.register(EXPORT_TOKEN, {
   useClass: LocalExportPort,
 });
-container.register(PRINT_PORT_TOKEN,{ 
-  useClass: PrintPort 
+container.register(PRINT_PORT_TOKEN, {
+  useClass: PrintPort,
 });
 container.register(TRANSACTION_MANAGER_TOKEN, {
   useClass: SqliteTransactionManager,
@@ -110,7 +110,7 @@ container.register(HASHING_SERVICE_TOKEN, {
   useClass: HashingService,
 });
 container.register(DOCUMENT_CHUNKER_TOKEN, {
-  useClass: DocumentChunker,
+  useClass: EmbeddingService,
 });
 container.register(INTEGRITY_VERIFICATION_SERVICE_TOKEN, {
   useClass: IntegrityVerificationService,

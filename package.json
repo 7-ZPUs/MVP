@@ -120,8 +120,7 @@
       "**/better-sqlite3/**/*",
       "**/onnxruntime-node/**/*",
       "**/@xenova/transformers/node_modules/onnxruntime-node/**/*",
-      "**/sharp/**/*",
-      "**/sqlite-vss-*/**/*"
+      "**/sharp/**/*"
     ]
   }
 }

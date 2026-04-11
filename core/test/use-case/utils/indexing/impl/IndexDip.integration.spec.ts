@@ -26,7 +26,7 @@ import { nukeTestDb } from "../../../../dao/helpers/testDb";
 import Database from "better-sqlite3";
 import { SqliteTransactionManager } from "../../../../../src/repo/impl/SqliteTransactionManager";
 import { IVectorRepository } from "../../../../../src/repo/IVectorRepository";
-import { IDocumentChunker } from "../../../../../src/services/IDocumentChunker";
+import { IEmbeddingService } from "../../../../../src/services/IEmbeddingService";
 
 // ---------------------------------------------------------------------------
 // Realistic DiP index XML — one DocumentClass, one AiP, two Documents
@@ -197,7 +197,7 @@ describe("Index use-case integration tests", () => {
       getVector: async () => null,
       searchSimilarVectors: async () => [],
     };
-    const documentChunker: IDocumentChunker = {
+    const embeddingService: IEmbeddingService = {
       generateDocumentEmbedding: async () => null,
     };
 
@@ -209,7 +209,7 @@ describe("Index use-case integration tests", () => {
       documentRepository,
       fileRepository,
       vectorRepository,
-      documentChunker,
+      embeddingService,
       new SqliteTransactionManager(db),
     );
 

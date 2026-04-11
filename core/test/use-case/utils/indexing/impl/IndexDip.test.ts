@@ -19,7 +19,7 @@ import { FileDAO } from "../../../../../src/dao/FileDAO";
 import { readFileSync } from "node:fs";
 import { SqliteTransactionManager } from "../../../../../src/repo/impl/SqliteTransactionManager";
 import { IVectorRepository } from "../../../../../src/repo/IVectorRepository";
-import { IDocumentChunker } from "../../../../../src/services/IDocumentChunker";
+import { IEmbeddingService } from "../../../../../src/services/IEmbeddingService";
 import { Vector } from "../../../../../src/entity/Vector";
 
 describe("IndexDip", () => {
@@ -27,7 +27,7 @@ describe("IndexDip", () => {
   let fileSystemProvider: IFileSystemProvider;
   let useCase: IndexDip;
   let vectorRepository: IVectorRepository;
-  let documentChunker: IDocumentChunker;
+  let embeddingService: IEmbeddingService;
 
   beforeEach(() => {
     db = new Database(":memory:");
@@ -46,7 +46,7 @@ describe("IndexDip", () => {
       getVector: vi.fn().mockResolvedValue(null),
       searchSimilarVectors: vi.fn().mockResolvedValue([]),
     };
-    documentChunker = {
+    embeddingService = {
       generateDocumentEmbedding: vi.fn().mockResolvedValue(null),
     };
 
@@ -73,7 +73,7 @@ describe("IndexDip", () => {
       documentRepository,
       fileRepository,
       vectorRepository,
-      documentChunker,
+      embeddingService,
       new SqliteTransactionManager(db),
     );
   });
@@ -84,7 +84,7 @@ describe("IndexDip", () => {
   // expected_value: returns { success: true } and persists dip, document class, process, document, metadata and file records
   it("TU-F-Indexing-27: execute() should orchestrate reader and repository writes parsing real XML", async () => {
     const dipPath = "/dip/path";
-    vi.mocked(documentChunker.generateDocumentEmbedding).mockResolvedValue(
+    vi.mocked(embeddingService.generateDocumentEmbedding).mockResolvedValue(
       new Float32Array([0.1, 0.2]),
     );
 
@@ -151,8 +151,8 @@ describe("IndexDip", () => {
     expect(files).toHaveLength(1);
     expect((files[0] as any).filename).toBe("./primary.pdf");
 
-    expect(documentChunker.generateDocumentEmbedding).toHaveBeenCalledTimes(1);
-    expect(documentChunker.generateDocumentEmbedding).toHaveBeenCalledWith(
+    expect(embeddingService.generateDocumentEmbedding).toHaveBeenCalledTimes(1);
+    expect(embeddingService.generateDocumentEmbedding).toHaveBeenCalledWith(
       expect.stringContaining("primary.pdf"),
     );
     expect(vectorRepository.saveVector).toHaveBeenCalledTimes(1);
@@ -199,7 +199,7 @@ describe("IndexDip", () => {
   // expected_value: returns success, persists file records, and does not persist vectors
   it("TU-F-Indexing-29: execute() should continue indexing when vector generation fails", async () => {
     const dipPath = "/dip/path";
-    vi.mocked(documentChunker.generateDocumentEmbedding).mockRejectedValue(
+    vi.mocked(embeddingService.generateDocumentEmbedding).mockRejectedValue(
       new Error("missing model file"),
     );
 
@@ -248,7 +248,7 @@ describe("IndexDip", () => {
 
     const files = db.prepare("SELECT * FROM file").all();
     expect(files).toHaveLength(1);
-    expect(documentChunker.generateDocumentEmbedding).toHaveBeenCalledTimes(1);
+    expect(embeddingService.generateDocumentEmbedding).toHaveBeenCalledTimes(1);
     expect(vectorRepository.saveVector).not.toHaveBeenCalled();
   });
 });

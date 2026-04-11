@@ -32,8 +32,8 @@ import { IVectorRepository } from "../../../../repo/IVectorRepository";
 import { VECTOR_REPOSITORY_TOKEN } from "../../../../repo/VectorRepositoryToken";
 import {
   DOCUMENT_CHUNKER_TOKEN,
-  IDocumentChunker,
-} from "../../../../services/IDocumentChunker";
+  IEmbeddingService,
+} from "../../../../services/IEmbeddingService";
 import { inject, injectable } from "tsyringe";
 import path from "node:path";
 import { Vector } from "../../../../entity/Vector";
@@ -63,7 +63,7 @@ export class IndexDip implements IIndexDip {
     @inject(VECTOR_REPOSITORY_TOKEN)
     private readonly vectorRepository: IVectorRepository,
     @inject(DOCUMENT_CHUNKER_TOKEN)
-    private readonly documentChunker: IDocumentChunker,
+    private readonly embeddingService: IEmbeddingService,
     @inject(TRANSACTION_MANAGER_TOKEN)
     private readonly transactionManager: ITransactionManager,
   ) {}
@@ -134,9 +134,8 @@ export class IndexDip implements IIndexDip {
 
     const absoluteFilePath = path.join(dipPath, relativeFilePath);
     try {
-      const embedding = await this.documentChunker.generateDocumentEmbedding(
-        absoluteFilePath,
-      );
+      const embedding =
+        await this.embeddingService.generateDocumentEmbedding(absoluteFilePath);
 
       if (!embedding) {
         return;

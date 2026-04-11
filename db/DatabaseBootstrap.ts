@@ -17,115 +17,21 @@ import {
 export const SQLITE_DB_TOKEN = Symbol("SqliteDatabase");
 const EMBEDDING_DIMENSION = 384;
 
-function sqliteVssPackageName(
-  platformName: NodeJS.Platform,
-  archName: string,
-): string | null {
-  if (platformName === "win32") {
-    return null;
-  }
-  const osName = platformName;
-  return `sqlite-vss-${osName}-${archName}`;
-}
+async function loadSqliteVssExtensions(db: Database.Database): Promise<boolean> {
+  const dynamicImport = new Function(
+    "modulePath",
+    "return import(modulePath)",
+  ) as (modulePath: string) => Promise<any>;
+  const sqliteVss: any = await dynamicImport("sqlite-vss");
+  const vectorPath = sqliteVss.getVectorLoadablePath();
+  const vssPath = sqliteVss.getVssLoadablePath();
 
-function sqliteExtensionSuffix(platformName: NodeJS.Platform): string {
-  if (platformName === "win32") {
-    return ".dll";
-  }
-  if (platformName === "darwin") {
-    return ".dylib";
-  }
-  return ".so";
-}
+  // better-sqlite3 auto-appends platform extension suffixes.
+  const stripExtension = (p: string): string =>
+    p.replace(/\.(so|dylib|dll)$/, "");
 
-function resolveSqliteVssPackageDir(packageName: string): string {
-  if (app.isPackaged) {
-    return path.join(
-      process.resourcesPath,
-      "app.asar.unpacked",
-      "node_modules",
-      packageName,
-    );
-  }
-
-  const packageJsonPath = require.resolve(`${packageName}/package.json`);
-  let packageDir = path.dirname(packageJsonPath);
-  if (packageDir.includes("app.asar")) {
-    packageDir = packageDir.replace("app.asar", "app.asar.unpacked");
-  }
-  return packageDir;
-}
-
-function prependWindowsPathEntries(entries: string[]): void {
-  const currentPath = process.env.PATH ?? "";
-  const parts = currentPath
-    .split(";")
-    .map((part) => part.trim())
-    .filter((part) => part.length > 0);
-
-  const next = [...entries.filter((entry) => entry.length > 0), ...parts];
-  process.env.PATH = Array.from(new Set(next)).join(";");
-}
-
-function loadExtensionFromCandidates(
-  db: Database.Database,
-  label: string,
-  candidates: string[],
-): void {
-  const errors: string[] = [];
-  let hasExistingCandidate = false;
-  for (const candidate of candidates) {
-    if (!existsSync(candidate)) {
-      continue;
-    }
-
-    hasExistingCandidate = true;
-
-    try {
-      db.loadExtension(candidate);
-      return;
-    } catch (error) {
-      errors.push(
-        `${candidate}: ${error instanceof Error ? error.message : String(error)}`,
-      );
-    }
-  }
-
-  const details = hasExistingCandidate
-    ? errors.join(" | ")
-    : "no candidate files found";
-  throw new Error(
-    `[BOOTSTRAP] Unable to load sqlite-vss ${label} extension. Candidates: ${candidates.join(", ")}. Details: ${details}`,
-  );
-}
-
-function loadSqliteVssExtensions(db: Database.Database): boolean {
-  const packageName = sqliteVssPackageName(process.platform, process.arch);
-  if (!packageName) {
-    console.warn(
-      "[BOOTSTRAP] sqlite-vss is not available for win32 in this distribution; vector search disabled.",
-    );
-    return false;
-  }
-
-  const packageDir = resolveSqliteVssPackageDir(packageName);
-  const libPath = path.join(packageDir, "lib");
-  const extensionSuffix = sqliteExtensionSuffix(process.platform);
-  const vectorCandidates = [
-    path.join(libPath, `vector0${extensionSuffix}`),
-    path.join(libPath, "vector0"),
-  ];
-  const vssCandidates = [
-    path.join(libPath, `vss0${extensionSuffix}`),
-    path.join(libPath, "vss0"),
-  ];
-
-  if (process.platform === "win32") {
-    prependWindowsPathEntries([libPath, packageDir]);
-  }
-
-  loadExtensionFromCandidates(db, "vector0", vectorCandidates);
-  loadExtensionFromCandidates(db, "vss0", vssCandidates);
+  db.loadExtension(stripExtension(vectorPath));
+  db.loadExtension(stripExtension(vssPath));
   console.log("[BOOTSTRAP] sqlite-vss extensions loaded successfully.");
   return true;
 }
@@ -167,7 +73,7 @@ export class ApplicationBootstrapAdapter {
     try {
       const appBasePath = this.getApplicationBasePath();
       this.bootstrapDatabase(appBasePath);
-      this.configureRuntimeDatabase();
+      await this.configureRuntimeDatabase();
 
       const resolvedDipPath = path.resolve(dipPath);
       if (!existsSync(resolvedDipPath)) {
@@ -214,13 +120,13 @@ export class ApplicationBootstrapAdapter {
     console.log("[BOOTSTRAP] Database schema bootstrapped successfully.");
   }
 
-  private configureRuntimeDatabase(): void {
+  private async configureRuntimeDatabase(): Promise<void> {
     const db = container.resolve<Database.Database>(SQLITE_DB_TOKEN);
     db.pragma("journal_mode = WAL");
     db.pragma("foreign_keys = ON");
 
     try {
-      const extensionsLoaded = loadSqliteVssExtensions(db);
+      const extensionsLoaded = await loadSqliteVssExtensions(db);
       if (extensionsLoaded) {
         ensureVectorSearchSchema(db);
       }
@@ -230,7 +136,6 @@ export class ApplicationBootstrapAdapter {
         error instanceof Error ? error.message : String(error),
       );
     }
-
   }
 
   private getApplicationBasePath(): string {
