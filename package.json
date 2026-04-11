@@ -73,11 +73,11 @@
       "it"
     ],
     "files": [
+      "dist/DipReader/**/*",
       "dist/**/*",
       "schema.sql",
-      "node_modules/**/*",
-      "!**/node_modules/*/{test,tests,example,examples,src}/**",
-      "!**/node_modules/.bin/**"
+      "!**/libonnxruntime_providers_cuda.so",
+      "!**/libonnxruntime_providers_tensorrt.so"
     ],
     "extraResources": [
       {
@@ -106,8 +106,9 @@
     "win": {
       "target": "portable",
       "icon": "resources/icona.png",
-      "forceCodeSigning": false,
-      "signAndEditExecutable": false
+      "publish": null,
+      "verifyUpdateCodeSignature": false,
+      "forceCodeSigning": false
     },
     "mac": {
       "target": "dmg",
