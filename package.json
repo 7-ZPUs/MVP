@@ -76,8 +76,8 @@
       "dist/**/*",
       "package.json",
       "schema.sql",
-      "!**/node_modules/onnxruntime-node/bin/napi-v{3,6}/{win32,darwin,linux/arm64}/**",
-      "!**/node_modules/@xenova/transformers/node_modules/onnxruntime-node/bin/napi-v{3,6}/{win32,darwin,linux/arm64}/**",
+      "!**/node_modules/onnxruntime-node/bin/napi-v{3,6}/{win32,linux}/**",
+      "!**/node_modules/@xenova/transformers/node_modules/onnxruntime-node/bin/napi-v{3,6}/{win32,linux}/**",
       "!**/libonnxruntime_providers_cuda.so",
       "!**/libonnxruntime_providers_tensorrt.so"
     ],
@@ -122,6 +122,8 @@
       "**/better-sqlite3/**/*",
       "**/onnxruntime-node/**/*",
       "**/@xenova/transformers/node_modules/onnxruntime-node/**/*",
+      "**/sqlite-vss*/**/*",
+      "**/*.dylib",
       "**/sharp/**/*"
     ]
   }
