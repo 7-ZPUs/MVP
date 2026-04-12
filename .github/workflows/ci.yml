@@ -30,8 +30,12 @@ jobs:
           cd core && npm install && cd ..
           cd renderer && npm install && cd ..
 
+      - name: Install Angular CLI
+        run: npm install -g @angular/cli
+
       - name: Build project
         run: |
+          npm rebuild
           npm run build:all
 
       - name: Run Tests and Coverage

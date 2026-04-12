@@ -7,17 +7,84 @@
  * raw string literals for channel names outside this file.
  */
 export const IpcChannels = {
+  // ----- App bootstrap -----
+  BOOTSTRAP_COMPLETE: "app:bootstrap-complete",
+  BOOTSTRAP_STATUS: "app:bootstrap-status",
+
   // ----- Package management -----
-  PACKAGE_OPEN: 'package:open',
-  PACKAGE_LIST: 'package:list',
-  PACKAGE_CLOSE: 'package:close',
+  PACKAGE_OPEN: "package:open",
+  PACKAGE_LIST: "package:list",
+  PACKAGE_CLOSE: "package:close",
 
   // ----- Search -----
-  SEARCH_FULLTEXT: 'search:fulltext',
-  SEARCH_SEMANTIC: 'search:semantic',
+  SEARCH_FULLTEXT: "ipc:search:text",
+  SEARCH_SEMANTIC: "ipc:search:semantic",
+  SEARCH_CLASSES: "search:classes", // obsoleto
+  SEARCH_PROCESSES: "search:processes", // obsoleto
+  SEARCH_DOCUMENTS: "ipc:search:advanced",
+  SEARCH_CUSTOM_METADATA_KEYS: "search:get-custom-metadata-keys",
+  SEARCH_GET_AI_STATE: "ipc:indexing:status",
 
   // ----- Integrity -----
-  INTEGRITY_VERIFY: 'integrity:verify',
+  INTEGRITY_VERIFY: "integrity:verify",
+
+  // ----- Check Integrity: Documento -----
+  CHECK_DOCUMENT_INTEGRITY_STATUS: "check-integrity:document",
+
+  // ----- Check Integrity: File -----
+  CHECK_FILE_INTEGRITY_STATUS: "check-integrity:file",
+
+  // ----- Check Integrity: Process -----
+  CHECK_PROCESS_INTEGRITY_STATUS: "check-integrity:process",
+
+  // ----- Check Integrity: DocumentClass -----
+  CHECK_DOCUMENT_CLASS_INTEGRITY_STATUS: "check-integrity:document-class",
+
+  // ----- Check Integrity: Dip -----
+  CHECK_DIP_INTEGRITY_STATUS: "check-integrity:dip",
+
+  CREATE_DOCUMENT: "create:create-document",
+  CREATE_PROCESS: "create:create-process",
+  CREATE_FILE: "create:create-file",
+  CREATE_DOCUMENT_CLASS: "create:create-document-class",
+  CREATE_DIP: "create:create-dip",
+
+  // ----- Browse: Documento -----
+  BROWSE_GET_DOCUMENT_BY_ID: "browse:get-document-by-id",
+  BROWSE_GET_DOCUMENTS_BY_PROCESS: "browse:get-documents-by-process",
+  BROWSE_GET_DOCUMENTS_BY_STATUS: "browse:get-documents-by-status",
+
+  // ----- Browse: File -----
+  BROWSE_GET_FILE_BY_ID: "browse:get-file-by-id",
+  BROWSE_GET_FILE_BUFFER_BY_ID: "browse:get-file-buffer-by-id",
+  BROWSE_GET_FILE_BY_DOCUMENT: "browse:get-file-by-document",
+  BROWSE_GET_FILE_BY_STATUS: "browse:get-file-by-status",
+
+  // ----- Browse: Process -----
+  BROWSE_GET_PROCESS_BY_ID: "browse:get-process-by-id",
+  BROWSE_GET_PROCESS_BY_STATUS: "browse:get-process-by-status",
+  BROWSE_GET_PROCESS_BY_DOCUMENT_CLASS: "browse:get-process-by-document-class",
+
+  // ----- Browse: DocumentClass -----
+  BROWSE_GET_DOCUMENT_CLASS_BY_DIP_ID: "browse:get-document-class-by-dip-id",
+  BROWSE_GET_DOCUMENT_CLASS_BY_STATUS: "browse:get-document-class-by-status",
+  BROWSE_GET_DOCUMENT_CLASS_BY_ID: "browse:get-document-class-by-id",
+
+  // ----- Browse: Dip -----
+  BROWSE_GET_DIP_BY_ID: "browse:get-dip-by-id",
+  BROWSE_GET_DIP_BY_STATUS: "browse:get-dip-by-status",
+  BROWSE_GET_DIP_BY_DOCUMENT_CLASS: "browse:get-dip-by-document-class",
+
+  // ----- File viewer -----
+
+  FILE_DOWNLOAD: "file:download",
+  FILE_SAVE_DIALOG: "file:save-dialog", // per aprire il merda di dialog
+  FILE_FOLDER_DIALOG: "file:folder-dialog", // per aprire il di dialog per cartelle
+
+  // per il print
+  FILE_PRINT: "file:print",
+  FILE_PRINT_MANY: "file:print-many",
+  FILE_PRINT_PROGRESS: "file:print-progress",
 } as const;
 
 export type IpcChannel = (typeof IpcChannels)[keyof typeof IpcChannels];

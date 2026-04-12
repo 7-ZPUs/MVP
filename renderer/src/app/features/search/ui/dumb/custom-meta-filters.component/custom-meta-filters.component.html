@@ -1,0 +1,63 @@
+<fieldset class="filter-fieldset" [formGroup]="form">
+  <details class="filter-accordion" [attr.open]="hasAnyError() ? '' : null">
+    <summary>Metadati Personalizzati</summary>
+
+    <div class="accordion-content">
+      <div class="nested-section">
+        <div formArrayName="entries">
+          <div
+            *ngFor="let entry of entries.controls; let i = index"
+            [formGroupName]="i"
+            class="dynamic-form-item"
+          >
+            <button
+              type="button"
+              (click)="removeEntry(i)"
+              class="btn-remove-item"
+              aria-label="Rimuovi metadato"
+            >
+              <i class="bi bi-x-lg" aria-hidden="true"></i>
+            </button>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label [for]="'meta-field-' + i">Chiave</label>
+                <select
+                  [id]="'meta-field-' + i"
+                  formControlName="field"
+                  [attr.aria-invalid]="!!getError(i, 'field')"
+                >
+                  <option value="">Seleziona chiave</option>
+                  <option *ngFor="let key of getSelectableKeys(i)" [value]="key">
+                    {{ getSelectableKeyLabel(key) }}
+                  </option>
+                </select>
+                <small *ngIf="getSelectableKeys(i).length === 0" class="validation-error">
+                  Nessuna chiave custom disponibile nel DIP corrente.
+                </small>
+                <div *ngIf="getError(i, 'field') as err" class="validation-error">
+                  {{ err.message }}
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label [for]="'meta-value-' + i">Valore</label>
+                <input
+                  type="text"
+                  [id]="'meta-value-' + i"
+                  formControlName="value"
+                  [attr.aria-invalid]="!!getError(i, 'value')"
+                />
+                <div *ngIf="getError(i, 'value') as err" class="validation-error">
+                  {{ err.message }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <button type="button" (click)="addEntry()" class="btn-outline">+ Aggiungi Metadato</button>
+      </div>
+    </div>
+  </details>
+</fieldset>

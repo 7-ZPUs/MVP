@@ -7,15 +7,16 @@
   "features": {
     "ghcr.io/devcontainers/features/git:1": {},
     "ghcr.io/devcontainers/features/node:1": {
-      "version": "latest"
+      "version": "22"
     }
   },
   // --- AGGIUNTE PER ELECTRON ---
+  "mounts": [
+    "source=/tmp/.X11-unix,target=/tmp/.X11-unix,type=bind,consistency=cached"
+  ],
   "runArgs": [
     "--net=host",
     "--ipc=host",
-    "-v",
-    "/tmp/.X11-unix:/tmp/.X11-unix",
     "--privileged"
   ],
   // -----------------------------
@@ -44,7 +45,7 @@
   "containerEnv": {
     "ANGULAR_BASE_HREF": "./",
     // --- AGGIUNTE PER ELECTRON ---
-    "DISPLAY": "${env:DISPLAY}",
+    "DISPLAY": "${localEnv:DISPLAY}",
     "ELECTRON_DISABLE_SANDBOX": "1",
     "LIBGL_ALWAYS_SOFTWARE": "1"
     // -----------------------------

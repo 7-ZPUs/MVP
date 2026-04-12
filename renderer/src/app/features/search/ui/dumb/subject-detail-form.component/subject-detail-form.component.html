@@ -1,0 +1,30 @@
+<div [formGroup]="form" class="form-row subject-details-grid">
+  
+  <div *ngFor="let field of fields" class="form-group">
+    <label [for]="field.key">
+      {{ field.label }} <span *ngIf="field.required" style="color: var(--f-danger, #ef4444)">*</span>
+    </label>
+
+    <ng-container [ngSwitch]="field.type">
+      <input
+        *ngSwitchCase="FieldType.TEXT"
+        type="text"
+        [id]="field.key"
+        [formControlName]="field.key"
+        [attr.aria-invalid]="form.get(field.key)?.invalid && form.get(field.key)?.touched"
+      />
+    </ng-container>
+
+    <div
+      *ngIf="form.get(field.key)?.invalid && form.get(field.key)?.touched"
+      class="validation-error"
+    >
+      Il campo {{ field.label }} è obbligatorio.
+    </div>
+  </div>
+
+</div>
+
+<div *ngIf="fields.length === 0" class="info-banner" style="justify-content: center; margin-top: 1rem;">
+  Seleziona una tipologia di soggetto per visualizzare i filtri specifici.
+</div>

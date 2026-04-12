@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+    <xs:include schemaLocation="DocumentoInformatico.xsd"/>
+    <xs:include schemaLocation="CustomMetadata.xsd"/>
+    <xs:include schemaLocation="ArchimemoData.xsd"/>
+    <xs:element name="Document">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element maxOccurs="1" minOccurs="1" ref="DocumentoInformatico"/>
+                <xs:element maxOccurs="1" minOccurs="0" ref="CustomMetadata"/>
+                <xs:element maxOccurs="1" minOccurs="1" ref="ArchimemoData"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>
