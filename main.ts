@@ -76,18 +76,15 @@ function createWindow(): BrowserWindow {
 }
 
 function resolveProductionDipPath(): string {
-  // 1. Linux AppImage host path
+  // 1. Linux AppImage
   const appImagePath = process.env["APPIMAGE"];
   if (appImagePath && existsSync(appImagePath)) {
-    const appPath = path.dirname(appImagePath);
-    console.log("[BOOTSTRAP] Linux AppImage host path:", appPath);
-    return appPath;
+    return path.dirname(appImagePath);
   }
 
-  // 2. Windows portable: electron-builder exposes the original launcher path.
+  // 2. Windows portable
   const portableExeDir = process.env["PORTABLE_EXECUTABLE_DIR"];
   if (portableExeDir && existsSync(portableExeDir)) {
-    console.log("[BOOTSTRAP] Windows portable executable dir:", portableExeDir);
     return portableExeDir;
   }
 
@@ -101,7 +98,18 @@ function resolveProductionDipPath(): string {
     return portableDir;
   }
 
-  // 3. Generic packaged fallback (installed app or non-portable launch).
+  // 3. macOS: l'exe è dentro .app/Contents/MacOS/, risaliamo di 3 livelli
+  //    per ottenere la cartella che contiene il bundle .app
+  if (process.platform === "darwin") {
+    const exePath = app.getPath("exe");
+    const dipDir = path.dirname(
+        path.dirname(path.dirname(path.dirname(exePath)))
+    );
+    console.log("[BOOTSTRAP] macOS bundle parent dir:", dipDir);
+    return dipDir;
+  }
+
+  // 4. Fallback generico (installed app, non-portable)
   const exePath = app.getPath("exe");
   const exeDir = path.dirname(exePath);
   console.log("[BOOTSTRAP] Fallback executable dir:", exeDir);
