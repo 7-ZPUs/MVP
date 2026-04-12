@@ -26,6 +26,9 @@ describe('DocumentFacade', () => {
     fileName: 'determina_sindacale.pdf',
     mimeType: MimeType.PDF,
     metadata: {
+      identificativo: 'DOC-456',
+      impronta: 'ABC123HASH',
+      algoritmoImpronta: 'SHA-256',
       nome: 'Determina',
       oggetto: '',
       descrizione: 'Documento di test per i Facade',
@@ -51,8 +54,6 @@ describe('DocumentFacade', () => {
       prodotto: 'Adobe Acrobat',
       versione: '2020',
       produttore: 'Adobe Systems',
-      impronta: 'Impronta di test',
-      algoritmoImpronta: 'SHA-256',
     },
     verification: {
       firmaDigitale: 'Valida',
@@ -74,13 +75,6 @@ describe('DocumentFacade', () => {
       classeDocumentale: 'Delibera',
       uuid: '550e8400-e29b-41d4-a716-446655440000',
     },
-    conservationProcess: {
-      processo: 'PROC-001',
-      sessione: 'S1',
-      dataInizio: '2023-10-15T10:00:00Z',
-    },
-    // Aggiungi qui eventuali altri campi obbligatori (es. FormatInfo)
-    // se li hai resi strict nell'interfaccia DocumentDetail!
   };
 
   // Il mock per il file fisico (una finta sequenza di byte)

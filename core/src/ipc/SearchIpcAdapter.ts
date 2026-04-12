@@ -7,6 +7,7 @@ import type { ISearchDocumentalClassUC } from "../use-case/classe-documentale/IS
 import type { ISearchProcessUC } from "../use-case/process/ISearchProcessUC";
 import type { ISearchDocumentsUC } from "../use-case/document/ISearchDocumentsUC";
 import type { ISearchSemanticUC } from "../use-case/document/ISearchSemanticUC";
+import type { IGetCustomMetadataKeysUC } from "../use-case/document/IGetCustomMetadataKeysUC";
 import type { IWordEmbedding } from "../repo/IWordEmbedding";
 import type { IDocumentRepository } from "../repo/IDocumentRepository";
 import {
@@ -19,82 +20,79 @@ import { ProcessUC } from "../use-case/process/token";
 import { DocumentoUC } from "../use-case/document/tokens";
 import { WORD_EMBEDDING_PORT_TOKEN } from "../repo/IWordEmbedding";
 import { DOCUMENTO_REPOSITORY_TOKEN } from "../repo/IDocumentRepository";
-import { SearchFilters, SearchQuery } from "../../../shared/domain/metadata";
-
-// Filtri vuoti usati come base per la ricerca full-text
-const emptyFilters: SearchFilters = {
-  common: {
-    chiaveDescrittiva: null,
-    classificazione: null,
-    conservazione: null,
-    note: null,
-    tipoDocumento: null,
-  },
-  diDai: {
-    nome: null,
-    versione: null,
-    idPrimario: null,
-    tipologia: null,
-    modalitaFormazione: null,
-    riservatezza: null,
-    identificativoFormato: null,
-    verifica: null,
-    registrazione: null,
-    tracciatureModifiche: null,
-  },
-  aggregate: {
-    tipoAggregazione: null,
-    idAggregazione: null,
-    tipoFascicolo: null,
-    dataApertura: null,
-    dataChiusura: null,
-    procedimento: null,
-    assegnazione: null,
-  },
-  subject: [],
-  customMeta: null,
-};
+import { DocumentClassMapper } from "../dao/mappers/DocumentClassMapper";
+import { ProcessMapper } from "../dao/mappers/ProcessMapper";
+import { DocumentMapper } from "../dao/mappers/DocumentMapper";
+import { MetadataKeyMapper } from "../dao/mappers/MetadataKeyMapper";
+import {
+  SearchQuery,
+  SearchRequestDTO,
+  SearchRequestSchema,
+} from "../../../shared/domain/metadata/search.models";
+import { SearchDocumentsQuery } from "../entity/search/SearchQuery.model";
 
 export class SearchIpcAdapter {
   static register(ipcMain: IpcMain): void {
-    const searchClassesUC = container.resolve<ISearchDocumentalClassUC>(
-      DocumentClassUC.SEARCH_BY_DOCUMENTAL_CLASS_NAME,
-    );
-    const searchProcessiUC = container.resolve<ISearchProcessUC>(
-      ProcessUC.SEARCH_BY_PROCESS_UUID,
-    );
-    const searchDocumentsUC = container.resolve<ISearchDocumentsUC>(
-      DocumentoUC.SEARCH_BY_FILTERS,
-    );
-    const searchSemanticUC = container.resolve<ISearchSemanticUC>(
-      DocumentoUC.SEARCH_SEMANTIC,
-    );
-    const aiAdapter = container.resolve<IWordEmbedding>(
+    const searchClassesUC: ISearchDocumentalClassUC =
+      container.resolve<ISearchDocumentalClassUC>(
+        DocumentClassUC.SEARCH_BY_DOCUMENTAL_CLASS_NAME,
+      );
+    const searchProcessiUC: ISearchProcessUC =
+      container.resolve<ISearchProcessUC>(ProcessUC.SEARCH_BY_PROCESS_UUID);
+    const searchDocumentsUC: ISearchDocumentsUC =
+      container.resolve<ISearchDocumentsUC>(DocumentoUC.SEARCH_BY_FILTERS);
+    const searchSemanticUC: ISearchSemanticUC =
+      container.resolve<ISearchSemanticUC>(DocumentoUC.SEARCH_SEMANTIC);
+    const getCustomMetadataKeysUC: IGetCustomMetadataKeysUC =
+      container.resolve<IGetCustomMetadataKeysUC>(
+        DocumentoUC.GET_CUSTOM_METADATA_KEYS,
+      );
+    const aiAdapter: IWordEmbedding = container.resolve<IWordEmbedding>(
       WORD_EMBEDDING_PORT_TOKEN,
     );
-    const documentRepo = container.resolve<IDocumentRepository>(
-      DOCUMENTO_REPOSITORY_TOKEN,
+    const documentRepo: IDocumentRepository =
+      container.resolve<IDocumentRepository>(DOCUMENTO_REPOSITORY_TOKEN);
+
+    ipcMain.handle(
+      IpcChannels.SEARCH_CLASSES,
+      async (_event, name?: string) => {
+        console.log(
+          "SearchIpcAdapter: received search classes request with name =",
+          name,
+        );
+        const results = searchClassesUC.execute(name ?? "");
+        return results.map((dc) => DocumentClassMapper.toSearchResult(dc));
+      },
     );
 
-    ipcMain.handle(IpcChannels.SEARCH_CLASSES, (_event, name?: string) => {
-      console.log(
-        "SearchIpcAdapter: received search classes request with name =",
-        name,
-      );
-      return searchClassesUC
-        .execute(name ?? "");
-    });
-
     ipcMain.handle(IpcChannels.SEARCH_PROCESSES, (_event, uuid?: string) => {
-      return searchProcessiUC
-        .execute(uuid ?? "");
+      const results = searchProcessiUC.execute(uuid ?? "");
+      return results.map((proc) => ProcessMapper.toSearchResult(proc));
     });
 
     // Ricerca avanzata con filtri strutturati
     ipcMain.handle(
       IpcChannels.SEARCH_DOCUMENTS,
-      (_event, filters: SearchFilters) => {
-        return searchDocumentsUC.execute(filters);
+      async (_event, filters: SearchRequestDTO) => {
+        const validDTO = SearchRequestSchema.parse(filters);
+
+        const domainMetadataGroup = validDTO.filter
+          ? MetadataKeyMapper.mapGroup(validDTO.filter)
+          : null;
+
+        if (!domainMetadataGroup) {
+          throw new Error(
+            "Invalid search filters: no valid metadata group could be constructed",
+          );
+        }
+
+        const domainQuery = new SearchDocumentsQuery(domainMetadataGroup);
+
+        // 4. ESECUZIONE USE CASE
+        const results = await Promise.resolve(
+          searchDocumentsUC.execute(domainQuery),
+        );
+        return results.map((doc) => DocumentMapper.toSearchResult(doc, null));
       },
     );
 
@@ -102,7 +100,10 @@ export class SearchIpcAdapter {
     ipcMain.handle(
       IpcChannels.SEARCH_SEMANTIC,
       async (_event, query: SearchQuery) => {
-        return searchSemanticUC.execute(query.text);
+        const matches = await searchSemanticUC.execute(query.text);
+        return matches.map(({ document, score }) =>
+          DocumentMapper.toSearchResult(document, score),
+        );
       },
     );
 
@@ -110,19 +111,32 @@ export class SearchIpcAdapter {
       IpcChannels.SEARCH_FULLTEXT,
       async (_event, query: SearchQuery) => {
         switch (query.type) {
-          case SearchQueryType.PROCESS_ID:
-            return searchProcessiUC
-              .execute(query.text);
-          case SearchQueryType.CLASS_NAME:
-            return searchClassesUC
-              .execute(query.text);
+          case SearchQueryType.PROCESS_ID: {
+            const results = searchProcessiUC.execute(query.text);
+            return results.map((proc) => ProcessMapper.toSearchResult(proc));
+          }
+          case SearchQueryType.CLASS_NAME: {
+            const results = searchClassesUC.execute(query.text);
+            return results.map((dc) => DocumentClassMapper.toSearchResult(dc));
+          }
           case SearchQueryType.FREE:
           default: {
-            const filters: SearchFilters = {
-              ...emptyFilters,
-              diDai: { ...emptyFilters.diDai, nome: query.text },
-            };
-            return searchDocumentsUC.execute(filters);
+            const searchDocsQuery = new SearchDocumentsQuery({
+              logicOperator: "AND",
+              items: [
+                {
+                  path: "NomeDelDocumento",
+                  operator: "LIKE",
+                  value: `%${query.text}%`,
+                },
+              ],
+            });
+            const results = await Promise.resolve(
+              searchDocumentsUC.execute(searchDocsQuery),
+            );
+            return results.map((doc) =>
+              DocumentMapper.toSearchResult(doc, null),
+            );
           }
         }
       },
@@ -132,14 +146,7 @@ export class SearchIpcAdapter {
     ipcMain.handle(IpcChannels.SEARCH_GET_AI_STATE, () => {
       const initialized = aiAdapter.isInitialized();
       const indexedDocuments = documentRepo.getIndexedDocumentsCount();
-
-      // TODO: aggiungere logica INDEXING/READY quando sarà disponibile getTotalDocumentsCount()
-      let status: IndexingStatus;
-      if (!initialized) {
-        status = IndexingStatus.IDLE;
-      } else {
-        status = IndexingStatus.READY;
-      }
+      const status = initialized ? IndexingStatus.READY : IndexingStatus.IDLE;
 
       return {
         status,
@@ -148,5 +155,13 @@ export class SearchIpcAdapter {
         indexedDocuments,
       };
     });
+
+    ipcMain.handle(
+      IpcChannels.SEARCH_CUSTOM_METADATA_KEYS,
+      (_event, dipId?: number) => {
+        const dipIdentifier = Number.isFinite(dipId) ? Number(dipId) : null;
+        return getCustomMetadataKeysUC.execute(dipIdentifier);
+      },
+    );
   }
 }

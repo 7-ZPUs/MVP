@@ -13,7 +13,9 @@ export class ExportFileUC implements IExportFileUC {
         @inject(EXPORT_TOKEN)
         private readonly exportPort: IExportPort,
         @inject(PACKAGE_READER_PORT_TOKEN)
-        private readonly packageReader: IPackageReaderPort
+        private readonly packageReader: IPackageReaderPort,
+        @inject("DIP_PATH_TOKEN")
+        private readonly dipPath: string
     ) {}
 
     async execute(fileId: number, targetPath: string): Promise<ExportResult> {
@@ -21,6 +23,8 @@ export class ExportFileUC implements IExportFileUC {
         if (!file) {
             return ExportResult.fail('NOT_FOUND', `File con id ${fileId} non trovato`);
         }
-        return this.exportPort.exportFile(await this.packageReader.readFileBytes(file.getPath()), targetPath);
+        const path = require("path");
+        const absolutePath = path.resolve(this.dipPath, file.getPath());
+        return this.exportPort.exportFile(await this.packageReader.readFileBytes(absolutePath), targetPath);
     }
 }

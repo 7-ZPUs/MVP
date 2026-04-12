@@ -5,18 +5,18 @@ import { ChangeTrackingData } from '../../domain/document.models';
   selector: 'app-change-tracking',
   standalone: true,
   template: `
-    <div class="metadata-card">
-      <h3>Tracciamento Modifiche</h3>
-      <div class="data-row">
+    <div class="metadata-card" data-testid="change-tracking-card">
+      <h3 data-testid="change-tracking-heading">Tracciamento Modifiche</h3>
+      <div class="data-row" data-testid="change-tracking-row-tipo">
         <span class="label">Tipo Modifica:</span> <span class="value">{{ data().tipo }}</span>
       </div>
-      <div class="data-row">
+      <div class="data-row" data-testid="change-tracking-row-soggetto">
         <span class="label">Soggetto:</span> <span class="value">{{ data().soggetto }}</span>
       </div>
-      <div class="data-row">
+      <div class="data-row" data-testid="change-tracking-row-data">
         <span class="label">Data:</span> <span class="value">{{ data().data }}</span>
       </div>
-      <div class="data-row">
+      <div class="data-row" data-testid="change-tracking-row-id-versione-precedente">
         <span class="label">ID Versione Precedente:</span>
         <span class="value">{{ data().idVersionePrecedente }}</span>
       </div>
@@ -43,6 +43,10 @@ import { ChangeTrackingData } from '../../domain/document.models';
         flex-shrink: 0;
       }
       .value {
+        flex: 1;
+        min-width: 0;
+        word-break: break-word;
+        overflow-wrap: anywhere;
         color: #1e293b;
         font-weight: 500;
       }

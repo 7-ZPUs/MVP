@@ -1,27 +1,28 @@
 import { Component, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RegistrationData } from '../../domain/document.models';
+import { formatReadableDate } from '../../../../shared/utils/date.util';
 
 @Component({
   selector: 'app-registration-data',
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="metadata-card">
-      <h3 class="card-title">Dati di Registrazione</h3>
-      <div class="data-row">
+    <div class="metadata-card" data-testid="registration-card">
+      <h3 class="card-title" data-testid="registration-heading">Dati di Registrazione</h3>
+      <div class="data-row" data-testid="registration-row-tipo-registro">
         <span class="label">Registro:</span>
         <span class="value">{{ data().tipoRegistro }}</span>
       </div>
-      <div class="data-row">
+      <div class="data-row" data-testid="registration-row-flusso">
         <span class="label">Flusso:</span>
         <span class="value badge">{{ data().flusso }}</span>
       </div>
-      <div class="data-row">
+      <div class="data-row" data-testid="registration-row-protocollo">
         <span class="label">Protocollo:</span>
-        <span class="value">N. {{ data().numero }} del {{ data().data }}</span>
+        <span class="value">N. {{ data().numero }} del {{ formatReadableDate(data().data) }}</span>
       </div>
-      <div class="data-row">
+      <div class="data-row" data-testid="registration-row-codice">
         <span class="label">Codice:</span>
         <span class="value mono">{{ data().codice }}</span>
       </div>
@@ -59,6 +60,10 @@ import { RegistrationData } from '../../domain/document.models';
         flex-shrink: 0;
       }
       .value {
+        flex: 1;
+        min-width: 0;
+        word-break: break-word;
+        overflow-wrap: anywhere;
         color: #1e293b;
         font-weight: 500;
       }
@@ -80,4 +85,5 @@ import { RegistrationData } from '../../domain/document.models';
 })
 export class RegistrationDataComponent {
   data = input.required<RegistrationData>();
+  protected readonly formatReadableDate = formatReadableDate;
 }

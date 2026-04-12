@@ -13,7 +13,6 @@ import { DocumentClass } from "../../../src/entity/DocumentClass";
 import { File } from "../../../src/entity/File";
 import { Process } from "../../../src/entity/Process";
 import { DipRepository } from "../../../src/repo/impl/DipRepository";
-import type { DatabaseProvider } from "../../../src/repo/impl/DatabaseProvider";
 import { DocumentClassRepository } from "../../../src/repo/impl/DocumentClassRepository";
 import { DocumentRepository } from "../../../src/repo/impl/DocumentRepository";
 import { FileRepository } from "../../../src/repo/impl/FileRepository";
@@ -42,17 +41,15 @@ type Repositories = {
 };
 
 function buildSystem(db: Database.Database, hashingService: IHashingService) {
-  const dbProvider = { getDb: () => db } as unknown as DatabaseProvider;
-
   const repos: Repositories = {
-    dipRepo: new DipRepository(new DipDAO(dbProvider)),
-    documentClassRepo: new DocumentClassRepository(new DocumentClassDAO(dbProvider)),
-    processRepo: new ProcessRepository(new ProcessDAO(dbProvider)),
-    documentRepo: new DocumentRepository(new DocumentDAO(dbProvider)),
-    fileRepo: new FileRepository(new FileDAO(dbProvider)),
+    dipRepo: new DipRepository(new DipDAO(db)),
+    documentClassRepo: new DocumentClassRepository(new DocumentClassDAO(db)),
+    processRepo: new ProcessRepository(new ProcessDAO(db)),
+    documentRepo: new DocumentRepository(new DocumentDAO(db)),
+    fileRepo: new FileRepository(new FileDAO(db)),
   };
 
-  const transactionManager = new SqliteTransactionManager(dbProvider);
+  const transactionManager = new SqliteTransactionManager(db);
 
   const service = new IntegrityVerificationService(
     repos.fileRepo,
@@ -73,12 +70,17 @@ function countByStatus(
   status: IntegrityStatusEnum,
 ): number {
   const row = db
-    .prepare(`SELECT COUNT(*) AS count FROM "${table}" WHERE integrity_status = ?`)
+    .prepare(
+      `SELECT COUNT(*) AS count FROM "${table}" WHERE integrity_status = ?`,
+    )
     .get(status) as { count: number };
   return Number(row.count);
 }
 
-function getDipStatus(db: Database.Database, dipId: number): IntegrityStatusEnum {
+function getDipStatus(
+  db: Database.Database,
+  dipId: number,
+): IntegrityStatusEnum {
   const row = db
     .prepare("SELECT integrity_status AS integrityStatus FROM dip WHERE id = ?")
     .get(dipId) as { integrityStatus: IntegrityStatusEnum };
@@ -226,16 +228,16 @@ describe("IntegrityVerificationService integration", () => {
     const fixture = seedFullHierarchy(repos);
     failurePath = fixture.failurePath;
 
-    await expect(service.checkDipIntegrityStatus(fixture.dipId)).rejects.toThrow(
-      "hashing-failure",
-    );
+    await expect(
+      service.checkDipIntegrityStatus(fixture.dipId),
+    ).rejects.toThrow("hashing-failure");
 
     expect(currentCall).toBeGreaterThan(1);
 
     expect(getDipStatus(db, fixture.dipId)).toBe(IntegrityStatusEnum.UNKNOWN);
-    expect(countByStatus(db, "document_class", IntegrityStatusEnum.UNKNOWN)).toBe(
-      fixture.totalDocumentClasses,
-    );
+    expect(
+      countByStatus(db, "document_class", IntegrityStatusEnum.UNKNOWN),
+    ).toBe(fixture.totalDocumentClasses);
     expect(countByStatus(db, "process", IntegrityStatusEnum.UNKNOWN)).toBe(
       fixture.totalProcesses,
     );
@@ -246,7 +248,9 @@ describe("IntegrityVerificationService integration", () => {
       fixture.totalFiles,
     );
 
-    expect(countByStatus(db, "document_class", IntegrityStatusEnum.VALID)).toBe(0);
+    expect(countByStatus(db, "document_class", IntegrityStatusEnum.VALID)).toBe(
+      0,
+    );
     expect(countByStatus(db, "process", IntegrityStatusEnum.VALID)).toBe(0);
     expect(countByStatus(db, "document", IntegrityStatusEnum.VALID)).toBe(0);
     expect(countByStatus(db, "file", IntegrityStatusEnum.VALID)).toBe(0);
@@ -270,7 +274,9 @@ describe("IntegrityVerificationService integration", () => {
     expect(status).toBe(IntegrityStatusEnum.VALID);
     expect(getDipStatus(db, dipId)).toBe(IntegrityStatusEnum.VALID);
 
-    expect(countByStatus(db, "document_class", IntegrityStatusEnum.VALID)).toBe(0);
+    expect(countByStatus(db, "document_class", IntegrityStatusEnum.VALID)).toBe(
+      0,
+    );
     expect(countByStatus(db, "process", IntegrityStatusEnum.VALID)).toBe(0);
     expect(countByStatus(db, "document", IntegrityStatusEnum.VALID)).toBe(0);
     expect(countByStatus(db, "file", IntegrityStatusEnum.VALID)).toBe(0);

@@ -10,12 +10,12 @@ import { AppError, ErrorSeverity } from '../../domain';
     <div class="modal-overlay">
       <div class="modal-dialog" [class.fatal-dialog]="isFatal()">
         <div class="modal-header">
-          <span class="header-icon">{{ getIcon() }}</span>
+          <i class="header-icon bi" [ngClass]="getIcon()" aria-hidden="true"></i>
           <h2 class="header-title">{{ getTitle() }}</h2>
         </div>
 
         <div class="modal-body">
-          <p class="error-message">{{ error().message }}</p>
+          <p class="error-message" data-testid="document-viewer-error-message">{{ error().message }}</p>
 
           <div class="error-meta">
             @if (error().code) {
@@ -40,8 +40,9 @@ import { AppError, ErrorSeverity } from '../../domain';
           <button class="btn btn-secondary" (click)="close()">Chiudi</button>
 
           @if (error().recoverable) {
-            <button class="btn btn-primary" (click)="retry()">
-              <span class="icon">🔄</span> Riprova
+            <button class="btn btn-primary" data-testid="document-viewer-error-retry" (click)="retry()">
+              <i class="icon bi bi-arrow-clockwise" aria-hidden="true"></i>
+              Riprova
             </button>
           }
         </div>
@@ -191,13 +192,13 @@ export class ErrorDialogComponent {
   getIcon(): string {
     switch (this.error().severity) {
       case ErrorSeverity.WARNING:
-        return '⚠️';
+        return 'bi-exclamation-triangle-fill';
       case ErrorSeverity.ERROR:
-        return '❌';
+        return 'bi-x-octagon-fill';
       case ErrorSeverity.FATAL:
-        return '💀';
+        return 'bi-bug-fill';
       default:
-        return 'ℹ️';
+        return 'bi-info-circle-fill';
     }
   }
 

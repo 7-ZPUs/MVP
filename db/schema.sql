@@ -51,7 +51,8 @@ CREATE TABLE
     id INTEGER PRIMARY KEY,
     uuid TEXT NOT NULL UNIQUE,
     integrity_status TEXT NOT NULL DEFAULT 'UNKNOWN',
-    process_id INTEGER NOT NULL REFERENCES process (id) ON DELETE CASCADE
+    process_id INTEGER NOT NULL REFERENCES process (id) ON DELETE CASCADE,
+    metadata TEXT NOT NULL DEFAULT '{}'
   );
 
 CREATE TABLE
@@ -63,6 +64,14 @@ CREATE TABLE
     value TEXT NOT NULL,
     type TEXT NOT NULL DEFAULT 'string'
   );
+
+  CREATE TABLE
+    IF NOT EXISTS document_vector (
+      document_id INTEGER NOT NULL UNIQUE REFERENCES document (id) ON DELETE CASCADE,
+      embedding BLOB NOT NULL
+    );
+
+  CREATE INDEX IF NOT EXISTS idx_document_vector_document_id ON document_vector (document_id);
 
 CREATE INDEX IF NOT EXISTS idx_document_process_id ON document (process_id);
 

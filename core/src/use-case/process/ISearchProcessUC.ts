@@ -1,5 +1,5 @@
-import { SearchResult } from '../../../../shared/domain/metadata';
+import { Process } from '../../entity/Process';
 
 export interface ISearchProcessUC {
-    execute(uuid: string): Promise<SearchResult[]>;
+    execute(uuid: string): Process[];
 }

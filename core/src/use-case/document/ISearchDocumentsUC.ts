@@ -1,6 +1,6 @@
-import { SearchFilters, SearchResult } from "../../../../shared/domain/metadata";
-
+import { Document } from "../../entity/Document";
+import { SearchDocumentsQuery } from "../../entity/search/SearchQuery.model";
 
 export interface ISearchDocumentsUC {
-    execute(filters: SearchFilters): Promise<SearchResult[]>;
+    execute(filters: SearchDocumentsQuery): Document[];
 }

@@ -1,0 +1,123 @@
+<div class="filter-panel">
+  <div
+    class="panel-body"
+    style="padding: 1rem; border: 1px solid #e2e8f0; border-top: none; border-radius: 0 0 6px 6px"
+  >
+    <div
+      class="error-banner"
+      *ngIf="externalValidation && !externalValidation.isValid"
+      style="
+        background: #fee2e2;
+        color: #991b1b;
+        padding: 0.75rem;
+        border-radius: 4px;
+        margin-bottom: 1rem;
+      "
+    >
+      Attenzione: i filtri contengono errori. Ricontrolla i campi evidenziati.
+    </div>
+
+    <form [formGroup]="panelForm" (ngSubmit)="onSubmit()">
+      <div class="filter-section" style="margin-bottom: 1.5rem">
+        <h4 style="margin-bottom: 0.5rem; color: #334155">Comuni</h4>
+        <app-common-filters
+          [filters]="$any(filters.common || {})"
+          [validationResult]="effectiveValidationResult"
+          (filtersChanged)="onCommonFiltersChanged($event)"
+        >
+        </app-common-filters>
+      </div>
+
+      <div class="filter-section" style="margin-bottom: 1.5rem">
+        <h4 style="margin-bottom: 0.5rem; color: #334155">Dati Documento (DiDai)</h4>
+        <app-di-dai-filters
+          [disabled]="uiState.disableDiDai"
+          [disabledReason]="uiState.motivoBloccoDiDai"
+          [filters]="$any(filters.diDai || {})"
+          [filters]="$any(filters.diDai || {})"
+          [validationResult]="effectiveValidationResult"
+          (filtersChanged)="onDiDaiFiltersChanged($event)"
+        >
+        </app-di-dai-filters>
+      </div>
+
+      <div class="filter-section" style="margin-bottom: 1.5rem">
+        <h4 style="margin-bottom: 0.5rem; color: #334155">Dati di Aggregazione</h4>
+        <app-aggregate-filters
+          [disabled]="uiState.disableAggregate"
+          [disabledReason]="uiState.motivoBloccoAggregate"
+          [filters]="$any(filters.aggregate || {})"
+          [filters]="$any(filters.aggregate || {})"
+          [validationResult]="effectiveValidationResult"
+          (filtersChanged)="onAggregateFiltersChanged($event)"
+        >
+        </app-aggregate-filters>
+      </div>
+
+      <div class="filter-section" style="margin-bottom: 1.5rem">
+        <h4 style="margin-bottom: 0.5rem; color: #334155">Metadati Personalizzati</h4>
+        <app-custom-meta-filters
+          [filters]="filters.customMeta || null"
+          [availableKeys]="customMetadataKeys"
+          [validationResult]="effectiveValidationResult"
+          (filtersChanged)="onEntriesChanged($event)"
+        >
+        </app-custom-meta-filters>
+      </div>
+
+      <div class="filter-section" style="margin-bottom: 1.5rem">
+        <h4 style="margin-bottom: 0.5rem; color: #334155">Soggetti</h4>
+        <app-subject-filters
+          [subject]="filters.subject || []"
+          [docContext]="currentDocContext"
+          [validationResult]="effectiveValidationResult"
+          (subjectChanged)="onSubjectChanged($event)"
+        >
+        </app-subject-filters>
+      </div>
+
+      <div
+        class="form-actions"
+        style="
+          display: flex;
+          gap: 1rem;
+          justify-content: flex-end;
+          margin-top: 2rem;
+          border-top: 1px solid #e2e8f0;
+          padding-top: 1rem;
+        "
+      >
+        <button
+          type="button"
+          data-testid="clear-filters-button"
+          (click)="onReset()"
+          style="
+            padding: 0.5rem 1rem;
+            background: #cbd5e1;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+          "
+        >
+          Svuota Filtri
+        </button>
+        <button
+          type="submit"
+          data-testid="apply-filters-button"
+          [disabled]="effectiveValidationResult?.isValid === false"
+          style="
+            padding: 0.5rem 1rem;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+          "
+        >
+          Applica e Cerca
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

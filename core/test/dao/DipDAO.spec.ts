@@ -4,7 +4,6 @@ import Database from "better-sqlite3";
 
 import { DipDAO } from "../../src/dao/DipDAO";
 import { Dip } from "../../src/entity/Dip";
-import { DatabaseProvider } from "../../src/repo/impl/DatabaseProvider";
 import { IntegrityStatusEnum } from "../../src/value-objects/IntegrityStatusEnum";
 import { createTestDb } from "./helpers/testDb";
 
@@ -14,7 +13,7 @@ describe("DipDAO", () => {
 
   beforeEach(() => {
     db = createTestDb();
-    dao = new DipDAO({ getDb: () => db } as unknown as DatabaseProvider);
+    dao = new DipDAO(db);
   });
 
   afterEach(() => {

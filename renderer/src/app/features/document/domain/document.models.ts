@@ -4,6 +4,7 @@ export enum MimeType {
   PDF = 'PDF',
   IMAGE = 'IMAGE',
   TEXT = 'TEXT',
+  XML = 'XML',
   UNSUPPORTED = 'UNSUPPORTED',
 }
 
@@ -29,12 +30,18 @@ export interface DocumentMetadata {
   riservatezza: string;
   versione: string;
   conservazioneEreditata?: string;
+  tempoDiConservazione?: string;
+  idIdentificativoDocumentoPrimario?: string;
+  identificativo: string;
+  impronta: string;
+  algoritmoImpronta: string;
 }
 
 export interface RegistrationData {
   flusso: string;
   tipoRegistro: string;
   data: string;
+  ora?: string;
   numero: string;
   codice: string;
 }
@@ -53,9 +60,14 @@ export interface DocumentDetail {
   changeTracking: ChangeTrackingData;
   customMetadata?: CustomMetadataEntry[];
   aipInfo: AipInfo;
-  conservationProcess: ConservationProcessData;
-  idAggregazione?: string;
+  aggregation?: AggregationInfo;
   documentiCollegati?: string[];
+  integrityStatus?: string;
+}
+
+export interface AggregationInfo {
+  tipoAggregazione?: string;
+  idAggregazione?: string;
 }
 
 export interface ClassificationInfo {
@@ -69,8 +81,6 @@ export interface FormatInfo {
   prodotto: string;
   versione: string;
   produttore: string;
-  impronta: string;
-  algoritmoImpronta: string;
 }
 
 export interface VerificationInfo {
@@ -100,6 +110,7 @@ export interface ChangeTrackingData {
   tipo: string;
   soggetto: string;
   data: string;
+  ora?: string;
   idVersionePrecedente: string;
 }
 
@@ -111,15 +122,9 @@ export interface CustomMetadataEntry {
 export interface AipInfo {
   classeDocumentale: string;
   uuid: string;
-}
-
-export interface ConservationProcessData {
-  processo: string;
-  sessione: string;
-  dataInizio: string;
-  dataFine?: string;
-  uuidTerminatore?: string;
-  canaleTerminazione?: string;
+  conservationProcess?: string;
+  conservationSession?: string;
+  conservationStartDate?: string;
 }
 
 export interface DocumentState {

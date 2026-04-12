@@ -1,0 +1,16 @@
+<div class="search-results-wrapper">
+     @if (results && results.length > 0) {
+    <div class="results-list">
+      @for (res of results; track res.uuid) {
+        <ng-container
+          *ngComponentOutlet="
+            getComponent(res);
+            inputs: getInputs(res)
+          "
+        />
+      }
+    </div>
+  } @else {
+    <app-empty-state [message]="emptyMessage"></app-empty-state>
+  }
+</div>

@@ -1,0 +1,81 @@
+<div class="common-filters-container" [formGroup]="form">
+  
+  <details class="filter-accordion" data-testid="filter-section-general" closed>
+    <summary data-testid="filter-section-summary-general">Dati Generali</summary>
+
+    <div class="accordion-content">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="tipoDoc">Tipo Documento</label>
+          <select id="tipoDoc" data-testid="document-type-select" formControlName="tipoDocumento">
+            <option [ngValue]="null">Tutti i tipi</option>
+            <option *ngFor="let t of documentTypes" [ngValue]="t">{{ t }}</option>
+          </select>
+        </div>
+        <div class="form-group" formGroupName="conservazione">
+          <label for="anniConservazione">Anni di Conservazione (9999 = Perenne)</label>
+          <input id="anniConservazione" data-testid="conservation-years-input" type="number" formControlName="valore" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="noteFilter">Note</label>
+          <input id="noteFilter" data-testid="note-input" type="text" formControlName="note" />
+        </div>
+      </div>
+    </div>
+  </details>
+
+  <details class="filter-accordion" data-testid="filter-section-key" closed>
+    <summary data-testid="filter-section-summary-key">Chiave Descrittiva</summary>
+
+    <div formGroupName="chiaveDescrittiva" class="accordion-content">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="oggettoFilter">Oggetto</label>
+          <input
+            id="oggettoFilter"
+            data-testid="subject-input"
+            type="text"
+            formControlName="oggetto"
+            [attr.aria-invalid]="!!getError('chiaveDescrittiva.oggetto')"
+          />
+          <div *ngIf="getError('chiaveDescrittiva.oggetto') as err" class="validation-error">
+            {{ err.message }}
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="paroleChiaveFilter">Parole Chiave</label>
+          <input id="paroleChiaveFilter" data-testid="keywords-input" type="text" formControlName="paroleChiave" />
+        </div>
+      </div>
+    </div>
+  </details>
+
+  <details class="filter-accordion" data-testid="filter-section-classification" closed>
+    <summary data-testid="filter-section-summary-classification">Classificazione</summary>
+
+    <div formGroupName="classificazione" class="accordion-content">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="codiceClass">Codice Classificazione</label>
+          <input
+            id="codiceClass"
+            data-testid="classification-code-input"
+            type="text"
+            formControlName="codice"
+            [attr.aria-invalid]="!!getError('classificazione.codice')"
+          />
+          <div *ngIf="getError('classificazione.codice') as err" class="validation-error">
+            {{ err.message }}
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="descrizioneClass">Descrizione</label>
+          <input id="descrizioneClass" data-testid="classification-description-input" type="text" formControlName="descrizione" />
+        </div>
+      </div>
+    </div>
+  </details>
+  
+</div>

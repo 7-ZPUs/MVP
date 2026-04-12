@@ -1,6 +1,6 @@
 import { Injectable, Inject, signal, Signal } from '@angular/core';
 import { IDocumentFacade } from '../contracts/IDocumentFacade';
-import { DocumentState, DocumentDetail } from '../domain/document.models';
+import { DocumentState, DocumentDetail, MimeType } from '../domain/document.models';
 import { IpcCacheService } from '../../../shared/infrastructure/ipc-cache.service';
 import { TelemetryService } from '../../../shared/infrastructure/telemetry.service';
 import { IpcErrorHandlerService } from '../../../shared/infrastructure/ipc-error-handler.service';
@@ -24,6 +24,7 @@ export class DocumentFacade implements IDocumentFacade {
 
   private readonly PREFIX_DOC = 'document:';
   private readonly PREFIX_BLOB = 'blob:';
+  private activeLoadRequestId = 0;
 
   constructor(
     @Inject(IPC_GATEWAY_TOKEN) private readonly ipcGateway: IIpcGateway,
@@ -38,6 +39,7 @@ export class DocumentFacade implements IDocumentFacade {
 
   // --- 1. CARICAMENTO METADATI DEL DOCUMENTO ---
   public async loadDocument(id: string): Promise<void> {
+    const requestId = ++this.activeLoadRequestId;
     const startTime = Date.now();
     const cacheKey = `${this.PREFIX_DOC}${id}`;
 
@@ -48,6 +50,9 @@ export class DocumentFacade implements IDocumentFacade {
       const cachedDetail = this.cache.get<DocumentDetail>(cacheKey);
 
       if (cachedDetail) {
+        if (requestId !== this.activeLoadRequestId) {
+          return;
+        }
         this.state.update((s) => ({ ...s, detail: cachedDetail, loading: false }));
         this.telemetry.trackTiming(TelemetryMetric.SEARCH_LATENCY_MS, Date.now() - startTime);
         return;
@@ -59,13 +64,57 @@ export class DocumentFacade implements IDocumentFacade {
         Number(id),
         null,
       );
+
+      if (requestId !== this.activeLoadRequestId) {
+        return;
+      }
+
       const documentDetail = mapDocumentDtoToDetail(rawData);
+
+      // --- FIX: Fallback MimeType retrieval using physical file name if metadata extraction failed ---
+      if (documentDetail.mimeType === MimeType.UNSUPPORTED) {
+        try {
+          const files = (await this.ipcGateway.invoke(
+            IpcChannels.BROWSE_GET_FILE_BY_DOCUMENT,
+            Number(id),
+            null,
+          )) as { id: number; isMain: boolean; filename: string }[];
+
+          if (files && files.length > 0) {
+            const mainFile = files.find((f) => f.isMain) || files[0];
+            const nameToUse = (mainFile as any).path || mainFile.filename;
+            if (nameToUse) {
+              const ext = nameToUse.split('.').pop()?.toLowerCase();
+              if (ext) {
+                if (['pdf'].includes(ext)) {
+                  documentDetail.mimeType = MimeType.PDF;
+                } else if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'].includes(ext)) {
+                  documentDetail.mimeType = MimeType.IMAGE;
+                } else if (['txt', 'csv', 'md'].includes(ext)) {
+                  documentDetail.mimeType = MimeType.TEXT;
+                } else if (['xml'].includes(ext)) {
+                  documentDetail.mimeType = MimeType.XML;
+                }
+              }
+            }
+          }
+        } catch (e) {
+          // Ignore errors and keep UNSUPPORTED if fallback fails
+          console.warn('Fallback file retrieval failed', e);
+        }
+      }
 
       // Salvataggio e aggiornamento stato
       this.cache.set(cacheKey, documentDetail, this.CACHE_TTL_METADATA_MS);
+      if (requestId !== this.activeLoadRequestId) {
+        return;
+      }
       this.state.update((s) => ({ ...s, detail: documentDetail, loading: false }));
       this.telemetry.trackTiming(TelemetryMetric.SEARCH_LATENCY_MS, Date.now() - startTime);
     } catch (error) {
+      if (requestId !== this.activeLoadRequestId) {
+        return;
+      }
       const appError = this.errorHandler.handle(error);
       this.state.update((s) => ({ ...s, error: appError, loading: false }));
       this.telemetry.trackError(appError);
@@ -76,6 +125,13 @@ export class DocumentFacade implements IDocumentFacade {
   public async getFileBlob(documentId: string): Promise<Uint8Array> {
     const startTime = Date.now();
     const cacheKey = `${this.PREFIX_BLOB}${documentId}`;
+    const numericDocumentId = Number(documentId);
+
+    if (!Number.isFinite(numericDocumentId)) {
+      throw this.errorHandler.handle(
+        new Error(`ID documento non numerico per il recupero file: ${documentId}`),
+      );
+    }
 
     try {
       // Strategia Cache-First (1 min)
@@ -87,7 +143,7 @@ export class DocumentFacade implements IDocumentFacade {
       // Passaggio 1: Trovare l'ID del File associato a questo Documento
       const files = (await this.ipcGateway.invoke(
         IpcChannels.BROWSE_GET_FILE_BY_DOCUMENT,
-        Number(documentId),
+        numericDocumentId,
         null,
       )) as { id: number; isMain: boolean }[];
 

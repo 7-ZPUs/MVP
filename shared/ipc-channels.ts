@@ -7,6 +7,10 @@
  * raw string literals for channel names outside this file.
  */
 export const IpcChannels = {
+  // ----- App bootstrap -----
+  BOOTSTRAP_COMPLETE: "app:bootstrap-complete",
+  BOOTSTRAP_STATUS: "app:bootstrap-status",
+
   // ----- Package management -----
   PACKAGE_OPEN: "package:open",
   PACKAGE_LIST: "package:list",
@@ -18,6 +22,7 @@ export const IpcChannels = {
   SEARCH_CLASSES: "search:classes", // obsoleto
   SEARCH_PROCESSES: "search:processes", // obsoleto
   SEARCH_DOCUMENTS: "ipc:search:advanced",
+  SEARCH_CUSTOM_METADATA_KEYS: "search:get-custom-metadata-keys",
   SEARCH_GET_AI_STATE: "ipc:indexing:status",
 
   // ----- Integrity -----
@@ -72,10 +77,14 @@ export const IpcChannels = {
 
   // ----- File viewer -----
 
-  FILE_OPEN_EXTERNAL: 'file:open-external',
-  FILE_DOWNLOAD:      'file:download',
-  FILE_SAVE_DIALOG:   'file:save-dialog',   // per aprire il merda di dialog
+  FILE_DOWNLOAD: "file:download",
+  FILE_SAVE_DIALOG: "file:save-dialog", // per aprire il merda di dialog
+  FILE_FOLDER_DIALOG: "file:folder-dialog", // per aprire il di dialog per cartelle
 
+  // per il print
+  FILE_PRINT: "file:print",
+  FILE_PRINT_MANY: "file:print-many",
+  FILE_PRINT_PROGRESS: "file:print-progress",
 } as const;
 
 export type IpcChannel = (typeof IpcChannels)[keyof typeof IpcChannels];

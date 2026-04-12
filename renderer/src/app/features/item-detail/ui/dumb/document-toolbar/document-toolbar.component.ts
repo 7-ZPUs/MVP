@@ -8,13 +8,6 @@ import { CommonModule } from '@angular/common';
   template: `
     <div class="toolbar-container">
       <div class="title-section">
-        @if (parentAggregateId()) {
-          <button class="btn-back" (click)="navigateBack.emit(parentAggregateId()!)">
-            ← Torna al Fascicolo {{ parentAggregateId() }}
-          </button>
-          <span class="separator">/</span>
-        }
-
         <div class="title-info">
           <span class="badge" [class.badge-doc]="formato() !== 'FASCICOLO'">{{ formato() }}</span>
           <h2 class="title">{{ titolo() }}</h2>
@@ -23,7 +16,7 @@ import { CommonModule } from '@angular/common';
 
       <div class="actions-section">
         @if (isPreviewVisible()) {
-          <div class="zoom-controls">
+          <!-- <div class="zoom-controls">
             <button
               class="icon-btn"
               (click)="zoomOut.emit()"
@@ -44,7 +37,7 @@ import { CommonModule } from '@angular/common';
             <button class="icon-btn reset-btn" (click)="resetZoom.emit()" title="Ripristina zoom">
               Ripristina
             </button>
-          </div>
+          </div> -->
 
           <button
             class="close-btn"
@@ -52,7 +45,7 @@ import { CommonModule } from '@angular/common';
             aria-label="Chiudi anteprima"
             title="Chiudi anteprima"
           >
-            ✕
+            <i class="bi bi-x-lg" aria-hidden="true"></i>
           </button>
         } @else {
           <button
@@ -61,7 +54,8 @@ import { CommonModule } from '@angular/common';
             (click)="openPreview.emit()"
             title="Apri anteprima"
           >
-            👁 Apri Anteprima
+            <i class="bi bi-eye" aria-hidden="true"></i>
+            Apri Anteprima
           </button>
         }
       </div>
@@ -93,16 +87,14 @@ import { CommonModule } from '@angular/common';
         cursor: pointer;
         transition: all 0.2s;
         font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
       }
       .btn-back:hover {
         background: #f1f5f9;
         color: #0f172a;
         border-color: #94a3b8;
-      }
-      .separator {
-        color: #cbd5e1;
-        font-weight: 300;
-        font-size: 1.2rem;
       }
       .title-info {
         display: flex;
@@ -177,6 +169,9 @@ import { CommonModule } from '@angular/common';
         color: #94a3b8;
         cursor: pointer;
         padding: 0.25rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
       }
       .close-btn:hover {
         color: #ef4444;
@@ -190,9 +185,6 @@ export class DocumentToolbarComponent {
   formato = input.required<string>();
   zoomLevel = input.required<number>();
 
-  // Nuovo input opzionale per il breadcrumb
-  parentAggregateId = input<string | null>(null);
-
   // Indica se la preview è visibile
   isPreviewVisible = input<boolean>(true);
 
@@ -202,7 +194,4 @@ export class DocumentToolbarComponent {
   resetZoom = output<void>();
   closePreview = output<void>();
   openPreview = output<void>();
-
-  // Emette l'ID del fascicolo a cui tornare
-  navigateBack = output<string>();
 }

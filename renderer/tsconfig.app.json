@@ -3,9 +3,13 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
+    "rootDir": "..",
     "outDir": "./out-tsc/app",
     "types": []
   },
-  "include": ["src/**/*.ts"],
+  "include": [
+    "src/**/*.ts",
+    "src/app/features/search/ui/dumb/result-types/process-result-card.component"
+  ],
   "exclude": ["src/**/*.spec.ts"]
 }

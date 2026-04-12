@@ -1,19 +1,20 @@
 import { Component, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AggregateDetailDTO } from '../../../../shared/domain/dto/AggregateDTO';
+import { formatReadableDate } from '../../../../shared/utils/date.util';
 
 @Component({
   selector: 'app-admin-procedure',
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="metadata-card">
-      <h3 class="card-title">Procedimento Amministrativo</h3>
-      <div class="data-row">
+    <div class="metadata-card" data-testid="admin-procedure-card">
+      <h3 class="card-title" data-testid="admin-procedure-heading">Procedimento Amministrativo</h3>
+      <div class="data-row" data-testid="admin-procedure-row-denominazione">
         <span class="label">Denominazione:</span>
         <span class="value">{{ data().procedimentoAmministrativo?.procedimento }}</span>
       </div>
-      <div class="data-row">
+      <div class="data-row" data-testid="admin-procedure-row-indice-uri">
         <span class="label">Indice/URI:</span>
         <span class="value"
           >{{ data().procedimentoAmministrativo?.materiaArgomentoStruttura }} /
@@ -21,20 +22,24 @@ import { AggregateDetailDTO } from '../../../../shared/domain/dto/AggregateDTO';
         >
       </div>
 
-      <h4 class="sub-title">Fasi del Procedimento</h4>
-      <ul class="phases-list">
+      <h4 class="sub-title" data-testid="admin-procedure-phases-heading">Fasi del Procedimento</h4>
+      <ul class="phases-list" data-testid="admin-procedure-phases-list">
         @for (fase of data().procedimentoAmministrativo?.fasi; track fase.tipoFase) {
-          <li class="phase-item">
-            <span class="phase-type">{{ fase.tipoFase }}</span>
-            <span class="phase-dates">
-              {{ fase.dataInizio }}
+          <li class="phase-item" [attr.data-testid]="'admin-procedure-phase-' + $index">
+            <span class="phase-type" data-testid="admin-procedure-phase-type">{{
+              fase.tipoFase
+            }}</span>
+            <span class="phase-dates" data-testid="admin-procedure-phase-dates">
+              {{ formatReadableDate(fase.dataInizio) }}
               @if (fase.dataFine) {
-                - {{ fase.dataFine }}
+                - {{ formatReadableDate(fase.dataFine) }}
               }
             </span>
           </li>
         } @empty {
-          <li class="empty-msg">Nessuna fase registrata</li>
+          <li class="empty-msg" data-testid="admin-procedure-phases-empty">
+            Nessuna fase registrata
+          </li>
         }
       </ul>
     </div>
@@ -74,6 +79,10 @@ import { AggregateDetailDTO } from '../../../../shared/domain/dto/AggregateDTO';
         flex-shrink: 0;
       }
       .value {
+        flex: 1;
+        min-width: 0;
+        word-break: break-word;
+        overflow-wrap: anywhere;
         color: #1e293b;
         font-weight: 500;
       }
@@ -121,4 +130,6 @@ import { AggregateDetailDTO } from '../../../../shared/domain/dto/AggregateDTO';
 })
 export class AdminProcedureComponent {
   data = input.required<AggregateDetailDTO>();
+
+  protected readonly formatReadableDate = formatReadableDate;
 }

@@ -4,7 +4,6 @@ import Database from "better-sqlite3";
 
 import { ProcessDAO } from "../../src/dao/ProcessDAO";
 import { Process } from "../../src/entity/Process";
-import { DatabaseProvider } from "../../src/repo/impl/DatabaseProvider";
 import { IntegrityStatusEnum } from "../../src/value-objects/IntegrityStatusEnum";
 import { Metadata, MetadataType } from "../../src/value-objects/Metadata";
 import { createTestDb } from "./helpers/testDb";
@@ -17,7 +16,7 @@ describe("ProcessDAO", () => {
 
   beforeEach(() => {
     db = createTestDb();
-    dao = new ProcessDAO({ getDb: () => db } as unknown as DatabaseProvider);
+    dao = new ProcessDAO(db);
 
     const dipId = Number(
       db

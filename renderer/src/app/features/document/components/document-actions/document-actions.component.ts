@@ -27,7 +27,8 @@ import { OutputToolbarComponent } from '../output-toolbar/output-toolbar.compone
           @if (integrityFacade.isVerifying()) {
             <span class="spinner-small"></span> Verifica in corso...
           } @else {
-            🛡️ Verifica Firme
+            <i class="bi bi-shield-check" aria-hidden="true"></i>
+            Verifica Firme
           }
         </button>
 
@@ -133,6 +134,6 @@ export class DocumentActionsComponent {
   }
 
   onVerifyIntegrity() {
-    this.integrityFacade.verifyDocument(this.itemId());
+    this.integrityFacade.verifyItem(this.itemId(), this.itemType());
   }
 }

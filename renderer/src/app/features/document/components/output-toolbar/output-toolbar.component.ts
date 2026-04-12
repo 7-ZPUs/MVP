@@ -7,12 +7,22 @@ import { OutputContext, OutputAction } from '../../../../shared/interfaces/outpu
   template: `
     <div class="toolbar-actions">
       @if (context().tipo === 'DOCUMENT') {
-        <button (click)="requestAction(OutputAction.PRINT)" class="btn">🖨️ Stampa</button>
-        <button (click)="requestAction(OutputAction.DOWNLOAD)" class="btn">⬇️ Download</button>
-        <button (click)="requestAction(OutputAction.EXPORT_PDF)" class="btn">📄 Esporta PDF</button>
+        <button (click)="requestAction(OutputAction.PRINT)" class="btn">
+          <i class="bi bi-printer" aria-hidden="true"></i>
+          Stampa
+        </button>
+        <button (click)="requestAction(OutputAction.DOWNLOAD)" class="btn">
+          <i class="bi bi-download" aria-hidden="true"></i>
+          Download
+        </button>
+        <button (click)="requestAction(OutputAction.EXPORT_PDF)" class="btn">
+          <i class="bi bi-file-earmark-pdf" aria-hidden="true"></i>
+          Esporta PDF
+        </button>
       }
       <button (click)="requestAction(OutputAction.SAVE)" class="btn-primary">
-        💾 Salva in Cartella
+        <i class="bi bi-folder" aria-hidden="true"></i>
+        Salva in Cartella
       </button>
     </div>
   `,
@@ -28,6 +38,9 @@ import { OutputContext, OutputAction } from '../../../../shared/interfaces/outpu
         padding: 0.5rem 1rem;
         border-radius: 6px;
         cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
       }
       .btn-primary {
         background: #3b82f6;
@@ -36,6 +49,9 @@ import { OutputContext, OutputAction } from '../../../../shared/interfaces/outpu
         padding: 0.5rem 1rem;
         border-radius: 6px;
         cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
       }
     `,
   ],

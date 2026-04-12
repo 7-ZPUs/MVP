@@ -1,12 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
 
 import { SqliteTransactionManager } from "../../../src/repo/impl/SqliteTransactionManager";
-import type { DatabaseProvider } from "../../../src/repo/impl/DatabaseProvider";
 
 describe("SqliteTransactionManager", () => {
   it("starts BEGIN IMMEDIATE TRANSACTION and COMMIT on success", async () => {
     const db = { exec: vi.fn() };
-    const manager = new SqliteTransactionManager({ getDb: () => db } as unknown as DatabaseProvider);
+    const manager = new SqliteTransactionManager(db as any);
 
     const result = await manager.runInTransaction(async () => "ok");
 
@@ -19,7 +18,7 @@ describe("SqliteTransactionManager", () => {
 
   it("starts BEGIN IMMEDIATE TRANSACTION and ROLLBACK on failure", async () => {
     const db = { exec: vi.fn() };
-    const manager = new SqliteTransactionManager({ getDb: () => db } as unknown as DatabaseProvider);
+    const manager = new SqliteTransactionManager(db as any);
 
     const error = new Error("boom");
 
@@ -37,7 +36,7 @@ describe("SqliteTransactionManager", () => {
 
   it("propagates caller values without altering them", async () => {
     const db = { exec: vi.fn() };
-    const manager = new SqliteTransactionManager({ getDb: () => db } as unknown as DatabaseProvider);
+    const manager = new SqliteTransactionManager(db as any);
 
     const payload = { status: "result", count: 3 };
 

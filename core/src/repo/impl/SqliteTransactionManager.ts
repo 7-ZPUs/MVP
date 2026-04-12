@@ -1,26 +1,23 @@
 import { inject, injectable } from "tsyringe";
-import {
-  DATABASE_PROVIDER_TOKEN,
-  DatabaseProvider,
-} from "./DatabaseProvider";
 import { ITransactionManager } from "../ITransactionManager";
+import Database from "better-sqlite3";
+import { SQLITE_DB_TOKEN } from "../../../../db/DatabaseBootstrap";
 
 @injectable()
 export class SqliteTransactionManager implements ITransactionManager {
   constructor(
-    @inject(DATABASE_PROVIDER_TOKEN)
-    private readonly dbProvider: DatabaseProvider,
+    @inject(SQLITE_DB_TOKEN)
+    private readonly db: Database.Database,
   ) {}
 
   async runInTransaction<T>(work: () => Promise<T>): Promise<T> {
-    const db = this.dbProvider.getDb();
-    db.exec("BEGIN IMMEDIATE TRANSACTION");
+    this.db.exec("BEGIN IMMEDIATE TRANSACTION");
     try {
       const result = await work();
-      db.exec("COMMIT");
+      this.db.exec("COMMIT");
       return result;
     } catch (error) {
-      db.exec("ROLLBACK");
+      this.db.exec("ROLLBACK");
       throw error;
     }
   }

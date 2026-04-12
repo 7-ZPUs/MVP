@@ -9,6 +9,9 @@ import { DocumentClassDTO } from '../../../shared/domain/dto/DocumentClassDTO';
 import { DocumentDTO } from '../../../shared/domain/dto/DocumentDTO';
 import { FileDTO } from '../../../shared/domain/dto/FileDTO';
 import { ProcessDTO } from '../../../shared/domain/dto/ProcessDTO';
+import { MetadataExtractor } from '../../../shared/utils/metadata-extractor.util';
+import { normalizeDisplayFileName } from '../../../shared/utils/display-file-name.util';
+import { normalizeMetadataNodes } from '../../../shared/utils/metadata-nodes.util';
 
 @Injectable({ providedIn: 'root' })
 export class IpcGateway {
@@ -51,7 +54,7 @@ export class IpcGateway {
       `dip:${dipId}`,
       (dto: DipDTO): DipTreeNode => ({
         id: dto.id,
-        name: `DIP ${dto.uuid}`,
+        name: this.resolveNodeName(null, 'dip'),
         type: 'dip',
         hasChildren: true,
       }),
@@ -69,7 +72,7 @@ export class IpcGateway {
       (dtos: DocumentClassDTO[]): DipTreeNode[] =>
         dtos.map((dto) => ({
           id: dto.id,
-          name: dto.uuid,
+          name: this.resolveNodeName(dto.name, 'documentClass'),
           type: 'documentClass',
           hasChildren: true,
         })),
@@ -85,13 +88,93 @@ export class IpcGateway {
       this.TTL,
       `processes:${documentClassId}`,
       (dtos: ProcessDTO[]): DipTreeNode[] =>
-        dtos.map((dto) => ({
-          id: dto.id,
-          name: dto.uuid,
-          type: 'process',
-          hasChildren: true,
-        })),
+        dtos.map((dto) => {
+          let name = this.resolveNodeName(
+            this.extractMetadataName(dto.metadata, ['Oggetto', 'Procedimento', 'IdAggregazione']),
+            'process',
+          );
+
+          const date = this.extractProcessDate(dto.metadata);
+          if (date) {
+            name = name === 'Processo' ? `Processo del ${date}` : `${name} del ${date}`;
+          }
+
+          return {
+            id: dto.id,
+            name,
+            type: 'process',
+            hasChildren: true,
+          };
+        }),
     );
+  }
+
+  private formatProcessDate(dateStr: string): string {
+    if (!dateStr) return '';
+    // Optional: simply use the substring before 'T' if it's ISO, and possibly replace '-' with '/'
+    return dateStr.split('T')[0].trim().replaceAll('-', '/');
+  }
+
+  private extractProcessDate(metadata: unknown): string | null {
+    const nodes = normalizeMetadataNodes(metadata);
+    if (nodes.length === 0) return null;
+
+    const extractor = new MetadataExtractor(nodes);
+
+    // First, look exactly how process.mapper.ts does it.
+    // Sometimes it's dot-notation "SessioneVersamento.DataInizio" or just "DataInizio" etc.
+    let date = extractor.getString('SessioneVersamento.DataInizio', '').trim();
+    if (!date) {
+      date = extractor.getString('Start.Date', '').trim();
+    }
+    if (!date) {
+      date = extractor.getString('DataApertura', '').trim();
+    }
+    if (!date) {
+      date = extractor.getString('DataInizio', '').trim();
+    }
+    if (!date) {
+      date = extractor.getString('SessioneVersamento.DataFine', '').trim();
+    }
+    if (!date) {
+      date = extractor.getString('End.Date', '').trim();
+    }
+    if (!date) {
+      date = extractor.getString('DataFine', '').trim();
+    }
+
+    // Nested SessioneVersamento
+    if (!date) {
+      const sessione = extractor.findValue('SessioneVersamento');
+      if (sessione && Array.isArray(sessione)) {
+        const sessionExtractor = new MetadataExtractor(
+          sessione as import('../../../shared/utils/metadata-nodes.util').MetadataNode[],
+        );
+        date = sessionExtractor.getString('DataInizio', '').trim();
+        if (!date) {
+          date = sessionExtractor.getString('DataFine', '').trim();
+        }
+      }
+    }
+
+    // Nested SubmissionSession.Start.Date
+    if (!date) {
+      const submission = extractor.findValue('SubmissionSession');
+      if (submission && Array.isArray(submission)) {
+        const subEx = new MetadataExtractor(
+          submission as import('../../../shared/utils/metadata-nodes.util').MetadataNode[],
+        );
+        const start = subEx.findValue('Start');
+        if (start && Array.isArray(start)) {
+          const startEx = new MetadataExtractor(
+            start as import('../../../shared/utils/metadata-nodes.util').MetadataNode[],
+          );
+          date = startEx.getString('Date', '').trim();
+        }
+      }
+    }
+
+    return date ? this.formatProcessDate(date) : null;
   }
 
   // ── Document ─────────────────────────────────────────────────
@@ -105,7 +188,10 @@ export class IpcGateway {
       (dtos: DocumentDTO[]): DipTreeNode[] =>
         dtos.map((dto) => ({
           id: dto.id,
-          name: dto.uuid,
+          name: this.resolveNodeName(
+            this.extractMetadataName(dto.metadata, ['NomeDelDocumento', 'Oggetto']),
+            'document',
+          ),
           type: 'document',
           hasChildren: true, // ha sempre file
         })),
@@ -123,11 +209,56 @@ export class IpcGateway {
       (dtos: FileDTO[]): DipTreeNode[] =>
         dtos.map((dto) => ({
           id: dto.id,
-          name: dto.filename,
+          name: this.resolveNodeName(normalizeDisplayFileName(dto.filename), 'file'),
           type: 'file',
           hasChildren: false, // foglia
         })),
     );
+  }
+
+  private resolveNodeName(
+    preferredName: string | null | undefined,
+    nodeType: DipTreeNode['type'],
+  ): string {
+    const normalized = preferredName?.trim();
+    if (normalized && normalized.length > 0) {
+      return normalized;
+    }
+
+    return this.buildFallbackName(nodeType);
+  }
+
+  private extractMetadataName(metadata: unknown, keys: string[]): string | null {
+    const nodes = normalizeMetadataNodes(metadata);
+
+    if (nodes.length === 0) {
+      return null;
+    }
+
+    const extractor = new MetadataExtractor(nodes);
+    for (const key of keys) {
+      const value = extractor.getString(key, '').trim();
+      if (value.length > 0) {
+        return value;
+      }
+    }
+
+    return null;
+  }
+
+  private buildFallbackName(nodeType: DipTreeNode['type']): string {
+    switch (nodeType) {
+      case 'dip':
+        return 'DIP';
+      case 'documentClass':
+        return 'Classe Documentale';
+      case 'process':
+        return 'Processo';
+      case 'document':
+        return 'Documento';
+      case 'file':
+        return 'File';
+    }
   }
 
   // ── Infrastruttura ────────────────────────────────────────────
@@ -147,8 +278,8 @@ export class IpcGateway {
       const result = mapper(dto);
       this.cache.set(cacheKey, result, ttl);
       return result;
-    } catch (raw) {
-      throw this.errorHandler.handle(raw);
+    } catch (error_) {
+      throw this.errorHandler.handle(error_);
     }
   }
 }

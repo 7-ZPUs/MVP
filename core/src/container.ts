@@ -4,12 +4,6 @@ import { container } from "tsyringe";
 // ---- Services ----
 import { HASHING_SERVICE_TOKEN } from "./services/IHashingService";
 
-// ---- Database provider ----
-import {
-  DATABASE_PROVIDER_TOKEN,
-  DatabaseProvider,
-} from "./repo/impl/DatabaseProvider";
-
 // ---- AI adapter ----
 import { WORD_EMBEDDING_PORT_TOKEN } from "./repo/IWordEmbedding";
 import { WordEmbedding } from "./repo/impl/WordEmbedding";
@@ -25,16 +19,20 @@ import { DOCUMENT_CLASS_REPOSITORY_TOKEN } from "./repo/IDocumentClassRepository
 import { DocumentClassRepository } from "./repo/impl/DocumentClassRepository";
 import { DIP_REPOSITORY_TOKEN } from "./repo/IDipRepository";
 import { DipRepository } from "./repo/impl/DipRepository";
+import { VECTOR_REPOSITORY_TOKEN } from "./repo/VectorRepositoryToken";
+import { VectorRepository } from "./repo/impl/VectorRepository";
 import { DIP_DAO_TOKEN } from "./dao/IDipDAO";
 import { DOCUMENT_CLASS_DAO_TOKEN } from "./dao/IDocumentClassDAO";
 import { DOCUMENT_DAO_TOKEN } from "./dao/IDocumentDAO";
 import { FILE_DAO_TOKEN } from "./dao/IFileDAO";
 import { PROCESS_DAO_TOKEN } from "./dao/IProcessDAO";
+import { VECTOR_DAO_TOKEN } from "./dao/IVectorDAO";
 import { DipDAO } from "./dao/DipDAO";
 import { DocumentClassDAO } from "./dao/DocumentClassDAO";
 import { DocumentDAO } from "./dao/DocumentDAO";
 import { FileDAO } from "./dao/FileDAO";
 import { ProcessDAO } from "./dao/ProcessDAO";
+import { VectorDAO } from "./dao/VectorDAO";
 
 // ---- Documento use cases ----
 import { DocumentoUC } from "./use-case/document/tokens";
@@ -44,6 +42,7 @@ import { GetDocumentByStatusUC } from "./use-case/document/impl/GetDocumentBySta
 import { CheckDocumentIntegrityStatusUC } from "./use-case/document/impl/CheckDocumentIntegrityStatusUC";
 import { SearchDocumentsUC } from "./use-case/document/impl/SearchDocumentsUC";
 import { SearchSemanticUC } from "./use-case/document/impl/SearchSemanticUC";
+import { GetCustomMetadataKeysUC } from "./use-case/document/impl/GetCustomMetadataKeysUC";
 
 // ---- File use cases ----
 import { FileUC } from "./use-case/file/tokens";
@@ -52,6 +51,8 @@ import { GetFileByDocumentUC } from "./use-case/file/impl/GetFileByDocumentUC";
 import { GetFileByStatusUC } from "./use-case/file/impl/GetFileByStatusUC";
 import { CheckFileIntegrityStatusUC } from "./use-case/file/impl/CheckFileIntegrityStatusUC";
 import { ExportFileUC } from "./use-case/file/impl/ExportFileUC";
+import { GetFileContentUC } from "./use-case/file/impl/GetFileContentUC";
+import { PrintFileUC } from "./use-case/file/impl/PrintFileUC";
 
 // ---- Process use cases ----
 import { ProcessUC } from "./use-case/process/token";
@@ -74,6 +75,8 @@ import { PACKAGE_READER_PORT_TOKEN } from "./repo/IPackageReaderPort";
 import { LocalPackageReaderAdapter } from "./repo/impl/LocalPackageReaderAdapter";
 import { EXPORT_TOKEN } from "./repo/IExportPort";
 import { LocalExportPort } from "./repo/impl/LocalExportPort";
+import { PRINT_PORT_TOKEN } from "./repo/IPrintPort";
+import { PrintPort } from "./repo/impl/PrintPort";
 import { DATA_MAPPER_TOKEN } from "./repo/impl/utils/IDataMapper";
 import { DataMapper } from "./repo/impl/utils/DataMapper";
 import { FILE_SYSTEM_PROVIDER_TOKEN } from "./repo/impl/utils/IFileSystemProvider";
@@ -85,8 +88,11 @@ import { SqliteTransactionManager } from "./repo/impl/SqliteTransactionManager";
 import { HashingService } from "./services/impl/HashingService";
 import { INTEGRITY_VERIFICATION_SERVICE_TOKEN } from "./services/IIntegrityVerificationService";
 import { IntegrityVerificationService } from "./services/impl/IntegrityVerificationService";
+import { DOCUMENT_CHUNKER_TOKEN } from "./services/IEmbeddingService";
+import { EmbeddingService } from "./services/impl/EmbeddingService";
 import { INDEX_DIP_TOKEN } from "./use-case/utils/indexing/IIndexDip";
-import { IndexDip } from "./use-case/utils/indexing/impl/IndexDip";
+import { IndexDipUC } from "./use-case/utils/indexing/impl/IndexDip";
+import { SQLITE_DB_TOKEN } from "../../db/DatabaseBootstrap";
 
 container.register(PACKAGE_READER_PORT_TOKEN, {
   useClass: LocalPackageReaderAdapter,
@@ -94,8 +100,8 @@ container.register(PACKAGE_READER_PORT_TOKEN, {
 container.register(EXPORT_TOKEN, {
   useClass: LocalExportPort,
 });
-container.register(DATABASE_PROVIDER_TOKEN, {
-  useClass: DatabaseProvider,
+container.register(PRINT_PORT_TOKEN, {
+  useClass: PrintPort,
 });
 container.register(TRANSACTION_MANAGER_TOKEN, {
   useClass: SqliteTransactionManager,
@@ -103,11 +109,14 @@ container.register(TRANSACTION_MANAGER_TOKEN, {
 container.register(HASHING_SERVICE_TOKEN, {
   useClass: HashingService,
 });
+container.register(DOCUMENT_CHUNKER_TOKEN, {
+  useClass: EmbeddingService,
+});
 container.register(INTEGRITY_VERIFICATION_SERVICE_TOKEN, {
   useClass: IntegrityVerificationService,
 });
 container.register(INDEX_DIP_TOKEN, {
-  useClass: IndexDip,
+  useClass: IndexDipUC,
 });
 
 container.register(DATA_MAPPER_TOKEN, { useClass: DataMapper });
@@ -118,7 +127,6 @@ container.register(DIP_PARSER_TOKEN, { useClass: XmlDipParser });
 
 // Services
 container.registerSingleton(WORD_EMBEDDING_PORT_TOKEN, WordEmbedding);
-container.registerSingleton(DATABASE_PROVIDER_TOKEN, DatabaseProvider);
 container.register(HASHING_SERVICE_TOKEN, { useClass: HashingService });
 
 // Repositories
@@ -137,6 +145,9 @@ container.register(DOCUMENT_CLASS_REPOSITORY_TOKEN, {
   useClass: DocumentClassRepository,
 });
 container.register(DIP_REPOSITORY_TOKEN, { useClass: DipRepository });
+container.register(VECTOR_REPOSITORY_TOKEN, {
+  useClass: VectorRepository,
+});
 
 // DAOs
 container.register(DIP_DAO_TOKEN, { useClass: DipDAO });
@@ -144,6 +155,7 @@ container.register(DOCUMENT_CLASS_DAO_TOKEN, { useClass: DocumentClassDAO });
 container.register(DOCUMENT_DAO_TOKEN, { useClass: DocumentDAO });
 container.register(FILE_DAO_TOKEN, { useClass: FileDAO });
 container.register(PROCESS_DAO_TOKEN, { useClass: ProcessDAO });
+container.register(VECTOR_DAO_TOKEN, { useClass: VectorDAO });
 
 // Documento use cases
 container.register(DocumentoUC.GET_BY_ID, { useClass: GetDocumentByIdUC });
@@ -160,6 +172,9 @@ container.register(DocumentoUC.SEARCH_BY_FILTERS, {
   useClass: SearchDocumentsUC,
 });
 container.register(DocumentoUC.SEARCH_SEMANTIC, { useClass: SearchSemanticUC });
+container.register(DocumentoUC.GET_CUSTOM_METADATA_KEYS, {
+  useClass: GetCustomMetadataKeysUC,
+});
 
 // File use cases
 container.register(FileUC.GET_BY_ID, { useClass: GetFileByIdUC });
@@ -169,6 +184,8 @@ container.register(FileUC.CHECK_INTEGRITY_STATUS, {
   useClass: CheckFileIntegrityStatusUC,
 });
 container.register(FileUC.EXPORT_FILE, { useClass: ExportFileUC });
+container.register(FileUC.GET_CONTENT, { useClass: GetFileContentUC });
+container.register(FileUC.PRINT_FILE, { useClass: PrintFileUC });
 
 // Process use cases
 container.register(ProcessUC.GET_BY_STATUS, { useClass: GetProcessByStatusUC });

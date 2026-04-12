@@ -10,37 +10,37 @@ import { DocumentDetail } from '../../../../document/domain/document.models';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="registration-card">
-      <h3 class="section-title">Dati di Registrazione</h3>
+    <div class="registration-card" data-testid="registration-card">
+      <h3 class="section-title" data-testid="registration-heading">Dati di Registrazione</h3>
 
       @if (data()) {
         <div class="data-grid">
-          <div class="data-item">
+          <div class="data-item" data-testid="registration-item-numero">
             <span class="label">Numero</span>
             <span class="value">{{ data()!.numero }}</span>
           </div>
-          <div class="data-item">
+          <div class="data-item" data-testid="registration-item-data">
             <span class="label">Data</span>
             <span class="value">{{ data()!.data }}</span>
           </div>
-          <div class="data-item">
+          <div class="data-item" data-testid="registration-item-tipo-registro">
             <span class="label">Tipo Registro</span>
             <span class="value">{{ data()!.tipoRegistro }}</span>
           </div>
-          <div class="data-item">
+          <div class="data-item" data-testid="registration-item-flusso">
             <span class="label">Flusso</span>
             <span class="value">{{ data()!.flusso }}</span>
           </div>
 
           @if (data()!.codice) {
-            <div class="data-item">
+            <div class="data-item" data-testid="registration-item-codice">
               <span class="label">Codice</span>
               <span class="value">{{ data()!.codice }}</span>
             </div>
           }
         </div>
       } @else {
-        <p class="empty-state">Nessun dato di registrazione presente per questo documento.</p>
+        <p class="empty-state" data-testid="registration-empty">Nessun dato di registrazione presente per questo documento.</p>
       }
     </div>
   `,
@@ -84,6 +84,10 @@ import { DocumentDetail } from '../../../../document/domain/document.models';
       }
 
       .value {
+        flex: 1;
+        min-width: 0;
+        word-break: break-word;
+        overflow-wrap: anywhere;
         font-size: 0.95rem;
         color: #222;
       }

@@ -4,7 +4,6 @@ import Database from "better-sqlite3";
 
 import { DocumentClassDAO } from "../../src/dao/DocumentClassDAO";
 import { DocumentClass } from "../../src/entity/DocumentClass";
-import { DatabaseProvider } from "../../src/repo/impl/DatabaseProvider";
 import { IntegrityStatusEnum } from "../../src/value-objects/IntegrityStatusEnum";
 import { createTestDb, nukeTestDb } from "./helpers/testDb";
 import { DipDAO } from "../../src/dao/DipDAO";
@@ -17,10 +16,8 @@ describe("DocumentClassDAO", () => {
 
   beforeEach(() => {
     db = createTestDb();
-    dao = new DocumentClassDAO({
-      getDb: () => db,
-    } as unknown as DatabaseProvider);
-    dipDao = new DipDAO({ getDb: () => db } as unknown as DatabaseProvider);
+    dao = new DocumentClassDAO(db);
+    dipDao = new DipDAO(db);
 
     db.prepare("INSERT INTO dip (uuid, integrity_status) VALUES (?, ?)").run(
       "dip-uuid",

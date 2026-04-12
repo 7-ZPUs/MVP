@@ -6,7 +6,7 @@ export class Document {
    * `null`  → entità non ancora persistita (prima dell'INSERT).
    * `number` → entità caricata dal DB o appena salvata.
    */
-  private readonly id: number | null = null;
+  private id: number | null = null;
   private readonly uuid: string;
   private readonly metadata: Metadata;
   private integrityStatus: IntegrityStatusEnum;
@@ -28,6 +28,10 @@ export class Document {
 
   public getId(): number | null {
     return this.id;
+  }
+
+  public setId(id: number): void {
+    this.id = id;
   }
 
   public getUuid(): string {

@@ -1,5 +1,6 @@
-import { Component, input, output, effect } from '@angular/core';
+import { Component, input, output, effect, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { MimeType } from '../../domain/document.models';
 
 @Component({
@@ -11,7 +12,7 @@ import { MimeType } from '../../domain/document.models';
       @switch (mimeType()) {
         @case (MimeType.PDF) {
           <div class="pdf-wrapper">
-            <object [data]="blobUrl" type="application/pdf" class="pdf-viewer">
+            <object [attr.data]="safeBlobUrl || blobUrl" type="application/pdf" class="pdf-viewer">
               Anteprima PDF non disponibile.
             </object>
           </div>
@@ -19,12 +20,18 @@ import { MimeType } from '../../domain/document.models';
 
         @case (MimeType.IMAGE) {
           <div class="image-wrapper">
-            <img [src]="blobUrl" alt="Anteprima Immagine" class="preview-img" />
+            <img [src]="safeBlobUrl || blobUrl" alt="Anteprima Immagine" class="preview-img" />
           </div>
         }
 
         @case (MimeType.TEXT) {
           <div class="text-wrapper">
+            <pre>{{ textContent }}</pre>
+          </div>
+        }
+
+        @case (MimeType.XML) {
+          <div class="text-wrapper xml-wrapper">
             <pre>{{ textContent }}</pre>
           </div>
         }
@@ -37,6 +44,12 @@ import { MimeType } from '../../domain/document.models';
   `,
   styles: [
     `
+      :host {
+        display: block;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+      }
       .renderer-container {
         width: 100%;
         height: 100%;
@@ -78,10 +91,16 @@ import { MimeType } from '../../domain/document.models';
         width: 100%;
         height: 100%;
         overflow: auto;
-        font-family: monospace;
+        font-family: 'Consolas', 'Courier New', monospace;
         white-space: pre-wrap;
         background: white;
         color: #334155;
+      }
+
+      .xml-wrapper {
+        color: #166534;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
       }
 
       .unsupported {
@@ -97,8 +116,10 @@ export class PreviewRendererComponent {
   unsupportedFormat = output<void>();
 
   MimeType = MimeType;
+  private readonly sanitizer = inject(DomSanitizer);
 
   blobUrl: string | undefined;
+  safeBlobUrl: SafeResourceUrl | undefined;
   textContent: string | undefined;
 
   constructor() {
@@ -113,13 +134,14 @@ export class PreviewRendererComponent {
       }
 
       if (data) {
-        if (type === MimeType.TEXT) {
-          // Decodifica nativa per i file di testo
+        if (type === MimeType.TEXT || type === MimeType.XML) {
+          // Decodifica nativa per i file di testo o xml
           this.textContent = new TextDecoder('utf-8').decode(data);
         } else if (type === MimeType.IMAGE || type === MimeType.PDF) {
           const mime = type === MimeType.PDF ? 'application/pdf' : 'image/png';
           const blob = new Blob([new Uint8Array(data)], { type: mime });
           this.blobUrl = URL.createObjectURL(blob);
+          this.safeBlobUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this.blobUrl);
         }
       }
 
@@ -129,6 +151,7 @@ export class PreviewRendererComponent {
         if (this.blobUrl) {
           URL.revokeObjectURL(this.blobUrl);
           this.blobUrl = undefined;
+          this.safeBlobUrl = undefined;
         }
       });
     });

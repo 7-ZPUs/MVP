@@ -294,6 +294,17 @@ export class DataMapper implements IDataMapper {
 
     const rootNode = documentNode[rootTag];
     const children = this.extractMetadataDict(rootNode, true);
+    const customMeta = rawMetadataFragment?.Document?.[0]["CustomMetadata"];
+    if (customMeta) {
+      const customChildren = this.extractMetadataDict(customMeta, false);
+      children.push(
+        new Metadata(
+          "CustomMetadata",
+          customChildren.filter((c) => !c.getName().startsWith("@")),
+          MetadataType.COMPOSITE,
+        ),
+      );
+    }
     return new Metadata(rootTag, children, MetadataType.COMPOSITE);
   }
 

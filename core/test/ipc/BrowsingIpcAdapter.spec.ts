@@ -138,6 +138,8 @@ describe("BrowsingIpcAdapter", () => {
           return getDipByIdUC;
         case DipUC.GET_BY_STATUS:
           return getDipByStatusUC;
+        case FileUC.GET_CONTENT:
+          return { execute: vi.fn() };
         default:
           throw new Error(`Unexpected token: ${String(token)}`);
       }

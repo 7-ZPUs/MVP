@@ -1,0 +1,151 @@
+@if (hasPrintableFiles()) {
+  <button class="action-btn btn-print" [disabled]="isPrinting()" (click)="onPrint()">
+    @if (isPrinting()) {
+      <span class="spinner-small"></span> Attendere...
+    } @else {
+      <i class="icon bi bi-printer" aria-hidden="true"></i>
+      Stampa documento
+    }
+  </button>
+}
+
+<button class="action-btn btn-export" [disabled]="isDownloading()" (click)="onExport()">
+  @if (isDownloading()) {
+    <span class="spinner-small"></span> Attendere...
+  } @else {
+    <i class="icon bi bi-download" aria-hidden="true"></i>
+    Scarica documento
+  }
+</button>
+
+<div class="export-overlays">
+  @if (isWorking() && isMulti() && showProgress()) {
+    <app-export-progress [progress]="progress()" [outputContext]="outputContext()">
+      <button class="close-overlay-btn" (click)="showProgress.set(false)">
+        <i class="bi bi-x-lg" aria-hidden="true"></i>
+      </button>
+    </app-export-progress>
+  }
+
+  @if (queue().length > 0 && showQueue()) {
+    <div class="queue-container">
+      <button class="close-all-btn" (click)="showQueue.set(false)">
+        <i class="bi bi-x-lg" aria-hidden="true"></i>
+      </button>
+      @for (item of queue(); track item.fileId) {
+        <div class="queue-item queue-item--{{ item.status }}">
+          <span>{{ getBaseName(item.filename) }}</span>
+          <span>{{ item.status }}</span>
+        </div>
+      }
+    </div>
+  }
+
+  @if (phase() !== ExportPhase.IDLE && phase() !== ExportPhase.PROCESSING && showResult()) {
+    <div class="result-container">
+      <button class="close-btn" (click)="showResult.set(false)">
+        <i class="bi bi-x-lg" aria-hidden="true"></i>
+      </button>
+      <app-export-result
+        [phase]="phase()"
+        [result]="result()"
+        [error]="error()"
+        (retry)="onRetry()"
+      />
+    </div>
+  }
+</div>
+
+<!-- Selettore stampa -->
+@if (showPrintSelector()) {
+  <div class="print-selector-overlay" (click)="cancelPrint()">
+    <div class="print-selector" (click)="$event.stopPropagation()">
+      <div class="print-selector__header">
+        <span>Seleziona i documenti da stampare</span>
+        <button class="close-btn" (click)="cancelPrint()">
+          <i class="bi bi-x-lg" aria-hidden="true"></i>
+        </button>
+      </div>
+
+      <ul class="print-selector__list">
+        @for (file of printableFiles(); track file.id) {
+          <li class="print-selector__item">
+            <input
+              type="checkbox"
+              [checked]="selectedPrintIds().has(file.id)"
+              (change)="togglePrintFile(file.id)"
+            />
+            <i
+              class="file-icon bi"
+              [class]="
+                file.isMain ? 'file-icon bi bi-file-earmark-text' : 'file-icon bi bi-paperclip'
+              "
+              aria-hidden="true"
+            ></i>
+            <span class="file-name">{{ getBaseName(file.filename) }}</span>
+            <span class="file-badge">{{ file.isMain ? 'Principale' : 'Allegato' }}</span>
+          </li>
+        }
+      </ul>
+
+      <div class="print-selector__footer">
+        <button class="action-btn btn-secondary" (click)="cancelPrint()">Annulla</button>
+        <button
+          class="action-btn btn-print"
+          [disabled]="selectedPrintCount() === 0"
+          (click)="confirmPrint()"
+        >
+          <i class="bi bi-printer" aria-hidden="true"></i>
+          Stampa ({{ selectedPrintCount() }})
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Selettore download -->
+@if (showDownloadSelector()) {
+  <div class="print-selector-overlay" (click)="cancelDownload()">
+    <div class="print-selector" (click)="$event.stopPropagation()">
+      <div class="print-selector__header">
+        <span>Seleziona i documenti da scaricare</span>
+        <button class="close-btn" (click)="cancelDownload()">
+          <i class="bi bi-x-lg" aria-hidden="true"></i>
+        </button>
+      </div>
+
+      <ul class="print-selector__list">
+        @for (file of downloadableFiles(); track file.id) {
+          <li class="print-selector__item">
+            <input
+              type="checkbox"
+              [checked]="selectedDownloadIds().has(file.id)"
+              (change)="toggleDownloadFile(file.id)"
+            />
+            <i
+              class="file-icon bi"
+              [class]="
+                file.isMain ? 'file-icon bi bi-file-earmark-text' : 'file-icon bi bi-paperclip'
+              "
+              aria-hidden="true"
+            ></i>
+            <span class="file-name">{{ getBaseName(file.filename) }}</span>
+            <span class="file-badge">{{ file.isMain ? 'Principale' : 'Allegato' }}</span>
+          </li>
+        }
+      </ul>
+
+      <div class="print-selector__footer">
+        <button class="action-btn btn-secondary" (click)="cancelDownload()">Annulla</button>
+        <button
+          class="action-btn btn-export"
+          [disabled]="selectedDownloadCount() === 0"
+          (click)="confirmDownload()"
+        >
+          <i class="bi bi-download" aria-hidden="true"></i>
+          Scarica ({{ selectedDownloadCount() }})
+        </button>
+      </div>
+    </div>
+  </div>
+}

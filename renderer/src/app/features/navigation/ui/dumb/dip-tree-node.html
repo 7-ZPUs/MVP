@@ -1,5 +1,6 @@
 <div
   class="tree-node"
+  data-testid="dip-tree-node"
   [class.tree-node-selected]="flatNode.isSelected"
   [style.padding-left.px]="12 + flatNode.depth * 16"
   role="treeitem"
@@ -16,6 +17,7 @@
     *ngIf="flatNode.hasChildren"
     type="button"
     class="toggle-icon"
+    data-testid="dip-tree-toggle"
     [disabled]="flatNode.isLoading"
     [attr.aria-label]="flatNode.isExpanded ? 'Comprimi nodo' : 'Espandi nodo'"
     (click)="onToggle($event)"
@@ -23,10 +25,31 @@
     <ng-container *ngIf="flatNode.isLoading; else expandIcon"
       ><span class="spinner">⏳</span></ng-container
     >
-    <ng-template #expandIcon>{{ flatNode.isExpanded ? '▼' : '▶' }}</ng-template>
+    <ng-template #expandIcon>
+      <span
+        class="node-dot"
+        [class.node-dot-open]="flatNode.isExpanded"
+        [class.node-dot-closed]="!flatNode.isExpanded"
+        [class.node-dot-document-class]="flatNode.node.type === 'documentClass'"
+        [class.node-dot-process]="flatNode.node.type === 'process'"
+        [class.node-dot-document]="flatNode.node.type === 'document'"
+        [class.node-dot-file]="flatNode.node.type === 'file'"
+        [class.node-dot-dip]="flatNode.node.type === 'dip'"
+        aria-hidden="true"
+      ></span>
+    </ng-template>
   </button>
 
-  <span *ngIf="!flatNode.hasChildren" class="leaf-placeholder"></span>
+  <span *ngIf="!flatNode.hasChildren" class="leaf-placeholder" aria-hidden="true">
+    <span
+      class="node-dot node-dot-open"
+      [class.node-dot-document-class]="flatNode.node.type === 'documentClass'"
+      [class.node-dot-process]="flatNode.node.type === 'process'"
+      [class.node-dot-document]="flatNode.node.type === 'document'"
+      [class.node-dot-file]="flatNode.node.type === 'file'"
+      [class.node-dot-dip]="flatNode.node.type === 'dip'"
+    ></span>
+  </span>
 
   <!-- Titolo del nodo -->
   <span class="node-name">

@@ -5,25 +5,17 @@ import { FormatInfo } from '../../domain/document.models';
   selector: 'app-format-info',
   standalone: true,
   template: `
-    <div class="metadata-card">
-      <h3>Formato File</h3>
-      <div class="data-row">
+    <div class="metadata-card" data-testid="format-info-card">
+      <h3 data-testid="format-info-heading">Formato File</h3>
+      <div class="data-row" data-testid="format-info-row-tipo">
         <span class="label">Tipo/MIME:</span> <span class="value">{{ data().tipo }}</span>
       </div>
-      <div class="data-row">
+      <div class="data-row" data-testid="format-info-row-prodotto">
         <span class="label">Prodotto:</span>
         <span class="value">{{ data().prodotto }} {{ data().versione }}</span>
       </div>
-      <div class="data-row">
+      <div class="data-row" data-testid="format-info-row-produttore">
         <span class="label">Produttore:</span> <span class="value">{{ data().produttore }}</span>
-      </div>
-      <div class="data-row">
-        <span class="label">Algoritmo Impronta:</span>
-        <span class="value">{{ data().algoritmoImpronta }}</span>
-      </div>
-      <div class="data-row">
-        <span class="label">Impronta:</span>
-        <span class="value hash-val">{{ data().impronta }}</span>
       </div>
     </div>
   `,
@@ -48,6 +40,10 @@ import { FormatInfo } from '../../domain/document.models';
         flex-shrink: 0;
       }
       .value {
+        flex: 1;
+        min-width: 0;
+        word-break: break-word;
+        overflow-wrap: anywhere;
         color: #1e293b;
         font-weight: 500;
       }

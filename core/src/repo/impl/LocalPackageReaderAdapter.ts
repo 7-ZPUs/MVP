@@ -17,7 +17,6 @@ const DIP_INDEX_FILENAME_REGEX = /^DiPIndex\..+\.xml$/;
 
 @injectable()
 export class LocalPackageReaderAdapter implements IPackageReaderPort {
-
   constructor(
     @inject(DIP_PARSER_TOKEN)
     private readonly parser: IDipParser,
@@ -45,13 +44,14 @@ export class LocalPackageReaderAdapter implements IPackageReaderPort {
   private async getParsedIndex(dipPath: string): Promise<any> {
     const filename = await this.resolveDipIndexFilename(dipPath);
     return this.parser.parse(
-      await this.fileSystemProvider.readTextFile(
-        path.join(dipPath, filename),
-      ),
+      await this.fileSystemProvider.readTextFile(path.join(dipPath, filename)),
     );
   }
 
-  private async getOptionalMetadata(dipPath: string, relativePath: string | null): Promise<any> {
+  private async getOptionalMetadata(
+    dipPath: string,
+    relativePath: string | null,
+  ): Promise<any> {
     if (!relativePath) return null;
     try {
       const fullPath = path.join(dipPath, relativePath);
@@ -79,9 +79,12 @@ export class LocalPackageReaderAdapter implements IPackageReaderPort {
   public async *readProcesses(dipPath: string): AsyncGenerator<Process> {
     const rawDipIndex = await this.getParsedIndex(dipPath);
     const mappers = this.mapper.getProcessMappers(rawDipIndex);
-    
+
     for (const req of mappers) {
-      const rawMetadata = await this.getOptionalMetadata(dipPath, req.metadataRelativePath);
+      const rawMetadata = await this.getOptionalMetadata(
+        dipPath,
+        req.metadataRelativePath,
+      );
       yield req.map(rawMetadata);
     }
   }
@@ -89,9 +92,12 @@ export class LocalPackageReaderAdapter implements IPackageReaderPort {
   public async *readDocuments(dipPath: string): AsyncGenerator<Document> {
     const rawDipIndex = await this.getParsedIndex(dipPath);
     const mappers = this.mapper.getDocumentMappers(rawDipIndex);
-    
+
     for (const req of mappers) {
-      const rawMetadata = await this.getOptionalMetadata(dipPath, req.metadataRelativePath);
+      const rawMetadata = await this.getOptionalMetadata(
+        dipPath,
+        req.metadataRelativePath,
+      );
       yield req.map(rawMetadata);
     }
   }
@@ -101,12 +107,17 @@ export class LocalPackageReaderAdapter implements IPackageReaderPort {
     const mappers = this.mapper.getFileMappers(rawDipIndex);
 
     for (const req of mappers) {
-      const rawMetadata = await this.getOptionalMetadata(dipPath, req.metadataRelativePath);
+      const rawMetadata = await this.getOptionalMetadata(
+        dipPath,
+        req.metadataRelativePath,
+      );
       yield req.map(rawMetadata);
     }
   }
 
   public async readFileBytes(filePath: string): Promise<NodeJS.ReadableStream> {
-    return this.fileSystemProvider.openReadStream(filePath);
+    const dipPath = process.env.DIP_PATH || process.cwd();
+    const absolutePath = path.resolve(dipPath, filePath);
+    return this.fileSystemProvider.openReadStream(absolutePath);
   }
 }

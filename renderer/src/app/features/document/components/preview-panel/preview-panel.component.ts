@@ -27,6 +27,12 @@ import { PreviewRendererComponent } from '../preview-renderer/preview-renderer.c
   `,
   styles: [
     `
+      :host {
+        display: block;
+        width: 100%;
+        flex: 1;
+        overflow: hidden;
+      }
       .panel-container {
         height: 100%;
         width: 100%;

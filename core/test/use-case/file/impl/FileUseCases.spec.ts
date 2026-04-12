@@ -1,5 +1,4 @@
 import { describe, expect, it, vi } from "vitest";
-
 import { GetFileByIdUC } from "../../../../src/use-case/file/impl/GetFileByIdUC";
 import { GetFileByDocumentUC } from "../../../../src/use-case/file/impl/GetFileByDocumentUC";
 import { GetFileByStatusUC } from "../../../../src/use-case/file/impl/GetFileByStatusUC";
@@ -14,6 +13,8 @@ import { ExportFileUC } from "../../../../src/use-case/file/impl/ExportFileUC";
 import { Readable } from "node:stream";
 import { FileMapper } from "../../../../src/dao/mappers/FileMapper";
 import { ExportResult } from "../../../../../shared/domain/ExportResult";
+import path from "node:path";
+import { PrintFileUC } from "../../../../src/use-case/file/impl/PrintFileUC";
 
 describe("File use-cases", () => {
   // identifier: TU-S-browsing-96
@@ -206,5 +207,113 @@ describe("ExportFileUC", () => {
       exportPort.exportFile as ReturnType<typeof vi.fn>,
     ).toHaveBeenCalledWith(stream, "/dest/f1.pdf");
     expect(result).toBe(exported);
+  });
+
+  vi.mock("tsyringe", () => ({
+    injectable: () => () => { },
+    inject: () => () => { },
+  }));
+
+  vi.mock("node:path", () => ({
+    default: { resolve: vi.fn() },
+  }));
+
+
+
+  describe("PrintFileUC", () => {
+    let fileRepo: { getById: ReturnType<typeof vi.fn> };
+    let printPort: { printSingle: ReturnType<typeof vi.fn> };
+    let uc: PrintFileUC;
+
+    const DIP_PATH = "/base/dip";
+
+    beforeEach(() => {
+      vi.clearAllMocks();
+
+      fileRepo = { getById: vi.fn() };
+      printPort = { printSingle: vi.fn() };
+
+      uc = new PrintFileUC(fileRepo as any, DIP_PATH, printPort as any);
+    });
+
+    describe("quando il file non esiste", () => {
+      it("ritorna { success: false } con messaggio che include il fileId", async () => {
+        fileRepo.getById.mockReturnValue(null);
+
+        const result = await uc.execute(99);
+
+        expect(result).toEqual({
+          success: false,
+          error: "File con id 99 non trovato",
+        });
+      });
+
+      it("non chiama printPort.printSingle", async () => {
+        fileRepo.getById.mockReturnValue(null);
+
+        await uc.execute(99);
+
+        expect(printPort.printSingle).not.toHaveBeenCalled();
+      });
+    });
+
+    describe("quando il file esiste", () => {
+      const mockFile = () => ({ getPath: vi.fn().mockReturnValue("docs/report.pdf") });
+
+      it("chiama printSingle con il path assoluto e le opzioni corrette", async () => {
+        const file = mockFile();
+        fileRepo.getById.mockReturnValue(file);
+        (path.resolve as ReturnType<typeof vi.fn>).mockReturnValue("/base/dip/docs/report.pdf");
+        printPort.printSingle.mockResolvedValue({ success: true });
+
+        await uc.execute(1);
+
+        expect(printPort.printSingle).toHaveBeenCalledWith(
+          "/base/dip/docs/report.pdf",
+          { silent: false, printBackground: true },
+        );
+      });
+
+      it("ritorna { success: true } quando la stampa riesce", async () => {
+        fileRepo.getById.mockReturnValue(mockFile());
+        (path.resolve as ReturnType<typeof vi.fn>).mockReturnValue("/abs/path.pdf");
+        printPort.printSingle.mockResolvedValue({ success: true });
+
+        const result = await uc.execute(1);
+
+        expect(result).toEqual({ success: true });
+      });
+
+      it("ritorna { success: false, error } quando la stampa fallisce", async () => {
+        fileRepo.getById.mockReturnValue(mockFile());
+        (path.resolve as ReturnType<typeof vi.fn>).mockReturnValue("/abs/path.pdf");
+        printPort.printSingle.mockResolvedValue({
+          success: false,
+          error: "printer offline",
+        });
+
+        const result = await uc.execute(1);
+
+        expect(result).toEqual({ success: false, error: "printer offline" });
+      });
+
+      it("propaga eccezioni di printSingle", async () => {
+        fileRepo.getById.mockReturnValue(mockFile());
+        (path.resolve as ReturnType<typeof vi.fn>).mockReturnValue("/abs/path.pdf");
+        printPort.printSingle.mockRejectedValue(new Error("unexpected crash"));
+
+        await expect(uc.execute(1)).rejects.toThrow("unexpected crash");
+      });
+
+      it("chiama fileRepo.getById con il fileId corretto", async () => {
+        fileRepo.getById.mockReturnValue(mockFile());
+        (path.resolve as ReturnType<typeof vi.fn>).mockReturnValue("/abs/path.pdf");
+        printPort.printSingle.mockResolvedValue({ success: true });
+
+        await uc.execute(42);
+
+        expect(fileRepo.getById).toHaveBeenCalledWith(42);
+      });
+    });
   });
 });

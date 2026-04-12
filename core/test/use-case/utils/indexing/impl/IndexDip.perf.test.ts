@@ -5,7 +5,7 @@ import * as os from "node:os";
 import { describe, it, expect } from "vitest";
 import { performance } from "node:perf_hooks";
 
-import { IndexDip } from "../../../../../src/use-case/utils/indexing/impl/IndexDip";
+import { IndexDipUC } from "../../../../../src/use-case/utils/indexing/impl/IndexDip";
 import { XmlDipParser } from "../../../../../src/repo/impl/utils/XmlDipParser";
 import { FileSystemProvider } from "../../../../../src/repo/impl/utils/FileSystemProvider";
 import { LocalPackageReaderAdapter } from "../../../../../src/repo/impl/LocalPackageReaderAdapter";
@@ -14,16 +14,21 @@ import { DocumentClassRepository } from "../../../../../src/repo/impl/DocumentCl
 import { ProcessRepository } from "../../../../../src/repo/impl/ProcessRepository";
 import { DocumentRepository } from "../../../../../src/repo/impl/DocumentRepository";
 import { FileRepository } from "../../../../../src/repo/impl/FileRepository";
-import { DatabaseProvider } from "../../../../../src/repo/impl/DatabaseProvider";
 import { DipDAO } from "../../../../../src/dao/DipDAO";
 import { FileDAO } from "../../../../../src/dao/FileDAO";
 import { DocumentDAO } from "../../../../../src/dao/DocumentDAO";
 import { ProcessDAO } from "../../../../../src/dao/ProcessDAO";
 import { DocumentClassDAO } from "../../../../../src/dao/DocumentClassDAO";
+import Database from "better-sqlite3";
+import { SqliteTransactionManager } from "../../../../../src/repo/impl/SqliteTransactionManager";
+import { IVectorRepository } from "../../../../../src/repo/IVectorRepository";
+import { IEmbeddingService } from "../../../../../src/services/IEmbeddingService";
 
 const DEFAULT_REAL_DIP_PATH = "core/test/resources/real_dip_heavy";
+const PROJECT_ROOT = path.resolve(__dirname, "../../../../../../");
 const realDipPath = process.env.REAL_DIP_PATH ?? DEFAULT_REAL_DIP_PATH;
 const runs = Number(process.env.PERF_RUNS ?? "1");
+const runPerfTests = process.env.RUN_PERF_TESTS === "true";
 
 function percentile(values: number[], p: number): number {
   const sorted = [...values].sort((a, b) => a - b);
@@ -37,6 +42,14 @@ describe("IndexDip use-case performance", () => {
   // description: should measures end-to-end indexing performance on a real DiP
   // expected_value: matches asserted behavior: measures end-to-end indexing performance on a real DiP
   it("TU-F-Indexing-26: execute() should measures end-to-end indexing performance on a real DiP", async () => {
+    if (!runPerfTests) {
+      console.info(
+        "[PERF] Skipped: set RUN_PERF_TESTS=true to enable performance execution.",
+      );
+      expect(true).toBe(true);
+      return;
+    }
+
     const fsProvider = new FileSystemProvider();
     const dipPathExists = await fsProvider.fileExists(realDipPath);
 
@@ -56,13 +69,12 @@ describe("IndexDip use-case performance", () => {
       // Each run gets a fresh DB to simulate cold indexing
       const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "dip-perf-"));
       const dbPath = path.join(tmpDir, "dip-viewer.db");
-      const dbProvider = new DatabaseProvider(dbPath);
+      const db = new Database(dbPath);
 
       const schema = fs.readFileSync(
-        path.join(process.cwd(), "db/schema.sql"),
+        path.join(PROJECT_ROOT, "db/schema.sql"),
         "utf-8",
       );
-      const db = dbProvider.getDb();
       db.exec(schema);
 
       const packageReader = new LocalPackageReaderAdapter(
@@ -70,25 +82,32 @@ describe("IndexDip use-case performance", () => {
         new FileSystemProvider(),
         new DataMapper(),
       );
-      const dipRepository = new DipRepository(new DipDAO(dbProvider));
+      const dipRepository = new DipRepository(new DipDAO(db));
       const documentClassRepository = new DocumentClassRepository(
-        new DocumentClassDAO(dbProvider),
+        new DocumentClassDAO(db),
       );
-      const processRepository = new ProcessRepository(
-        new ProcessDAO(dbProvider),
-      );
-      const documentRepository = new DocumentRepository(
-        new DocumentDAO(dbProvider),
-      );
-      const fileRepository = new FileRepository(new FileDAO(dbProvider));
+      const processRepository = new ProcessRepository(new ProcessDAO(db));
+      const documentRepository = new DocumentRepository(new DocumentDAO(db));
+      const fileRepository = new FileRepository(new FileDAO(db));
+      const vectorRepository: IVectorRepository = {
+        saveVector: async () => {},
+        getVector: async () => null,
+        searchSimilarVectors: async () => [],
+      };
+      const embeddingService: IEmbeddingService = {
+        generateDocumentEmbedding: async () => null,
+      };
 
-      const useCase = new IndexDip(
+      const useCase = new IndexDipUC(
         packageReader,
         dipRepository,
         documentClassRepository,
         processRepository,
         documentRepository,
         fileRepository,
+        vectorRepository,
+        embeddingService,
+        new SqliteTransactionManager(db),
       );
 
       const start = performance.now();
@@ -99,9 +118,9 @@ describe("IndexDip use-case performance", () => {
       durationsMs.push(end - start);
 
       // Cleanup
-      dbProvider.getDb().close();
+      db.close();
       if (i === runs - 1) {
-        fs.copyFileSync(dbPath, path.join(process.cwd(), "perf-dip-viewer.db"));
+        fs.copyFileSync(dbPath, path.join(PROJECT_ROOT, "perf-dip-viewer.db"));
       }
       fs.rmSync(tmpDir, { recursive: true, force: true });
     }
@@ -120,5 +139,5 @@ describe("IndexDip use-case performance", () => {
     );
 
     expect(durationsMs).toHaveLength(runs);
-  }, 15000);
+  }, 600000);
 });

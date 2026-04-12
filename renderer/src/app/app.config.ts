@@ -1,6 +1,5 @@
-import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
+import { ApplicationConfig, provideBrowserGlobalErrorListeners, signal } from '@angular/core';
 import { provideRouter, withComponentInputBinding, withHashLocation } from '@angular/router';
-import { signal } from '@angular/core';
 import { routes } from './app.routes';
 
 import {
@@ -8,71 +7,86 @@ import {
   CACHE_SERVICE_TOKEN,
   ERROR_HANDLER_TOKEN,
   LOGGING_CHANNEL_TOKEN,
+  TELEMETRY_TOKEN,
+  LIVE_ANNOUNCER_TOKEN,
+  ROUTER_TOKEN,
 } from './shared/contracts/index';
 
-import { SearchIpcGateway } from './feature/search/adapters/search-ipc-gateway';
-import { FilterValidatorService } from './feature/validation/services/filter-validator.service';
+import { SearchIpcGateway } from './features/search/adapters/search-ipc-gateway';
+import { FilterValidatorService } from './features/validation/services/filter-validator.service';
 import { IpcErrorHandlerService } from './shared/services/ipc-error-handler.service';
 import { TelemetryService } from './shared/services/telemetry.service';
-import { LiveAnnouncerService } from './shared/services/live-announcer.service';
-import { IpcCacheService } from './shared/services/ipc-cache.service';
+import { IpcCacheService } from './shared/infrastructure/ipc-cache.service';
 import { ElectronLoggingGateway } from './shared/services/electron-logging-gateway';
-import { SearchFacade } from './feature/search/services';
-import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
+import { SearchFacade } from './features/search/services';
 import { IPC_GATEWAY_TOKEN } from './shared/interfaces/ipc-gateway.interfaces';
 import { ElectronIpcGateway } from './shared/infrastructure/electron-ipc-gateway';
-
+import { FILTER_VALIDATOR_TOKEN } from './features/validation/contracts/filter-validator.interface';
+import { SEARCH_CHANNEL_TOKEN } from './features/search/contracts/search-channel.interface';
+import { SEMANTIC_INDEX_STATUS_TOKEN } from './features/search/contracts/semantic-index.interface';
+import { SEARCH_FACADE_TOKEN } from './features/search/contracts/search-facade.interface';
+import { LiveAnnouncerService } from './shared/services/live-announcer.service';
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
-    provideAnimationsAsync(), // richiesto da @angular/cdk LiveAnnouncer
-    provideRouter(routes, withHashLocation(), withComponentInputBinding()),
-    // Electron bridge
+    provideRouter(routes, withComponentInputBinding(), withHashLocation()),
+    // Electron bridge./features/search/contracts/search-facade.interface
     {
       provide: ELECTRON_CONTEXT_BRIDGE_TOKEN,
       useFactory: () => {
-        if (typeof window !== 'undefined' && (window as any).electronAPI) {
-          return (window as any).electronAPI;
+        if (globalThis.window !== undefined) {
+          const bridge =
+            (globalThis.window as any).electronAPI ??
+            (globalThis.window as any).api ??
+            (globalThis.window as any).electron;
+
+          if (bridge && typeof bridge.invoke === 'function') {
+            return bridge;
+          }
         }
         return {
-          invoke: () => Promise.reject(new Error('electronAPI non trovato')),
+          invoke: () =>
+            Promise.reject(
+              new Error(
+                'electronAPI non trovato: verifica preload script e webPreferences.preload in Electron',
+              ),
+            ),
         };
       },
     },
 
-    // Cache
-    { provide: CACHE_SERVICE_TOKEN, useClass: IpcCacheService },
+    // Cache: token and class must resolve to the same singleton store instance.
+    { provide: CACHE_SERVICE_TOKEN, useExisting: IpcCacheService },
 
     // Logging
     { provide: LOGGING_CHANNEL_TOKEN, useClass: ElectronLoggingGateway },
 
     // Error handler
     { provide: ERROR_HANDLER_TOKEN, useClass: IpcErrorHandlerService },
-    { provide: 'IErrorHandler', useClass: IpcErrorHandlerService },
 
     // Telemetry
-    { provide: 'ITelemetry', useClass: TelemetryService },
+    { provide: TELEMETRY_TOKEN, useClass: TelemetryService },
 
     // Live announcer
-    { provide: 'ILiveAnnouncer', useClass: LiveAnnouncerService },
+    { provide: LIVE_ANNOUNCER_TOKEN, useClass: LiveAnnouncerService },
 
     // Search channel
-    { provide: 'ISearchChannel', useClass: SearchIpcGateway },
+    { provide: SEARCH_CHANNEL_TOKEN, useClass: SearchIpcGateway },
 
     // Filter validator
-    { provide: 'IFilterValidator', useClass: FilterValidatorService },
+    { provide: FILTER_VALIDATOR_TOKEN, useClass: FilterValidatorService },
 
     // Semantic index status — mock per ora
     {
-      provide: 'ISemanticIndexStatus',
+      provide: SEMANTIC_INDEX_STATUS_TOKEN,
       useValue: { getStatus: () => signal({ status: 'READY' }) },
     },
 
     // Router
-    { provide: 'IRouter', useValue: { navigate: () => {} } },
+    { provide: ROUTER_TOKEN, useValue: { navigate: () => Promise.resolve(true) } },
 
     // Facade
-    { provide: 'ISearchFacade', useClass: SearchFacade },
+    { provide: SEARCH_FACADE_TOKEN, useClass: SearchFacade },
 
     // IPC Gateway
     { provide: IPC_GATEWAY_TOKEN, useClass: ElectronIpcGateway },

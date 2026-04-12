@@ -1,5 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { SearchFilters } from "../../../shared/domain/metadata/search.models";
+import {
+  DocumentTypeEnum,
+  SearchRequestDTO,
+} from "../../../shared/domain/metadata/search.models";
+import { SearchDocumentsQuery } from "../../src/entity/search/SearchQuery.model";
 
 vi.mock("electron", () => ({
   app: { isPackaged: false },
@@ -14,6 +18,10 @@ vi.mock("tsyringe", () => ({
 import { container } from "tsyringe";
 import { SearchIpcAdapter } from "../../src/ipc/SearchIpcAdapter";
 import { IpcChannels } from "../../../shared/ipc-channels";
+import { DocumentClassMapper } from "../../src/dao/mappers/DocumentClassMapper";
+import { ProcessMapper } from "../../src/dao/mappers/ProcessMapper";
+import { DocumentMapper } from "../../src/dao/mappers/DocumentMapper";
+import { MetadataType } from "../../src/value-objects/Metadata";
 
 const makeIpcMain = () => {
   const handlers = new Map<string, Function>();
@@ -29,12 +37,77 @@ const makeIpcMain = () => {
   };
 };
 
+const makeDocumentClass = (id: number, name: string) =>
+  DocumentClassMapper.fromPersistence({
+    id,
+    dipId: 1,
+    dipUuid: "dip-uuid",
+    uuid: `uuid-dc-${id}`,
+    name,
+    timestamp: "2026-01-01",
+    integrityStatus: "UNKNOWN",
+  });
+
+const makeProcess = (id: number, uuid: string) =>
+  ProcessMapper.fromPersistence(
+    {
+      id,
+      documentClassId: 1,
+      documentClassUuid: "dc-uuid",
+      uuid,
+      integrityStatus: "UNKNOWN",
+    },
+    [
+      {
+        id: 1,
+        parent_id: null,
+        name: "root",
+        value: "",
+        type: MetadataType.COMPOSITE,
+      },
+    ],
+  );
+
+const makeDocument = (
+  uuid: string,
+  metadata: { name: string; value: string }[] = [],
+  rootType: DocumentTypeEnum = DocumentTypeEnum.DOCUMENTO_INFORMATICO,
+) => {
+  const rows = [
+    {
+      id: 1,
+      parent_id: null,
+      name: rootType,
+      value: "",
+      type: MetadataType.COMPOSITE,
+    },
+    ...metadata.map((m, idx) => ({
+      id: idx + 2,
+      parent_id: 1,
+      name: m.name,
+      value: m.value,
+      type: MetadataType.STRING,
+    })),
+  ];
+  return DocumentMapper.fromPersistence(
+    {
+      id: 1,
+      uuid,
+      integrityStatus: "UNKNOWN",
+      processId: 1,
+      processUuid: "proc-uuid",
+    },
+    rows,
+  );
+};
+
 describe("SearchIpcAdapter", () => {
   let ipcMain: ReturnType<typeof makeIpcMain>;
   let searchClassesUC: { execute: ReturnType<typeof vi.fn> };
   let searchProcessiUC: { execute: ReturnType<typeof vi.fn> };
   let searchDocumentsUC: { execute: ReturnType<typeof vi.fn> };
   let searchSemanticUC: { execute: ReturnType<typeof vi.fn> };
+  let getCustomMetadataKeysUC: { execute: ReturnType<typeof vi.fn> };
   let aiAdapter: { isInitialized: ReturnType<typeof vi.fn> };
   let documentRepo: { getIndexedDocumentsCount: ReturnType<typeof vi.fn> };
 
@@ -43,10 +116,11 @@ describe("SearchIpcAdapter", () => {
 
     (container.resolve as ReturnType<typeof vi.fn>).mockReset();
 
-    searchClassesUC = { execute: vi.fn().mockResolvedValue([]) };
-    searchProcessiUC = { execute: vi.fn().mockResolvedValue([]) };
+    searchClassesUC = { execute: vi.fn().mockReturnValue([]) };
+    searchProcessiUC = { execute: vi.fn().mockReturnValue([]) };
     searchDocumentsUC = { execute: vi.fn().mockResolvedValue([]) };
     searchSemanticUC = { execute: vi.fn().mockResolvedValue([]) };
+    getCustomMetadataKeysUC = { execute: vi.fn().mockReturnValue([]) };
     aiAdapter = { isInitialized: vi.fn().mockReturnValue(false) };
     documentRepo = { getIndexedDocumentsCount: vi.fn().mockReturnValue(0) };
 
@@ -55,6 +129,7 @@ describe("SearchIpcAdapter", () => {
       .mockReturnValueOnce(searchProcessiUC)
       .mockReturnValueOnce(searchDocumentsUC)
       .mockReturnValueOnce(searchSemanticUC)
+      .mockReturnValueOnce(getCustomMetadataKeysUC)
       .mockReturnValueOnce(aiAdapter)
       .mockReturnValueOnce(documentRepo);
 
@@ -74,20 +149,14 @@ describe("SearchIpcAdapter", () => {
     expect(registeredChannels).toContain(IpcChannels.SEARCH_SEMANTIC);
     expect(registeredChannels).toContain(IpcChannels.SEARCH_FULLTEXT);
     expect(registeredChannels).toContain(IpcChannels.SEARCH_GET_AI_STATE);
+    expect(registeredChannels).toContain(IpcChannels.SEARCH_CUSTOM_METADATA_KEYS);
   });
 
   // ─── SEARCH_CLASSES ───────────────────────────────────────────────────────
 
-  it("SEARCH_CLASSES chiama execute con il nome e ritorna SearchResult[]", async () => {
-    const expectedResults = [
-      {
-        documentId: "1",
-        name: "Contratti",
-        type: "",
-        score: null,
-      },
-    ];
-    searchClassesUC.execute.mockResolvedValue(expectedResults);
+  it("SEARCH_CLASSES chiama execute con il nome e ritorna i DTO", async () => {
+    const dc = makeDocumentClass(1, "Contratti");
+    searchClassesUC.execute.mockReturnValue([dc]);
 
     const result = await ipcMain.invoke(
       IpcChannels.SEARCH_CLASSES,
@@ -95,7 +164,7 @@ describe("SearchIpcAdapter", () => {
     );
 
     expect(searchClassesUC.execute).toHaveBeenCalledWith("Contratti");
-    expect(result).toEqual(expectedResults);
+    expect(result).toEqual([DocumentClassMapper.toSearchResult(dc)]);
   });
 
   it("SEARCH_CLASSES usa stringa vuota se il nome non è fornito", async () => {
@@ -104,7 +173,7 @@ describe("SearchIpcAdapter", () => {
   });
 
   it("SEARCH_CLASSES ritorna array vuoto se nessuna classe trovata", async () => {
-    searchClassesUC.execute.mockResolvedValue([]);
+    searchClassesUC.execute.mockReturnValue([]);
     const result = await ipcMain.invoke(
       IpcChannels.SEARCH_CLASSES,
       "inesistente",
@@ -113,7 +182,9 @@ describe("SearchIpcAdapter", () => {
   });
 
   it("SEARCH_CLASSES propaga eccezioni della use-case", async () => {
-    searchClassesUC.execute.mockRejectedValue(new Error("classes failed"));
+    searchClassesUC.execute.mockImplementation(() => {
+      throw new Error("classes failed");
+    });
     await expect(
       ipcMain.invoke(IpcChannels.SEARCH_CLASSES, "Contratti"),
     ).rejects.toThrow("classes failed");
@@ -121,16 +192,9 @@ describe("SearchIpcAdapter", () => {
 
   // ─── SEARCH_PROCESSES ─────────────────────────────────────────────────────
 
-  it("SEARCH_PROCESSES chiama execute con uuid e ritorna SearchResult[]", async () => {
-    const expectedResults = [
-      {
-        documentId: "1",
-        name: "",
-        type: "",
-        score: null,
-      },
-    ];
-    searchProcessiUC.execute.mockResolvedValue(expectedResults);
+  it("SEARCH_PROCESSES chiama execute con uuid e ritorna i DTO", async () => {
+    const proc = makeProcess(1, "proc-uuid-abc");
+    searchProcessiUC.execute.mockReturnValue([proc]);
 
     const result = await ipcMain.invoke(
       IpcChannels.SEARCH_PROCESSES,
@@ -138,7 +202,7 @@ describe("SearchIpcAdapter", () => {
     );
 
     expect(searchProcessiUC.execute).toHaveBeenCalledWith("proc-uuid-abc");
-    expect(result).toEqual(expectedResults);
+    expect(result).toEqual([ProcessMapper.toSearchResult(proc)]);
   });
 
   it("SEARCH_PROCESSES usa stringa vuota se uuid non è fornito", async () => {
@@ -147,7 +211,7 @@ describe("SearchIpcAdapter", () => {
   });
 
   it("SEARCH_PROCESSES ritorna array vuoto se nessun processo trovato", async () => {
-    searchProcessiUC.execute.mockResolvedValue([]);
+    searchProcessiUC.execute.mockReturnValue([]);
     const result = await ipcMain.invoke(
       IpcChannels.SEARCH_PROCESSES,
       "uuid-inesistente",
@@ -156,7 +220,9 @@ describe("SearchIpcAdapter", () => {
   });
 
   it("SEARCH_PROCESSES propaga eccezioni della use-case", async () => {
-    searchProcessiUC.execute.mockRejectedValue(new Error("processes failed"));
+    searchProcessiUC.execute.mockImplementation(() => {
+      throw new Error("processes failed");
+    });
     await expect(
       ipcMain.invoke(IpcChannels.SEARCH_PROCESSES, "uuid-1"),
     ).rejects.toThrow("processes failed");
@@ -164,55 +230,58 @@ describe("SearchIpcAdapter", () => {
 
   // ─── SEARCH_DOCUMENTS ─────────────────────────────────────────────────────
 
-  it("SEARCH_DOCUMENTS chiama execute con i filtri e ritorna SearchResult[]", async () => {
-    const expectedResults = [
-      {
-        documentId: "uuid-1",
-        name: "doc.pdf",
-        type: "DOCUMENTO INFORMATICO",
-        score: null,
-      },
-    ];
-    searchDocumentsUC.execute.mockResolvedValue(expectedResults);
+  it("SEARCH_DOCUMENTS chiama execute e propaga i risultati", async () => {
+    const doc = makeDocument("uuid-1", [{ name: "nome", value: "doc.pdf" }]);
+    searchDocumentsUC.execute.mockResolvedValue([doc]);
 
-    const filters = {
-      common: null,
-      diDai: null,
-      aggregate: null,
-      subject: null,
-      custom: null,
+    const filters: SearchRequestDTO = {
+      filter: {
+        logicOperator: "AND",
+        items: [{ path: "NomeDelDocumento", operator: "EQ", value: "test" }],
+      },
     };
     const result = await ipcMain.invoke(IpcChannels.SEARCH_DOCUMENTS, filters);
 
-    expect(searchDocumentsUC.execute).toHaveBeenCalledWith(filters);
-    expect(result).toEqual(expectedResults);
+    expect(searchDocumentsUC.execute).toHaveBeenCalled();
+    expect(result).toEqual([DocumentMapper.toSearchResult(doc, null)]);
   });
 
   it("SEARCH_DOCUMENTS ritorna array vuoto se nessun documento trovato", async () => {
     searchDocumentsUC.execute.mockResolvedValue([]);
-    const result = await ipcMain.invoke(IpcChannels.SEARCH_DOCUMENTS, {});
+    const filters: SearchRequestDTO = {
+      filter: {
+        logicOperator: "AND",
+        items: [{ path: "X", operator: "EQ", value: "Y" }],
+      },
+    };
+    const result = await ipcMain.invoke(IpcChannels.SEARCH_DOCUMENTS, filters);
     expect(result).toEqual([]);
   });
 
   it("SEARCH_DOCUMENTS propaga rejection della use-case", async () => {
     searchDocumentsUC.execute.mockRejectedValue(new Error("documents failed"));
+    const filters: SearchRequestDTO = {
+      filter: {
+        logicOperator: "AND",
+        items: [{ path: "X", operator: "EQ", value: "Y" }],
+      },
+    };
     await expect(
-      ipcMain.invoke(IpcChannels.SEARCH_DOCUMENTS, {}),
+      ipcMain.invoke(IpcChannels.SEARCH_DOCUMENTS, filters),
     ).rejects.toThrow("documents failed");
   });
 
   // ─── SEARCH_SEMANTIC ──────────────────────────────────────────────────────
 
   it("SEARCH_SEMANTIC chiama execute con la query e ritorna SearchResult[]", async () => {
-    const expectedResults = [
-      {
-        documentId: "uuid-s1",
-        name: "sem.pdf",
-        type: "DOCUMENTO INFORMATICO",
-        score: 0.91,
-      },
-    ];
-    searchSemanticUC.execute.mockResolvedValue(expectedResults);
+    const doc = makeDocument(
+      "uuid-s1",
+      [{ name: "NomeDelDocumento", value: "sem.pdf" }],
+      DocumentTypeEnum.DOCUMENTO_INFORMATICO,
+    );
+    searchSemanticUC.execute.mockResolvedValue([
+      { document: doc, score: 0.91 },
+    ]);
 
     const query = {
       text: "ricerca semantica",
@@ -222,7 +291,7 @@ describe("SearchIpcAdapter", () => {
     const result = await ipcMain.invoke(IpcChannels.SEARCH_SEMANTIC, query);
 
     expect(searchSemanticUC.execute).toHaveBeenCalledWith("ricerca semantica");
-    expect(result).toEqual(expectedResults);
+    expect(result).toEqual([DocumentMapper.toSearchResult(doc, 0.91)]);
   });
 
   it("SEARCH_SEMANTIC ritorna array vuoto se nessun documento simile trovato", async () => {
@@ -268,20 +337,17 @@ describe("SearchIpcAdapter", () => {
     };
     await ipcMain.invoke(IpcChannels.SEARCH_FULLTEXT, query);
 
-    const calledFilters = searchDocumentsUC.execute.mock
-      .calls[0][0] as SearchFilters;
-    expect(calledFilters.diDai?.nome).toBe("fattura.pdf");
+    const calledQuery = searchDocumentsUC.execute.mock
+      .calls[0][0] as SearchDocumentsQuery;
+    expect(calledQuery.filter.items[0]).toEqual({
+      path: "NomeDelDocumento",
+      operator: "LIKE",
+      value: "%fattura.pdf%",
+    });
   });
 
-  it("SEARCH_FULLTEXT ritorna SearchResult[] dal searchDocumentsUC", async () => {
-    const expectedResults = [
-      {
-        documentId: "uuid-1",
-        name: "fattura.pdf",
-        type: "DOCUMENTO INFORMATICO",
-        score: null,
-      },
-    ];
+  it("SEARCH_FULLTEXT ritorna Document[] dal searchDocumentsUC", async () => {
+    const expectedResults = [makeDocument("uuid-1", [])];
     searchDocumentsUC.execute.mockResolvedValue(expectedResults);
 
     const query = {
@@ -291,7 +357,9 @@ describe("SearchIpcAdapter", () => {
     };
     const result = await ipcMain.invoke(IpcChannels.SEARCH_FULLTEXT, query);
 
-    expect(result).toEqual(expectedResults);
+    expect(result).toEqual(
+      expectedResults.map((doc) => DocumentMapper.toSearchResult(doc, null)),
+    );
   });
 
   it("SEARCH_FULLTEXT ritorna array vuoto se nessun documento trovato", async () => {
@@ -358,5 +426,27 @@ describe("SearchIpcAdapter", () => {
     await expect(
       ipcMain.invoke(IpcChannels.SEARCH_GET_AI_STATE),
     ).rejects.toThrow("ai state unavailable");
+  });
+
+  it("SEARCH_CUSTOM_METADATA_KEYS ritorna le chiavi custom distinte per dip", async () => {
+    getCustomMetadataKeysUC.execute.mockReturnValue([
+      "DataProtocollo",
+      "NomeCliente",
+      "NumeroPratica",
+    ]);
+
+    const result = await ipcMain.invoke(IpcChannels.SEARCH_CUSTOM_METADATA_KEYS, 7);
+
+    expect(getCustomMetadataKeysUC.execute).toHaveBeenCalledWith(7);
+    expect(result).toEqual(["DataProtocollo", "NomeCliente", "NumeroPratica"]);
+  });
+
+  it("SEARCH_CUSTOM_METADATA_KEYS usa null quando dipId non e fornito", async () => {
+    getCustomMetadataKeysUC.execute.mockReturnValue(["NomeCliente"]);
+
+    const result = await ipcMain.invoke(IpcChannels.SEARCH_CUSTOM_METADATA_KEYS, undefined);
+
+    expect(getCustomMetadataKeysUC.execute).toHaveBeenCalledWith(null);
+    expect(result).toEqual(["NomeCliente"]);
   });
 });

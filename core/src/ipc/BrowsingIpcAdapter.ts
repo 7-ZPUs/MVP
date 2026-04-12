@@ -34,56 +34,56 @@ import { IGetDipByIdUC } from "../use-case/dip/IGetDipByIdUC";
 import { IGetDipByStatusUC } from "../use-case/dip/IGetDipByStatusUC";
 import { DipUC } from "../use-case/dip/token";
 import { IpcChannels } from "../../../shared/ipc-channels";
+import { IGetFileContentUC } from "../use-case/file/IGetFileContentUC";
 
 export class BrowsingIpcAdapter {
-  static register(ipcMain: IpcMain, dipPath: string = process.cwd()): void {
+  static register(ipcMain: IpcMain): void {
     // ---- Documento use cases ----
-    const getDocByIdUC = container.resolve<IGetDocumentByIdUC>(
-      DocumentoUC.GET_BY_ID,
-    );
-    const getDocByProcessUC = container.resolve<IGetDocumentByProcessUC>(
-      DocumentoUC.GET_BY_PROCESS,
-    );
-    const getDocByStatusUC = container.resolve<IGetDocumentByStatusUC>(
-      DocumentoUC.GET_BY_STATUS,
-    );
+    const getDocByIdUC: IGetDocumentByIdUC =
+      container.resolve<IGetDocumentByIdUC>(DocumentoUC.GET_BY_ID);
+    const getDocByProcessUC: IGetDocumentByProcessUC =
+      container.resolve<IGetDocumentByProcessUC>(DocumentoUC.GET_BY_PROCESS);
+    const getDocByStatusUC: IGetDocumentByStatusUC =
+      container.resolve<IGetDocumentByStatusUC>(DocumentoUC.GET_BY_STATUS);
 
     // ---- File use cases ----
-    const getFileByIdUC = container.resolve<IGetFileByIdUC>(FileUC.GET_BY_ID);
-    const getFileByDocUC = container.resolve<IGetFileByDocumentUC>(
-      FileUC.GET_BY_DOCUMENT,
+    const getFileByIdUC: IGetFileByIdUC = container.resolve<IGetFileByIdUC>(
+      FileUC.GET_BY_ID,
     );
-    const getFileByStatusUC = container.resolve<IGetFileByStatusUC>(
-      FileUC.GET_BY_STATUS,
-    );
+    const getFileByDocUC: IGetFileByDocumentUC =
+      container.resolve<IGetFileByDocumentUC>(FileUC.GET_BY_DOCUMENT);
+    const getFileByStatusUC: IGetFileByStatusUC =
+      container.resolve<IGetFileByStatusUC>(FileUC.GET_BY_STATUS);
 
     // ---- Process use cases ----
-    const getProcessByIdUC = container.resolve<IGetProcessByIdUC>(
-      ProcessUC.GET_BY_ID,
-    );
-    const getProcessByStatusUC = container.resolve<IGetProcessByStatusUC>(
-      ProcessUC.GET_BY_STATUS,
-    );
-    const getProcessByDocumentClassUC =
+    const getProcessByIdUC: IGetProcessByIdUC =
+      container.resolve<IGetProcessByIdUC>(ProcessUC.GET_BY_ID);
+    const getProcessByStatusUC: IGetProcessByStatusUC =
+      container.resolve<IGetProcessByStatusUC>(ProcessUC.GET_BY_STATUS);
+    const getProcessByDocumentClassUC: IGetProcessByDocumentClassUC =
       container.resolve<IGetProcessByDocumentClassUC>(
         ProcessUC.GET_BY_DOCUMENT_CLASS,
       );
 
     // ---- DocumentClass use cases ----
-    const getDocClassByDipIdUC = container.resolve<IGetDocumentClassByDipIdUC>(
-      DocumentClassUC.GET_BY_DIP_ID,
-    );
-    const getDocClassByStatusUC =
+    const getDocClassByDipIdUC: IGetDocumentClassByDipIdUC =
+      container.resolve<IGetDocumentClassByDipIdUC>(
+        DocumentClassUC.GET_BY_DIP_ID,
+      );
+    const getDocClassByStatusUC: IGetDocumentClassByStatusUC =
       container.resolve<IGetDocumentClassByStatusUC>(
         DocumentClassUC.GET_BY_STATUS,
       );
-    const getDocClassByIdUC = container.resolve<IGetDocumentClassByIdUC>(
-      DocumentClassUC.GET_BY_ID,
-    );
+    const getDocClassByIdUC: IGetDocumentClassByIdUC =
+      container.resolve<IGetDocumentClassByIdUC>(DocumentClassUC.GET_BY_ID);
 
-    const getDipByIdUC = container.resolve<IGetDipByIdUC>(DipUC.GET_BY_ID);
-    const getDipByStatusUC = container.resolve<IGetDipByStatusUC>(
-      DipUC.GET_BY_STATUS,
+    const getDipByIdUC: IGetDipByIdUC = container.resolve<IGetDipByIdUC>(
+      DipUC.GET_BY_ID,
+    );
+    const getDipByStatusUC: IGetDipByStatusUC =
+      container.resolve<IGetDipByStatusUC>(DipUC.GET_BY_STATUS);
+    const getFileBytesByIdUC = container.resolve<IGetFileContentUC>(
+      FileUC.GET_CONTENT,
     );
 
     // ------------------------------------------------------------------ //
@@ -128,17 +128,7 @@ export class BrowsingIpcAdapter {
     ipcMain.handle(
       IpcChannels.BROWSE_GET_FILE_BUFFER_BY_ID,
       (_event, id: number) => {
-        const file = getFileByIdUC.execute(id);
-        if (!file) return null;
-        const fs = require("fs");
-        const path = require("path");
-        try {
-          const absolutePath = path.resolve(dipPath, file.getPath());
-          return fs.readFileSync(absolutePath);
-        } catch (err) {
-          console.error("Error reading file buffer", err);
-          return null;
-        }
+        return getFileBytesByIdUC.execute(id);
       },
     );
 

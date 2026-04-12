@@ -1,0 +1,270 @@
+<fieldset [disabled]="disabled" class="didai-filters-container filter-fieldset" [formGroup]="form">
+  @if (disabled && disabledReason) {
+    <div class="info-banner">
+      <i class="bi bi-info-circle" aria-hidden="true"></i>
+      {{ disabledReason }}
+    </div>
+  }
+
+  <details class="filter-accordion" closed>
+    <summary>Registrazione</summary>
+
+    <div formGroupName="registrazione" class="accordion-content">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="tipoFlusso">Tipologia Flusso</label>
+          <select id="tipoFlusso" data-testid="flow-type-select" formControlName="tipologiaFlusso">
+            <option [ngValue]="null">Tutti</option>
+            <option *ngFor="let f of flowTypes" [ngValue]="f.value">{{ f.label }}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="tipoRegistro">Tipologia Registro</label>
+          <select
+            id="tipoRegistro"
+            data-testid="registration-type-select"
+            formControlName="tipologiaRegistro"
+          >
+            <option [ngValue]="null">Tutti</option>
+            <option *ngFor="let r of registerTypes" [ngValue]="r">{{ r }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="dataRegistrazione">Data Registrazione</label>
+          <input
+            id="dataRegistrazione"
+            data-testid="registration-date-input"
+            type="date"
+            formControlName="dataRegistrazione"
+            [attr.aria-invalid]="!!getError('registrazione.dataRegistrazione')"
+          />
+          <div
+            *ngIf="getError('registrazione.dataRegistrazione') as err"
+            class="validation-error"
+            data-testid="filter-error"
+          >
+            {{ err.message }}
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="oraRegistrazione">Ora Registrazione</label>
+          <input id="oraRegistrazione" type="time" formControlName="oraRegistrazione" />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="numRegistrazione">Numero Registrazione</label>
+          <input
+            id="numRegistrazione"
+            data-testid="registration-number-input"
+            type="number"
+            formControlName="numeroRegistrazione"
+          />
+        </div>
+        <div class="form-group">
+          <label for="codRegistrazione">Codice Registro</label>
+          <input
+            id="codRegistrazione"
+            data-testid="registration-code-input"
+            type="text"
+            formControlName="codiceRegistro"
+          />
+        </div>
+      </div>
+    </div>
+  </details>
+
+  <details class="filter-accordion">
+    <summary>Dati Base (DiDai)</summary>
+
+    <div class="accordion-content">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="tipologiaDidai">Tipologia (Stringa)</label>
+          <input id="tipologiaDidai" type="text" formControlName="tipologia" />
+        </div>
+        <div class="form-group">
+          <label for="modFormazione">Modalità Formazione</label>
+          <select id="modFormazione" formControlName="modalitaFormazione">
+            <option [ngValue]="null">Tutte</option>
+            <option *ngFor="let m of didaiFormations" [ngValue]="m">{{ m }}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="riservatezzaDidai">Riservatezza</label>
+          <select id="riservatezzaDidai" formControlName="riservatezza">
+            <option [ngValue]="null">Tutti</option>
+            <option [ngValue]="true">Sì</option>
+            <option [ngValue]="false">No</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="nomeDidai">Nome</label>
+          <input
+            id="nomeDidai"
+            data-testid="document-name-input"
+            type="text"
+            formControlName="nome"
+          />
+        </div>
+        <div class="form-group">
+          <label for="versioneDidai">Versione</label>
+          <input id="versioneDidai" type="text" formControlName="versione" />
+        </div>
+        <div class="form-group">
+          <label for="idPrimarioDidai">ID Primario</label>
+          <input id="idPrimarioDidai" type="text" formControlName="idPrimario" />
+        </div>
+      </div>
+    </div>
+  </details>
+
+  <details class="filter-accordion">
+    <summary>Identificativo Formato</summary>
+
+    <div formGroupName="identificativoFormato" class="accordion-content">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="formatoAgid">Formato (AGID)</label>
+          <select id="formatoAgid" formControlName="formato">
+            <option [ngValue]="null">Tutti</option>
+            <option *ngFor="let a of agidFormats" [ngValue]="a">{{ a }}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="nomeProdCreazione">Nome Prodotto Creazione</label>
+          <input id="nomeProdCreazione" type="text" formControlName="nomeProdottoCreazione" />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="versioneProdCreazione">Versione Prodotto</label>
+          <input
+            id="versioneProdCreazione"
+            type="text"
+            formControlName="versioneProdottoCreazione"
+          />
+        </div>
+        <div class="form-group">
+          <label for="produttoreProdCreazione">Produttore Prodotto</label>
+          <input
+            id="produttoreProdCreazione"
+            type="text"
+            formControlName="produttoreProdottoCreazione"
+          />
+        </div>
+      </div>
+    </div>
+  </details>
+
+  <details class="filter-accordion">
+    <summary>Dati Verifica & Tracciature</summary>
+
+    <div class="accordion-content">
+      <div formGroupName="verifica">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="formatoDig">Firmato Digitalmente</label>
+            <select id="formatoDig" formControlName="formatoDigitalmente">
+              <option [ngValue]="null">Tutti</option>
+              <option [ngValue]="true">Sì</option>
+              <option [ngValue]="false">No</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="sigillatoElettr">Sigillato Elettronicamente</label>
+            <select id="sigillatoElettr" formControlName="sigillatoElettr">
+              <option [ngValue]="null">Tutti</option>
+              <option [ngValue]="true">Sì</option>
+              <option [ngValue]="false">No</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="marcaturaTemp">Marcatura Temporale</label>
+            <select id="marcaturaTemp" formControlName="marcaturaTemporale">
+              <option [ngValue]="null">Tutti</option>
+              <option [ngValue]="true">Sì</option>
+              <option [ngValue]="false">No</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="confCopie">Conformità Copie</label>
+            <select id="confCopie" formControlName="conformitaCopie">
+              <option [ngValue]="null">Tutti</option>
+              <option [ngValue]="true">Sì</option>
+              <option [ngValue]="false">No</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="nested-section" style="margin-top: 1.5rem">
+        <h5 class="nested-title">Tracciature Modifiche</h5>
+        <div formArrayName="tracciatureModifiche">
+          <div
+            *ngFor="let tracciatura of tracciatureFormArray.controls; let i = index"
+            [formGroupName]="i"
+            class="dynamic-form-item"
+          >
+            <button
+              type="button"
+              (click)="removeTracciatura(i)"
+              class="btn-remove-item"
+              aria-label="Rimuovi tracciatura"
+            >
+              <i class="bi bi-x-lg" aria-hidden="true"></i>
+            </button>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label [for]="'tipoModifica_' + i">Tipo Modifica</label>
+                <select [id]="'tipoModifica_' + i" formControlName="tipoModifica">
+                  <option [ngValue]="null">Tutte</option>
+                  <option *ngFor="let t of modificationTypes" [ngValue]="t">{{ t }}</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label [for]="'dataModifica_' + i">Data Modifica</label>
+                <input
+                  [id]="'dataModifica_' + i"
+                  type="date"
+                  formControlName="dataModifica"
+                  [attr.aria-invalid]="!!getTracciaturaError(i, 'dataModifica')"
+                />
+                <div *ngIf="getTracciaturaError(i, 'dataModifica') as err" class="validation-error">
+                  {{ err.message }}
+                </div>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label [for]="'oraModifica_' + i">Ora Modifica</label>
+                <input [id]="'oraModifica_' + i" type="time" formControlName="oraModifica" />
+              </div>
+              <div class="form-group">
+                <label [for]="'idVersionePrec_' + i">ID Versione Precedente</label>
+                <input [id]="'idVersionePrec_' + i" type="text" formControlName="idVersionePrec" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <button type="button" (click)="addTracciatura()" class="btn-outline">
+          + Aggiungi Filtro Modifica
+        </button>
+      </div>
+    </div>
+  </details>
+</fieldset>

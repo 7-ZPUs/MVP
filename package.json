@@ -3,7 +3,9 @@
   "version": "0.1.0",
   "description": "DIP Viewer – Electron desktop application for reading and searching DIP packages",
   "main": "dist/main.js",
+  "author": "7-ZPUs Engineering Team",
   "scripts": {
+    "postinstall": "electron-builder install-app-deps",
     "setup:download-models": "ts-node --project tsconfig.json core/src/scripts/download-models.ts",
     "copy:models": "cpx \"core/src/models/**/*\" dist/core/src/models",
     "prestart": "electron-rebuild -f -w better-sqlite3",
@@ -23,7 +25,9 @@
     "test:renderer:coverage": "cd renderer && npx ng test --watch=false --coverage",
     "test": "npm run test:core && npm run test:renderer",
     "test:coverage": "npm run test:core:coverage && npm run test:renderer:coverage",
-    "lint": "eslint . --ext .ts,.tsx"
+    "lint": "eslint . --ext .ts,.tsx",
+    "dist": "npm run build:all && electron-builder",
+    "dist:win": "npm run build:all && electron-rebuild --arch x64 --platform win32 && electron-builder --win --x64"
   },
   "dependencies": {
     "@angular/animations": "^21.2.6",
@@ -32,15 +36,17 @@
     "@xenova/transformers": "^2.17.2",
     "adm-zip": "^0.5.10",
     "better-sqlite3": "^12.8.0",
-    "electron": "^30.0.0",
     "fast-xml-parser": "^4.3.6",
     "onnxruntime-node": "^1.17.3",
     "reflect-metadata": "^0.2.2",
     "sharp": "^0.34.5",
-    "tsyringe": "^4.8.0"
+    "sqlite-vss": "^0.1.2",
+    "tsyringe": "^4.8.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@angular/cli": "^21.2.5",
+    "@playwright/test": "^1.59.1",
     "@types/adm-zip": "^0.5.5",
     "@types/better-sqlite3": "^7.6.8",
     "@types/node": "^20.19.37",
@@ -48,13 +54,73 @@
     "cpx": "^1.5.0",
     "defaults": "^3.0.0",
     "electron": "^30.0.0",
+    "electron-builder": "^26.8.1",
     "electron-rebuild": "^3.2.9",
     "eslint": "^10.0.3",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.5",
     "vitest": "^1.6.1"
   },
-  "optionalDependencies": {
-    "sqlite-vss": "^0.1.2"
+  "build": {
+    "appId": "com.dipreader.app",
+    "productName": "DIPReader",
+    "npmRebuild": true,
+    "directories": {
+      "output": "dist-deploy"
+    },
+    "electronLanguages": [
+      "en",
+      "it"
+    ],
+    "files": [
+      "dist/**/*",
+      "package.json",
+      "schema.sql",
+      "!**/libonnxruntime_providers_cuda.so",
+      "!**/libonnxruntime_providers_tensorrt.so"
+    ],
+    "extraResources": [
+      {
+        "from": "core/src/models",
+        "to": "models",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "db/schema.sql",
+        "to": "schema.sql"
+      }
+    ],
+    "linux": {
+      "target": "AppImage",
+      "icon": "resources/icona.png",
+      "category": "Utility",
+      "executableName": "dip-reader",
+      "desktop": {
+        "entry": {
+          "StartupWMClass": "dip-reader"
+        }
+      }
+    },
+    "win": {
+      "target": "portable",
+      "icon": "resources/icona.png",
+      "publish": null,
+      "verifyUpdateCodeSignature": false,
+      "forceCodeSigning": false
+    },
+    "mac": {
+      "target": "dmg",
+      "identity": null,
+      "icon": "resources/icona.icns"
+    },
+    "asar": true,
+    "asarUnpack": [
+      "**/better-sqlite3/**/*",
+      "**/onnxruntime-node/**/*",
+      "**/@xenova/transformers/node_modules/onnxruntime-node/**/*",
+      "**/sharp/**/*"
+    ]
   }
 }

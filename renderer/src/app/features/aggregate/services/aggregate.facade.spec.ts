@@ -115,13 +115,20 @@ describe('AggregateFacade', () => {
   it('dovrebbe chiamare il gateway e salvare in cache se i dati non sono presenti (Cache Miss)', async () => {
     // Arrange
     (mockCache.get as Mock).mockReturnValue(null);
-    (mockGateway.invoke as Mock).mockResolvedValue(mockAggregateData);
+    (mockGateway.invoke as Mock)
+      .mockResolvedValueOnce({ id: 123, uuid: 'PROC-123', integrityStatus: 'VALID', metadata: [] })
+      .mockResolvedValueOnce([]);
 
     // Act
     await facade.loadAggregate('123');
 
     // Assert
     expect(mockGateway.invoke).toHaveBeenCalledWith(IpcChannels.BROWSE_GET_PROCESS_BY_ID, 123, null);
+    expect(mockGateway.invoke).toHaveBeenCalledWith(
+      IpcChannels.BROWSE_GET_DOCUMENTS_BY_PROCESS,
+      123,
+      null,
+    );
     expect(mockCache.set).toHaveBeenCalledWith('aggregate:123', expect.any(Object), 300000); // 5 min = 300000 ms
     expect(facade.getState()().detail).toBeTruthy();
   });

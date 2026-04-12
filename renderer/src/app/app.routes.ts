@@ -3,7 +3,7 @@ import { AppShellComponent as NavigationShellComponent } from './features/naviga
 import { NavigationHomeComponent } from './features/navigation/ui/dumb/navigation-home.component';
 
 export const routes: Routes = [
-   {
+  {
     path: '',
     component: NavigationShellComponent,
     children: [
@@ -18,12 +18,17 @@ export const routes: Routes = [
       },
       {
         path: 'search',
-        loadChildren: () => import('./feature/search/app.search.routes').then((m) => m.routes),
+        loadChildren: () => import('./features/search/app.search.routes').then((m) => m.routes),
       },
       {
         path: 'detail',
         loadChildren: () =>
           import('./features/item-detail/item-detail.routes').then((m) => m.itemDetailRoutes),
+      },
+      {
+        path: 'integrity-dashboard',
+        loadChildren: () =>
+          import('./features/verification/verification.routes').then((m) => m.VERIFICATION_ROUTES),
       },
     ],
   },

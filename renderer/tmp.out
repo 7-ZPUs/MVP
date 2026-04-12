@@ -1,0 +1,99 @@
+
+[1m[46m RUN [49m[22m [36mv4.1.1 [39m[90m/workspaces/MVP/renderer[39m
+
+ [31m❯[39m src/app/feature/export-manager/ui/smart/export-page/export-page.component.spec.ts [2m([22m[2m29 tests[22m[2m | [22m[31m29 failed[39m[2m)[22m[32m 144[2mms[22m[39m
+[31m       [31m×[31m carica i fileIds dal gateway usando il documentId in input[39m[32m 11[2mms[22m[39m
+[31m       [31m×[31m non chiama il gateway se documentId non è un numero valido[39m[32m 108[2mms[22m[39m
+[31m       [31m×[31m chiama reset della facade al cambio di documentId[39m[32m 2[2mms[22m[39m
+[31m       [31m×[31m è visibile durante loading + multi-file[39m[32m 1[2mms[22m[39m
+[31m       [31m×[31m non è visibile con un solo file[39m[32m 1[2mms[22m[39m
+[31m       [31m×[31m mostra la coda quando ci sono elementi[39m[32m 1[2mms[22m[39m
+[31m       [31m×[31m nasconde la coda al click su close[39m[32m 1[2mms[22m[39m
+[31m       [31m×[31m è visibile quando la fase è SUCCESS[39m[32m 1[2mms[22m[39m
+[31m       [31m×[31m non è visibile in fase IDLE[39m[32m 1[2mms[22m[39m
+[31m       [31m×[31m non è visibile in fase PROCESSING[39m[32m 1[2mms[22m[39m
+[31m       [31m×[31m chiama reset al click su retry[39m[32m 1[2mms[22m[39m
+[31m       [31m×[31m nasconde il result al click su close[39m[32m 1[2mms[22m[39m
+[31m       [31m×[31m chiama exportFile direttamente senza mostrare il selettore[39m[32m 1[2mms[22m[39m
+[31m       [31m×[31m mostra il selettore download con tutti i file preselezionati[39m[32m 1[2mms[22m[39m
+[31m       [31m×[31m toggleDownloadFile deseleziona e riseleziona un file[39m[32m 1[2mms[22m[39m
+[31m       [31m×[31m confirmDownload chiama exportFiles con gli id selezionati[39m[32m 1[2mms[22m[39m
+[31m       [31m×[31m confirmDownload chiama exportFile (singolo) se è rimasto un solo id selezionato[39m[32m 1[2mms[22m[39m
+[31m       [31m×[31m confirmDownload non fa nulla se nessun file è selezionato[39m[32m 0[2mms[22m[39m
+[31m       [31m×[31m cancelDownload chiude il selettore e svuota lo stato[39m[32m 1[2mms[22m[39m
+[31m       [31m×[31m click sull'overlay chiama cancelDownload[39m[32m 0[2mms[22m[39m
+[31m       [31m×[31m chiama printDocument direttamente senza mostrare il selettore[39m[32m 1[2mms[22m[39m
+[31m       [31m×[31m non apre il selettore e non chiama la facade[39m[32m 1[2mms[22m[39m
+[31m       [31m×[31m mostra il selettore stampa con tutti i file preselezionati[39m[32m 1[2mms[22m[39m
+[31m       [31m×[31m togglePrintFile deseleziona e riseleziona un file[39m[32m 0[2mms[22m[39m
+[31m       [31m×[31m confirmPrint chiama printDocuments con gli id selezionati[39m[32m 1[2mms[22m[39m
+[31m       [31m×[31m confirmPrint non fa nulla se nessun file è selezionato[39m[32m 1[2mms[22m[39m
+[31m       [31m×[31m cancelPrint chiude il selettore e svuota lo stato[39m[32m 1[2mms[22m[39m
+[31m       [31m×[31m selectedDownloadCount riflette la dimensione del Set[39m[32m 1[2mms[22m[39m
+[31m       [31m×[31m selectedPrintCount riflette la dimensione del Set[39m[32m 1[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 29 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/app/feature/export-manager/ui/smart/export-page/export-page.component.spec.ts[2m > [22mExportPageComponent[2m > [22mngOnInit[2m > [22mcarica i fileIds dal gateway usando il documentId in input
+[31m[1mError[22m: Need to call TestBed.initTestEnvironment() first[39m
+[90m [2m❯[22m _TestBedImpl.compiler ../darwin_arm64-fastbuild-ST-fdfa778d11ba/bin/packages/core/testing/src/test_bed.ts:[2m718:13[22m[39m
+[90m [2m❯[22m _TestBedImpl.configureTestingModule ../darwin_arm64-fastbuild-ST-fdfa778d11ba/bin/packages/core/testing/src/test_bed.ts:[2m584:10[22m[39m
+[90m [2m❯[22m Function.configureTestingModule ../darwin_arm64-fastbuild-ST-fdfa778d11ba/bin/packages/core/testing/src/test_bed.ts:[2m319:33[22m[39m
+[36m [2m❯[22m setup src/app/feature/export-manager/ui/smart/export-page/export-page.component.spec.ts:[2m69:17[22m[39m
+    [90m 67|[39m   [35mconst[39m mockGateway [33m=[39m [34mmakeMockGateway[39m(files)[33m;[39m
+    [90m 68|[39m
+    [90m 69|[39m   [35mawait[39m [33mTestBed[39m[33m.[39m[34mconfigureTestingModule[39m({
+    [90m   |[39m                 [31m^[39m
+    [90m 70|[39m     imports[33m:[39m [[33mExportPageComponent[39m][33m,[39m
+    [90m 71|[39m     providers[33m:[39m [
+[90m [2m❯[22m src/app/feature/export-manager/ui/smart/export-page/export-page.component.spec.ts:[2m98:37[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/29]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/app/feature/export-manager/ui/smart/export-page/export-page.component.spec.ts[2m > [22mExportPageComponent[2m > [22mngOnInit[2m > [22mnon chiama il gateway se documentId non è un numero valido
+[41m[1m FAIL [22m[49m src/app/feature/export-manager/ui/smart/export-page/export-page.component.spec.ts[2m > [22mExportPageComponent[2m > [22mngOnInit[2m > [22mchiama reset della facade al cambio di documentId
+[41m[1m FAIL [22m[49m src/app/feature/export-manager/ui/smart/export-page/export-page.component.spec.ts[2m > [22mExportPageComponent[2m > [22moverlay progress[2m > [22mè visibile durante loading + multi-file
+[41m[1m FAIL [22m[49m src/app/feature/export-manager/ui/smart/export-page/export-page.component.spec.ts[2m > [22mExportPageComponent[2m > [22moverlay progress[2m > [22mnon è visibile con un solo file
+[41m[1m FAIL [22m[49m src/app/feature/export-manager/ui/smart/export-page/export-page.component.spec.ts[2m > [22mExportPageComponent[2m > [22moverlay queue[2m > [22mmostra la coda quando ci sono elementi
+[41m[1m FAIL [22m[49m src/app/feature/export-manager/ui/smart/export-page/export-page.component.spec.ts[2m > [22mExportPageComponent[2m > [22moverlay queue[2m > [22mnasconde la coda al click su close
+[41m[1m FAIL [22m[49m src/app/feature/export-manager/ui/smart/export-page/export-page.component.spec.ts[2m > [22mExportPageComponent[2m > [22moverlay result[2m > [22mè visibile quando la fase è SUCCESS
+[41m[1m FAIL [22m[49m src/app/feature/export-manager/ui/smart/export-page/export-page.component.spec.ts[2m > [22mExportPageComponent[2m > [22moverlay result[2m > [22mnon è visibile in fase IDLE
+[41m[1m FAIL [22m[49m src/app/feature/export-manager/ui/smart/export-page/export-page.component.spec.ts[2m > [22mExportPageComponent[2m > [22moverlay result[2m > [22mnon è visibile in fase PROCESSING
+[41m[1m FAIL [22m[49m src/app/feature/export-manager/ui/smart/export-page/export-page.component.spec.ts[2m > [22mExportPageComponent[2m > [22moverlay result[2m > [22mchiama reset al click su retry
+[41m[1m FAIL [22m[49m src/app/feature/export-manager/ui/smart/export-page/export-page.component.spec.ts[2m > [22mExportPageComponent[2m > [22moverlay result[2m > [22mnasconde il result al click su close
+[41m[1m FAIL [22m[49m src/app/feature/export-manager/ui/smart/export-page/export-page.component.spec.ts[2m > [22mExportPageComponent[2m > [22monExport — file singolo[2m > [22mchiama exportFile direttamente senza mostrare il selettore
+[41m[1m FAIL [22m[49m src/app/feature/export-manager/ui/smart/export-page/export-page.component.spec.ts[2m > [22mExportPageComponent[2m > [22monExport — file multipli[2m > [22mmostra il selettore download con tutti i file preselezionati
+[41m[1m FAIL [22m[49m src/app/feature/export-manager/ui/smart/export-page/export-page.component.spec.ts[2m > [22mExportPageComponent[2m > [22monExport — file multipli[2m > [22mtoggleDownloadFile deseleziona e riseleziona un file
+[41m[1m FAIL [22m[49m src/app/feature/export-manager/ui/smart/export-page/export-page.component.spec.ts[2m > [22mExportPageComponent[2m > [22monExport — file multipli[2m > [22mconfirmDownload chiama exportFiles con gli id selezionati
+[41m[1m FAIL [22m[49m src/app/feature/export-manager/ui/smart/export-page/export-page.component.spec.ts[2m > [22mExportPageComponent[2m > [22monExport — file multipli[2m > [22mconfirmDownload chiama exportFile (singolo) se è rimasto un solo id selezionato
+[41m[1m FAIL [22m[49m src/app/feature/export-manager/ui/smart/export-page/export-page.component.spec.ts[2m > [22mExportPageComponent[2m > [22monExport — file multipli[2m > [22mconfirmDownload non fa nulla se nessun file è selezionato
+[41m[1m FAIL [22m[49m src/app/feature/export-manager/ui/smart/export-page/export-page.component.spec.ts[2m > [22mExportPageComponent[2m > [22monExport — file multipli[2m > [22mcancelDownload chiude il selettore e svuota lo stato
+[41m[1m FAIL [22m[49m src/app/feature/export-manager/ui/smart/export-page/export-page.component.spec.ts[2m > [22mExportPageComponent[2m > [22monExport — file multipli[2m > [22mclick sull'overlay chiama cancelDownload
+[41m[1m FAIL [22m[49m src/app/feature/export-manager/ui/smart/export-page/export-page.component.spec.ts[2m > [22mExportPageComponent[2m > [22monPrint — file singolo stampabile[2m > [22mchiama printDocument direttamente senza mostrare il selettore
+[41m[1m FAIL [22m[49m src/app/feature/export-manager/ui/smart/export-page/export-page.component.spec.ts[2m > [22mExportPageComponent[2m > [22monPrint — nessun file stampabile[2m > [22mnon apre il selettore e non chiama la facade
+[41m[1m FAIL [22m[49m src/app/feature/export-manager/ui/smart/export-page/export-page.component.spec.ts[2m > [22mExportPageComponent[2m > [22monPrint — file multipli[2m > [22mmostra il selettore stampa con tutti i file preselezionati
+[41m[1m FAIL [22m[49m src/app/feature/export-manager/ui/smart/export-page/export-page.component.spec.ts[2m > [22mExportPageComponent[2m > [22monPrint — file multipli[2m > [22mtogglePrintFile deseleziona e riseleziona un file
+[41m[1m FAIL [22m[49m src/app/feature/export-manager/ui/smart/export-page/export-page.component.spec.ts[2m > [22mExportPageComponent[2m > [22monPrint — file multipli[2m > [22mconfirmPrint chiama printDocuments con gli id selezionati
+[41m[1m FAIL [22m[49m src/app/feature/export-manager/ui/smart/export-page/export-page.component.spec.ts[2m > [22mExportPageComponent[2m > [22monPrint — file multipli[2m > [22mconfirmPrint non fa nulla se nessun file è selezionato
+[41m[1m FAIL [22m[49m src/app/feature/export-manager/ui/smart/export-page/export-page.component.spec.ts[2m > [22mExportPageComponent[2m > [22monPrint — file multipli[2m > [22mcancelPrint chiude il selettore e svuota lo stato
+[41m[1m FAIL [22m[49m src/app/feature/export-manager/ui/smart/export-page/export-page.component.spec.ts[2m > [22mExportPageComponent[2m > [22mcomputed selectedDownloadCount e selectedPrintCount[2m > [22mselectedDownloadCount riflette la dimensione del Set
+[41m[1m FAIL [22m[49m src/app/feature/export-manager/ui/smart/export-page/export-page.component.spec.ts[2m > [22mExportPageComponent[2m > [22mcomputed selectedDownloadCount e selectedPrintCount[2m > [22mselectedPrintCount riflette la dimensione del Set
+[31m[1mTypeError[22m: Cannot read properties of null (reading 'ngModule')[39m
+[90m [2m❯[22m ngModule ../darwin_arm64-fastbuild-ST-fdfa778d11ba/bin/packages/core/src/render3/jit/util.ts:[2m18:37[22m[39m
+[90m [2m❯[22m isModuleWithProviders ../darwin_arm64-fastbuild-ST-fdfa778d11ba/bin/packages/core/src/render3/jit/module.ts:[2m683:6[22m[39m
+[90m [2m❯[22m map ../darwin_arm64-fastbuild-ST-fdfa778d11ba/bin/packages/core/src/render3/jit/module.ts:[2m154:13[22m[39m
+[90m [2m❯[22m NG_MOD_DEF ../darwin_arm64-fastbuild-ST-fdfa778d11ba/bin/packages/core/src/render3/def_getters.ts:[2m18:14[22m[39m
+[90m [2m❯[22m getNgModuleDef ../darwin_arm64-fastbuild-ST-fdfa778d11ba/bin/packages/core/src/render3/def_getters.ts:[2m22:22[22m[39m
+[90m [2m❯[22m getNgModuleDefOrThrow ../darwin_arm64-fastbuild-ST-fdfa778d11ba/bin/packages/core/src/render3/jit/module.ts:[2m257:18[22m[39m
+[90m [2m❯[22m verifySemanticsOfNgModuleDef ../darwin_arm64-fastbuild-ST-fdfa778d11ba/bin/packages/core/src/render3/jit/module.ts:[2m200:21[22m[39m
+[90m [2m❯[22m TestBedCompiler.applyProviderOverridesInScope ../darwin_arm64-fastbuild-ST-fdfa778d11ba/bin/packages/core/testing/src/test_bed_compiler.ts:[2m627:31[22m[39m
+[90m [2m❯[22m TestBedCompiler.compileTestModule ../darwin_arm64-fastbuild-ST-fdfa778d11ba/bin/packages/core/testing/src/test_bed_compiler.ts:[2m987:10[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/29]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m29 failed[39m[22m[90m (29)[39m
+[2m   Start at [22m 21:16:02
+[2m   Duration [22m 81.68s[2m (transform 7.82s, setup 64ms, import 21.96s, tests 144ms, environment 39.65s)[22m
+

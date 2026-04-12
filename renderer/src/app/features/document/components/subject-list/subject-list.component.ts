@@ -1,29 +1,53 @@
 import { Component, input } from '@angular/core';
 import { Subject, SubjectType } from '../../domain/document.models';
 import { KeyValuePipe } from '@angular/common';
+import { toSpacedMetadataLabel } from '../../../../shared/utils/custom-metadata-label.util';
 
 @Component({
   selector: 'app-subject-list',
   standalone: true,
   imports: [KeyValuePipe],
   template: `
-    <div class="metadata-card">
-      <h3>Soggetti</h3>
+    <div class="metadata-card" data-testid="subjects-card">
+      <h3 data-testid="subjects-heading">Soggetti</h3>
       @if (!subjects() || subjects()!.length === 0) {
-        <p class="empty-message">Nessun soggetto presente.</p>
+        <p class="empty-message" data-testid="subjects-empty">Nessun soggetto presente.</p>
       } @else {
-        <div class="subject-grid">
+        <div class="subject-grid" data-testid="subjects-grid">
           @for (subject of subjects(); track subject.ruolo + subject.tipo) {
-            <div class="subject-card">
-              <div class="card-header">
-                <span class="role">{{ subject.ruolo }}</span>
-                <span class="type-badge">{{ formatType(subject.tipo) }}</span>
+            <div
+              class="subject-card"
+              [attr.data-testid]="'subject-card-' + toTestIdSuffix(subject.ruolo)"
+            >
+              <div
+                class="card-header"
+                [attr.data-testid]="'subject-header-' + toTestIdSuffix(subject.ruolo)"
+              >
+                <span class="role" data-testid="subject-role">{{
+                  formatLabel(subject.ruolo)
+                }}</span>
+                <span class="type-badge" data-testid="subject-type">{{
+                  formatType(subject.tipo)
+                }}</span>
               </div>
-              <div class="card-body">
+              <div
+                class="card-body"
+                [attr.data-testid]="'subject-body-' + toTestIdSuffix(subject.ruolo)"
+              >
                 @for (campo of subject.campiSpecifici | keyvalue; track campo.key) {
-                  <div class="data-row">
-                    <span class="label">{{ campo.key }}:</span>
-                    <span class="value">{{ campo.value }}</span>
+                  <div
+                    class="data-row"
+                    [attr.data-testid]="
+                      'subject-field-' +
+                      toTestIdSuffix(subject.ruolo) +
+                      '-' +
+                      toTestIdSuffix(campo.key)
+                    "
+                  >
+                    <span class="label" data-testid="subject-field-label"
+                      >{{ formatLabel(campo.key) }}:</span
+                    >
+                    <span class="value" data-testid="subject-field-value">{{ campo.value }}</span>
                   </div>
                 }
               </div>
@@ -35,12 +59,16 @@ import { KeyValuePipe } from '@angular/common';
   `,
   styles: [
     `
+      :host {
+        display: block;
+        width: 100%;
+        margin-bottom: 1rem;
+      }
       .metadata-card {
         background: #f8fafc;
         border: 1px solid #e2e8f0;
         border-radius: 8px;
         padding: 1.25rem;
-        margin-bottom: 1rem;
       }
       .empty-message {
         color: #64748b;
@@ -48,8 +76,8 @@ import { KeyValuePipe } from '@angular/common';
         font-size: 0.9rem;
       }
       .subject-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        display: flex;
+        flex-direction: column;
         gap: 1rem;
         margin-top: 1rem;
       }
@@ -66,11 +94,15 @@ import { KeyValuePipe } from '@angular/common';
         display: flex;
         justify-content: space-between;
         align-items: center;
+        flex-wrap: wrap;
+        gap: 0.5rem;
       }
       .role {
         font-weight: 600;
         color: #0f172a;
         font-size: 0.95rem;
+        word-break: break-all;
+        overflow-wrap: break-word;
       }
       .type-badge {
         font-size: 0.75rem;
@@ -94,10 +126,14 @@ import { KeyValuePipe } from '@angular/common';
       .label {
         font-weight: 600;
         color: #64748b;
-        width: 120px;
+        width: 140px;
         flex-shrink: 0;
       }
       .value {
+        flex: 1;
+        min-width: 0;
+        word-break: break-word;
+        overflow-wrap: anywhere;
         color: #1e293b;
       }
     `,
@@ -106,7 +142,18 @@ import { KeyValuePipe } from '@angular/common';
 export class SubjectListComponent {
   subjects = input<Subject[]>();
 
+  formatLabel(value: string): string {
+    return toSpacedMetadataLabel(value) || value;
+  }
+
   formatType(tipo: SubjectType): string {
-    return tipo.replace(/_/g, ' ');
+    return tipo.replaceAll('_', ' ');
+  }
+
+  toTestIdSuffix(value: string): string {
+    return value
+      .toLowerCase()
+      .replaceAll(/[^a-z0-9]+/g, '-')
+      .replaceAll(/(^-|-$)/g, '');
   }
 }

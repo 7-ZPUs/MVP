@@ -5,61 +5,83 @@
  * Zero business logic: solo persistenza.
  *
  * Schema gestito:
- *   document            (id, uuid, integrity_status, process_id)
- *   document_metadata   (id, document_id, name, value, type)
+ *   document            (id, uuid, integrity_status, process_id, metadata)
  */
 import { inject, injectable } from "tsyringe";
 import Database from "better-sqlite3";
-import {
-  DATABASE_PROVIDER_TOKEN,
-  DatabaseProvider,
-} from "../repo/impl/DatabaseProvider";
-import {
-  DocumentMapper,
-  DocumentPersistenceRow,
-} from "./mappers/DocumentMapper";
+import { SQLITE_DB_TOKEN } from "../../../db/DatabaseBootstrap";
 import { Document } from "../entity/Document";
 import { IntegrityStatusEnum } from "../value-objects/IntegrityStatusEnum";
-import { loadMetadata, saveMetadata } from "./MetadataHelper";
 import { IDocumentDAO } from "./IDocumentDAO";
-import { SearchFilters } from "../../../shared/domain/metadata";
-
-const METADATA_TABLE = "document_metadata";
-const METADATA_FK = "document_id";
+import { DocumentMetadataQueryBuilder } from "./query/DocumentMetadataQueryBuilder";
+import {
+  DocumentJsonPersistenceRow,
+  DocumentMapper,
+} from "./mappers/DocumentMapper";
+import { SearchDocumentsQuery } from "../entity/search/SearchQuery.model";
 
 @injectable()
 export class DocumentDAO implements IDocumentDAO {
-  private readonly db: Database.Database;
+  private readonly queryBuilder = new DocumentMetadataQueryBuilder();
 
   constructor(
-    @inject(DATABASE_PROVIDER_TOKEN)
-    private readonly dbProvider: DatabaseProvider,
-  ) {
-    this.db = dbProvider.getDb();
-  }
-
-  // -------------------------------------------------------------------------
-  // Private helpers
-  // -------------------------------------------------------------------------
-
-  private rowToEntity(row: DocumentPersistenceRow): Document {
-    const metadata = loadMetadata(this.db, METADATA_TABLE, METADATA_FK, row.id);
-    return DocumentMapper.fromPersistence(row, metadata);
-  }
+    @inject(SQLITE_DB_TOKEN)
+    private readonly db: Database.Database,
+  ) {}
 
   private toBuffer(vector: Float32Array): Buffer {
-    // converte un Float32Array in Buffer per sqlite-vss
-    return Buffer.from(vector.buffer);
+    return Buffer.from(vector.buffer, vector.byteOffset, vector.byteLength);
   }
 
-  // -------------------------------------------------------------------------
-  // IDocumentRepository implementation
-  // -------------------------------------------------------------------------
+  private bufferToVector(buffer: Buffer): Float32Array {
+    const view = new Float32Array(
+      buffer.buffer,
+      buffer.byteOffset,
+      buffer.byteLength / Float32Array.BYTES_PER_ELEMENT,
+    );
+    return new Float32Array(view);
+  }
+
+  private cosineSimilarity(a: Float32Array, b: Float32Array): number {
+    let dot = 0;
+    let normA = 0;
+    let normB = 0;
+
+    for (let i = 0; i < a.length; i += 1) {
+      dot += a[i] * b[i];
+      normA += a[i] * a[i];
+      normB += b[i] * b[i];
+    }
+
+    if (normA === 0 || normB === 0) {
+      return 0;
+    }
+
+    return dot / (Math.sqrt(normA) * Math.sqrt(normB));
+  }
+
+  private hasTable(tableName: string): boolean {
+    const row = this.db
+      .prepare<[string], { present: number }>(
+        `SELECT 1 as present
+         FROM sqlite_master
+         WHERE type = 'table' AND name = ?
+         LIMIT 1`,
+      )
+      .get(tableName);
+
+    return row?.present === 1;
+  }
+
+  private rowToEntity(row: DocumentJsonPersistenceRow): Document {
+    return DocumentMapper.fromJsonPersistence(row);
+  }
 
   getById(id: number): Document | null {
     const row = this.db
-      .prepare<[number], DocumentPersistenceRow>(
-        `SELECT id, uuid, integrity_status as integrityStatus, process_id as processId 
+      .prepare<[number], DocumentJsonPersistenceRow>(
+        `SELECT id, uuid, integrity_status as integrityStatus, process_id as processId,
+                metadata as metadataJson
                  FROM document WHERE id = ?`,
       )
       .get(id);
@@ -68,198 +90,261 @@ export class DocumentDAO implements IDocumentDAO {
 
   getByProcessId(processId: number): Document[] {
     const rows = this.db
-      .prepare<[number], DocumentPersistenceRow>(
-        `SELECT id, uuid, integrity_status as integrityStatus, process_id as processId
+      .prepare<[number], DocumentJsonPersistenceRow>(
+        `SELECT id, uuid, integrity_status as integrityStatus, process_id as processId,
+                metadata as metadataJson
                  FROM document WHERE process_id = ? ORDER BY id`,
       )
       .all(processId);
-    return rows.map((r) => this.rowToEntity(r));
+    return rows.map((row) => this.rowToEntity(row));
   }
 
   getByStatus(status: IntegrityStatusEnum): Document[] {
     const rows = this.db
-      .prepare<[string], DocumentPersistenceRow>(
-        `SELECT id, uuid, integrity_status as integrityStatus, process_id as processId
+      .prepare<[string], DocumentJsonPersistenceRow>(
+        `SELECT id, uuid, integrity_status as integrityStatus, process_id as processId,
+                metadata as metadataJson
                  FROM document WHERE integrity_status = ? ORDER BY id`,
       )
       .all(status);
-    return rows.map((r) => this.rowToEntity(r));
+    return rows.map((row) => this.rowToEntity(row));
   }
 
-  searchDocument(filters: SearchFilters): Document[] {
-    const conditions: string[] = [];
-    const values: unknown[] = [];
-
-    const addMeta = (key: string, value: unknown) => {
-      if (value === null || value === undefined) return;
-      conditions.push(`
-            EXISTS (
-                SELECT 1 FROM document_metadata
-                WHERE document_id = document.id
-                AND name = ?
-                AND value = ?
-            )
-        `);
-      values.push(key, String(value));
-    };
-
-    // --- common ---
-    const c = filters.common;
-    if (c) {
-      addMeta("TipologiaDocumentale", c.tipoDocumento);
-      addMeta("Note", c.note);
-      addMeta("ChiaveDescrittiva", c.chiaveDescrittiva?.oggetto);
-      addMeta("ParoleChiave", c.chiaveDescrittiva?.paroleChiave);
-      addMeta("IndiceDiClassificazione", c.classificazione?.codice);
-      addMeta("Descrizione", c.classificazione?.descrizione);
-      addMeta("TempoDiConservazione", c.conservazione?.valore);
+  searchDocument(filters: SearchDocumentsQuery): Document[] {
+    const builtQuery = this.queryBuilder.build(filters);
+    if (builtQuery.sql.length === 0) {
+      return [];
     }
-
-    // --- diDai ---
-    const d = filters.diDai;
-    if (d) {
-      addMeta("NomeDelDocumento", d.nome);
-      addMeta("VersioneDelDocumento", d.versione);
-      addMeta("IdIdentificativoDocumentoPrimario", d.idPrimario);
-      addMeta("TipologiaDocumentale", d.tipologia);
-      addMeta("ModalitaDiFormazione", d.modalitaFormazione);
-      addMeta("Riservato", d.riservatezza);
-      addMeta("Formato", d.identificativoFormato?.formato);
-      addMeta("NomeProdotto", d.identificativoFormato?.nomeProdottoCreazione);
-      addMeta(
-        "VersioneProdotto",
-        d.identificativoFormato?.versioneProdottoCreazione,
-      );
-      addMeta(
-        "Produttore",
-        d.identificativoFormato?.produttoreProdottoCreazione,
-      );
-      addMeta("FirmatoDigitalmente", d.verifica?.formatoDigitalmente);
-      addMeta("SigillatoElettronicamente", d.verifica?.sigillatoElettr);
-      addMeta("MarcaturaTemporale", d.verifica?.marcaturaTemporale);
-      addMeta(
-        "ConformitaCopieImmagineSuSupportoInformatico",
-        d.verifica?.conformitaCopie,
-      );
-      addMeta("TipologiaDiFlusso", d.registrazione?.tipologiaFlusso);
-      addMeta("TipoRegistro", d.registrazione?.tipologiaRegistro);
-      addMeta("DataRegistrazioneDocumento", d.registrazione?.dataRegistrazione);
-      addMeta(
-        "NumeroRegistrazioneDocumento",
-        d.registrazione?.numeroRegistrazione,
-      );
-      addMeta("CodiceRegistro", d.registrazione?.codiceRegistro);
-    }
-
-    // --- aggregate ---
-    const a = filters.aggregate;
-    if (a) {
-      addMeta("TipoAggregazione", a.tipoAggregazione);
-      addMeta("IdAggregazione", a.idAggregazione);
-      addMeta("TipoAgg", a.tipoFascicolo);
-      addMeta("DataApertura", a.dataApertura);
-      addMeta("DataChiusura", a.dataChiusura);
-      addMeta("Oggetto", a.procedimento?.materia);
-      addMeta("Denominazione", a.procedimento?.denominazioneProcedimento);
-      addMeta("TipoRuolo", a.assegnazione?.tipoAssegnazione);
-      addMeta("DataInizioAssegnazione", a.assegnazione?.dataInizioAssegn);
-      addMeta("DataFineAssegnazione", a.assegnazione?.dataFineAssegn);
-    }
-
-    // --- custom ---
-    if (filters.customMeta) {
-      addMeta(filters.customMeta.field, filters.customMeta.value);
-    }
-
-    if (conditions.length === 0) return [];
 
     const sql = `
             SELECT id, uuid,
                 integrity_status as integrityStatus,
-                process_id as processId
+                process_id as processId,
+                metadata as metadataJson
             FROM document
-            WHERE ${conditions.join(" AND ")}
+            WHERE ${builtQuery.sql}
         `;
 
     const rows = this.db
-      .prepare<unknown[], DocumentPersistenceRow>(sql)
-      .all(...values);
+      .prepare<unknown[], DocumentJsonPersistenceRow>(sql)
+      .all(...builtQuery.params);
     return rows.map((row) => this.rowToEntity(row));
   }
 
   async searchDocumentSemantic(
     queryVector: Float32Array,
   ): Promise<Array<{ document: Document; score: number }>> {
-    const rows = this.db // interroga la tabella virtuale usando vss_search per trovare i documenti più simili al vettore di query
-      .prepare<[Buffer, number], { rowid: number; distance: number }>(
-        `SELECT rowid, distance
-                 FROM vss_documents
-                 WHERE vss_search(embedding, ?)
-                 LIMIT ?`,
-      )
-      .all(this.toBuffer(queryVector), 10); // to buffer perchè sqlite-vss si aspetta un buffer, non un Float32Array.
+    if (queryVector.length === 0 || !this.hasTable("document_vector")) {
+      return [];
+    }
 
-    return rows // per ogni risultato, recupera il documento originale usando getById e calcola un punteggio di similarità (1 - distanza)
-      .map(({ rowid, distance }) => {
-        const doc = this.getById(rowid);
+    const rows = this.db
+      .prepare<
+        [],
+        { documentId: number; embedding: Buffer }
+      >("SELECT document_id as documentId, embedding FROM document_vector")
+      .all();
+
+    return rows
+      .map(({ documentId, embedding }) => {
+        const candidateVector = this.bufferToVector(embedding);
+        if (candidateVector.length !== queryVector.length) {
+          return null;
+        }
+
+        const doc = this.getById(documentId);
         if (!doc) return null;
-        return { document: doc, score: 1 - distance };
+
+        return {
+          document: doc,
+          score: this.cosineSimilarity(queryVector, candidateVector),
+        };
       })
+      .sort((a, b) => (b?.score ?? -Infinity) - (a?.score ?? -Infinity))
+      .slice(0, 10)
       .filter((r): r is { document: Document; score: number } => r !== null);
   }
 
+  getDistinctCustomMetadataKeys(dipId: number | null): string[] {
+    const rows = this.db
+      .prepare<
+        [number | null, number | null, number | null, number | null],
+        { keyName: string }
+      >(
+        `
+          WITH direct_custom_keys AS (
+            SELECT DISTINCT dm.name AS keyName
+            FROM document_metadata dm
+            JOIN document_metadata parent_dm ON parent_dm.id = dm.parent_id
+            JOIN document d ON d.id = dm.document_id
+            JOIN process p ON p.id = d.process_id
+            JOIN document_class dc ON dc.id = p.document_class_id
+            WHERE (? IS NULL OR dc.dip_id = ?)
+              AND parent_dm.name IN ('CustomMetadata', 'ArchimemoData')
+
+            UNION
+
+            SELECT DISTINCT pm.name AS keyName
+            FROM process_metadata pm
+            JOIN process_metadata parent_pm ON parent_pm.id = pm.parent_id
+            JOIN process p ON p.id = pm.process_id
+            JOIN document_class dc ON dc.id = p.document_class_id
+            WHERE (? IS NULL OR dc.dip_id = ?)
+              AND parent_pm.name IN ('CustomMetadata', 'ArchimemoData')
+          )
+          SELECT DISTINCT TRIM(keyName) AS keyName
+          FROM direct_custom_keys
+          WHERE keyName IS NOT NULL
+            AND TRIM(keyName) <> ''
+            AND keyName NOT IN ('CustomMetadata', 'ArchimemoData')
+          ORDER BY keyName COLLATE NOCASE ASC
+        `,
+      )
+      .all(dipId, dipId, dipId, dipId);
+
+    const directKeys = rows.map((row) => row.keyName);
+
+    const documentJsonRows = this.db
+      .prepare<[number | null, number | null], { metadataJson: string }>(
+        `
+          SELECT d.metadata as metadataJson
+          FROM document d
+          JOIN process p ON p.id = d.process_id
+          JOIN document_class dc ON dc.id = p.document_class_id
+          WHERE (? IS NULL OR dc.dip_id = ?)
+        `,
+      )
+      .all(dipId, dipId);
+
+    const jsonDerivedKeys = new Set<string>();
+    for (const row of documentJsonRows) {
+      DocumentDAO.collectCustomKeysFromDocumentJson(row.metadataJson, jsonDerivedKeys);
+    }
+
+    return Array.from(new Set([...directKeys, ...Array.from(jsonDerivedKeys)])).sort((a, b) =>
+      a.localeCompare(b),
+    );
+  }
+
   getIndexedDocumentsCount(): number {
+    if (!this.hasTable("document_vector")) {
+      return 0;
+    }
+
     const row = this.db
       .prepare<
         [],
         { count: number }
-      >("SELECT count(*) as count FROM vss_documents")
+      >("SELECT count(*) as count FROM document_vector")
       .get();
     return row?.count ?? 0;
   }
 
   save(document: Document): Document {
-    const metadata = document.getMetadata();
+    const metadataJson = JSON.stringify(
+      DocumentMapper.metadataToJson(document.getMetadata()),
+    );
 
     const result = this.db
       .prepare(
         `
-                INSERT INTO document (uuid, integrity_status, process_id) 
-                VALUES (?, ?, (SELECT id FROM process WHERE uuid = ?))
-                ON CONFLICT(uuid) DO UPDATE SET 
-                    process_id = excluded.process_id,
-                    integrity_status = excluded.integrity_status
+                INSERT INTO document (uuid, integrity_status, process_id, metadata) 
+                VALUES (?, ?, (SELECT id FROM process WHERE uuid = ?), ?)
             `,
       )
       .run(
         document.getUuid(),
         IntegrityStatusEnum.UNKNOWN,
         document.getProcessUuid(),
+        metadataJson,
       );
 
-    let id = result.lastInsertRowid as number;
-    if (!id) {
-      const row = this.db
-        .prepare("SELECT id FROM document WHERE uuid = ?")
-        .get(document.getUuid()) as { id: number };
-      if (row) {
-        id = row.id;
-      }
-    }
-
-    // Clean up old metadata before inserting new set
-    this.db
-      .prepare(`DELETE FROM ${METADATA_TABLE} WHERE ${METADATA_FK} = ?`)
-      .run(id);
-
-    saveMetadata(this.db, METADATA_TABLE, METADATA_FK, id, metadata);
-
-    return this.getById(id)!;
+    document.setId(Number(result.lastInsertRowid));
+    return document;
   }
 
   updateIntegrityStatus(id: number, status: IntegrityStatusEnum): void {
     this.db
       .prepare("UPDATE document SET integrity_status = ? WHERE id = ?")
       .run(status, id);
+  }
+
+  private static collectCustomKeysFromDocumentJson(
+    metadataJson: string,
+    out: Set<string>,
+  ): void {
+    if (!metadataJson || typeof metadataJson !== "string") {
+      return;
+    }
+
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(metadataJson);
+    } catch {
+      return;
+    }
+
+    const customContainers = new Set(["CustomMetadata", "ArchimemoData"]);
+    DocumentDAO.walkAndCollectCustomKeys(parsed, customContainers, out);
+  }
+
+  private static walkAndCollectCustomKeys(
+    node: unknown,
+    customContainers: Set<string>,
+    out: Set<string>,
+  ): void {
+    if (Array.isArray(node)) {
+      for (const child of node) {
+        DocumentDAO.walkAndCollectCustomKeys(child, customContainers, out);
+      }
+      return;
+    }
+
+    if (!DocumentDAO.isPlainObject(node)) {
+      return;
+    }
+
+    for (const [key, value] of Object.entries(node)) {
+      if (customContainers.has(key)) {
+        DocumentDAO.addDirectKeysFromCustomContainer(value, customContainers, out);
+      }
+      DocumentDAO.walkAndCollectCustomKeys(value, customContainers, out);
+    }
+  }
+
+  private static addDirectKeysFromCustomContainer(
+    value: unknown,
+    customContainers: Set<string>,
+    out: Set<string>,
+  ): void {
+    if (Array.isArray(value)) {
+      for (const item of value) {
+        if (DocumentDAO.isPlainObject(item)) {
+          DocumentDAO.addObjectKeys(item, customContainers, out);
+        }
+      }
+      return;
+    }
+
+    if (DocumentDAO.isPlainObject(value)) {
+      DocumentDAO.addObjectKeys(value, customContainers, out);
+    }
+  }
+
+  private static addObjectKeys(
+    value: Record<string, unknown>,
+    customContainers: Set<string>,
+    out: Set<string>,
+  ): void {
+    for (const key of Object.keys(value)) {
+      const trimmed = key.trim();
+      if (trimmed.length > 0 && !customContainers.has(trimmed)) {
+        out.add(trimmed);
+      }
+    }
+  }
+
+  private static isPlainObject(value: unknown): value is Record<string, unknown> {
+    return !!value && typeof value === "object" && !Array.isArray(value);
   }
 }

@@ -1,4 +1,4 @@
-import { Component, inject, input, signal, effect } from '@angular/core';
+import { Component, inject, input, output, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DOCUMENT_FACADE_TOKEN } from '../../contracts/IDocumentFacade';
 import { AppError, ErrorCode, ErrorCategory, ErrorSeverity } from '../../../../shared/domain';
@@ -13,7 +13,11 @@ import { ErrorDialogComponent } from '../../../../shared/components/error-dialog
   template: `
     <div class="viewer-wrapper">
       @if (error(); as err) {
-        <app-error-dialog [error]="err" (onRetry)="loadBlob()"></app-error-dialog>
+        <app-error-dialog
+          [error]="err"
+          (onRetry)="loadBlob()"
+          (onClose)="onCloseError()"
+        ></app-error-dialog>
       }
 
       <app-preview-panel
@@ -42,6 +46,7 @@ export class DocumentViewerComponent {
 
   documentId = input.required<string>();
   mimeType = input.required<MimeType>();
+  closePreview = output<void>();
 
   // Stato interno per il Blob
   src = signal<Uint8Array | null>(null);
@@ -55,6 +60,10 @@ export class DocumentViewerComponent {
         this.loadBlob();
       }
     });
+  }
+
+  onCloseError() {
+    this.closePreview.emit();
   }
 
   async loadBlob() {
