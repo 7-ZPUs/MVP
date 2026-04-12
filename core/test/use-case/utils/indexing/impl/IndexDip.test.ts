@@ -2,7 +2,7 @@ import { DataMapper } from "../../../../../src/repo/impl/utils/DataMapper";
 import Database from "better-sqlite3";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-import { IndexDip } from "../../../../../src/use-case/utils/indexing/impl/IndexDip";
+import { IndexDipUC } from "../../../../../src/use-case/utils/indexing/impl/IndexDip";
 import { DipRepository } from "../../../../../src/repo/impl/DipRepository";
 import { DocumentClassRepository } from "../../../../../src/repo/impl/DocumentClassRepository";
 import { ProcessRepository } from "../../../../../src/repo/impl/ProcessRepository";
@@ -25,7 +25,7 @@ import { Vector } from "../../../../../src/entity/Vector";
 describe("IndexDip", () => {
   let db: Database.Database;
   let fileSystemProvider: IFileSystemProvider;
-  let useCase: IndexDip;
+  let useCase: IndexDipUC;
   let vectorRepository: IVectorRepository;
   let embeddingService: IEmbeddingService;
 
@@ -65,7 +65,7 @@ describe("IndexDip", () => {
       new DataMapper(),
     );
 
-    useCase = new IndexDip(
+    useCase = new IndexDipUC(
       packageReader,
       dipRepository,
       documentClassRepository,

@@ -8,15 +8,21 @@ import {
   IWordEmbedding,
   WORD_EMBEDDING_PORT_TOKEN,
 } from "../../repo/IWordEmbedding";
-import { IEmbeddingService as IEmbeddingService } from "../IEmbeddingService";
+import { IEmbeddingService } from "../IEmbeddingService";
 
-const CHUNK_SIZE = 500;
-const CHUNK_OVERLAP = 200;
-const MAX_TEXT_BYTES = 100_000;
-const MAX_EMBEDDING_CHUNKS = 8;
+export interface IEmbeddingConfiguration {
+  chunkSize: number;
+  chunkOverlap: number;
+  maxEmbeddingChunks: number;
+}
 
 @injectable()
 export class EmbeddingService implements IEmbeddingService {
+  private embeddingConfiguration: IEmbeddingConfiguration = {
+    chunkSize: 500,
+    chunkOverlap: 50,
+    maxEmbeddingChunks: 5,
+  };
   constructor(
     @inject(PACKAGE_READER_PORT_TOKEN)
     private readonly packageReader: IPackageReaderPort,
@@ -32,8 +38,15 @@ export class EmbeddingService implements IEmbeddingService {
       return null;
     }
 
-    const chunks = this.chunkText(text, CHUNK_SIZE, CHUNK_OVERLAP);
-    const limitedChunks = chunks.slice(0, MAX_EMBEDDING_CHUNKS);
+    const chunks = this.chunkText(
+      text,
+      this.embeddingConfiguration.chunkSize,
+      this.embeddingConfiguration.chunkOverlap,
+    );
+    const limitedChunks = chunks.slice(
+      0,
+      this.embeddingConfiguration.maxEmbeddingChunks,
+    );
     if (limitedChunks.length === 0) {
       return null;
     }
@@ -53,9 +66,13 @@ export class EmbeddingService implements IEmbeddingService {
     const stream = await this.packageReader.readFileBytes(filePath);
     const textParts: string[] = [];
     let processedBytes = 0;
+    const { chunkSize, chunkOverlap, maxEmbeddingChunks } =
+      this.embeddingConfiguration;
+    const maxTextBytes =
+      chunkSize * maxEmbeddingChunks - chunkOverlap * (maxEmbeddingChunks - 1);
 
     for await (const rawChunk of stream) {
-      const remainingBytes = MAX_TEXT_BYTES - processedBytes;
+      const remainingBytes = maxTextBytes - processedBytes;
       if (remainingBytes <= 0) {
         break;
       }
@@ -82,7 +99,6 @@ export class EmbeddingService implements IEmbeddingService {
     }
 
     const text = textParts.join(" ").trim();
-
     return text;
   }
 
@@ -133,5 +149,9 @@ export class EmbeddingService implements IEmbeddingService {
     }
 
     return accumulator;
+  }
+
+  public setEmbeddingConfiguration(config: IEmbeddingConfiguration): void {
+    this.embeddingConfiguration = config;
   }
 }

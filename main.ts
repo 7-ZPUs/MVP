@@ -22,13 +22,10 @@ import { app, BrowserWindow, ipcMain } from "electron";
 import { existsSync, rmSync } from "node:fs";
 import * as path from "node:path";
 import { IpcChannels } from "./shared/ipc-channels";
-import {
-  ApplicationBootstrapAdapter,
-  SQLITE_DB_TOKEN,
-} from "./db/DatabaseBootstrap";
+import { ApplicationBootstrap, SQLITE_DB_TOKEN } from "./db/DatabaseBootstrap";
 import {
   INDEX_DIP_TOKEN,
-  IIndexDip,
+  IIndexDipUC,
 } from "./core/src/use-case/utils/indexing/IIndexDip";
 
 // Disable GPU acceleration — required in headless/container environments
@@ -93,7 +90,12 @@ function resolveProductionDipPath(): string {
 
   const portableExeFile = process.env["PORTABLE_EXECUTABLE_FILE"];
   if (portableExeFile && existsSync(portableExeFile)) {
-    return path.dirname(portableExeFile);
+    const portableDir = path.dirname(portableExeFile);
+    console.log(
+      "[BOOTSTRAP] Windows portable executable file:",
+      portableExeFile,
+    );
+    return portableDir;
   }
 
   // 3. macOS: l'exe è dentro .app/Contents/MacOS/, risaliamo di 3 livelli
@@ -171,11 +173,11 @@ function exportDb(dstPath: string): void {
   });
 
   console.warn("[BOOTSTRAP] NODE_ENV =", process.env["NODE_ENV"]);
-  const lazyIndexDip: IIndexDip = {
+  const lazyIndexDip: IIndexDipUC = {
     execute: (dipPath: string) =>
-      container.resolve<IIndexDip>(INDEX_DIP_TOKEN).execute(dipPath),
+      container.resolve<IIndexDipUC>(INDEX_DIP_TOKEN).execute(dipPath),
   };
-  const bootstrapAdapter = new ApplicationBootstrapAdapter(lazyIndexDip);
+  const bootstrapAdapter = new ApplicationBootstrap(lazyIndexDip);
   process.env.DIP_PATH = dipPath;
   void bootstrapAdapter.bootstrap(dipPath);
 

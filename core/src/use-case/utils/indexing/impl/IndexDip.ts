@@ -1,4 +1,4 @@
-import { IIndexDip } from "../IIndexDip";
+import { IIndexDipUC } from "../IIndexDip";
 import { IndexResult } from "../IndexResult";
 import {
   IPackageReaderPort,
@@ -37,6 +37,7 @@ import {
 import { inject, injectable } from "tsyringe";
 import path from "node:path";
 import { Vector } from "../../../../entity/Vector";
+import { File } from "../../../../entity/File";
 
 /*
  * Implementation of the IndexDip use case.
@@ -44,9 +45,9 @@ import { Vector } from "../../../../entity/Vector";
  * Use the IndexDipBuilder to create an instance of this class with the required dependencies.
  */
 @injectable()
-export class IndexDip implements IIndexDip {
+export class IndexDipUC implements IIndexDipUC {
   private hasLoggedVectorWarning = false;
-
+  private dipPath!: string;
   constructor(
     @inject(PACKAGE_READER_PORT_TOKEN)
     private readonly packageReader: IPackageReaderPort,
@@ -68,71 +69,69 @@ export class IndexDip implements IIndexDip {
     private readonly transactionManager: ITransactionManager,
   ) {}
   public async execute(dipPath: string): Promise<IndexResult> {
+    this.dipPath = dipPath;
     return this.transactionManager.runInTransaction(async () => {
-      await this.indexDip(dipPath);
-      await this.indexDocumentClasses(dipPath);
-      await this.indexProcesses(dipPath);
-      await this.indexDocuments(dipPath);
-      await this.indexFiles(dipPath);
+      await this.indexDip();
+      await this.indexDocumentClasses();
+      await this.indexProcesses();
+      await this.indexDocuments();
+      await this.indexFiles();
       return { success: true };
     });
   }
 
-  private async indexDip(dipPath: string): Promise<IndexResult> {
-    const dip = await this.packageReader.readDip(dipPath);
+  private async indexDip(): Promise<IndexResult> {
+    const dip = await this.packageReader.readDip(this.dipPath);
     this.dipRepository.save(dip);
     return { success: true };
   }
 
-  private async indexDocumentClasses(dipPath: string): Promise<IndexResult> {
+  private async indexDocumentClasses(): Promise<IndexResult> {
     for await (const documentClass of this.packageReader.readDocumentClasses(
-      dipPath,
+      this.dipPath,
     )) {
       this.documentClassRepository.save(documentClass);
     }
     return { success: true };
   }
 
-  private async indexProcesses(dipPath: string): Promise<IndexResult> {
-    for await (const process of this.packageReader.readProcesses(dipPath)) {
+  private async indexProcesses(): Promise<IndexResult> {
+    for await (const process of this.packageReader.readProcesses(
+      this.dipPath,
+    )) {
       this.processRepository.save(process);
     }
     return { success: true };
   }
 
-  private async indexDocuments(dipPath: string): Promise<IndexResult> {
-    for await (const document of this.packageReader.readDocuments(dipPath)) {
+  private async indexDocuments(): Promise<IndexResult> {
+    for await (const document of this.packageReader.readDocuments(
+      this.dipPath,
+    )) {
       this.documentRepository.save(document);
     }
     return { success: true };
   }
 
-  private async indexFiles(dipPath: string): Promise<IndexResult> {
-    for await (const file of this.packageReader.readFiles(dipPath)) {
+  private async indexFiles(): Promise<IndexResult> {
+    for await (const file of this.packageReader.readFiles(this.dipPath)) {
       const savedFile = this.fileRepository.save(file);
       if (!savedFile.getIsMain()) {
         continue;
       }
 
-      await this.indexMainFileVector(
-        dipPath,
-        savedFile.getPath(),
-        savedFile.getDocumentId(),
-      );
+      await this.indexMainFileVector(savedFile);
     }
     return { success: true };
   }
 
-  private async indexMainFileVector(
-    dipPath: string,
-    relativeFilePath: string,
-    documentId: number | null,
-  ): Promise<void> {
-    if (documentId === null) {
+  private async indexMainFileVector(file: File): Promise<void> {
+    if (!file.getDocumentId()) {
+      console.warn("Error occurred while indexing main file vector.");
       return;
     }
 
-    const absoluteFilePath = path.join(dipPath, relativeFilePath);
+    const absoluteFilePath = path.join(this.dipPath, file.getPath());
     try {
       const embedding =
         await this.embeddingService.generateDocumentEmbedding(absoluteFilePath);
@@ -141,7 +140,9 @@ export class IndexDip implements IIndexDip {
         return;
       }
 
-      await this.vectorRepository.saveVector(new Vector(documentId, embedding));
+      await this.vectorRepository.saveVector(
+        new Vector(file.getDocumentId() as number, embedding),
+      );
     } catch (error) {
       try {
         if (!this.hasLoggedVectorWarning) {

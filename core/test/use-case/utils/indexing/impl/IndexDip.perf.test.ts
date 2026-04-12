@@ -5,7 +5,7 @@ import * as os from "node:os";
 import { describe, it, expect } from "vitest";
 import { performance } from "node:perf_hooks";
 
-import { IndexDip } from "../../../../../src/use-case/utils/indexing/impl/IndexDip";
+import { IndexDipUC } from "../../../../../src/use-case/utils/indexing/impl/IndexDip";
 import { XmlDipParser } from "../../../../../src/repo/impl/utils/XmlDipParser";
 import { FileSystemProvider } from "../../../../../src/repo/impl/utils/FileSystemProvider";
 import { LocalPackageReaderAdapter } from "../../../../../src/repo/impl/LocalPackageReaderAdapter";
@@ -98,7 +98,7 @@ describe("IndexDip use-case performance", () => {
         generateDocumentEmbedding: async () => null,
       };
 
-      const useCase = new IndexDip(
+      const useCase = new IndexDipUC(
         packageReader,
         dipRepository,
         documentClassRepository,

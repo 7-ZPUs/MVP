@@ -63,6 +63,11 @@ describe("EmbeddingService", () => {
     } as unknown as IWordEmbedding;
 
     const chunker = new EmbeddingService(packageReader, embeddingAdapter);
+    chunker.setEmbeddingConfiguration({
+      chunkSize: 500,
+      chunkOverlap: 50,
+      maxEmbeddingChunks: 8,
+    });
     const embedding = await chunker.generateDocumentEmbedding("/tmp/large.txt");
 
     expect(embedding).toBeInstanceOf(Float32Array);
