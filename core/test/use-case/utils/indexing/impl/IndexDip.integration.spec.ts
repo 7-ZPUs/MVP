@@ -4,7 +4,7 @@ import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
 
-import { IndexDip } from "../../../../../src/use-case/utils/indexing/impl/IndexDip";
+import { IndexDipUC } from "../../../../../src/use-case/utils/indexing/impl/IndexDip";
 import { XmlDipParser } from "../../../../../src/repo/impl/utils/XmlDipParser";
 import { FileSystemProvider } from "../../../../../src/repo/impl/utils/FileSystemProvider";
 import { LocalPackageReaderAdapter } from "../../../../../src/repo/impl/LocalPackageReaderAdapter";
@@ -27,6 +27,7 @@ import Database from "better-sqlite3";
 import { SqliteTransactionManager } from "../../../../../src/repo/impl/SqliteTransactionManager";
 import { IVectorRepository } from "../../../../../src/repo/IVectorRepository";
 import { IEmbeddingService } from "../../../../../src/services/IEmbeddingService";
+import { mock } from "node:test";
 
 // ---------------------------------------------------------------------------
 // Realistic DiP index XML — one DocumentClass, one AiP, two Documents
@@ -201,7 +202,7 @@ describe("Index use-case integration tests", () => {
       generateDocumentEmbedding: async () => null,
     };
 
-    const useCase = new IndexDip(
+    const useCase = new IndexDipUC(
       packageReader,
       dipRepository,
       documentClassRepository,

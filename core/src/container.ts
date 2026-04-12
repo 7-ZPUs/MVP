@@ -91,7 +91,7 @@ import { IntegrityVerificationService } from "./services/impl/IntegrityVerificat
 import { DOCUMENT_CHUNKER_TOKEN } from "./services/IEmbeddingService";
 import { EmbeddingService } from "./services/impl/EmbeddingService";
 import { INDEX_DIP_TOKEN } from "./use-case/utils/indexing/IIndexDip";
-import { IndexDip } from "./use-case/utils/indexing/impl/IndexDip";
+import { IndexDipUC } from "./use-case/utils/indexing/impl/IndexDip";
 import { SQLITE_DB_TOKEN } from "../../db/DatabaseBootstrap";
 
 container.register(PACKAGE_READER_PORT_TOKEN, {
@@ -116,7 +116,7 @@ container.register(INTEGRITY_VERIFICATION_SERVICE_TOKEN, {
   useClass: IntegrityVerificationService,
 });
 container.register(INDEX_DIP_TOKEN, {
-  useClass: IndexDip,
+  useClass: IndexDipUC,
 });
 
 container.register(DATA_MAPPER_TOKEN, { useClass: DataMapper });

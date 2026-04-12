@@ -4,7 +4,7 @@ import path from "node:path";
 import { container, inject } from "tsyringe";
 import {
   INDEX_DIP_TOKEN,
-  IIndexDip,
+  IIndexDipUC,
 } from "../core/src/use-case/utils/indexing/IIndexDip";
 import { app, webContents } from "electron";
 import { IpcChannels } from "../shared/ipc-channels";
@@ -17,7 +17,9 @@ import {
 export const SQLITE_DB_TOKEN = Symbol("SqliteDatabase");
 const EMBEDDING_DIMENSION = 384;
 
-async function loadSqliteVssExtensions(db: Database.Database): Promise<boolean> {
+async function loadSqliteVssExtensions(
+  db: Database.Database,
+): Promise<boolean> {
   const dynamicImport = new Function(
     "modulePath",
     "return import(modulePath)",
@@ -42,12 +44,12 @@ function ensureVectorSearchSchema(db: Database.Database): void {
   );
 }
 
-export class ApplicationBootstrapAdapter {
+export class ApplicationBootstrap {
   private bootstrapStatus: BootstrapStatus = BOOTSTRAP_LOADING_STATUS;
 
   constructor(
     @inject(INDEX_DIP_TOKEN)
-    private readonly indexDip: IIndexDip,
+    private readonly indexDipUC: IIndexDipUC,
   ) {}
 
   public isBootstrapCompleted(): boolean {
@@ -80,7 +82,7 @@ export class ApplicationBootstrapAdapter {
         throw new Error(`DIP directory not found: ${resolvedDipPath}`);
       }
 
-      await this.indexDip.execute(resolvedDipPath);
+      await this.indexDipUC.execute(resolvedDipPath);
       this.markBootstrapCompleted({ state: "success" });
     } catch (error) {
       const message =
@@ -96,7 +98,7 @@ export class ApplicationBootstrapAdapter {
     }
   }
 
-  bootstrapDatabase(appBasePath: string): void {
+  private bootstrapDatabase(appBasePath: string): void {
     // 1. Resolve Schema Path based on environment
     const basePath = app.isPackaged ? process.resourcesPath : appBasePath;
 

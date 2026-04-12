@@ -27,7 +27,7 @@ export class WordEmbedding implements IWordEmbedding {
   private embedder: unknown = null;
   private initialized = false;
 
-  async initialize(): Promise<void> {
+  public async initialize(): Promise<void> {
     if (this.initialized) return;
 
     if (!fs.existsSync(modelsPath)) {
