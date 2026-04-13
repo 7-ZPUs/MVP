@@ -51,6 +51,25 @@ const KNOWN_DOCUMENT_XSD_ROOT_BLOCKS = new Set<string>([
 ]);
 
 /**
+ * Helper to infer mime type from a metadata string or a file extension.
+ */
+function inferMimeType(mimeStr?: string, ext?: string): MimeType {
+  for (const val of [mimeStr, ext]) {
+    if (!val) continue;
+    const lowerVal = val.toLowerCase();
+    if (lowerVal.includes('pdf') || lowerVal === 'pdf') return MimeType.PDF;
+    if (
+      lowerVal.includes('image') ||
+      ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'].includes(lowerVal)
+    )
+      return MimeType.IMAGE;
+    if (lowerVal.includes('text') || ['txt', 'csv', 'md'].includes(lowerVal)) return MimeType.TEXT;
+    if (lowerVal.includes('xml') || lowerVal === 'xml') return MimeType.XML;
+  }
+  return MimeType.UNSUPPORTED;
+}
+
+/**
  * Maps the core identity details of the document.
  */
 function mapIdentityAndMimeType(
@@ -78,37 +97,9 @@ function mapIdentityAndMimeType(
   const extractedFileName = extractor.getString('NomeDelDocumento', fallbackFileName);
   const fileName = normalizeDisplayFileName(extractedFileName) || fallbackFileName;
 
-  // Mimetype can be found in metadata or fallback to file extension
-  let mimeType = MimeType.UNSUPPORTED;
   const mimeTypeFromMeta = extractor.getString('mimetype') ?? extractor.getString('mimeType');
-
-  if (mimeTypeFromMeta) {
-    const mimeStr = mimeTypeFromMeta.toLowerCase();
-    if (mimeStr.includes('pdf')) mimeType = MimeType.PDF;
-    else if (
-      mimeStr.includes('image') ||
-      ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'].includes(mimeStr)
-    )
-      mimeType = MimeType.IMAGE;
-    else if (mimeStr.includes('text') || ['txt', 'csv', 'md'].includes(mimeStr))
-      mimeType = MimeType.TEXT;
-    else if (mimeStr.includes('xml')) mimeType = MimeType.XML;
-  }
-
-  if (mimeType === MimeType.UNSUPPORTED) {
-    const ext = fileName.split('.').pop()?.toLowerCase();
-    if (ext) {
-      if (['pdf'].includes(ext)) {
-        mimeType = MimeType.PDF;
-      } else if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'].includes(ext)) {
-        mimeType = MimeType.IMAGE;
-      } else if (['txt', 'csv', 'md'].includes(ext)) {
-        mimeType = MimeType.TEXT;
-      } else if (['xml'].includes(ext)) {
-        mimeType = MimeType.XML;
-      }
-    }
-  }
+  const ext = fileName.split('.').pop();
+  const mimeType = inferMimeType(mimeTypeFromMeta, ext);
 
   return {
     id: rawId,
@@ -170,34 +161,25 @@ function mapClassification(extractor: MetadataExtractor): ClassificationInfo {
   };
 }
 
-/**
- * Maps registration data.
- */
-function mapRegistration(extractor: MetadataExtractor): RegistrationData {
-  // If TipoRegistro is wrapped in an object or contains the exact value directly, we try to extract it from the inner property
-  // or default to parsing the keys of the TipoRegistro object if it's complex.
-  const rawTipo = extractor.findValue('TipoRegistro');
+function parseTipoRegistro(rawTipo: unknown, extractor: MetadataExtractor): string {
   let tipoRegistro = 'N/A';
 
   if (typeof rawTipo === 'string') {
     tipoRegistro = rawTipo;
   } else if (Array.isArray(rawTipo)) {
-    // If it's an array of nodes, search inside it for the actual string value
     const innerNode = rawTipo.find((n) => n.name === 'TipoRegistro' || typeof n.value === 'string');
     if (innerNode && typeof innerNode.value === 'string') {
       tipoRegistro = innerNode.value;
     } else {
-      // Fallback: check if the first node contains the real TipoRegistro
       const firstObj = rawTipo[0];
       if (firstObj && Array.isArray(firstObj.value)) {
         const nestedNode = firstObj.value.find(
           (n: { name?: string; value?: unknown }) => n.name === 'TipoRegistro',
         );
-        if (nestedNode && typeof nestedNode.value === 'string') {
-          tipoRegistro = nestedNode.value;
-        } else {
-          tipoRegistro = firstObj.name || 'N/A';
-        }
+        tipoRegistro =
+          nestedNode && typeof nestedNode.value === 'string'
+            ? nestedNode.value
+            : firstObj.name || 'N/A';
       }
     }
   } else if (rawTipo && typeof rawTipo === 'object') {
@@ -205,9 +187,7 @@ function mapRegistration(extractor: MetadataExtractor): RegistrationData {
       tipoRegistro = String((rawTipo as Record<string, unknown>)['TipoRegistro']);
     } else {
       const keys = Object.keys(rawTipo).filter((k) => k !== '_' && k !== '$');
-      if (keys.length > 0) {
-        tipoRegistro = keys[0];
-      }
+      if (keys.length > 0) tipoRegistro = keys[0];
     }
   }
 
@@ -220,16 +200,21 @@ function mapRegistration(extractor: MetadataExtractor): RegistrationData {
     const repReg = extractor.findValue('Repertorio_Registro');
     if (Array.isArray(repReg)) {
       const trNode = repReg.find((n) => n.name === 'TipoRegistro');
-      if (trNode && typeof trNode.value === 'string') {
-        tipoRegistro = trNode.value;
-      }
+      if (trNode && typeof trNode.value === 'string') tipoRegistro = trNode.value;
     } else {
       const strRepReg = extractor.getString('Repertorio_Registro', '');
-      if (strRepReg && !strRepReg.includes('[object Object]')) {
-        tipoRegistro = strRepReg;
-      }
+      if (strRepReg && !strRepReg.includes('[object Object]')) tipoRegistro = strRepReg;
     }
   }
+
+  return tipoRegistro;
+}
+
+/**
+ * Maps registration data.
+ */
+function mapRegistration(extractor: MetadataExtractor): RegistrationData {
+  const tipoRegistro = parseTipoRegistro(extractor.findValue('TipoRegistro'), extractor);
 
   return {
     flusso: extractor.getString('TipologiaDiFlusso', 'N/A'),
@@ -294,6 +279,111 @@ function mapAttachments(extractor: MetadataExtractor): AttachmentData {
   };
 }
 
+function extractIpaFields(rExtractor: MetadataExtractor, campiSpecifici: Record<string, string>) {
+  const extractIpa = (field: string) => {
+    const block = rExtractor.findValue(field);
+    if (block && Array.isArray(block)) {
+      return String(
+        rExtractor.findValue('CodiceIPA', block) ||
+          rExtractor.findValue('Denominazione', block) ||
+          '',
+      );
+    }
+    return rExtractor.getString(field, '');
+  };
+  ['IPAAmm', 'IPAAOO', 'IPAUOR'].forEach((field) => {
+    if (rExtractor.findValue(field)) {
+      const val = extractIpa(field);
+      if (val && !val.includes('[object Object]')) campiSpecifici[field] = val;
+    }
+  });
+}
+
+function extractIndirizzi(rExtractor: MetadataExtractor, campiSpecifici: Record<string, string>) {
+  const indirizzi = rExtractor.findAllValues('IndirizziDigitaliDiRiferimento');
+  if (indirizzi.length > 0) {
+    campiSpecifici['IndirizziDigitaliDiRiferimento'] = indirizzi.join(', ');
+  }
+}
+
+function parseSubjectDetails(rExtractor: MetadataExtractor): {
+  tipo: SubjectType;
+  campiSpecifici: Record<string, string>;
+} {
+  const campiSpecifici: Record<string, string> = {};
+
+  if (rExtractor.findValue('PF') !== undefined) {
+    campiSpecifici['Nome'] = rExtractor.getString('Nome');
+    campiSpecifici['Cognome'] = rExtractor.getString('Cognome');
+    if (rExtractor.findValue('CodiceFiscale') !== undefined)
+      campiSpecifici['CodiceFiscale'] = rExtractor.getString('CodiceFiscale');
+    extractIndirizzi(rExtractor, campiSpecifici);
+    return { tipo: SubjectType.PF, campiSpecifici };
+  }
+  if (rExtractor.findValue('PG') !== undefined) {
+    campiSpecifici['DenominazioneOrganizzazione'] = rExtractor.getString(
+      'DenominazioneOrganizzazione',
+    );
+    if (rExtractor.findValue('CodiceFiscale_PartitaIva') !== undefined)
+      campiSpecifici['CodiceFiscale_PartitaIva'] = rExtractor.getString('CodiceFiscale_PartitaIva');
+    if (rExtractor.findValue('DenominazioneUfficio') !== undefined)
+      campiSpecifici['DenominazioneUfficio'] = rExtractor.getString('DenominazioneUfficio');
+    extractIndirizzi(rExtractor, campiSpecifici);
+    return { tipo: SubjectType.PG, campiSpecifici };
+  }
+  if (rExtractor.findValue('PAI') !== undefined) {
+    extractIpaFields(rExtractor, campiSpecifici);
+    extractIndirizzi(rExtractor, campiSpecifici);
+    return { tipo: SubjectType.PAI, campiSpecifici };
+  }
+  if (rExtractor.findValue('PAE') !== undefined) {
+    campiSpecifici['DenominazioneAmministrazione'] = rExtractor.getString(
+      'DenominazioneAmministrazione',
+    );
+    if (rExtractor.findValue('DenominazioneUfficio') !== undefined)
+      campiSpecifici['DenominazioneUfficio'] = rExtractor.getString('DenominazioneUfficio');
+    extractIndirizzi(rExtractor, campiSpecifici);
+    return { tipo: SubjectType.PAE, campiSpecifici };
+  }
+  if (
+    rExtractor.findValue('AS') !== undefined ||
+    rExtractor.findValue('Assegnatario') !== undefined
+  ) {
+    if (rExtractor.findValue('Nome') !== undefined)
+      campiSpecifici['Nome'] = rExtractor.getString('Nome');
+    if (rExtractor.findValue('Cognome') !== undefined)
+      campiSpecifici['Cognome'] = rExtractor.getString('Cognome');
+    if (rExtractor.findValue('CodiceFiscale') !== undefined)
+      campiSpecifici['CodiceFiscale'] = rExtractor.getString('CodiceFiscale');
+    if (rExtractor.findValue('DenominazioneOrganizzazione') !== undefined)
+      campiSpecifici['DenominazioneOrganizzazione'] = rExtractor.getString(
+        'DenominazioneOrganizzazione',
+      );
+    if (rExtractor.findValue('DenominazioneUfficio') !== undefined)
+      campiSpecifici['DenominazioneUfficio'] = rExtractor.getString('DenominazioneUfficio');
+    extractIpaFields(rExtractor, campiSpecifici);
+    extractIndirizzi(rExtractor, campiSpecifici);
+    return { tipo: SubjectType.AS, campiSpecifici };
+  }
+  if (rExtractor.findValue('SW') !== undefined) {
+    campiSpecifici['DenominazioneSistema'] = rExtractor.getString('DenominazioneSistema');
+    return { tipo: SubjectType.SW, campiSpecifici };
+  }
+  if (rExtractor.findValue('RUP') !== undefined) {
+    if (rExtractor.findValue('Nome') !== undefined)
+      campiSpecifici['Nome'] = rExtractor.getString('Nome');
+    if (rExtractor.findValue('Cognome') !== undefined)
+      campiSpecifici['Cognome'] = rExtractor.getString('Cognome');
+    if (rExtractor.findValue('CodiceFiscale') !== undefined)
+      campiSpecifici['CodiceFiscale'] = rExtractor.getString('CodiceFiscale');
+    extractIpaFields(rExtractor, campiSpecifici);
+    extractIndirizzi(rExtractor, campiSpecifici);
+    return { tipo: SubjectType.PF, campiSpecifici };
+  }
+
+  return { tipo: SubjectType.PG, campiSpecifici }; // Fallback
+}
+
 /**
  * Maps Subjects based on XSD.
  */
@@ -304,111 +394,7 @@ function mapSubjects(extractor: MetadataExtractor): Subject[] {
   return ruoli.map((ruoloNode) => {
     const rExtractor = new MetadataExtractor(normalizeMetadataNodes(ruoloNode));
     const tipoRuolo = rExtractor.getString('TipoRuolo', 'Sconosciuto');
-
-    // Tentativo di inferire il tipo in base ai tag XSD (PF, PG, PAI, PAE, SW, AS, RUP)
-    let tipo: SubjectType = SubjectType.PAI;
-    const campiSpecifici: Record<string, string> = {};
-
-    const extractIndirizzi = () => {
-      const indirizzi = rExtractor.findAllValues('IndirizziDigitaliDiRiferimento');
-      if (indirizzi.length > 0) {
-        campiSpecifici['IndirizziDigitaliDiRiferimento'] = indirizzi.join(', ');
-      }
-    };
-
-    const extractIpa = (field: string) => {
-      const block = rExtractor.findValue(field);
-      if (block && Array.isArray(block)) {
-        return String(
-          rExtractor.findValue('CodiceIPA', block) ||
-            rExtractor.findValue('Denominazione', block) ||
-            '',
-        );
-      }
-      return rExtractor.getString(field, '');
-    };
-
-    const setIpaFields = () => {
-      if (rExtractor.findValue('IPAAmm')) {
-        const val = extractIpa('IPAAmm');
-        if (val && !val.includes('[object Object]')) campiSpecifici['IPAAmm'] = val;
-      }
-      if (rExtractor.findValue('IPAAOO')) {
-        const val = extractIpa('IPAAOO');
-        if (val && !val.includes('[object Object]')) campiSpecifici['IPAAOO'] = val;
-      }
-      if (rExtractor.findValue('IPAUOR')) {
-        const val = extractIpa('IPAUOR');
-        if (val && !val.includes('[object Object]')) campiSpecifici['IPAUOR'] = val;
-      }
-    };
-
-    if (rExtractor.findValue('PF') !== undefined) {
-      tipo = SubjectType.PF;
-      campiSpecifici['Nome'] = rExtractor.getString('Nome');
-      campiSpecifici['Cognome'] = rExtractor.getString('Cognome');
-      if (rExtractor.findValue('CodiceFiscale') !== undefined)
-        campiSpecifici['CodiceFiscale'] = rExtractor.getString('CodiceFiscale');
-      extractIndirizzi();
-    } else if (rExtractor.findValue('PG') !== undefined) {
-      tipo = SubjectType.PG;
-      campiSpecifici['DenominazioneOrganizzazione'] = rExtractor.getString(
-        'DenominazioneOrganizzazione',
-      );
-      if (rExtractor.findValue('CodiceFiscale_PartitaIva') !== undefined)
-        campiSpecifici['CodiceFiscale_PartitaIva'] = rExtractor.getString(
-          'CodiceFiscale_PartitaIva',
-        );
-      if (rExtractor.findValue('DenominazioneUfficio') !== undefined)
-        campiSpecifici['DenominazioneUfficio'] = rExtractor.getString('DenominazioneUfficio');
-      extractIndirizzi();
-    } else if (rExtractor.findValue('PAI') !== undefined) {
-      tipo = SubjectType.PAI;
-      setIpaFields();
-      extractIndirizzi();
-    } else if (rExtractor.findValue('PAE') !== undefined) {
-      tipo = SubjectType.PAE;
-      campiSpecifici['DenominazioneAmministrazione'] = rExtractor.getString(
-        'DenominazioneAmministrazione',
-      );
-      if (rExtractor.findValue('DenominazioneUfficio') !== undefined)
-        campiSpecifici['DenominazioneUfficio'] = rExtractor.getString('DenominazioneUfficio');
-      extractIndirizzi();
-    } else if (
-      rExtractor.findValue('AS') !== undefined ||
-      rExtractor.findValue('Assegnatario') !== undefined
-    ) {
-      tipo = SubjectType.AS;
-      if (rExtractor.findValue('Nome') !== undefined)
-        campiSpecifici['Nome'] = rExtractor.getString('Nome');
-      if (rExtractor.findValue('Cognome') !== undefined)
-        campiSpecifici['Cognome'] = rExtractor.getString('Cognome');
-      if (rExtractor.findValue('CodiceFiscale') !== undefined)
-        campiSpecifici['CodiceFiscale'] = rExtractor.getString('CodiceFiscale');
-      if (rExtractor.findValue('DenominazioneOrganizzazione') !== undefined)
-        campiSpecifici['DenominazioneOrganizzazione'] = rExtractor.getString(
-          'DenominazioneOrganizzazione',
-        );
-      if (rExtractor.findValue('DenominazioneUfficio') !== undefined)
-        campiSpecifici['DenominazioneUfficio'] = rExtractor.getString('DenominazioneUfficio');
-      setIpaFields();
-      extractIndirizzi();
-    } else if (rExtractor.findValue('SW') !== undefined) {
-      tipo = SubjectType.SW;
-      campiSpecifici['DenominazioneSistema'] = rExtractor.getString('DenominazioneSistema');
-    } else if (rExtractor.findValue('RUP') !== undefined) {
-      tipo = SubjectType.PF; // Mapped as Person
-      if (rExtractor.findValue('Nome') !== undefined)
-        campiSpecifici['Nome'] = rExtractor.getString('Nome');
-      if (rExtractor.findValue('Cognome') !== undefined)
-        campiSpecifici['Cognome'] = rExtractor.getString('Cognome');
-      if (rExtractor.findValue('CodiceFiscale') !== undefined)
-        campiSpecifici['CodiceFiscale'] = rExtractor.getString('CodiceFiscale');
-      setIpaFields();
-      extractIndirizzi();
-    } else {
-      tipo = SubjectType.PG; // Fallback
-    }
+    const { tipo, campiSpecifici } = parseSubjectDetails(rExtractor);
 
     return {
       ruolo: tipoRuolo,
@@ -418,16 +404,12 @@ function mapSubjects(extractor: MetadataExtractor): Subject[] {
   });
 }
 
-/**
- * Maps change tracking (TracciatureModificheDocumento).
- */
-function mapChangeTracking(extractor: MetadataExtractor): ChangeTrackingData {
+function parseChangeTrackingSoggetto(extractor: MetadataExtractor): string {
   let soggetto = extractor.getString('Soggetto', 'N/A');
   const autoreBlock = extractor.findValue('SoggettoAutoreDellaModifica');
   if (autoreBlock && Array.isArray(autoreBlock)) {
-    const nome = extractor.findValue('Nome', autoreBlock) || '';
-    const cognome = extractor.findValue('Cognome', autoreBlock) || '';
-    const descr = `${nome} ${cognome}`.trim();
+    const descr =
+      `${extractor.findValue('Nome', autoreBlock) || ''} ${extractor.findValue('Cognome', autoreBlock) || ''}`.trim();
     if (descr) soggetto = descr;
   }
   if (!soggetto || soggetto === 'N/A' || String(soggetto).includes('[object Object]')) {
@@ -436,7 +418,10 @@ function mapChangeTracking(extractor: MetadataExtractor): ChangeTrackingData {
       ? 'Autore Sconosciuto'
       : fallbackSoggetto;
   }
+  return soggetto;
+}
 
+function parseChangeTrackingPrecedente(extractor: MetadataExtractor): string {
   const idPrevBlock = extractor.findValue('IdDocVersionePrecedente');
   let idPrev = extractor.getString('IdentificativoVersionePrecedente', '');
   if (idPrevBlock && Array.isArray(idPrevBlock)) {
@@ -444,17 +429,19 @@ function mapChangeTracking(extractor: MetadataExtractor): ChangeTrackingData {
   } else if (!idPrev) {
     idPrev = extractor.getString('IdDocVersionePrecedente', '');
   }
+  return String(idPrev).includes('[object Object]') ? '' : idPrev;
+}
 
-  if (String(idPrev).includes('[object Object]')) {
-    idPrev = '';
-  }
-
+/**
+ * Maps change tracking (TracciatureModificheDocumento).
+ */
+function mapChangeTracking(extractor: MetadataExtractor): ChangeTrackingData {
   return {
     tipo: extractor.getString('TipoModifica', 'N/A'),
-    soggetto: soggetto,
+    soggetto: parseChangeTrackingSoggetto(extractor),
     data: extractor.getString('DataModifica', 'N/A'),
     ora: extractor.getString('OraModifica', undefined),
-    idVersionePrecedente: idPrev,
+    idVersionePrecedente: parseChangeTrackingPrecedente(extractor),
   };
 }
 
