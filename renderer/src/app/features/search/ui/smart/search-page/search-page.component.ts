@@ -1,12 +1,12 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { SearchFacade } from '../../../services';
 import { AdvancedFilterPanelComponent } from '../advanced-filter-panel/advanced-filter-panel';
 import { SearchResultsComponent } from '../../dumb/search-results.component/search-results.component';
 import {
   SearchFilters,
   ISearchResult,
   SearchQuery,
+  ValidationError,
   ValidationResult,
   PartialSearchFilters,
 } from '../../../../../../../../shared/domain/metadata';
@@ -19,6 +19,7 @@ import {
   buildDetailRoute,
   mapSearchResultTypeToDetailItemType,
 } from '../../../../navigation/domain/navigation-routing';
+import { ISearchFacade, SEARCH_FACADE_TOKEN } from '../../../contracts/search-facade.interface';
 
 @Component({
   selector: 'app-search-page',
@@ -28,7 +29,7 @@ import {
   styleUrl: './search-page.scss',
 })
 export class SearchPageComponent implements OnInit {
-  protected readonly searchFacade = inject(SearchFacade);
+  protected readonly searchFacade: ISearchFacade = inject(SEARCH_FACADE_TOKEN);
   protected readonly router = inject(Router);
   private readonly filterValidator: IFilterValidator = inject(FILTER_VALIDATOR_TOKEN);
   public readonly state = this.searchFacade.getState();
@@ -78,6 +79,8 @@ export class SearchPageComponent implements OnInit {
     } else {
       this.searchFacade.search();
     }
+
+    this.syncExternalValidationFromState();
   }
 
   public onAdvancedSearchRequested(filters: SearchFilters): void {
@@ -88,6 +91,7 @@ export class SearchPageComponent implements OnInit {
       return;
     }
     this.searchFacade.searchAdvanced(filters);
+    this.syncExternalValidationFromState();
   }
 
   public onFiltersReset(): void {
@@ -103,7 +107,7 @@ export class SearchPageComponent implements OnInit {
   }
 
   public validateFilters = (filters: PartialSearchFilters): ValidationResult => {
-    return this.filterValidator.validate(filters);
+    return this.searchFacade.validateFilters(filters);
   };
 
   public onLiveValidationChanged(result: ValidationResult): void {
@@ -125,5 +129,25 @@ export class SearchPageComponent implements OnInit {
     }
 
     void this.router.navigate(buildDetailRoute(targetItemType, id));
+  }
+
+  private syncExternalValidationFromState(): void {
+    const validationErrors = this.state().validationErrors;
+
+    if (validationErrors.size === 0) {
+      this.externalValidation = null;
+      return;
+    }
+
+    const errors = new Map<string, ValidationError[]>();
+    validationErrors.forEach((error, key) => {
+      errors.set(key, [error]);
+    });
+
+    this.externalValidation = {
+      isValid: false,
+      errors,
+    };
+    this.isSidebarCollapsed = false;
   }
 }

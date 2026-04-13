@@ -5,6 +5,7 @@ import {
   SearchQuery,
   SearchState,
   ValidationError,
+  ValidationResult,
   PartialSearchFilters,
   ISearchResult,
 } from '../../../../../../shared/domain/metadata';
@@ -83,20 +84,18 @@ export class SearchFacade implements ISearchFacade {
   // COMMANDS (CQS)
   public search(): void {
     if (this.state().isSearching) return;
+
+    if (!this.validateAndStoreErrors(this.state().filters as unknown as PartialSearchFilters)) {
+      return;
+    }
+
     this.searchTrigger.next();
   }
 
   public searchAdvanced(filters: SearchFilters): void {
     this.setFilters(filters);
 
-    const validation = this.filterValidator.validate(filters as unknown as PartialSearchFilters);
-
-    if (!validation.isValid) {
-      const validationErrors = new Map<string, ValidationError>();
-      validation.errors.forEach((errors: ValidationError[], key: string) => {
-        validationErrors.set(key, errors[0]);
-      });
-      this.state.update((s) => ({ ...s, validationErrors }));
+    if (!this.validateAndStoreErrors(filters as unknown as PartialSearchFilters)) {
       return;
     }
 
@@ -111,7 +110,6 @@ export class SearchFacade implements ISearchFacade {
       return;
     }
 
-    this.state.update((s) => ({ ...s, validationErrors: new Map() }));
     this.executeAdvancedSearch(filters);
   }
 
@@ -122,7 +120,16 @@ export class SearchFacade implements ISearchFacade {
     }
 
     this.setQuery(query);
+
+    if (!this.validateAndStoreErrors(this.state().filters as unknown as PartialSearchFilters)) {
+      return;
+    }
+
     this.executeSemanticSearch(query);
+  }
+
+  public validateFilters(filters: PartialSearchFilters): ValidationResult {
+    return this.filterValidator.validate(filters);
   }
 
   public cancelSearch(): void {
@@ -221,5 +228,29 @@ export class SearchFacade implements ISearchFacade {
   private cleanupSearch(): void {
     this.abortController = null;
     this.state.update((s) => ({ ...s, loading: false, isSearching: false }));
+  }
+
+  private validateAndStoreErrors(filters: PartialSearchFilters): boolean {
+    const validation = this.validateFilters(filters);
+    this.state.update((s) => ({
+      ...s,
+      validationErrors: this.toValidationErrorMap(validation),
+    }));
+    return validation.isValid;
+  }
+
+  private toValidationErrorMap(validation: ValidationResult): Map<string, ValidationError> {
+    if (validation.isValid) {
+      return new Map();
+    }
+
+    const validationErrors = new Map<string, ValidationError>();
+    validation.errors.forEach((errors: ValidationError[], key: string) => {
+      const firstError = errors[0];
+      if (firstError) {
+        validationErrors.set(key, firstError);
+      }
+    });
+    return validationErrors;
   }
 }

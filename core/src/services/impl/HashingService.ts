@@ -25,12 +25,16 @@ export class HashingService implements IHashingService {
   }
 
   private async checkHash(filePath: string): Promise<string> {
-    const byteStream = await this.packageReader.readFileBytes(filePath);
-    const hash = createHash("sha256");
+    try {
+      const byteStream = await this.packageReader.readFileBytes(filePath);
+      const hash = createHash("sha256");
 
-    for await (const chunk of byteStream) {
-      hash.update(typeof chunk === "string" ? Buffer.from(chunk) : chunk);
+      for await (const chunk of byteStream) {
+        hash.update(typeof chunk === "string" ? Buffer.from(chunk) : chunk);
+      }
+      return hash.digest("base64");
+    } catch (err) {
+      return "";
     }
-    return hash.digest("base64");
   }
 }
