@@ -9,7 +9,6 @@ import {
   LOGGING_CHANNEL_TOKEN,
   TELEMETRY_TOKEN,
   LIVE_ANNOUNCER_TOKEN,
-  ROUTER_TOKEN,
 } from './shared/contracts/index';
 
 import { SearchIpcGateway } from './features/search/adapters/search-ipc-gateway';
@@ -81,9 +80,6 @@ export const appConfig: ApplicationConfig = {
       provide: SEMANTIC_INDEX_STATUS_TOKEN,
       useValue: { getStatus: () => signal({ status: 'READY' }) },
     },
-
-    // Router
-    { provide: ROUTER_TOKEN, useValue: { navigate: () => Promise.resolve(true) } },
 
     // Facade
     { provide: SEARCH_FACADE_TOKEN, useClass: SearchFacade },

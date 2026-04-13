@@ -19,7 +19,6 @@ import {
   AggregateFilterValues,
   CustomFilterValues,
   SubjectCriteria,
-  ValidationError,
   PartialSearchFilters,
 } from '../../../../../../../../shared/domain/metadata';
 
@@ -179,10 +178,6 @@ export class AdvancedFilterPanelComponent implements OnInit {
   public onSubjectChanged(subject: SubjectCriteria[]): void {
     const updatedFilters = { ...this.filters, subject };
     this.filtersChanged.emit(updatedFilters);
-  }
-
-  public onFieldValidationError(field: string, error: ValidationError | null): void {
-    // Riservato
   }
 
   public onSubmit(): void {
