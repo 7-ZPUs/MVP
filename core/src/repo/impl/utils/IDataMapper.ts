@@ -12,9 +12,10 @@ export interface MapperRequest<T> {
 }
 
 export interface IDataMapper {
-  mapDip(rawDipIndex: any): Dip;
-  mapDocumentClasses(rawDipIndex: any): DocumentClass[];
-  getProcessMappers(rawDipIndex: any): MapperRequest<Process>[];
-  getDocumentMappers(rawDipIndex: any): MapperRequest<Document>[];
-  getFileMappers(rawDipIndex: any): MapperRequest<File>[];
+  mapDip(): Dip;
+  mapDocumentClasses(): DocumentClass[];
+  getProcessMappers(): MapperRequest<Process>[];
+  getDocumentMappers(): MapperRequest<Document>[];
+  getFileMappers(): MapperRequest<File>[];
+  setRawDipIndex(rawDipIndex: any): void;
 }

@@ -8,9 +8,9 @@ import { DocumentClassRepository } from "../../../../../src/repo/impl/DocumentCl
 import { ProcessRepository } from "../../../../../src/repo/impl/ProcessRepository";
 import { DocumentRepository } from "../../../../../src/repo/impl/DocumentRepository";
 import { FileRepository } from "../../../../../src/repo/impl/FileRepository";
-import { LocalPackageReaderAdapter } from "../../../../../src/repo/impl/LocalPackageReaderAdapter";
+import { PackageReaderService } from "../../../../../src/services/impl/PackageReaderService";
 import { XmlDipParser } from "../../../../../src/repo/impl/utils/XmlDipParser";
-import { IFileSystemProvider } from "../../../../../src/repo/impl/utils/IFileSystemProvider";
+import { IFileSystemPort } from "../../../../../src/repo/impl/utils/IFileSystemProvider";
 import { DipDAO } from "../../../../../src/dao/DipDAO";
 import { DocumentClassDAO } from "../../../../../src/dao/DocumentClassDAO";
 import { ProcessDAO } from "../../../../../src/dao/ProcessDAO";
@@ -24,7 +24,7 @@ import { Vector } from "../../../../../src/entity/Vector";
 
 describe("IndexDip", () => {
   let db: Database.Database;
-  let fileSystemProvider: IFileSystemProvider;
+  let fileSystemProvider: IFileSystemPort;
   let useCase: IndexDipUC;
   let vectorRepository: IVectorRepository;
   let embeddingService: IEmbeddingService;
@@ -59,7 +59,7 @@ describe("IndexDip", () => {
       listFiles: vi.fn(),
     };
 
-    const packageReader = new LocalPackageReaderAdapter(
+    const packageReader = new PackageReaderService(
       parser,
       fileSystemProvider,
       new DataMapper(),

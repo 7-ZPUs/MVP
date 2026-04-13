@@ -188,20 +188,23 @@ const exampleMetadata = {
 describe("DataMapper", () => {
   it("TU-F-Indexing-136: mapDip() returns correctly mapped Dip entity from dipindex_test.xml structure", () => {
     const mapper = new DataMapper();
-    const result = mapper.mapDip(exampleDipIndex);
+    mapper.setRawDipIndex(exampleDipIndex); // Set raw index to allow metadata-relative mapping
+    const result = mapper.mapDip();
     expect(result.getUuid()).toBe("test-dip-uuid-1234");
   });
 
   it("TU-F-Indexing-137: mapDocumentClass() returns correctly mapped DocumentClass entity from dipindex_test.xml structure", () => {
     const mapper = new DataMapper();
-    const result = mapper.mapDocumentClasses(exampleDipIndex);
+    mapper.setRawDipIndex(exampleDipIndex); // Set raw index to allow metadata-relative mapping
+    const result = mapper.mapDocumentClasses();
     expect(result[0].getUuid()).toBe("class-1");
     expect(result[0].getName()).toBe("Class1");
   });
 
   it("TU-F-Indexing-138: getProcessMappers() should return correctly mapped paths for processes in the dipindex_test.xml structure", () => {
     const mapper = new DataMapper();
-    const result = mapper.getProcessMappers(exampleDipIndex);
+    mapper.setRawDipIndex(exampleDipIndex); // Set raw index to allow metadata-relative mapping
+    const result = mapper.getProcessMappers();
 
     expect(result[0].metadataRelativePath).toBe(
       "./class-1/aip-1/AiPInfo.aip-1.xml",
@@ -213,7 +216,8 @@ describe("DataMapper", () => {
 
   it("TU-F-Indexing-138: getProcessMappers() should map processes from dipindex_test.xml structure correctly", () => {
     const mapper = new DataMapper();
-    const result = mapper.getProcessMappers(exampleDipIndex);
+    mapper.setRawDipIndex(exampleDipIndex); // Set raw index to allow metadata-relative mapping
+    const result = mapper.getProcessMappers();
     const mappedProcesses = result.map((r) => r.map(exampleAipInfo));
     const proc = mappedProcesses[0];
     expect(proc.getUuid()).toBe("aip-1");
@@ -310,7 +314,8 @@ describe("DataMapper", () => {
 
   it("TU-F-Indexing-139: getProcessMappers() should handle missing optional metadata gracefully", () => {
     const mapper = new DataMapper();
-    const result = mapper.getProcessMappers(exampleDipIndex);
+    mapper.setRawDipIndex(exampleDipIndex); // Set raw index to allow metadata-relative mapping
+    const result = mapper.getProcessMappers();
     const mappedProcesses = result.map((r) =>
       r.map({ AiPInfo: { Process: {} } }),
     );
@@ -322,7 +327,8 @@ describe("DataMapper", () => {
 
   it("TU-F-Indexing-140: getProcessMappers() should handle unexpected metadata structures gracefully", () => {
     const mapper = new DataMapper();
-    const result = mapper.getProcessMappers(exampleDipIndex);
+    mapper.setRawDipIndex(exampleDipIndex); // Set raw index to allow metadata-relative mapping
+    const result = mapper.getProcessMappers();
     const malformedAipInfo = { AiPInfo: { Process: { $: {} } } };
     const mappedProcesses = result.map((r) => r.map(malformedAipInfo));
     const proc = mappedProcesses[0];
@@ -333,7 +339,8 @@ describe("DataMapper", () => {
 
   it("TU-F-Indexing-141: getDocumentMappers() should map documents correctly", () => {
     const mapper = new DataMapper();
-    const result = mapper.getDocumentMappers(exampleDipIndex);
+    mapper.setRawDipIndex(exampleDipIndex); // Set raw index to allow metadata-relative mapping
+    const result = mapper.getDocumentMappers();
 
     // xml2js-like shape expected by DataMapper.extractDocumentMetadata
     const metadataJsMock = {
@@ -382,7 +389,8 @@ describe("DataMapper", () => {
 
   it("TU-F-Indexing-142: getDocumentMappers() should return correctly mapped paths for documents in the dipindex_test.xml structure", () => {
     const mapper = new DataMapper();
-    const result = mapper.getDocumentMappers(exampleDipIndex);
+    mapper.setRawDipIndex(exampleDipIndex); // Set raw index to allow metadata-relative mapping
+    const result = mapper.getDocumentMappers();
 
     expect(result[0].metadataRelativePath).toBe(
       "./class-1/aip-1/documents/doc-1/meta.xml",
@@ -394,7 +402,8 @@ describe("DataMapper", () => {
 
   it("TU-F-Indexing-143: getDocumentMappers() should handle missing optional metadata gracefully", () => {
     const mapper = new DataMapper();
-    const result = mapper.getDocumentMappers(exampleDipIndex);
+    mapper.setRawDipIndex(exampleDipIndex); // Set raw index to allow metadata-relative mapping
+    const result = mapper.getDocumentMappers();
     const mappedDocs = result.map((r) => r.map({ Document: [{}] }));
     const doc = mappedDocs[0];
     expect(doc.getUuid()).toBe("doc-1");
@@ -406,7 +415,8 @@ describe("DataMapper", () => {
 
   it("TU-F-Indexing-144: getFileMappers() should return correctly mapped paths for files in the dipindex_test.xml structure", () => {
     const mapper = new DataMapper();
-    const result = mapper.getFileMappers(exampleDipIndex);
+    mapper.setRawDipIndex(exampleDipIndex); // Set raw index to allow metadata-relative mapping
+    const result = mapper.getFileMappers();
     expect(result).toHaveLength(5);
 
     const metadataPaths = result.map((r) => r.metadataRelativePath);
@@ -430,7 +440,8 @@ describe("DataMapper", () => {
 
   it("TU-F-Indexing-145: getFileMappers() should map all files correctly", () => {
     const mapper = new DataMapper();
-    const result = mapper.getFileMappers(exampleDipIndex);
+    mapper.setRawDipIndex(exampleDipIndex); // Set raw index to allow metadata-relative mapping
+    const result = mapper.getFileMappers();
     const metadataJsMock = { Document: [exampleMetadata.Document] };
     const mappedFiles = result.map((r) => r.map(metadataJsMock));
     expect(mappedFiles).toHaveLength(5);

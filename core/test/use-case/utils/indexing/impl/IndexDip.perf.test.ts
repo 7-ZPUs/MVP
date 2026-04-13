@@ -8,7 +8,7 @@ import { performance } from "node:perf_hooks";
 import { IndexDipUC } from "../../../../../src/use-case/utils/indexing/impl/IndexDip";
 import { XmlDipParser } from "../../../../../src/repo/impl/utils/XmlDipParser";
 import { FileSystemProvider } from "../../../../../src/repo/impl/utils/FileSystemProvider";
-import { LocalPackageReaderAdapter } from "../../../../../src/repo/impl/LocalPackageReaderAdapter";
+import { PackageReaderService } from "../../../../../src/services/impl/PackageReaderService";
 import { DipRepository } from "../../../../../src/repo/impl/DipRepository";
 import { DocumentClassRepository } from "../../../../../src/repo/impl/DocumentClassRepository";
 import { ProcessRepository } from "../../../../../src/repo/impl/ProcessRepository";
@@ -77,7 +77,7 @@ describe("IndexDip use-case performance", () => {
       );
       db.exec(schema);
 
-      const packageReader = new LocalPackageReaderAdapter(
+      const packageReader = new PackageReaderService(
         new XmlDipParser(),
         new FileSystemProvider(),
         new DataMapper(),

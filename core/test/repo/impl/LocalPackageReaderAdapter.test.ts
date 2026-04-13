@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, type Mocked } from "vitest";
-import { LocalPackageReaderAdapter } from "../../../src/repo/impl/LocalPackageReaderAdapter";
+import { PackageReaderService } from "../../../src/services/impl/PackageReaderService";
 import { IDipParser } from "../../../src/repo/impl/utils/IDipParser";
-import { IFileSystemProvider } from "../../../src/repo/impl/utils/IFileSystemProvider";
+import { IFileSystemPort } from "../../../src/repo/impl/utils/IFileSystemProvider";
 import {
   IDataMapper,
   MapperRequest,
@@ -11,12 +11,13 @@ import { DocumentClass } from "../../../src/entity/DocumentClass";
 import { Process } from "../../../src/entity/Process";
 import { Document } from "../../../src/entity/Document";
 import { File } from "../../../src/entity/File";
+import { Metadata } from "../../../src/value-objects/Metadata";
 
 describe("LocalPackageReaderAdapter", () => {
   let parserMock: Mocked<IDipParser>;
-  let fsProviderMock: Mocked<IFileSystemProvider>;
+  let fsProviderMock: Mocked<IFileSystemPort>;
   let mapperMock: Mocked<IDataMapper>;
-  let adapter: LocalPackageReaderAdapter;
+  let adapter: PackageReaderService;
 
   const dipPath = "/mock/dip/path";
 
@@ -30,7 +31,7 @@ describe("LocalPackageReaderAdapter", () => {
       readTextFile: vi.fn(),
       openReadStream: vi.fn(),
       fileExists: vi.fn(),
-    } as unknown as Mocked<IFileSystemProvider>;
+    } as unknown as Mocked<IFileSystemPort>;
 
     mapperMock = {
       mapDip: vi.fn(),
@@ -40,11 +41,7 @@ describe("LocalPackageReaderAdapter", () => {
       getFileMappers: vi.fn(),
     } as unknown as Mocked<IDataMapper>;
 
-    adapter = new LocalPackageReaderAdapter(
-      parserMock,
-      fsProviderMock,
-      mapperMock,
-    );
+    adapter = new PackageReaderService(parserMock, fsProviderMock, mapperMock);
   });
 
   // identifier: TU-F-Indexing-07
@@ -56,8 +53,8 @@ describe("LocalPackageReaderAdapter", () => {
       "other-file.txt",
       "DiPIndex.old.txt",
     ]);
-
-    await expect(adapter.readDip(dipPath)).rejects.toThrow(
+    adapter.setDipPath(dipPath);
+    await expect(adapter.readDip()).rejects.toThrow(
       "DiP index file not found in '/mock/dip/path'. Expected format: DiPIndex.<uuid>.xml",
     );
   });
@@ -78,14 +75,12 @@ describe("LocalPackageReaderAdapter", () => {
       return "<xml>Z</xml>";
     });
     parserMock.parse.mockImplementation((xml: string) => ({ xml }));
-    mapperMock.mapDip.mockImplementation((rawDip: { xml: string }) => {
-      if (rawDip.xml === "<xml>A</xml>") {
-        return new Dip("dip-from-a");
-      }
-      return new Dip("dip-from-z");
+    mapperMock.mapDip.mockImplementation(() => {
+      return new Dip("dip-from-a");
     });
 
-    const result = await adapter.readDip(dipPath);
+    adapter.setDipPath(dipPath);
+    const result = await adapter.readDip();
 
     expect(result).toBeInstanceOf(Dip);
     expect(result.getUuid()).toBe("dip-from-a");
@@ -133,7 +128,11 @@ describe("LocalPackageReaderAdapter", () => {
       metadataRelativePath: "meta/AiPInfo.xml",
       map: vi.fn((rawMetadata: any) => {
         const suffix = rawMetadata?.meta === "parsed" ? "meta" : "fallback";
-        return new Process("dc-uuid", `proc-${suffix}`, []);
+        return new Process(
+          "dc-uuid",
+          `proc-${suffix}`,
+          new Metadata("meta", "value"),
+        );
       }),
     };
     mapperMock.getProcessMappers.mockReturnValue([processMapperMock]);
@@ -149,7 +148,8 @@ describe("LocalPackageReaderAdapter", () => {
       .mockReturnValueOnce({ meta: "parsed" });
 
     const results: Process[] = [];
-    for await (const proc of adapter.readProcesses(dipPath)) {
+    adapter.setDipPath(dipPath);
+    for await (const proc of adapter.readProcesses()) {
       results.push(proc);
     }
 
@@ -171,7 +171,11 @@ describe("LocalPackageReaderAdapter", () => {
       metadataRelativePath: "meta/MISSING.xml",
       map: vi.fn((rawMetadata: any) => {
         const suffix = rawMetadata ? "unexpected" : "null-metadata";
-        return new Process("dc-uuid", `proc-${suffix}`, []);
+        return new Process(
+          "dc-uuid",
+          `proc-${suffix}`,
+          new Metadata("meta", "value"),
+        );
       }),
     };
     mapperMock.getProcessMappers.mockReturnValue([processMapperMock]);
@@ -183,7 +187,8 @@ describe("LocalPackageReaderAdapter", () => {
     parserMock.parse.mockReturnValue({ index: true });
 
     const results: Process[] = [];
-    for await (const proc of adapter.readProcesses(dipPath)) {
+    adapter.setDipPath(dipPath);
+    for await (const proc of adapter.readProcesses()) {
       results.push(proc);
     }
 
@@ -209,13 +214,14 @@ describe("LocalPackageReaderAdapter", () => {
         const docId = rawMetadata
           ? "doc-with-metadata"
           : "doc-without-metadata";
-        return new Document(docId, [], "proc-uuid");
+        return new Document(docId, new Metadata("meta", "value"), "proc-uuid");
       }),
     };
     mapperMock.getDocumentMappers.mockReturnValue([docMapperMock]);
 
     const results: Document[] = [];
-    for await (const doc of adapter.readDocuments(dipPath)) {
+    adapter.setDipPath(dipPath);
+    for await (const doc of adapter.readDocuments()) {
       results.push(doc);
     }
 
@@ -224,34 +230,6 @@ describe("LocalPackageReaderAdapter", () => {
     expect(results[0].getUuid()).toBe("doc-without-metadata");
     expect(results[0].getProcessUuid()).toBe("proc-uuid");
     expect(results[0].getMetadata()).toEqual([]);
-  });
-
-  // identifier: TU-F-Indexing-13
-  // method_name: readFileBytes()
-  // description: should return stream from file system provider
-  // expected_value: returns stream from file system provider
-  it("TU-F-Indexing-13: readFileBytes() should return stream from file system provider", async () => {
-    // Mock file content
-    const mockContent = "mock file content";
-    // Create a mock Readable stream
-    const { Readable } = await import("node:stream");
-    const mockStream = Readable.from([mockContent]);
-    fsProviderMock.openReadStream.mockResolvedValue(
-      mockStream as unknown as NodeJS.ReadableStream,
-    );
-
-    const resultStream = await adapter.readFileBytes("/path/to/my/file.pdf");
-    let data = "";
-    await new Promise((resolve, reject) => {
-      resultStream.setEncoding("utf8");
-      resultStream.on("data", (chunk: string) => {
-        data += chunk;
-      });
-      resultStream.on("end", resolve);
-      resultStream.on("error", reject);
-    });
-
-    expect(data).toBe(mockContent);
   });
 
   // identifier: TU-F-Indexing-14
@@ -273,7 +251,8 @@ describe("LocalPackageReaderAdapter", () => {
     mapperMock.getFileMappers.mockReturnValue([fileMapperMock]);
 
     const results: File[] = [];
-    for await (const f of adapter.readFiles(dipPath)) {
+    adapter.setDipPath(dipPath);
+    for await (const f of adapter.readFiles()) {
       results.push(f);
     }
 

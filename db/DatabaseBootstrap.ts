@@ -72,7 +72,7 @@ export class ApplicationBootstrap {
   }
 
   async bootstrap(dipPath: string): Promise<void> {
-    try {
+    // try {
       const appBasePath = this.getApplicationBasePath();
       this.bootstrapDatabase(appBasePath);
       await this.configureRuntimeDatabase();
@@ -84,18 +84,18 @@ export class ApplicationBootstrap {
 
       await this.indexDipUC.execute(resolvedDipPath);
       this.markBootstrapCompleted({ state: "success" });
-    } catch (error) {
-      const message =
-        error instanceof Error &&
-        error.message.startsWith("DIP directory not found:")
-          ? BOOTSTRAP_DIP_NOT_FOUND_MESSAGE
-          : error instanceof Error
-            ? BOOTSTRAP_DIP_NOT_FOUND_MESSAGE
-            : String(BOOTSTRAP_DIP_NOT_FOUND_MESSAGE);
+    // } catch (error) {
+    //   const message =
+    //     error instanceof Error &&
+    //     error.message.startsWith("DIP directory not found:")
+    //       ? BOOTSTRAP_DIP_NOT_FOUND_MESSAGE
+    //       : error instanceof Error
+    //         ? BOOTSTRAP_DIP_NOT_FOUND_MESSAGE
+    //         : String(BOOTSTRAP_DIP_NOT_FOUND_MESSAGE);
 
-      console.warn("[BOOTSTRAP] Skipping automatic DIP indexing:", message);
-      this.markBootstrapCompleted({ state: "failure", message });
-    }
+    //   console.warn("[BOOTSTRAP] Skipping automatic DIP indexing:", message);
+    //   this.markBootstrapCompleted({ state: "failure", message });
+    // }
   }
 
   private bootstrapDatabase(appBasePath: string): void {

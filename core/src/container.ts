@@ -71,8 +71,8 @@ import { DipUC } from "./use-case/dip/token";
 import { GetDipByIdUC } from "./use-case/dip/impl/GetDipByIdUC";
 import { GetDipByStatusUC } from "./use-case/dip/impl/GetDipByStatusUC";
 import { CheckDipIntegrityStatusUC } from "./use-case/dip/impl/CheckDipIntegrityStatusUC";
-import { PACKAGE_READER_PORT_TOKEN } from "./repo/IPackageReaderPort";
-import { LocalPackageReaderAdapter } from "./repo/impl/LocalPackageReaderAdapter";
+import { PACKAGE_READER_PORT_TOKEN } from "./services/IPackageReaderService";
+import { PackageReaderService } from "./services/impl/PackageReaderService";
 import { EXPORT_TOKEN } from "./repo/IExportPort";
 import { LocalExportPort } from "./repo/impl/LocalExportPort";
 import { PRINT_PORT_TOKEN } from "./repo/IPrintPort";
@@ -95,7 +95,7 @@ import { IndexDipUC } from "./use-case/utils/indexing/impl/IndexDip";
 import { SQLITE_DB_TOKEN } from "../../db/DatabaseBootstrap";
 
 container.register(PACKAGE_READER_PORT_TOKEN, {
-  useClass: LocalPackageReaderAdapter,
+  useClass: PackageReaderService,
 });
 container.register(EXPORT_TOKEN, {
   useClass: LocalExportPort,
