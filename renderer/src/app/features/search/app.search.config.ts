@@ -29,11 +29,15 @@ export const appConfig: ApplicationConfig = {
         search: () => of([]),
         searchAdvanced: () => of([]),
         searchSemantic: () => of([]),
+        getCustomMetadataKeys: () => of([]),
       },
     },
     {
       provide: FILTER_VALIDATOR_TOKEN,
-      useValue: { validate: () => ({ isValid: true, errors: new Map() }) },
+      useValue: {
+        validate: () => ({ isValid: true, errors: new Map() }),
+        registerStrategy: () => {},
+      },
     },
     {
       provide: ERROR_HANDLER_TOKEN,

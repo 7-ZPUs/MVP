@@ -4,11 +4,10 @@ import { By } from '@angular/platform-browser';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 import { SearchPageComponent } from './search-page.component';
-import { SearchFacade } from '../../../services';
 import { SearchQueryType } from '../../../../../../../../shared/domain/metadata/search.enum';
 import { SearchState } from '../../../../../../../../shared/domain/metadata';
 import { SearchBarComponent } from '../../dumb/search-bar.component/search-bar.component';
-import { FILTER_VALIDATOR_TOKEN } from '../../../../validation/contracts/filter-validator.interface';
+import { SEARCH_FACADE_TOKEN } from '../../../contracts/search-facade.interface';
 
 describe('SearchPageComponent', () => {
   let component: SearchPageComponent;
@@ -24,9 +23,9 @@ describe('SearchPageComponent', () => {
     searchSemantic: ReturnType<typeof vi.fn>;
     cancelSearch: ReturnType<typeof vi.fn>;
     retry: ReturnType<typeof vi.fn>;
+    validateFilters: ReturnType<typeof vi.fn>;
   };
   let mockStateSignal: any;
-  let mockFilterValidator: { validate: ReturnType<typeof vi.fn> };
 
   beforeEach(async () => {
     mockStateSignal = signal<SearchState>({
@@ -50,17 +49,13 @@ describe('SearchPageComponent', () => {
       searchSemantic: vi.fn(),
       cancelSearch: vi.fn(),
       retry: vi.fn(),
-    };
-
-    mockFilterValidator = {
-      validate: vi.fn().mockReturnValue({ isValid: true, errors: new Map() }),
+      validateFilters: vi.fn().mockReturnValue({ isValid: true, errors: new Map() }),
     };
 
     await TestBed.configureTestingModule({
       imports: [SearchPageComponent],
       providers: [
-        { provide: SearchFacade, useValue: mockFacade },
-        { provide: FILTER_VALIDATOR_TOKEN, useValue: mockFilterValidator },
+        { provide: SEARCH_FACADE_TOKEN, useValue: mockFacade },
       ],
     }).compileComponents();
 
@@ -115,34 +110,31 @@ describe('SearchPageComponent', () => {
       expect(mockFacade.searchSemantic).not.toHaveBeenCalled();
     });
 
-    it('dovrebbe bloccare la ricerca principale e mostrare externalValidation se i filtri sono invalidi', () => {
-      const validation = {
-        isValid: false,
-        errors: new Map([
-          [
-            'aggregate.dataApertura',
-            [
-              {
-                field: 'aggregate.dataApertura',
-                code: 'ERR_RANGE_001',
-                message: 'La data di inizio non può essere successiva alla data di fine.',
-              },
-            ],
-          ],
-        ]),
+    it('dovrebbe mostrare externalValidation se la facade espone errori di validazione nello stato', () => {
+      const validationError = {
+        field: 'aggregate.dataApertura',
+        code: 'ERR_RANGE_001',
+        message: 'La data di inizio non può essere successiva alla data di fine.',
       };
-      mockFilterValidator.validate.mockReturnValue(validation);
+
+      mockStateSignal.update((s: SearchState) => ({
+        ...s,
+        validationErrors: new Map([['aggregate.dataApertura', validationError as any]]),
+      }));
 
       component.onSearchRequested();
 
-      expect(component.externalValidation).toEqual(validation);
-      expect(mockFacade.search).not.toHaveBeenCalled();
-      expect(mockFacade.searchSemantic).not.toHaveBeenCalled();
+      expect(component.externalValidation?.isValid).toBe(false);
+      expect(component.externalValidation?.errors.get('aggregate.dataApertura')?.[0]).toEqual(
+        validationError,
+      );
+      expect(mockFacade.search).toHaveBeenCalled();
     });
 
-    it('dovrebbe validare i filtri prima della ricerca principale', () => {
-      component.onSearchRequested();
-      expect(mockFilterValidator.validate).toHaveBeenCalled();
+    it('validateFilters() dovrebbe delegare alla facade', () => {
+      const filters = { common: {}, diDai: {}, aggregate: {}, customMeta: null } as any;
+      component.validateFilters(filters);
+      expect(mockFacade.validateFilters).toHaveBeenCalledWith(filters);
     });
   });
 

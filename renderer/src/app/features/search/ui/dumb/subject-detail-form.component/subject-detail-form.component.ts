@@ -16,7 +16,7 @@ import { SubjectType } from '../../../../../../../../shared/domain/metadata/subj
 import {
   SubjectDetails,
   SubjectFieldDefinition,
-  SUBJECT_STRATEGY_REGISTRY, // <-- Aggiunto l'import del registro
+  SUBJECT_STRATEGY_REGISTRY,
 } from '../../../../../../../../shared/domain/metadata/search-subject-filters-models';
 
 @Component({
@@ -56,10 +56,8 @@ export class SubjectDetailFormComponent implements OnChanges, OnDestroy {
   }
 
   private rebuildForm(type: SubjectType): void {
-    // 1. Chiediamo al registro la strategia per questo tipo specifico
     const strategy = SUBJECT_STRATEGY_REGISTRY[type];
 
-    // 2. Se esiste, recuperiamo i campi, altrimenti array vuoto
     this.fields = strategy ? strategy.getFields() : [];
 
     const group: any = {};
