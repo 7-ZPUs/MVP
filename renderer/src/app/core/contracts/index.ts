@@ -4,7 +4,6 @@ export type { ITelemetry } from './telemetry-service.interface';
 export type { IErrorHandler } from './error-handler.interface';
 export type { ILiveAnnouncer } from './live-announcer.interface';
 export type { ILoggingChannel } from './logging-channel.interface';
-export type { IRouter } from './router.interface';
 
 export { CACHE_SERVICE_TOKEN } from './cache-service.interface';
 export { ELECTRON_CONTEXT_BRIDGE_TOKEN } from './electron-context-bridge.interface';

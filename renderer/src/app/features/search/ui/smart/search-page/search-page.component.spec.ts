@@ -8,7 +8,6 @@ import { SearchQueryType } from '../../../../../../../../shared/domain/metadata/
 import { SearchState } from '../../../../../../../../shared/domain/metadata';
 import { SearchBarComponent } from '../../dumb/search-bar.component/search-bar.component';
 import { SEARCH_FACADE_TOKEN } from '../../../contracts/search-facade.interface';
-import { FILTER_VALIDATOR_TOKEN } from '../../../../validation/contracts/filter-validator.interface';
 
 describe('SearchPageComponent', () => {
   let component: SearchPageComponent;
@@ -24,9 +23,9 @@ describe('SearchPageComponent', () => {
     searchSemantic: ReturnType<typeof vi.fn>;
     cancelSearch: ReturnType<typeof vi.fn>;
     retry: ReturnType<typeof vi.fn>;
+    validateFilters: ReturnType<typeof vi.fn>;
   };
   let mockStateSignal: any;
-  let mockFilterValidator: { validate: ReturnType<typeof vi.fn> };
 
   beforeEach(async () => {
     mockStateSignal = signal<SearchState>({
@@ -57,7 +56,6 @@ describe('SearchPageComponent', () => {
       imports: [SearchPageComponent],
       providers: [
         { provide: SEARCH_FACADE_TOKEN, useValue: mockFacade },
-        { provide: FILTER_VALIDATOR_TOKEN, useValue: mockFilterValidator },
       ],
     }).compileComponents();
 
