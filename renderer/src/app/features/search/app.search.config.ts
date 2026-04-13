@@ -14,7 +14,6 @@ import {
   ERROR_HANDLER_TOKEN,
   TELEMETRY_TOKEN,
   LIVE_ANNOUNCER_TOKEN,
-  ROUTER_TOKEN,
 } from '../../shared/contracts';
 
 export const appConfig: ApplicationConfig = {
@@ -45,6 +44,5 @@ export const appConfig: ApplicationConfig = {
       useValue: { getStatus: () => signal({ status: 'READY' }) },
     },
     { provide: LIVE_ANNOUNCER_TOKEN, useValue: { announce: () => {} } },
-    { provide: ROUTER_TOKEN, useValue: { navigate: () => Promise.resolve(true) } },
   ],
 };
