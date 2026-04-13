@@ -10,6 +10,10 @@ import {
   ValidationResult,
   PartialSearchFilters,
 } from '../../../../../../../../shared/domain/metadata';
+import {
+  IFilterValidator,
+  FILTER_VALIDATOR_TOKEN,
+} from '../../../../validation/contracts/filter-validator.interface';
 import { SearchBarComponent } from '../../dumb/search-bar.component/search-bar.component';
 import {
   buildDetailRoute,
@@ -27,6 +31,7 @@ import { ISearchFacade, SEARCH_FACADE_TOKEN } from '../../../contracts/search-fa
 export class SearchPageComponent implements OnInit {
   protected readonly searchFacade: ISearchFacade = inject(SEARCH_FACADE_TOKEN);
   protected readonly router = inject(Router);
+  private readonly filterValidator: IFilterValidator = inject(FILTER_VALIDATOR_TOKEN);
   public readonly state = this.searchFacade.getState();
   public readonly customMetadataKeys = this.searchFacade.getCustomMetadataKeys();
   public externalValidation: ValidationResult | null = null;
@@ -59,6 +64,16 @@ export class SearchPageComponent implements OnInit {
   public onSearchRequested(): void {
     const currentState = this.state();
 
+    const validation = this.filterValidator.validate(
+      currentState.filters as unknown as PartialSearchFilters,
+    );
+    this.externalValidation = validation;
+
+    if (!validation.isValid) {
+      this.isSidebarCollapsed = false;
+      return;
+    }
+
     if (currentState.query.useSemanticSearch) {
       this.searchFacade.searchSemantic(currentState.query);
     } else {
@@ -69,6 +84,12 @@ export class SearchPageComponent implements OnInit {
   }
 
   public onAdvancedSearchRequested(filters: SearchFilters): void {
+    const validation = this.filterValidator.validate(filters as unknown as PartialSearchFilters);
+    this.externalValidation = validation;
+    if (!validation.isValid) {
+      this.isSidebarCollapsed = false;
+      return;
+    }
     this.searchFacade.searchAdvanced(filters);
     this.syncExternalValidationFromState();
   }
