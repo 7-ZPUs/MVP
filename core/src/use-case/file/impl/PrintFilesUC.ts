@@ -3,12 +3,8 @@ import { IPrintFilesUC } from "../IPrintFilesUC";
 import { IFileRepository, FILE_REPOSITORY_TOKEN } from "../../../repo/IFileRepository";
 import { IPrintPort, PRINT_PORT_TOKEN } from "../../../repo/IPrintPort";
 import { IDialogPort, DIALOG_PORT_TOKEN } from "../../../repo/IDialogPort";
+import { ExportFileResults } from "../../../value-objects/ExportFileResults";
 import * as path from "node:path";
-
-export interface PrintFilesResult {
-  canceled: boolean;
-  results: { fileId: number; success: boolean; error?: string }[];
-}
 
 @injectable()
 export class PrintFilesUC implements IPrintFilesUC {
@@ -26,7 +22,7 @@ export class PrintFilesUC implements IPrintFilesUC {
   async execute(
     fileIds: number[],
     onProgress: (current: number, total: number) => void,
-  ): Promise<PrintFilesResult> {
+  ): Promise<ExportFileResults> {
 
     // Il confirm dialog appartiene qui, non nell'adapter
     const { confirmed } = await this.dialogPort.showConfirmPrint(fileIds.length);

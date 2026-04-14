@@ -5,11 +5,7 @@ import { ExportResult } from "../../../../../shared/domain/ExportResult";
 import { EXPORT_TOKEN, IExportPort } from "../../../repo/IExportPort";
 import { FILE_SYSTEM_PROVIDER_TOKEN, IFileSystemPort } from "../../../repo/impl/utils/IFileSystemProvider";
 import { IDialogPort, DIALOG_PORT_TOKEN } from "../../../repo/IDialogPort";
-
-export interface ExportFilesResult {
-  canceled: boolean;
-  results: { fileId: number; success: boolean; error?: string }[];
-}
+import { ExportFileResults } from "../../../value-objects/ExportFileResults";
 
 @injectable()
 export class ExportFilesUC implements IExportFilesUC {
@@ -29,7 +25,7 @@ export class ExportFilesUC implements IExportFilesUC {
   async execute(
     fileIds: number[],
     onProgress: (current: number, total: number) => void,
-  ): Promise<ExportFilesResult> {
+  ): Promise<ExportFileResults> {
 
     const dialog = await this.dialogPort.showFolderDialog();
     if (dialog.canceled || !dialog.folderPath) {
