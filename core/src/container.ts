@@ -55,6 +55,8 @@ import { CheckFileIntegrityStatusUC } from "./use-case/file/impl/CheckFileIntegr
 import { ExportFileUC } from "./use-case/file/impl/ExportFileUC";
 import { GetFileContentUC } from "./use-case/file/impl/GetFileContentUC";
 import { PrintFileUC } from "./use-case/file/impl/PrintFileUC";
+import { ExportFilesUC } from "./use-case/file/impl/ExportFilesUC";
+import { PrintFilesUC } from "./use-case/file/impl/PrintFilesUC";
 
 // ---- Process use cases ----
 import { ProcessUC } from "./use-case/process/token";
@@ -186,12 +188,12 @@ container.register(DocumentoUC.GET_CUSTOM_METADATA_KEYS, {
 container.register(FileUC.GET_BY_ID, { useClass: GetFileByIdUC });
 container.register(FileUC.GET_BY_DOCUMENT, { useClass: GetFileByDocumentUC });
 container.register(FileUC.GET_BY_STATUS, { useClass: GetFileByStatusUC });
-container.register(FileUC.CHECK_INTEGRITY_STATUS, {
-  useClass: CheckFileIntegrityStatusUC,
-});
+container.register(FileUC.CHECK_INTEGRITY_STATUS, { useClass: CheckFileIntegrityStatusUC });
 container.register(FileUC.EXPORT_FILE, { useClass: ExportFileUC });
 container.register(FileUC.GET_CONTENT, { useClass: GetFileContentUC });
 container.register(FileUC.PRINT_FILE, { useClass: PrintFileUC });
+container.register(FileUC.EXPORT_FILES, { useClass: ExportFilesUC });
+container.register(FileUC.PRINT_FILES,  { useClass: PrintFilesUC });
 
 // Process use cases
 container.register(ProcessUC.GET_BY_STATUS, { useClass: GetProcessByStatusUC });

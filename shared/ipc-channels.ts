@@ -78,10 +78,12 @@ export const IpcChannels = {
   // ----- File viewer -----
 
   FILE_DOWNLOAD: "file:download",
-  FILE_SAVE_DIALOG: "file:save-dialog", // per aprire il merda di dialog
-  FILE_FOLDER_DIALOG: "file:folder-dialog", // per aprire il di dialog per cartelle
+  FILE_DOWNLOAD_MANY: "file:download-many",
+  FILE_DOWNLOAD_PROGRESS: "file:download-progress",
 
-  // per il print
+  FILE_SAVE_DIALOG: "file:save-dialog",
+  FILE_FOLDER_DIALOG: "file:folder-dialog",
+
   FILE_PRINT: "file:print",
   FILE_PRINT_MANY: "file:print-many",
   FILE_PRINT_PROGRESS: "file:print-progress",
