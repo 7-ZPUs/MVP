@@ -1,5 +1,5 @@
 # DIP Viewer
-[![Quality Gate Status](http://sonarq.ddns.net:25567/api/project_badges/measure?project=dipreader&metric=alert_status&token=sqb_176057b16ca5abcd5dbc4d6d9912539535fc6528)](http://sonarq.ddns.net:25567/dashboard?id=dipreader)
+[![Quality Gate Status](http://sonarq.ddns.net:9000/api/project_badges/measure?project=dipreader&metric=alert_status&token=sqb_b078afef7b4a35f722e0331c09d9e91849d5c4ba)](http://sonarq.ddns.net:9000/dashboard?id=dipreader)
 
 An Electron desktop application for reading, searching, and verifying DIP packages
 (ZIP archives with a standardised AGO/METS folder structure). Metadata is indexed

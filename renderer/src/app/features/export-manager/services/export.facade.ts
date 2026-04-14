@@ -142,8 +142,8 @@ export class ExportFacade implements IExportFacade {
             }
 
             // passa solo fileId, il path lo risolve PrintFileUC nel main process
-            const result = await this.ipcGateway.printFile(fileId);
-            if (!result.success) throw new Error(result.error ?? 'Stampa fallita');
+            const result = await this.ipcGateway.printFile(fileId) as IpcResult;
+            if (!result.success) throw new Error(result.errorCode ?? result.errorMessage ?? 'Stampa fallita');
 
             this.exportState.setSuccess(
                 new ExportResult(OutputContext.SINGLE_PRINT, 1, 1, 0, '')

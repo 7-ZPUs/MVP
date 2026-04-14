@@ -33,6 +33,8 @@ import { DocumentDAO } from "./dao/DocumentDAO";
 import { FileDAO } from "./dao/FileDAO";
 import { ProcessDAO } from "./dao/ProcessDAO";
 import { VectorDAO } from "./dao/VectorDAO";
+import { DIALOG_PORT_TOKEN } from "./repo/IDialogPort";
+import { ElectronDialogPort } from "./repo/impl/DialogPort";
 
 // ---- Documento use cases ----
 import { DocumentoUC } from "./use-case/document/tokens";
@@ -77,6 +79,7 @@ import { EXPORT_TOKEN } from "./repo/IExportPort";
 import { LocalExportPort } from "./repo/impl/LocalExportPort";
 import { PRINT_PORT_TOKEN } from "./repo/IPrintPort";
 import { PrintPort } from "./repo/impl/PrintPort";
+import { IDialogPort } from "./repo/IDialogPort";
 import { DATA_MAPPER_TOKEN } from "./repo/impl/utils/IDataMapper";
 import { DataMapper } from "./repo/impl/utils/DataMapper";
 import { FILE_SYSTEM_PROVIDER_TOKEN } from "./repo/impl/utils/IFileSystemProvider";
@@ -102,6 +105,9 @@ container.register(EXPORT_TOKEN, {
 });
 container.register(PRINT_PORT_TOKEN, {
   useClass: PrintPort,
+});
+container.register(DIALOG_PORT_TOKEN, {
+  useClass: ElectronDialogPort,
 });
 container.register(TRANSACTION_MANAGER_TOKEN, {
   useClass: SqliteTransactionManager,

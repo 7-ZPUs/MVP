@@ -1,79 +1,49 @@
-import { IpcMain, dialog } from "electron";
+import { IpcMain } from "electron";
 import { container } from "tsyringe";
 import { IpcChannels } from "../../../shared/ipc-channels";
 import type { IExportFileUC } from "../use-case/file/IExportFileUC";
-import { FileUC } from "../use-case/file/tokens";
 import type { IPrintFileUC } from "../use-case/file/IPrintFileUC";
+import type { IDialogPort } from "../repo/IDialogPort";
+import { FileUC } from "../use-case/file/tokens";
+import { DIALOG_PORT_TOKEN } from "../repo/IDialogPort";
 
 export class FileViewerIpcAdapter {
   static register(ipcMain: IpcMain): void {
-    const exportFileUC: IExportFileUC = container.resolve<IExportFileUC>(
-      FileUC.EXPORT_FILE,
-    );
-    const printFileUC: IPrintFileUC = container.resolve<IPrintFileUC>(
-      FileUC.PRINT_FILE,
+    const exportFileUC = container.resolve<IExportFileUC>(FileUC.EXPORT_FILE);
+    const printFileUC  = container.resolve<IPrintFileUC>(FileUC.PRINT_FILE);
+    const dialogPort   = container.resolve<IDialogPort>(DIALOG_PORT_TOKEN);
+
+    ipcMain.handle(IpcChannels.FILE_PRINT, (_event, fileId: number) =>
+      printFileUC.execute(fileId)
     );
 
-    ipcMain.handle(IpcChannels.FILE_PRINT, async (_event, fileId: number) => {
-      return printFileUC.execute(fileId);
+    ipcMain.handle(IpcChannels.FILE_PRINT_MANY, async (event, fileIds: number[]) => {
+      const { confirmed } = await dialogPort.showConfirmPrint(fileIds.length);
+      if (!confirmed) return { canceled: true, results: [] };
+      const results = [];
+      for (let i = 0; i < fileIds.length; i++) {
+        event.sender.send(IpcChannels.FILE_PRINT_PROGRESS, {
+          current: i + 1,
+          total: fileIds.length,
+        });
+        const outcome = await printFileUC.execute(fileIds[i]);
+        results.push({ fileId: fileIds[i], ...outcome });
+      }
+      return { canceled: false, results };
     });
 
-    ipcMain.handle(
-      IpcChannels.FILE_PRINT_MANY,
-      async (event, fileIds: number[]) => {
-        const { response } = await dialog.showMessageBox({
-          type: "question",
-          buttons: ["Stampa", "Annulla"],
-          defaultId: 0,
-          cancelId: 1,
-          title: "Conferma stampa",
-          message: `Stai per stampare ${fileIds.length} document${fileIds.length === 1 ? "o" : "i"}.`,
-          detail: `Attenzione che proseguendo verr${fileIds.length === 1 ? "à" : "anno"} aperte ${fileIds.length} finestr${fileIds.length === 1 ? "a" : "e"} di stampa.
-                Vuoi continuare?`,
-        });
-
-        if (response === 1) return { canceled: true, results: [] };
-
-        const results = [];
-        for (let i = 0; i < fileIds.length; i++) {
-          event.sender.send(IpcChannels.FILE_PRINT_PROGRESS, {
-            current: i + 1,
-            total: fileIds.length,
-          });
-          const outcome = await printFileUC.execute(fileIds[i]);
-          results.push({ fileId: fileIds[i], ...outcome });
-        }
-
-        return { canceled: false, results };
-      },
+    ipcMain.handle(IpcChannels.FILE_SAVE_DIALOG, (_event, defaultName?: string) =>
+      dialogPort.showSaveDialog({ defaultName })
     );
 
-    ipcMain.handle(
-      IpcChannels.FILE_SAVE_DIALOG,
-      async (_event, defaultName?: string) => {
-        const result = await dialog.showSaveDialog({
-          defaultPath: defaultName,
-          filters: [{ name: "All Files", extensions: ["*"] }],
-        });
-        return { canceled: result.canceled, filePath: result.filePath };
-      },
+    ipcMain.handle(IpcChannels.FILE_FOLDER_DIALOG, () =>
+      dialogPort.showFolderDialog()
     );
 
     ipcMain.handle(
       IpcChannels.FILE_DOWNLOAD,
-      (_event, { fileId, destPath }: { fileId: number; destPath: string }) => {
-        return exportFileUC.execute(fileId, destPath);
-      },
+      (_event, { fileId, destPath }: { fileId: number; destPath: string }) =>
+        exportFileUC.execute(fileId, destPath)
     );
-
-    ipcMain.handle(IpcChannels.FILE_FOLDER_DIALOG, async () => {
-      const result = await dialog.showOpenDialog({
-        properties: ["openDirectory"],
-      });
-      return {
-        canceled: result.canceled,
-        folderPath: result.filePaths[0] ?? undefined,
-      };
-    });
   }
 }

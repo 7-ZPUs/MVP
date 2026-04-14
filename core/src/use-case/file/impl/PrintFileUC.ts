@@ -2,6 +2,7 @@ import { inject, injectable } from 'tsyringe';
 import { IPrintFileUC } from '../IPrintFileUC';
 import { IFileRepository, FILE_REPOSITORY_TOKEN } from '../../../repo/IFileRepository';
 import { IPrintPort, PRINT_PORT_TOKEN } from '../../../repo/IPrintPort';
+import { ExportResult } from '../../../../../shared/domain/ExportResult';
 
 @injectable()
 export class PrintFileUC implements IPrintFileUC {
@@ -14,11 +15,11 @@ export class PrintFileUC implements IPrintFileUC {
         private readonly printPort: IPrintPort
     ) { }
 
-  async execute(fileId: number): Promise<{ success: boolean; error?: string }> {
-    const file = this.fileRepo.getById(fileId);
-    if (!file) {
-      return { success: false, error: `File con id ${fileId} non trovato` };
-    }
+    async execute(fileId: number): Promise<ExportResult> {
+        const file = this.fileRepo.getById(fileId);
+        if (!file) {
+            return ExportResult.fail('NOT_FOUND', `File con id ${fileId} non trovato`);
+        }
 
         const path = require('node:path');
         const absolutePath = path.resolve(this.dipPath, file.getPath());
