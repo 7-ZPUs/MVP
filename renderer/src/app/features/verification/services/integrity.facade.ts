@@ -25,10 +25,18 @@ export class IntegrityFacade implements IIntegrityFacade {
   private readonly _currentDipStatus = signal<IntegrityStatusEnum | null>(null);
   private readonly _dipClasses = signal<DocumentClassDTO[]>([]);
 
-  public readonly isVerifying = computed(() => this._isVerifying());
-  public readonly error = computed(() => this._error());
-  public readonly currentDipStatus = computed(() => this._currentDipStatus());
-  public readonly dipClasses = computed(() => this._dipClasses());
+  public isVerifying() {
+    return this._isVerifying.asReadonly();
+  }
+  public error() {
+    return this._error.asReadonly();
+  }
+  public currentDipStatus() {
+    return this._currentDipStatus.asReadonly();
+  }
+  public dipClasses() {
+    return this._dipClasses.asReadonly();
+  }
 
   private readonly _overviewStats = signal<IntegrityOverviewStats>({
     validProcesses: 0,
@@ -38,9 +46,15 @@ export class IntegrityFacade implements IIntegrityFacade {
   private readonly _corruptedNodes = signal<IntegrityNodeVM[]>([]);
   private readonly _validRolledUpNodes = signal<IntegrityNodeVM[]>([]);
 
-  public readonly overviewStats = computed(() => this._overviewStats());
-  public readonly corruptedNodes = computed(() => this._corruptedNodes());
-  public readonly validRolledUpNodes = computed(() => this._validRolledUpNodes());
+  public overviewStats() {
+    return this._overviewStats.asReadonly();
+  }
+  public corruptedNodes() {
+    return this._corruptedNodes.asReadonly();
+  }
+  public validRolledUpNodes() {
+    return this._validRolledUpNodes.asReadonly();
+  }
 
   private createEmptyOverviewStats(): IntegrityOverviewStats {
     return {
@@ -108,8 +122,8 @@ export class IntegrityFacade implements IIntegrityFacade {
       }
 
       const docs = await this.gateway.getDocumentsByProcessId(process.id);
-      hasInvalidDocument = this.collectDocumentOverview(cls, process, docs, valid, corrupted)
-        || hasInvalidDocument;
+      hasInvalidDocument =
+        this.collectDocumentOverview(cls, process, docs, valid, corrupted) || hasInvalidDocument;
     }
 
     return hasInvalidDocument;

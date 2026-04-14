@@ -21,10 +21,10 @@ import { OutputToolbarComponent } from '../output-toolbar/output-toolbar.compone
       <div class="actions-group">
         <button
           (click)="onVerifyIntegrity()"
-          [disabled]="integrityFacade.isVerifying()"
+          [disabled]="integrityFacade.isVerifying()()"
           class="btn-verify"
         >
-          @if (integrityFacade.isVerifying()) {
+          @if (integrityFacade.isVerifying()()) {
             <span class="spinner-small"></span> Verifica in corso...
           } @else {
             <i class="bi bi-shield-check" aria-hidden="true"></i>

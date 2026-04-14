@@ -1,7 +1,7 @@
 import { InjectionToken, Signal } from '@angular/core';
 
 export interface IIntegrityFacade {
-  isVerifying: Signal<boolean>;
+  isVerifying(): Signal<boolean>;
   verifyItem(
     itemId: string,
     itemType: 'DOCUMENT' | 'AGGREGATE' | 'PROCESS' | 'DOCUMENT_CLASS',

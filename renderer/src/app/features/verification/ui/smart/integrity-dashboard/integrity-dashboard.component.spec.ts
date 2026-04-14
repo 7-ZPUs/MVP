@@ -9,19 +9,27 @@ describe('IntegrityDashboardComponent', () => {
   let mockFacade: any;
 
   beforeEach(async () => {
+    const _isVerifying = signal(false);
+    const _error = signal(null);
+    const _currentDipStatus = signal(null);
+    const _dipClasses = signal([]);
+    const _overviewStats = signal({
+      totalProcesses: 0,
+      validProcesses: 0,
+      invalidProcesses: 0,
+      unverifiedProcesses: 0,
+    });
+    const _corruptedNodes = signal([]);
+    const _validRolledUpNodes = signal([]);
+
     mockFacade = {
-      isVerifying: signal(false),
-      error: signal(null),
-      currentDipStatus: signal(null),
-      dipClasses: signal([]),
-      overviewStats: signal({
-        totalProcesses: 0,
-        validProcesses: 0,
-        invalidProcesses: 0,
-        unverifiedProcesses: 0,
-      }),
-      corruptedNodes: signal([]),
-      validRolledUpNodes: signal([]),
+      isVerifying: vi.fn().mockReturnValue(_isVerifying),
+      error: vi.fn().mockReturnValue(_error),
+      currentDipStatus: vi.fn().mockReturnValue(_currentDipStatus),
+      dipClasses: vi.fn().mockReturnValue(_dipClasses),
+      overviewStats: vi.fn().mockReturnValue(_overviewStats),
+      corruptedNodes: vi.fn().mockReturnValue(_corruptedNodes),
+      validRolledUpNodes: vi.fn().mockReturnValue(_validRolledUpNodes),
       loadOverview: vi.fn(),
       verifyDip: vi.fn().mockResolvedValue(undefined),
       clearResults: vi.fn(),
@@ -43,7 +51,7 @@ describe('IntegrityDashboardComponent', () => {
   });
 
   it('should display progress section when verifying', () => {
-    mockFacade.isVerifying.set(true);
+    mockFacade.isVerifying().set(true);
     fixture.detectChanges();
 
     const compiled = fixture.nativeElement as HTMLElement;
@@ -53,7 +61,7 @@ describe('IntegrityDashboardComponent', () => {
   });
 
   it('should display summary and invalid-class panel when not verifying', () => {
-    mockFacade.isVerifying.set(false);
+    mockFacade.isVerifying().set(false);
     fixture.detectChanges();
 
     const compiled = fixture.nativeElement as HTMLElement;
