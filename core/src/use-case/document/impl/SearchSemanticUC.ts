@@ -9,13 +9,14 @@ import {
   WORD_EMBEDDING_PORT_TOKEN,
 } from "../../../repo/IWordEmbedding";
 import { IVectorRepository } from "../../../repo/IVectorRepository";
+import { VECTOR_REPOSITORY_TOKEN } from "../../../repo/VectorRepositoryToken";
 
 @injectable()
 export class SearchSemanticUC implements ISearchSemanticUC {
   constructor(
     @inject(DOCUMENTO_REPOSITORY_TOKEN)
     private readonly documentRepo: IDocumentRepository,
-    @inject(WORD_EMBEDDING_PORT_TOKEN)
+    @inject(VECTOR_REPOSITORY_TOKEN)
     private readonly vectorRepo: IVectorRepository,
     @inject(WORD_EMBEDDING_PORT_TOKEN)
     private readonly aiAdapter: IWordEmbedding,
