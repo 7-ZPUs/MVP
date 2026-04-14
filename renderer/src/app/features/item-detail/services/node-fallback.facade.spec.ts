@@ -74,12 +74,12 @@ describe('NodeFallbackFacade', () => {
     (mockCache.get as Mock).mockReturnValue(null);
     (mockGateway.invoke as Mock)
       .mockResolvedValueOnce({
-      id: 22,
-      dipId: 1,
-      uuid: 'DOC-CLASS-22',
-      name: 'Classe Contratti',
-      timestamp: '2026-04-07',
-      integrityStatus: 'VALID',
+        id: 22,
+        dipId: 1,
+        uuid: 'DOC-CLASS-22',
+        name: 'Classe Contratti',
+        timestamp: '2026-04-07',
+        integrityStatus: 'VALID',
       })
       .mockResolvedValueOnce([
         {
@@ -162,5 +162,81 @@ describe('NodeFallbackFacade', () => {
     expect(mockErrorHandler.handle).toHaveBeenCalledWith(rawError);
     expect(facade.getState()().error).toEqual(mappedError);
     expect(mockTelemetry.trackError).toHaveBeenCalledWith(mappedError);
+  });
+
+  it('lancia errore in toNumericId se ID non è numerico', async () => {
+    (mockCache.get as Mock).mockReturnValue(null);
+    const mockError = { message: 'ID nodo non valido' };
+    (mockErrorHandler.handle as Mock).mockReturnValue(mockError);
+
+    await facade.loadNode('DIP', 'abc');
+
+    expect(mockGateway.invoke).not.toHaveBeenCalled();
+    expect(mockErrorHandler.handle).toHaveBeenCalled();
+    expect(facade.getState()().error).toEqual(mockError);
+  });
+
+  it('carica e mappa il dettaglio DIP via gateway se non in cache', async () => {
+    (mockCache.get as Mock).mockReturnValue(null);
+    (mockGateway.invoke as Mock).mockResolvedValue({
+      id: 5,
+      uuid: 'DIP-UUID-123',
+      integrityStatus: 'VALID',
+    });
+
+    await facade.loadNode('DIP', '5');
+
+    expect(mockGateway.invoke).toHaveBeenCalledWith(IpcChannels.BROWSE_GET_DIP_BY_ID, 5, null);
+    expect(facade.getState()().detail?.type).toBe('DIP');
+    expect(facade.getState()().detail?.fields).toContainEqual(
+      expect.objectContaining({ label: 'UUID', value: 'DIP-UUID-123' }),
+    );
+  });
+
+  it('solleva errore se IPC restituisce null per un nodo richiesto (es. DIP)', async () => {
+    (mockCache.get as Mock).mockReturnValue(null);
+    (mockGateway.invoke as Mock).mockResolvedValue(null);
+    const mockError = { message: 'DIP non trovato' };
+    (mockErrorHandler.handle as Mock).mockReturnValue(mockError);
+
+    await facade.loadNode('DIP', '99');
+
+    expect(mockErrorHandler.handle).toHaveBeenCalled();
+    expect(facade.getState()().error).toEqual(mockError);
+  });
+
+  it('applica etichette fallback ai processi correlati se Oggetto manca (resolveProcessLabel)', async () => {
+    (mockCache.get as Mock).mockReturnValue(null);
+    (mockGateway.invoke as Mock)
+      .mockResolvedValueOnce({ id: 10, name: '' }) // DOCUMENT_CLASS senza nome forza fallback title
+      .mockResolvedValueOnce([
+        { id: 101, metadata: [{ name: 'Procedimento', value: 'Proc Alpha', type: 'string' }] },
+        { id: 102, metadata: [{ name: 'IdAggregazione', value: 'Agg Beta', type: 'string' }] },
+        { id: 103, uuid: 'PROC-UUID-X', metadata: [] },
+      ]);
+
+    await facade.loadNode('DOCUMENT_CLASS', '10');
+
+    const detail = facade.getState()().detail;
+    expect(detail?.title).toBe('Classe Documentale'); // Test fallback titolo classe documentale
+
+    const items = detail?.relatedSection?.items || [];
+    expect(items.length).toBe(3);
+    expect(items[0].label).toBe('Proc Alpha');
+    expect(items[1].label).toBe('Agg Beta');
+    expect(items[2].label).toBe('PROC-UUID-X');
+  });
+
+  it('gestisce processi null/undefined con list vuota in mapRelatedProcesses', async () => {
+    (mockCache.get as Mock).mockReturnValue(null);
+    (mockGateway.invoke as Mock)
+      .mockResolvedValueOnce({ id: 11, name: 'Classe B' })
+      .mockResolvedValueOnce(null);
+
+    await facade.loadNode('DOCUMENT_CLASS', '11');
+
+    const detail = facade.getState()().detail;
+    expect(detail?.relatedSection?.items).toEqual([]);
+    expect(detail?.hint).toBe('I metadati di processo verranno mostrati qui quando disponibili.');
   });
 });
