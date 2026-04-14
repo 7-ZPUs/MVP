@@ -12,6 +12,5 @@ export interface IPackageReaderService {
   readProcesses(): AsyncGenerator<Process>;
   readDocuments(): AsyncGenerator<Document>;
   readFiles(): AsyncGenerator<File>;
-  readFileBytes(filePath: string): Promise<NodeJS.ReadableStream>;
   setDipPath(dipPath: string): Promise<void>;
 }

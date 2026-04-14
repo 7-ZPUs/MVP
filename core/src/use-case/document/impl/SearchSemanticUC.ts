@@ -8,6 +8,7 @@ import {
   IWordEmbedding,
   WORD_EMBEDDING_PORT_TOKEN,
 } from "../../../repo/IWordEmbedding";
+import { IVectorRepository } from "../../../repo/IVectorRepository";
 
 @injectable()
 export class SearchSemanticUC implements ISearchSemanticUC {
@@ -15,12 +16,21 @@ export class SearchSemanticUC implements ISearchSemanticUC {
     @inject(DOCUMENTO_REPOSITORY_TOKEN)
     private readonly documentRepo: IDocumentRepository,
     @inject(WORD_EMBEDDING_PORT_TOKEN)
+    private readonly vectorRepo: IVectorRepository,
+    @inject(WORD_EMBEDDING_PORT_TOKEN)
     private readonly aiAdapter: IWordEmbedding,
   ) {}
 
   async execute(query: string): Promise<SemanticSearchMatch[]> {
     const queryVector = await this.aiAdapter.generateEmbedding(query);
-    return this.documentRepo.searchDocumentSemantic(queryVector);
+    let docIds = await this.vectorRepo.searchSimilarVectors(queryVector, 10);
+    return docIds.map(({ documentId, score }) => {
+      const document = this.documentRepo.getById(documentId);
+      if (!document) {
+        throw new Error(`Document with ID ${documentId} not found`);
+      }
+      return { document, score };
+    });
   }
 
   /**

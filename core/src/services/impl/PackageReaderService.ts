@@ -31,25 +31,31 @@ export class PackageReaderService implements IPackageReaderService {
     private readonly mapper: IDataMapper,
   ) {}
 
-  private async resolveDipIndexFilename(dipPath: string): Promise<string> {
-    const files = await this.fileSystemProvider.listFiles(dipPath);
+  private async resolveDipIndexFilename(): Promise<string> {
+    if (!this.dipPath) {
+      throw new Error("DiP path is not set.");
+    }
+    const files = await this.fileSystemProvider.listFiles(this.dipPath);
     const filename = files
       .filter((file) => DIP_INDEX_FILENAME_REGEX.test(file))
       .sort((a, b) => a.localeCompare(b))[0];
 
     if (!filename) {
       throw new Error(
-        `DiP index file not found in '${dipPath}'. Expected format: DiPIndex.<uuid>.xml`,
+        `DiP index file not found in '${this.dipPath}'. Expected format: DiPIndex.<uuid>.xml`,
       );
     }
 
     return filename;
   }
 
-  private async getParsedIndex(dipPath: string): Promise<any> {
-    const filename = await this.resolveDipIndexFilename(dipPath);
+  private async getParsedIndex(): Promise<any> {
+    if(!this.dipPath) {
+      throw new Error("DiP path is not set.");
+    }
+    const filename = await this.resolveDipIndexFilename();
     return this.parser.parse(
-      await this.fileSystemProvider.readTextFile(path.join(dipPath, filename)),
+      await this.fileSystemProvider.readTextFile(path.join(this.dipPath, filename)),
     );
   }
 
@@ -107,16 +113,8 @@ export class PackageReaderService implements IPackageReaderService {
     }
   }
 
-  public async readFileBytes(filePath: string): Promise<NodeJS.ReadableStream> {
-    if (!this.dipPath) {
-      throw new Error("DiP path is not set.");
-    }
-    const absolutePath = path.resolve(this.dipPath, filePath);
-    return this.fileSystemProvider.openReadStream(absolutePath);
-  }
-
   public async setDipPath(dipPath: string): Promise<void> {
     this.dipPath = dipPath;
-    this.mapper.setRawDipIndex(await this.getParsedIndex(dipPath));
+    this.mapper.setRawDipIndex(await this.getParsedIndex());
   }
 }

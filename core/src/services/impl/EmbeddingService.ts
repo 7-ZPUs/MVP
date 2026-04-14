@@ -1,9 +1,4 @@
 import { inject, injectable } from "tsyringe";
-
-import {
-  IPackageReaderService,
-  PACKAGE_READER_PORT_TOKEN,
-} from "../IPackageReaderService";
 import {
   IWordEmbedding,
   WORD_EMBEDDING_PORT_TOKEN,
@@ -11,7 +6,7 @@ import {
 import { IEmbeddingService } from "../IEmbeddingService";
 import { File } from "../../entity/File";
 import { FILE_SYSTEM_PROVIDER_TOKEN, IFileSystemPort } from "../../repo/impl/utils/IFileSystemProvider";
-import path from "path";
+import path from "node:path";
 
 export interface IEmbeddingConfiguration {
   chunkSize: number;

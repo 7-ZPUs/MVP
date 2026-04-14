@@ -80,7 +80,7 @@ import { PrintPort } from "./repo/impl/PrintPort";
 import { DATA_MAPPER_TOKEN } from "./repo/impl/utils/IDataMapper";
 import { DataMapper } from "./repo/impl/utils/DataMapper";
 import { FILE_SYSTEM_PROVIDER_TOKEN } from "./repo/impl/utils/IFileSystemProvider";
-import { FileSystemProvider } from "./repo/impl/utils/FileSystemProvider";
+import { FileSystemPort } from "./repo/impl/utils/FileSystemProvider";
 import { DIP_PARSER_TOKEN } from "./repo/impl/utils/IDipParser";
 import { XmlDipParser } from "./repo/impl/utils/XmlDipParser";
 import { TRANSACTION_MANAGER_TOKEN } from "./repo/ITransactionManager";
@@ -121,7 +121,7 @@ container.register(INDEX_DIP_TOKEN, {
 
 container.register(DATA_MAPPER_TOKEN, { useClass: DataMapper });
 container.register(FILE_SYSTEM_PROVIDER_TOKEN, {
-  useClass: FileSystemProvider,
+  useClass: FileSystemPort,
 });
 container.register(DIP_PARSER_TOKEN, { useClass: XmlDipParser });
 
