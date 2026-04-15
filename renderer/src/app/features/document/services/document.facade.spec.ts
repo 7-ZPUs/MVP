@@ -188,4 +188,104 @@ describe('DocumentFacade', () => {
     await expect(facade.getFileBlob('456')).rejects.toEqual(mappedError);
     expect(mockTelemetry.trackError).toHaveBeenCalledWith(mappedError);
   });
+
+  // --- NUOVI TEST AGGIUNTIVI PER LA COVERAGE ---
+  it('loadDocument dovrebbe usare la cache se presente invece di chiamare IPC', async () => {
+    (mockCache.get as Mock).mockReturnValue(mockDocumentData);
+
+    await facade.loadDocument('456');
+
+    expect(mockGateway.invoke).not.toHaveBeenCalled();
+    expect(facade.getState()().detail).toEqual(mockDocumentData);
+  });
+
+  it('loadDocument dovrebbe gestire errore e aggiornare lo stato con AppError', async () => {
+    const rawError = new Error('Errore simulato');
+    const mappedError: AppError = {
+      code: ErrorCode.IPC_ERROR,
+      message: 'Errore simulato',
+      source: 'Sim',
+      category: ErrorCategory.IO,
+      severity: ErrorSeverity.ERROR,
+      recoverable: true,
+      context: null,
+      detail: null,
+    };
+    (mockCache.get as Mock).mockReturnValue(null);
+    (mockGateway.invoke as Mock).mockRejectedValue(rawError);
+    (mockErrorHandler.handle as Mock).mockReturnValue(mappedError);
+
+    await facade.loadDocument('999');
+
+    expect(facade.getState()().error).toEqual(mappedError);
+    expect(facade.getState()().loading).toBe(false);
+    expect(mockTelemetry.trackError).toHaveBeenCalledWith(mappedError);
+  });
+
+  it('loadDocument dovrebbe tentare il fallback del mimeType in base al nome file', async () => {
+    (mockCache.get as Mock).mockReturnValue(null);
+
+    // Cambiamo il filename per assicurarci che mapDocumentDtoToDetail non estragga un mimetype!
+    const mockDataUnsupported = {
+      ...mockDocumentData,
+      fileName: 'documento_sconosciuto.xyz',
+    };
+
+    // Prima chiamata (BROWSE_GET_DOCUMENT_BY_ID)
+    (mockGateway.invoke as Mock).mockResolvedValueOnce(mockDataUnsupported);
+    // Seconda chiamata (BROWSE_GET_FILE_BY_DOCUMENT per esplorare nome file)
+    (mockGateway.invoke as Mock).mockResolvedValueOnce([
+      { id: 1, isMain: true, filename: 'test_fallback.pdf' },
+    ]);
+
+    await facade.loadDocument('456');
+
+    expect(mockGateway.invoke).toHaveBeenCalledTimes(2);
+    expect(facade.getState()().detail?.mimeType).toBe(MimeType.PDF);
+  });
+
+  it('getFileBlob dovrebbe restituire il blob dalla cache se presente', async () => {
+    (mockCache.get as Mock).mockReturnValue(mockBlob);
+
+    const result = await facade.getFileBlob('456');
+
+    expect(mockGateway.invoke).not.toHaveBeenCalled();
+    expect(result).toEqual(mockBlob);
+  });
+
+  it('getFileBlob dovrebbe lanciare errore se id non è numerico', async () => {
+    const mappedError: AppError = {
+      code: ErrorCode.DOC_BLOB_LOAD_ERROR,
+      message: 'ID documento non numerico',
+      source: 'Facade',
+      category: ErrorCategory.VALIDATION,
+      severity: ErrorSeverity.ERROR,
+      recoverable: true,
+      context: null,
+      detail: null,
+    };
+    (mockErrorHandler.handle as Mock).mockReturnValue(mappedError);
+
+    await expect(facade.getFileBlob('abc')).rejects.toEqual(mappedError);
+    expect(mockErrorHandler.handle).toHaveBeenCalled();
+  });
+
+  it('getFileBlob dovrebbe lanciare errore se non ci sono file associati al documento', async () => {
+    (mockCache.get as Mock).mockReturnValue(null);
+    (mockGateway.invoke as Mock).mockResolvedValueOnce([]); // Nessun file
+
+    const mappedError: AppError = {
+      code: ErrorCode.DOC_BLOB_LOAD_ERROR,
+      message: 'Nessun file',
+      source: 'src',
+      category: ErrorCategory.IO,
+      severity: ErrorSeverity.ERROR,
+      recoverable: true,
+      context: null,
+      detail: null,
+    };
+    (mockErrorHandler.handle as Mock).mockReturnValue(mappedError);
+
+    await expect(facade.getFileBlob('456')).rejects.toEqual(mappedError);
+  });
 });

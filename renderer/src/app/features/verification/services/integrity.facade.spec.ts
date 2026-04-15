@@ -90,7 +90,7 @@ describe('IntegrityFacade', () => {
     expect(mockCache.invalidatePrefix).toHaveBeenCalledWith('process:');
     expect(mockCache.invalidatePrefix).toHaveBeenCalledWith('document:');
     expect(mockCache.invalidatePrefix).toHaveBeenCalledWith('node-fallback:');
-    expect(facade.currentDipStatus()).toBe(IntegrityStatusEnum.VALID);
+    expect(facade.currentDipStatus()()).toBe(IntegrityStatusEnum.VALID);
   });
 
   it('verifyItem DOCUMENT invalida la chiave documento specifica', async () => {
@@ -126,5 +126,70 @@ describe('IntegrityFacade', () => {
     expect(mockCache.invalidatePrefix).toHaveBeenCalledWith('process:');
     expect(mockCache.invalidatePrefix).toHaveBeenCalledWith('aggregate:');
     expect(mockCache.invalidatePrefix).toHaveBeenCalledWith('document:');
+  });
+
+  it('verifyItem AGGREGATE invalida aggregate/process e prefisso document', async () => {
+    mockGateway.checkProcessIntegrity.mockResolvedValue(IntegrityStatusEnum.VALID);
+
+    const result = await facade.verifyItem('44', 'AGGREGATE');
+
+    expect(result).toBe(IntegrityStatusEnum.VALID);
+    expect(mockGateway.checkProcessIntegrity).toHaveBeenCalledWith(44);
+    expect(mockCache.invalidate).toHaveBeenCalledWith('aggregate:44');
+    expect(mockCache.invalidate).toHaveBeenCalledWith('process:44');
+    expect(mockCache.invalidatePrefix).toHaveBeenCalledWith('document:');
+  });
+
+  it('verifyItem in errore ritorna UNKNOWN e aggiorna errore tramite handler', async () => {
+    const rawError = new Error('boom');
+    mockGateway.checkDocumentIntegrity.mockRejectedValue(rawError);
+
+    const result = await facade.verifyItem('55', 'DOCUMENT');
+
+    expect(result).toBe('UNKNOWN');
+    expect(mockErrorHandler.handle).toHaveBeenCalledTimes(1);
+
+    const handledError = mockErrorHandler.handle.mock.calls[0][0] as {
+      source?: string;
+      context?: { itemId: string; itemType: string; action: string };
+    };
+
+    expect(handledError.source).toBe('IntegrityFacade.verifyItem');
+    expect(handledError.context).toEqual({
+      itemId: '55',
+      itemType: 'DOCUMENT',
+      action: 'CHECK_ITEM_INTEGRITY',
+    });
+    expect(facade.error()()).toBe('errore test');
+  });
+
+  it('clearResults resetta stato, classi ed errore quando non sta verificando', async () => {
+    mockGateway.checkDipIntegrity.mockResolvedValue(IntegrityStatusEnum.INVALID);
+    mockGateway.getClassesByDipId.mockResolvedValue([{ id: 1, name: 'Classe A' }]);
+
+    await facade.verifyDip(1);
+    expect(facade.currentDipStatus()()).toBe(IntegrityStatusEnum.INVALID);
+    expect(facade.dipClasses()()).toEqual([{ id: 1, name: 'Classe A' }]);
+
+    facade.clearResults();
+
+    expect(facade.currentDipStatus()()).toBeNull();
+    expect(facade.dipClasses()()).toEqual([]);
+    expect(facade.error()()).toBeNull();
+  });
+
+  it('clearResults non modifica i dati se verifica in corso', async () => {
+    mockGateway.checkDipIntegrity.mockResolvedValue(IntegrityStatusEnum.VALID);
+    mockGateway.getClassesByDipId.mockResolvedValue([{ id: 2, name: 'Classe B' }]);
+
+    await facade.verifyDip(2);
+    (facade as any)._isVerifying.set(true);
+
+    facade.clearResults();
+
+    expect(facade.currentDipStatus()()).toBe(IntegrityStatusEnum.VALID);
+    expect(facade.dipClasses()()).toEqual([{ id: 2, name: 'Classe B' }]);
+
+    (facade as any)._isVerifying.set(false);
   });
 });
