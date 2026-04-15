@@ -72,7 +72,7 @@ test.describe('Navigazione e Filtri Parte 1 - Fullstack', () => {
       }
     };
 
-    await expect(page.getByRole('button', { name: 'Ricerca' })).toBeVisible(); // TS-21
+    await expect(page.getByRole('button', { name: 'Ricerca' })).toBeVisible(); // TS-29
     await expect(treeNodes.first()).toBeVisible(); // TS-1
 
     await clickToggle(0);
@@ -82,14 +82,14 @@ test.describe('Navigazione e Filtri Parte 1 - Fullstack', () => {
     await expect(treeNodes.nth(2)).toBeVisible(); // TS-12
 
     await clickToggle(2);
-    await expect(treeNodes.nth(3)).toBeVisible(); // TS-12
+    await expect(treeNodes.nth(3)).toBeVisible(); // TS-21
 
     await treeNodes.nth(3).click();
     await expect(page).toHaveURL(/#\/detail\/DOCUMENT\//); // TS-21
 
-    await expect(page.getByRole('button', { name: /apri anteprima/i })).toBeVisible(); // TS-19
+    await expect(page.getByRole('button', { name: /apri anteprima/i })).toBeVisible(); // TS-21
     await page.getByRole('button', { name: /apri anteprima/i }).click();
-    await expect(page.getByTestId('document-viewer').or(page.locator('app-document-viewer')).first()).toBeVisible(); // TS-19
+    await expect(page.getByTestId('document-viewer').or(page.locator('app-document-viewer')).first()).toBeVisible(); // TS-21
   }
 
   async function runSemanticBridgeFlow(): Promise<void> {
@@ -106,16 +106,23 @@ test.describe('Navigazione e Filtri Parte 1 - Fullstack', () => {
       .or(page.getByRole('button', { name: 'Riprova' }))
       .or(page.getByText(/nessun risultato trovato/i));
 
-    await expect(semanticOutcome.first()).toBeVisible(); // TS-24
+    await expect(semanticOutcome.first()).toBeVisible(); // TS-25
   }
 
-  for (const ts of [1, 8, 12, 19, 21]) {
-    test(`[TS-${ts}] happy path con backend/IPC reale`, async () => {
+  const navigationTitleByTs: Record<number, string> = {
+    1: `Verificare che l'utente possa visualizzare l'elenco di classi documentali nel DIP`,
+    8: `Verificare che in caso non vi siano processi associati alla classe documentale, l'utente possa visualizzare un messaggio di errore`,
+    12: `Verificare che in caso non vi siano documenti associati al processo, l'utente possa visualizzare un messaggio di errore`,
+    21: `Verificare che l'utente possa visualizzare l'anteprima di un documento selezionato`,
+  };
+
+  for (const ts of [1, 8, 12, 21]) {
+    test(`[TS-${ts}] ${navigationTitleByTs[ts]}`, async () => {
       await runBackendIpcHappyPath();
     });
   }
 
-  test('[TS-24] ricerca semantica con bridge Electron reale', async () => {
+  test(`[TS-25] Verificare che l'utente possa effettuare una ricerca semantica basata sui metadati dei documenti presenti nel DIP`, async () => {
     await runSemanticBridgeFlow();
   });
 });

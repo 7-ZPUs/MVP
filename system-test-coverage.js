@@ -3,7 +3,7 @@
 const fs = require('fs');
 
 // --- CONFIGURAZIONE ---
-const maxTSNumber = 309;
+const maxTSNumber = 379;
 const inputFile = 'test-results.json';
 const outputFile = 'coverage-report.md';
 // ----------------------
@@ -19,7 +19,7 @@ if (!fs.existsSync(inputFile)) {
 const rawData = fs.readFileSync(inputFile, 'utf-8');
 const testData = JSON.parse(rawData);
 
-// Inizializza la mappa delle coperture (TS-1 fino a TS-309)
+// Inizializza la mappa delle coperture (TS-1 fino a TS-379)
 const expectedTests = Array.from({ length: maxTSNumber }, (_, i) => `TS-${i + 1}`);
 const tsCoverage = {};
 for (const ts of expectedTests) {
@@ -38,6 +38,18 @@ function processSuites(suites) {
     // Se ci sono specifiche (i singoli "test()"), analizza i titoli
     if (suite.specs) {
       suite.specs.forEach(spec => {
+        const hasPassingITest = Array.isArray(spec.tests)
+          && spec.tests.some(test => {
+            if (!Array.isArray(test.results) || test.results.length === 0) return false;
+            const finalResult = test.results[test.results.length - 1];
+            return finalResult.status === 'passed';
+          });
+
+        // Conta copertura solo per i test che passano realmente.
+        if (!hasPassingITest) {
+          return;
+        }
+
         const title = spec.title;
         const file = spec.file.split('/').pop(); // Estrae solo il nome del file
         
@@ -68,7 +80,7 @@ function processSuites(suites) {
 processSuites(testData.suites);
 
 // --- GENERAZIONE REPORT MARKDOWN ---
-let report = '# 📊 Report Copertura Test di Sistema (TS-1 → TS-309)\n\n';
+let report = '# 📊 Report Copertura Test di Sistema (TS-1 → TS-379)\n\n';
 
 let stats = { missing: 0, single: 0, multiple: 0 };
 let tableRows = '';

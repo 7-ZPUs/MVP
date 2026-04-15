@@ -53,7 +53,7 @@ test.describe('Sessioni e Anagrafica Soggetti - Fullstack', () => {
     await treeNodes.nth(3).click();
   }
 
-  test('[FULLSTACK] Happy path caricamento metadati documento e sessione', async () => {
+  test(`[TS-242] Verificare che l'utente possa visualizzare le informazioni della sessione di versamento del processo di conservazione selezionato`, async () => {
     await ensureMainPageReady();
     await openFirstDocumentDetail();
 
@@ -67,7 +67,7 @@ test.describe('Sessioni e Anagrafica Soggetti - Fullstack', () => {
     ).toBeVisible();
   });
 
-  test('[FULLSTACK] Happy path caricamento classificazione e sezione soggetti', async () => {
+  test(`[TS-265] Verificare che l'utente possa visualizzare la lista dei soggetti coinvolti nel documento selezionato`, async () => {
     await ensureMainPageReady();
     await openFirstDocumentDetail();
 

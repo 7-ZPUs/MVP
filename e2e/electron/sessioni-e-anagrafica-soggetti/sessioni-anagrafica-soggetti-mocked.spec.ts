@@ -219,12 +219,12 @@ test.describe('Sessioni e Anagrafica Soggetti - Mocked', () => {
     });
   });
 
-  test('[TS-181] Visualizzare la data di fine della sessione di versamento', async ({ page }) => {
+  test(`[TS-244] Verificare che l'utente possa visualizzare la data di fine della sessione di versamento`, async ({ page }) => {
     const { sessionDetailsPage } = await openDocumentDetailWithMocks(page);
     await expect(sessionDetailsPage.sessionMetadataValue('SessioneVersamento.DataFine')).toContainText('2026-04-07 16:15:12');
   });
 
-  test('[TS-182] Messaggio assenza data fine se sessione di versamento non terminata', async ({ page }) => {
+  test(`[TS-245] Verificare che se la sessione di versamento non è ancora terminata, al posto della data di fine l'utente sia informato con un messaggio che indica l'assenza della data di fine`, async ({ page }) => {
     const { sessionDetailsPage } = await openDocumentDetailWithMocks(page, {
       metadataOverrides: {
         'SessioneVersamento.DataFine': 'Sessione di versamento non terminata.',
@@ -233,17 +233,17 @@ test.describe('Sessioni e Anagrafica Soggetti - Mocked', () => {
     await expect(sessionDetailsPage.sessionMetadataValue('SessioneVersamento.DataFine')).toContainText('Sessione di versamento non terminata.');
   });
 
-  test('[TS-183] Visualizzare UUID utente attivatore sessione versamento', async ({ page }) => {
+  test(`[TS-246] Verificare che l'utente possa visualizzare lo UUID dell'utente attivatore della sessione di versamento`, async ({ page }) => {
     const { sessionDetailsPage } = await openDocumentDetailWithMocks(page);
     await expect(sessionDetailsPage.sessionMetadataValue('SessioneVersamento.UUIDAttivatore')).toContainText('USR-ATT-VERS-001');
   });
 
-  test('[TS-184] Visualizzare UUID utente terminatore sessione versamento', async ({ page }) => {
+  test(`[TS-247] Verificare che l'utente possa visualizzare lo UUID dell'utente terminatore della sessione di versamento`, async ({ page }) => {
     const { sessionDetailsPage } = await openDocumentDetailWithMocks(page);
     await expect(sessionDetailsPage.sessionMetadataValue('SessioneVersamento.UUIDTerminatore')).toContainText('USR-TERM-VERS-001');
   });
 
-  test('[TS-185] Messaggio assenza UUID terminatore se sessione versamento non terminata', async ({ page }) => {
+  test(`[TS-248] Verificare che se la sessione di versamento non è ancora terminata, al posto dello UUID dell'utente terminatore l'utente sia informato con un messaggio che indica l'assenza dello UUID`, async ({ page }) => {
     const { sessionDetailsPage } = await openDocumentDetailWithMocks(page, {
       metadataOverrides: {
         'SessioneVersamento.UUIDTerminatore': 'Utente terminatore non disponibile: sessione non terminata.',
@@ -252,17 +252,17 @@ test.describe('Sessioni e Anagrafica Soggetti - Mocked', () => {
     await expect(sessionDetailsPage.sessionMetadataValue('SessioneVersamento.UUIDTerminatore')).toContainText('sessione non terminata');
   });
 
-  test('[TS-186] Visualizzare nome canale attivazione sessione versamento', async ({ page }) => {
+  test(`[TS-249] Verificare che l'utente possa visualizzare il nome del canale di attivazione della sessione di versamento`, async ({ page }) => {
     const { sessionDetailsPage } = await openDocumentDetailWithMocks(page);
     await expect(sessionDetailsPage.sessionMetadataValue('SessioneVersamento.CanaleAttivazione')).toContainText('PortaleWeb');
   });
 
-  test('[TS-187] Visualizzare nome canale terminazione sessione versamento', async ({ page }) => {
+  test(`[TS-250] Verificare che l'utente possa visualizzare il nome del canale di terminazione della sessione di versamento`, async ({ page }) => {
     const { sessionDetailsPage } = await openDocumentDetailWithMocks(page);
     await expect(sessionDetailsPage.sessionMetadataValue('SessioneVersamento.CanaleTerminazione')).toContainText('API-Submission');
   });
 
-  test('[TS-188] Messaggio assenza canale terminazione se sessione versamento non terminata', async ({ page }) => {
+  test(`[TS-251] Verificare che se la sessione di versamento non è ancora terminata, al posto del nome del canale di terminazione l'utente sia informato con un messaggio che indica l'assenza del nome del canale di terminazione`, async ({ page }) => {
     const { sessionDetailsPage } = await openDocumentDetailWithMocks(page, {
       metadataOverrides: {
         'SessioneVersamento.CanaleTerminazione': 'Canale di terminazione non disponibile: sessione non terminata.',
@@ -271,28 +271,28 @@ test.describe('Sessioni e Anagrafica Soggetti - Mocked', () => {
     await expect(sessionDetailsPage.sessionMetadataValue('SessioneVersamento.CanaleTerminazione')).toContainText('sessione non terminata');
   });
 
-  test('[TS-189] Visualizzare lo stato della sessione di versamento', async ({ page }) => {
+  test(`[TS-252] Verificare che l'utente possa visualizzare lo stato della sessione di versamento`, async ({ page }) => {
     const { sessionDetailsPage } = await openDocumentDetailWithMocks(page);
     await expect(sessionDetailsPage.sessionMetadataValue('SessioneVersamento.Stato')).toContainText('TERMINATA');
   });
 
-  test('[TS-190] Visualizzare info sessione conservazione processo selezionato', async ({ page }) => {
+  test(`[TS-253] Verificare che l'utente possa visualizzare le informazioni della sessione di conservazione del processo di conservazione selezionato`, async ({ page }) => {
     const { sessionDetailsPage } = await openDocumentDetailWithMocks(page);
     await expect(sessionDetailsPage.conservationProcessHeading).toBeVisible();
     await expect(sessionDetailsPage.conservationProcessRow('Processo:')).toContainText('PROC-CONS-001');
   });
 
-  test('[TS-191] Visualizzare data inizio sessione conservazione', async ({ page }) => {
+  test(`[TS-254] Verificare che l'utente possa visualizzare la data di inizio della sessione di conservazione`, async ({ page }) => {
     const { sessionDetailsPage } = await openDocumentDetailWithMocks(page);
     await expect(sessionDetailsPage.conservationProcessRow('Data Inizio:')).toContainText('2026-04-08 09:00:00');
   });
 
-  test('[TS-192] Visualizzare data fine sessione conservazione', async ({ page }) => {
+  test(`[TS-255] Verificare che l'utente possa visualizzare la data di fine della sessione di conservazione`, async ({ page }) => {
     const { sessionDetailsPage } = await openDocumentDetailWithMocks(page);
     await expect(sessionDetailsPage.sessionMetadataValue('SessioneConservazione.DataFine')).toContainText('2026-04-08 12:40:59');
   });
 
-  test('[TS-193] Messaggio assenza data fine se sessione conservazione non terminata', async ({ page }) => {
+  test(`[TS-256] Verificare che se la sessione di conservazione non è ancora terminata, al posto della data di fine l'utente sia informato con un messaggio che indica l'assenza della data di fine`, async ({ page }) => {
     const { sessionDetailsPage } = await openDocumentDetailWithMocks(page, {
       metadataOverrides: {
         'SessioneConservazione.DataFine': 'Sessione di conservazione non terminata.',
@@ -301,17 +301,17 @@ test.describe('Sessioni e Anagrafica Soggetti - Mocked', () => {
     await expect(sessionDetailsPage.sessionMetadataValue('SessioneConservazione.DataFine')).toContainText('Sessione di conservazione non terminata.');
   });
 
-  test('[TS-194] Visualizzare UUID utente attivatore sessione conservazione', async ({ page }) => {
+  test(`[TS-257] Verificare che l'utente possa visualizzare lo UUID dell'utente attivatore della sessione di conservazione`, async ({ page }) => {
     const { sessionDetailsPage } = await openDocumentDetailWithMocks(page);
     await expect(sessionDetailsPage.sessionMetadataValue('SessioneConservazione.UUIDAttivatore')).toContainText('USR-ATT-CONS-001');
   });
 
-  test('[TS-195] Visualizzare UUID utente terminatore sessione conservazione', async ({ page }) => {
+  test(`[TS-258] Verificare che l'utente possa visualizzare lo UUID dell'utente terminatore della sessione di conservazione`, async ({ page }) => {
     const { sessionDetailsPage } = await openDocumentDetailWithMocks(page);
     await expect(sessionDetailsPage.sessionMetadataValue('SessioneConservazione.UUIDTerminatore')).toContainText('USR-TERM-CONS-001');
   });
 
-  test('[TS-196] Messaggio assenza UUID terminatore se sessione conservazione non terminata', async ({ page }) => {
+  test(`[TS-259] Verificare che se la sessione di conservazione non è ancora terminata, al posto dello UUID dell'utente terminatore l'utente sia informato con un messaggio che indica l'assenza dello UUID`, async ({ page }) => {
     const { sessionDetailsPage } = await openDocumentDetailWithMocks(page, {
       metadataOverrides: {
         'SessioneConservazione.UUIDTerminatore': 'Utente terminatore non disponibile: sessione non terminata.',
@@ -320,17 +320,17 @@ test.describe('Sessioni e Anagrafica Soggetti - Mocked', () => {
     await expect(sessionDetailsPage.sessionMetadataValue('SessioneConservazione.UUIDTerminatore')).toContainText('sessione non terminata');
   });
 
-  test('[TS-197] Visualizzare nome canale attivazione sessione conservazione', async ({ page }) => {
+  test(`[TS-260] Verificare che l'utente possa visualizzare il nome del canale di attivazione della sessione di conservazione`, async ({ page }) => {
     const { sessionDetailsPage } = await openDocumentDetailWithMocks(page);
     await expect(sessionDetailsPage.sessionMetadataValue('SessioneConservazione.CanaleAttivazione')).toContainText('ConservazioneBatch');
   });
 
-  test('[TS-198] Visualizzare nome canale terminazione sessione conservazione', async ({ page }) => {
+  test(`[TS-261] Verificare che l'utente possa visualizzare il nome del canale di terminazione della sessione di conservazione`, async ({ page }) => {
     const { sessionDetailsPage } = await openDocumentDetailWithMocks(page);
     await expect(sessionDetailsPage.sessionMetadataValue('SessioneConservazione.CanaleTerminazione')).toContainText('ConservazioneBatch');
   });
 
-  test('[TS-199] Messaggio assenza canale terminazione se sessione conservazione non terminata', async ({ page }) => {
+  test(`[TS-262] Verificare che se la sessione di conservazione non è ancora terminata, al posto del nome del canale di terminazione l'utente sia informato con un messaggio che indica l'assenza del nome del canale di terminazione`, async ({ page }) => {
     const { sessionDetailsPage } = await openDocumentDetailWithMocks(page, {
       metadataOverrides: {
         'SessioneConservazione.CanaleTerminazione': 'Canale terminazione non disponibile: sessione non terminata.',
@@ -339,33 +339,33 @@ test.describe('Sessioni e Anagrafica Soggetti - Mocked', () => {
     await expect(sessionDetailsPage.sessionMetadataValue('SessioneConservazione.CanaleTerminazione')).toContainText('sessione non terminata');
   });
 
-  test('[TS-200] Visualizzare lo stato della sessione di conservazione', async ({ page }) => {
+  test(`[TS-263] Verificare che l'utente possa visualizzare lo stato della sessione di conservazione`, async ({ page }) => {
     const { sessionDetailsPage } = await openDocumentDetailWithMocks(page);
     await expect(sessionDetailsPage.sessionMetadataValue('SessioneConservazione.Stato')).toContainText('TERMINATA');
   });
 
-  test('[TS-201] Visualizzare descrizione documento selezionato', async ({ page }) => {
+  test(`[TS-264] Verificare che l'utente possa visualizzare la descrizione del documento selezionato`, async ({ page }) => {
     const { documentMetadataPage } = await openDocumentDetailWithMocks(page);
     await expect(documentMetadataPage.rowByLabel('Metadati Principali', 'Descrizione:')).toContainText('Documento con note operative per il procedimento selezionato.');
   });
 
-  test('[TS-202] Visualizzare lista soggetti coinvolti nel documento', async ({ page }) => {
+  test(`[TS-265] Verificare che l'utente possa visualizzare la lista dei soggetti coinvolti nel documento selezionato`, async ({ page }) => {
     const { subjectAnagraphicPage } = await openDocumentDetailWithMocks(page);
     await expect(subjectAnagraphicPage.subjectsHeading).toBeVisible();
     await expect(subjectAnagraphicPage.subjectCards).toHaveCount(6);
   });
 
-  test('[TS-203] Visualizzare ruolo del soggetto nel documento', async ({ page }) => {
+  test(`[TS-266] Verificare che per ogni soggetto coinvolto nel documento, l'utente possa visualizzare il ruolo del soggetto nel documento`, async ({ page }) => {
     const { subjectAnagraphicPage } = await openDocumentDetailWithMocks(page);
     await expect(subjectAnagraphicPage.subjectCardByRole('Autore')).toBeVisible();
   });
 
-  test('[TS-204] Visualizzare tipo di soggetto coinvolto', async ({ page }) => {
+  test(`[TS-267] Verificare che per ogni soggetto coinvolto nel documento, l'utente possa visualizzare il tipo di soggetto`, async ({ page }) => {
     const { subjectAnagraphicPage } = await openDocumentDetailWithMocks(page);
     await expect(subjectAnagraphicPage.subjectTypeBadgeByRole('Autore')).toContainText('PERSONA FISICA');
   });
 
-  test('[TS-205] Visualizzare tutti i dati legati a soggetto tipo Persona Fisica', async ({ page }) => {
+  test(`[TS-268] Verificare che se il soggetto coinvolto nel documento è di tipo Persona Fisica, l'utente possa visualizzare tutti i dati legati a questo tipo di soggetto`, async ({ page }) => {
     const { subjectAnagraphicPage } = await openDocumentDetailWithMocks(page);
     await expect(subjectAnagraphicPage.subjectFieldByRole('Autore', 'Nome:')).toContainText('Mario');
     await expect(subjectAnagraphicPage.subjectFieldByRole('Autore', 'Cognome:')).toContainText('Rossi');
@@ -373,27 +373,27 @@ test.describe('Sessioni e Anagrafica Soggetti - Mocked', () => {
     await expect(subjectAnagraphicPage.additionalSubjectMetadataValue('Soggetti.PF.IndirizziDigitali')).toContainText('mario.rossi@pec.it');
   });
 
-  test('[TS-206] Visualizzare nome soggetto (Persona Fisica)', async ({ page }) => {
+  test(`[TS-269] Verificare che se il soggetto coinvolto nel documento è di tipo Persona Fisica, l'utente possa visualizzare il nome del soggetto`, async ({ page }) => {
     const { subjectAnagraphicPage } = await openDocumentDetailWithMocks(page);
     await expect(subjectAnagraphicPage.subjectFieldByRole('Autore', 'Nome:')).toContainText('Mario');
   });
 
-  test('[TS-207] Visualizzare cognome soggetto (Persona Fisica)', async ({ page }) => {
+  test(`[TS-270] Verificare che se il soggetto coinvolto nel documento è di tipo Persona Fisica, l'utente possa visualizzare il cognome del soggetto`, async ({ page }) => {
     const { subjectAnagraphicPage } = await openDocumentDetailWithMocks(page);
     await expect(subjectAnagraphicPage.subjectFieldByRole('Autore', 'Cognome:')).toContainText('Rossi');
   });
 
-  test('[TS-208] Visualizzare codice fiscale soggetto (Persona Fisica)', async ({ page }) => {
+  test(`[TS-271] Verificare che se il soggetto coinvolto nel documento è di tipo Persona Fisica, l'utente possa visualizzare il codice fiscale del soggetto`, async ({ page }) => {
     const { subjectAnagraphicPage } = await openDocumentDetailWithMocks(page);
     await expect(subjectAnagraphicPage.subjectFieldByRole('Autore', 'CodiceFiscale:')).toContainText('RSSMRA80A01H501U');
   });
 
-  test('[TS-209] Visualizzare indirizzi digitali riferimento (Persona Fisica)', async ({ page }) => {
+  test(`[TS-272] Verificare che se il soggetto coinvolto nel documento è di tipo Persona Fisica, l'utente possa visualizzare gli indirizzi digitali di riferimento del soggetto`, async ({ page }) => {
     const { subjectAnagraphicPage } = await openDocumentDetailWithMocks(page);
     await expect(subjectAnagraphicPage.additionalSubjectMetadataValue('Soggetti.PF.IndirizziDigitali')).toContainText('mario.rossi@pec.it');
   });
 
-  test('[TS-210] Visualizzare tutti i dati legati a soggetto tipo Persona Giuridica', async ({ page }) => {
+  test(`[TS-273] Verificare che se il soggetto coinvolto nel documento è di tipo Persona Giuridica, l'utente possa visualizzare tutti i dati legati a questo tipo di soggetto`, async ({ page }) => {
     const { subjectAnagraphicPage } = await openDocumentDetailWithMocks(page);
     await expect(subjectAnagraphicPage.subjectFieldByRole('Destinatario', 'DenominazioneOrganizzazione:')).toContainText('ACME S.p.A.');
     await expect(subjectAnagraphicPage.subjectFieldByRole('Destinatario', 'CodiceFiscale_PartitaIva:')).toContainText('01234567890');
@@ -402,32 +402,32 @@ test.describe('Sessioni e Anagrafica Soggetti - Mocked', () => {
     await expect(subjectAnagraphicPage.additionalSubjectMetadataValue('Soggetti.PG.IndirizziDigitali')).toContainText('acme@pec.it');
   });
 
-  test('[TS-211] Visualizzare denominazione organizzazione (Persona Giuridica)', async ({ page }) => {
+  test(`[TS-274] Verificare che se il soggetto coinvolto nel documento è di tipo Persona Giuridica, l'utente possa visualizzare la denominazione dell'organizzazione del soggetto`, async ({ page }) => {
     const { subjectAnagraphicPage } = await openDocumentDetailWithMocks(page);
     await expect(subjectAnagraphicPage.subjectFieldByRole('Destinatario', 'DenominazioneOrganizzazione:')).toContainText('ACME S.p.A.');
   });
 
-  test('[TS-212] Visualizzare partita IVA soggetto (Persona Giuridica)', async ({ page }) => {
+  test(`[TS-275] Verificare che se il soggetto coinvolto nel documento è di tipo Persona Giuridica, l'utente possa visualizzare la partita IVA del soggetto`, async ({ page }) => {
     const { subjectAnagraphicPage } = await openDocumentDetailWithMocks(page);
     await expect(subjectAnagraphicPage.subjectFieldByRole('Destinatario', 'CodiceFiscale_PartitaIva:')).toContainText('01234567890');
   });
 
-  test('[TS-213] Visualizzare codice fiscale soggetto (Persona Giuridica)', async ({ page }) => {
+  test(`[TS-276] Verificare che se il soggetto coinvolto nel documento è di tipo Persona Giuridica, l'utente possa visualizzare il codice fiscale del soggetto`, async ({ page }) => {
     const { subjectAnagraphicPage } = await openDocumentDetailWithMocks(page);
     await expect(subjectAnagraphicPage.additionalSubjectMetadataValue('Soggetti.PG.CodiceFiscale')).toContainText('97654321000');
   });
 
-  test('[TS-214] Visualizzare denominazione ufficio soggetto (Persona Giuridica)', async ({ page }) => {
+  test(`[TS-277] Verificare che se il soggetto coinvolto nel documento è di tipo Persona Giuridica, l'utente possa visualizzare la denominazione dell'ufficio del soggetto`, async ({ page }) => {
     const { subjectAnagraphicPage } = await openDocumentDetailWithMocks(page);
     await expect(subjectAnagraphicPage.additionalSubjectMetadataValue('Soggetti.PG.DenominazioneUfficio')).toContainText('Ufficio Legale');
   });
 
-  test('[TS-215] Visualizzare indirizzi digitali riferimento (Persona Giuridica)', async ({ page }) => {
+  test(`[TS-278] Verificare che se il soggetto coinvolto nel documento è di tipo Persona Giuridica, l'utente possa visualizzare gli indirizzi digitali di riferimento del soggetto`, async ({ page }) => {
     const { subjectAnagraphicPage } = await openDocumentDetailWithMocks(page);
     await expect(subjectAnagraphicPage.additionalSubjectMetadataValue('Soggetti.PG.IndirizziDigitali')).toContainText('acme@pec.it');
   });
 
-  test('[TS-216] Visualizzare tutti i dati legati a soggetto tipo AS', async ({ page }) => {
+  test(`[TS-279] Verificare che se il soggetto coinvolto nel documento è di tipo AS, l'utente possa visualizzare tutti i dati legati a questo tipo di soggetto`, async ({ page }) => {
     const { subjectAnagraphicPage } = await openDocumentDetailWithMocks(page);
     await expect(subjectAnagraphicPage.subjectTypeBadgeByRole('RUP')).toContainText('ASSEGNATARIO');
     await expect(subjectAnagraphicPage.additionalSubjectMetadataValue('Soggetti.AS.Cognome')).toContainText('Verdi');
@@ -438,37 +438,37 @@ test.describe('Sessioni e Anagrafica Soggetti - Mocked', () => {
     await expect(subjectAnagraphicPage.additionalSubjectMetadataValue('Soggetti.AS.IndirizziDigitali')).toContainText('demografici@pec.comune.roma.it');
   });
 
-  test('[TS-217] Visualizzare cognome soggetto (AS)', async ({ page }) => {
+  test(`[TS-280] Verificare che se il soggetto coinvolto nel documento è di tipo AS, l'utente possa visualizzare il cognome del soggetto`, async ({ page }) => {
     const { subjectAnagraphicPage } = await openDocumentDetailWithMocks(page);
     await expect(subjectAnagraphicPage.additionalSubjectMetadataValue('Soggetti.AS.Cognome')).toContainText('Verdi');
   });
 
-  test('[TS-218] Visualizzare nome soggetto (AS)', async ({ page }) => {
+  test(`[TS-281] Verificare che se il soggetto coinvolto nel documento è di tipo AS, l'utente possa visualizzare il nome del soggetto`, async ({ page }) => {
     const { subjectAnagraphicPage } = await openDocumentDetailWithMocks(page);
     await expect(subjectAnagraphicPage.additionalSubjectMetadataValue('Soggetti.AS.Nome')).toContainText('Giulia');
   });
 
-  test('[TS-219] Visualizzare codice fiscale soggetto (AS)', async ({ page }) => {
+  test(`[TS-282] Verificare che se il soggetto coinvolto nel documento è di tipo AS, l'utente possa visualizzare il codice fiscale del soggetto`, async ({ page }) => {
     const { subjectAnagraphicPage } = await openDocumentDetailWithMocks(page);
     await expect(subjectAnagraphicPage.additionalSubjectMetadataValue('Soggetti.AS.CodiceFiscale')).toContainText('VRDGLI85C50H501R');
   });
 
-  test('[TS-220] Visualizzare denominazione organizzazione (AS)', async ({ page }) => {
+  test(`[TS-283] Verificare che se il soggetto coinvolto nel documento è di tipo AS, l'utente possa visualizzare la denominazione dell'organizzazione del soggetto`, async ({ page }) => {
     const { subjectAnagraphicPage } = await openDocumentDetailWithMocks(page);
     await expect(subjectAnagraphicPage.additionalSubjectMetadataValue('Soggetti.AS.DenominazioneOrganizzazione')).toContainText('Comune di Roma');
   });
 
-  test('[TS-221] Visualizzare denominazione ufficio soggetto (AS)', async ({ page }) => {
+  test(`[TS-284] Verificare che se il soggetto coinvolto nel documento è di tipo AS, l'utente possa visualizzare la denominazione dell'ufficio del soggetto`, async ({ page }) => {
     const { subjectAnagraphicPage } = await openDocumentDetailWithMocks(page);
     await expect(subjectAnagraphicPage.additionalSubjectMetadataValue('Soggetti.AS.DenominazioneUfficio')).toContainText('Servizi Demografici');
   });
 
-  test('[TS-222] Visualizzare indirizzi digitali riferimento (AS)', async ({ page }) => {
+  test(`[TS-285] Verificare che se il soggetto coinvolto nel documento è di tipo AS, l'utente possa visualizzare gli indirizzi digitali di riferimento del soggetto`, async ({ page }) => {
     const { subjectAnagraphicPage } = await openDocumentDetailWithMocks(page);
     await expect(subjectAnagraphicPage.additionalSubjectMetadataValue('Soggetti.AS.IndirizziDigitali')).toContainText('demografici@pec.comune.roma.it');
   });
 
-  test('[TS-223] Visualizzare tutti i dati legati a soggetto tipo PAI', async ({ page }) => {
+  test(`[TS-286] Verificare che se il soggetto coinvolto nel documento è di tipo PAI, l'utente possa visualizzare tutti i dati legati a questo tipo di soggetto`, async ({ page }) => {
     const { subjectAnagraphicPage } = await openDocumentDetailWithMocks(page);
     await expect(subjectAnagraphicPage.subjectTypeBadgeByRole('ProtocolloPAI')).toContainText('AMMINISTRAZIONI PUBBLICHE ITALIANE');
     await expect(subjectAnagraphicPage.additionalSubjectMetadataValue('Soggetti.PAI.DenominazioneAmministrazioneCodiceIPA')).toContainText('Comune di Torino - c_l219');
@@ -477,80 +477,80 @@ test.describe('Sessioni e Anagrafica Soggetti - Mocked', () => {
     await expect(subjectAnagraphicPage.additionalSubjectMetadataValue('Soggetti.PAI.IndirizziDigitali')).toContainText('protocollo@pec.comune.torino.it');
   });
 
-  test('[TS-224] Visualizzare denominazione amministrazione e codice IPA (PAI)', async ({ page }) => {
+  test(`[TS-287] Verificare che se il soggetto coinvolto nel documento è di tipo PAI, l'utente possa visualizzare la denominazione dell'amministrazione e il codice IPA del soggetto`, async ({ page }) => {
     const { subjectAnagraphicPage } = await openDocumentDetailWithMocks(page);
     await expect(subjectAnagraphicPage.additionalSubjectMetadataValue('Soggetti.PAI.DenominazioneAmministrazioneCodiceIPA')).toContainText('Comune di Torino - c_l219');
   });
 
-  test('[TS-225] Visualizzare denominazione amministrazione AOO e codice IPA AOO (PAI)', async ({ page }) => {
+  test(`[TS-288] Verificare che se il soggetto coinvolto nel documento è di tipo PAI, l'utente possa visualizzare la denominazione dell'amministrazione AOO e il codice IPA AOO del soggetto`, async ({ page }) => {
     const { subjectAnagraphicPage } = await openDocumentDetailWithMocks(page);
     await expect(subjectAnagraphicPage.additionalSubjectMetadataValue('Soggetti.PAI.AOO.CodiceIPA')).toContainText('AOO-TORINO-01');
   });
 
-  test('[TS-226] Visualizzare denominazione amministrazione UOR e codice IPA UOR (PAI)', async ({ page }) => {
+  test(`[TS-289] Verificare che se il soggetto coinvolto nel documento è di tipo PAI, l'utente possa visualizzare la denominazione dell'amministrazione UOR e il codice IPA UOR del soggetto`, async ({ page }) => {
     const { subjectAnagraphicPage } = await openDocumentDetailWithMocks(page);
     await expect(subjectAnagraphicPage.additionalSubjectMetadataValue('Soggetti.PAI.UOR.CodiceIPA')).toContainText('UOR-TORINO-42');
   });
 
-  test('[TS-227] Visualizzare indirizzi digitali riferimento (PAI)', async ({ page }) => {
+  test(`[TS-290] Verificare che se il soggetto coinvolto nel documento è di tipo PAI, l'utente possa visualizzare gli indirizzi digitali di riferimento del soggetto`, async ({ page }) => {
     const { subjectAnagraphicPage } = await openDocumentDetailWithMocks(page);
     await expect(subjectAnagraphicPage.additionalSubjectMetadataValue('Soggetti.PAI.IndirizziDigitali')).toContainText('protocollo@pec.comune.torino.it');
   });
 
-  test('[TS-228] Visualizzare tutti i dati legati a soggetto tipo PAE', async ({ page }) => {
+  test(`[TS-291] Verificare che se il soggetto coinvolto nel documento è di tipo PAE, l'utente possa visualizzare tutti i dati legati a questo tipo di soggetto`, async ({ page }) => {
     const { subjectAnagraphicPage } = await openDocumentDetailWithMocks(page);
     await expect(subjectAnagraphicPage.additionalSubjectMetadataValue('Soggetti.PAE.DenominazioneAmministrazione')).toContainText('Ville de Paris');
     await expect(subjectAnagraphicPage.additionalSubjectMetadataValue('Soggetti.PAE.DenominazioneUfficio')).toContainText('Direction Generale');
     await expect(subjectAnagraphicPage.additionalSubjectMetadataValue('Soggetti.PAE.IndirizziDigitali')).toContainText('courrier@paris.fr');
   });
 
-  test('[TS-229] Visualizzare denominazione amministrazione soggetto (PAE)', async ({ page }) => {
+  test(`[TS-292] Verificare che se il soggetto coinvolto nel documento è di tipo PAE, l'utente possa visualizzare la denominazione dell'amministrazione del soggetto`, async ({ page }) => {
     const { subjectAnagraphicPage } = await openDocumentDetailWithMocks(page);
     await expect(subjectAnagraphicPage.additionalSubjectMetadataValue('Soggetti.PAE.DenominazioneAmministrazione')).toContainText('Ville de Paris');
   });
 
-  test('[TS-230] Visualizzare denominazione ufficio soggetto (PAE)', async ({ page }) => {
+  test(`[TS-293] Verificare che se il soggetto coinvolto nel documento è di tipo PAE, l'utente possa visualizzare la denominazione dell'ufficio del soggetto`, async ({ page }) => {
     const { subjectAnagraphicPage } = await openDocumentDetailWithMocks(page);
     await expect(subjectAnagraphicPage.additionalSubjectMetadataValue('Soggetti.PAE.DenominazioneUfficio')).toContainText('Direction Generale');
   });
 
-  test('[TS-231] Visualizzare indirizzi digitali riferimento (PAE)', async ({ page }) => {
+  test(`[TS-294] Verificare che se il soggetto coinvolto nel documento è di tipo PAE, l'utente possa visualizzare gli indirizzi digitali di riferimento del soggetto`, async ({ page }) => {
     const { subjectAnagraphicPage } = await openDocumentDetailWithMocks(page);
     await expect(subjectAnagraphicPage.additionalSubjectMetadataValue('Soggetti.PAE.IndirizziDigitali')).toContainText('courrier@paris.fr');
   });
 
-  test('[TS-232] Visualizzare tutti i dati legati a soggetto tipo SW', async ({ page }) => {
+  test(`[TS-295] Verificare che se il soggetto coinvolto nel documento è di tipo SW, l'utente possa visualizzare tutti i dati legati a questo tipo di soggetto`, async ({ page }) => {
     const { subjectAnagraphicPage } = await openDocumentDetailWithMocks(page);
     await expect(subjectAnagraphicPage.subjectCardByRole('SistemaMittente')).toBeVisible();
     await expect(subjectAnagraphicPage.additionalSubjectMetadataValue('Soggetti.SW.DenominazioneSistema')).toContainText('Sistema Interoperabilita ND');
   });
 
-  test('[TS-233] Visualizzare denominazione sistema soggetto (SW)', async ({ page }) => {
+  test(`[TS-296] Verificare che se il soggetto coinvolto nel documento è di tipo SW, l'utente possa visualizzare la denominazione del sistema del soggetto`, async ({ page }) => {
     const { subjectAnagraphicPage } = await openDocumentDetailWithMocks(page);
     await expect(subjectAnagraphicPage.additionalSubjectMetadataValue('Soggetti.SW.DenominazioneSistema')).toContainText('Sistema Interoperabilita ND');
   });
 
-  test('[TS-234] Visualizzare indice classificazione documento selezionato', async ({ page }) => {
+  test(`[TS-297] Verificare che l'utente possa visualizzare l'indice di classificazione del documento selezionato`, async ({ page }) => {
     const { documentMetadataPage } = await openDocumentDetailWithMocks(page);
     await expect(documentMetadataPage.rowByLabel('Classificazione', 'Indice:')).toContainText('A.12.04');
   });
 
-  test('[TS-235] Visualizzare descrizione indice classificazione documento selezionato', async ({ page }) => {
+  test(`[TS-298] Verificare che l'utente possa visualizzare la descrizione dell'indice di classificazione del documento selezionato`, async ({ page }) => {
     const { documentMetadataPage } = await openDocumentDetailWithMocks(page);
     await expect(documentMetadataPage.rowByLabel('Classificazione', 'Descrizione:')).toContainText('Classificazione Atti Dirigenziali');
   });
 
-  test('[TS-236] Visualizzare URI piano classificazione documento selezionato', async ({ page }) => {
+  test(`[TS-299] Verificare che l'utente possa visualizzare l'URI del piano di classificazione del documento selezionato`, async ({ page }) => {
     const { documentMetadataPage } = await openDocumentDetailWithMocks(page);
     await expect(documentMetadataPage.rowByLabel('Classificazione', 'Piano (URI):')).toContainText('https://piano.example.gov/class/A.12.04');
   });
 
-  test('[TS-237] Visualizzare tempo conservazione effettivo se diverso da aggregazione', async ({ page }) => {
+  test(`[TS-300] Verificare che se il documento selezionato ha un tempo di conservazione diverso da quello assegnato all'aggregazione documentale informatica a cui appartiene, l'utente possa visualizzare il tempo di conservazione effettivo del documento`, async ({ page }) => {
     const { documentMetadataPage } = await openDocumentDetailWithMocks(page);
     await expect(documentMetadataPage.additionalMetadataValue('TempoConservazioneEffettivo')).toContainText('10 anni (override documento)');
   });
 
-  test('[TS-238] Messaggio coincidenza tempo conservazione con aggregazione', async ({ page }) => {
+  test(`[TS-301] Verificare che se il tempo di conservazione del documento coincide con quello assegnato all'aggregazione documentale a cui appartiene, l'utente sia informato con un messaggio che indica questa coincidenza`, async ({ page }) => {
     const { documentMetadataPage } = await openDocumentDetailWithMocks(page, {
       metadataOverrides: {
         TempoConservazioneMessaggio: 'Il tempo di conservazione coincide con quello dell aggregazione.',
@@ -559,14 +559,14 @@ test.describe('Sessioni e Anagrafica Soggetti - Mocked', () => {
     await expect(documentMetadataPage.additionalMetadataValue('TempoConservazioneMessaggio')).toContainText('coincide con quello dell aggregazione');
   });
 
-  test('[TS-239] Visualizzare note relative al documento selezionato', async ({ page }) => {
+  test(`[TS-302] Verificare che l'utente possa visualizzare le note relative al documento selezionato`, async ({ page }) => {
     const { documentMetadataPage } = await openDocumentDetailWithMocks(page, {
       noteValue: 'Nota operativa: controllare firma e allegati prima della chiusura.',
     });
     await expect(documentMetadataPage.rowByLabel('Metadati Principali', 'Note:')).toContainText('Nota operativa: controllare firma e allegati prima della chiusura.');
   });
 
-  test('[TS-240] Messaggio di informativa in caso di note assenti o vuote', async ({ page }) => {
+  test(`[TS-303] Verificare che se le note del documento sono assenti o vuote, l'utente sia informato con un messaggio che indica l'assenza delle note`, async ({ page }) => {
     const { documentMetadataPage } = await openDocumentDetailWithMocks(page, {
       noteValue: '',
       metadataOverrides: {
@@ -574,5 +574,47 @@ test.describe('Sessioni e Anagrafica Soggetti - Mocked', () => {
       },
     });
     await expect(documentMetadataPage.additionalMetadataValue('NoteDocumento.Messaggio')).toContainText('Nessuna nota presente per il documento selezionato.');
+  });
+
+  const subjectRoles = [
+    { role: 'Autore', label: 'Autore', type: 'PERSONA FISICA' },
+    { role: 'Destinatario', label: 'Destinatario', type: 'PERSONA GIURIDICA' },
+    { role: 'RUP', label: 'RUP', type: 'ASSEGNATARIO' },
+    { role: 'ProtocolloPAI', label: 'Protocollo PAI', type: 'AMMINISTRAZIONI PUBBLICHE ITALIANE' },
+    { role: 'InteroperabilitaPAE', label: 'Interoperabilita PAE', type: 'AMMINISTRAZIONI PUBBLICHE ESTERE' },
+    { role: 'SistemaMittente', label: 'Sistema Mittente', type: 'SOFTWARE' },
+  ] as const;
+
+  test(`[TS-374] Verificare che l'utente possa visualizzare ogni ruolo disponibile per il tipo di documento selezionato`, async ({ page }) => {
+    const { subjectAnagraphicPage } = await openDocumentDetailWithMocks(page);
+
+    await expect(subjectAnagraphicPage.subjectCards).toHaveCount(subjectRoles.length);
+    for (const { role } of subjectRoles) {
+      await expect(subjectAnagraphicPage.subjectCardByRole(role)).toBeVisible();
+    }
+  });
+
+  test(`[TS-375] Verificare che l'utente possa visualizzare il nome del ruolo nella lista dei ruoli disponibili per il tipo di documento selezionato`, async ({ page }) => {
+    const { subjectAnagraphicPage } = await openDocumentDetailWithMocks(page);
+
+    for (const { role, label } of subjectRoles) {
+      await expect(subjectAnagraphicPage.subjectCardByRole(role).getByTestId('subject-role')).toContainText(label);
+    }
+  });
+
+  test(`[TS-376] Verificare che l'utente possa visualizzare i tipi di soggetto per ogni soggetto disponibile per il ruolo selezionato`, async ({ page }) => {
+    const { subjectAnagraphicPage } = await openDocumentDetailWithMocks(page);
+
+    for (const { role } of subjectRoles) {
+      await expect(subjectAnagraphicPage.subjectTypeBadgeByRole(role)).toBeVisible();
+    }
+  });
+
+  test(`[TS-377] Verificare che l'utente possa visualizzare il nome del tipo di soggetto nella lista dei tipi di soggetto per il ruolo selezionato`, async ({ page }) => {
+    const { subjectAnagraphicPage } = await openDocumentDetailWithMocks(page);
+
+    for (const { role, type } of subjectRoles) {
+      await expect(subjectAnagraphicPage.subjectTypeBadgeByRole(role)).toContainText(type);
+    }
   });
 });

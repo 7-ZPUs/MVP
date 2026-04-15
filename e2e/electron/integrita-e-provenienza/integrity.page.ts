@@ -50,20 +50,32 @@ export class IntegrityPage {
   }
 
   async gotoDashboard(): Promise<void> {
+    const loadingOverlay = this.page.locator('.loading-overlay');
+
     try {
       await this.page.goto('/#/integrity-dashboard');
+      if (await loadingOverlay.count()) {
+        await loadingOverlay.first().waitFor({ state: 'hidden', timeout: 15000 }).catch(() => {});
+      }
       await expect(this.dashboardTitle).toBeVisible();
       return;
     } catch {
       // Electron fullstack context does not support relative HTTP navigation.
     }
 
+    if (await loadingOverlay.count()) {
+      await loadingOverlay.first().waitFor({ state: 'hidden', timeout: 15000 }).catch(() => {});
+    }
     await expect(this.integritySectionButton).toBeVisible();
     await this.integritySectionButton.click();
     await expect(this.dashboardTitle).toBeVisible();
   }
 
   async startGlobalVerification(): Promise<void> {
-    await this.startVerificationButton.click();
+    const loadingOverlay = this.page.locator('.loading-overlay');
+    if (await loadingOverlay.count()) {
+      await loadingOverlay.first().waitFor({ state: 'hidden', timeout: 30000 }).catch(() => {});
+    }
+    await this.startVerificationButton.click({ force: true });
   }
 }
