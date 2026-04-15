@@ -96,10 +96,29 @@ export class DipNavigationPage {
   }
 
   async gotoSearchPage(): Promise<void> {
+    const loadingOverlay = this.page.locator('.loading-overlay');
+
+    await this.page.goto('/#/search');
+    if (await loadingOverlay.count()) {
+      await loadingOverlay.first().waitFor({ state: 'hidden', timeout: 15000 }).catch(() => {});
+    }
+    if (await this.searchInput.isVisible().catch(() => false)) {
+      return;
+    }
+
     await this.page.goto('/');
+    if (await loadingOverlay.count()) {
+      await loadingOverlay.first().waitFor({ state: 'hidden', timeout: 15000 }).catch(() => {});
+    }
     await expect(this.toolbarSearchButton).toBeVisible();
-    await this.toolbarSearchButton.click();
-    await expect(this.searchInput).toBeVisible();
+    await this.toolbarSearchButton.click({ force: true });
+    if (!(await this.searchInput.isVisible().catch(() => false))) {
+      if (await loadingOverlay.count()) {
+        await loadingOverlay.first().waitFor({ state: 'hidden', timeout: 60000 }).catch(() => {});
+      }
+      await this.toolbarSearchButton.click({ force: true });
+    }
+    await expect(this.searchInput).toBeVisible({ timeout: 15000 });
   }
 
   async expandTreeLevel(toggleIndex: number): Promise<void> {

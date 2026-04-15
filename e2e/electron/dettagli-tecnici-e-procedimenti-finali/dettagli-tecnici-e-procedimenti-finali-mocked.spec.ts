@@ -245,6 +245,9 @@ async function openAggregateDetailWithMocks(page: Page, options: AggregateMockOp
   return { administrativeProceduresPage };
 }
 
+type DocumentDetailFixtures = Awaited<ReturnType<typeof openDocumentDetailWithMocks>>;
+type AggregateDetailFixtures = Awaited<ReturnType<typeof openAggregateDetailWithMocks>>;
+
 test.describe('Dettagli Tecnici e Procedimenti Finali - Mocked', () => {
   test.beforeEach(async ({ page }) => {
     await page.addInitScript(() => {
@@ -664,4 +667,557 @@ test.describe('Dettagli Tecnici e Procedimenti Finali - Mocked', () => {
     await expect(technicalMetadataPage.formatTipo).toContainText('application/pdf');
     await expect(technicalMetadataPage.formatSoftwareInfoRow).toContainText('DocSuite 5.4.1');
   });
+
+  const documentCoverageCases: Array<{
+    ts: number;
+    title: string;
+    options?: DocumentMockOptions;
+    verify: (fixtures: DocumentDetailFixtures) => Promise<void>;
+  }> = [
+    {
+      ts: 310,
+      title: "Verificare che l'utente possa visualizzare il numero di registrazione del documento non protocollato selezionato",
+      options: {
+        metadataOverrides: {
+          NumeroProtocolloDocumento: '',
+          NumeroRegistrazioneDocumento: 'REG-ONLY-33',
+        },
+      },
+      verify: async ({ technicalMetadataPage }) => {
+        await expect(technicalMetadataPage.registrationProtocollo).toContainText('REG-ONLY-33');
+      },
+    },
+    {
+      ts: 311,
+      title: "Verificare che l'utente possa visualizzare il numero di protocollo del documento protocollato selezionato",
+      options: {
+        metadataOverrides: {
+          NumeroRegistrazioneDocumento: '',
+          NumeroProtocolloDocumento: 'PROT-ONLY-77',
+        },
+      },
+      verify: async ({ technicalMetadataPage }) => {
+        await expect(technicalMetadataPage.registrationProtocollo).toContainText('PROT-ONLY-77');
+      },
+    },
+    {
+      ts: 312,
+      title: "Verificare che l'utente possa visualizzare il codice identificativo del registro di appartenenza del documento selezionato",
+      verify: async ({ technicalMetadataPage }) => {
+        await expect(technicalMetadataPage.registrationCodice).toContainText('REG-COD-01');
+      },
+    },
+    {
+      ts: 313,
+      title: "Verificare che l'utente possa visualizzare la tipologia documentale del documento selezionato",
+      verify: async ({ technicalMetadataPage }) => {
+        await expect(technicalMetadataPage.documentTipo).toContainText('Determina');
+      },
+    },
+    {
+      ts: 314,
+      title: "Verificare che l'utente possa visualizzare la modalità di formazione del documento selezionato",
+      verify: async ({ technicalMetadataPage }) => {
+        await expect(technicalMetadataPage.documentFormazione).toContainText('NativaDigitale');
+      },
+    },
+    {
+      ts: 315,
+      title: "Verificare che l'utente possa visualizzare lo stato di riservatezza del documento selezionato",
+      verify: async ({ technicalMetadataPage }) => {
+        await expect(technicalMetadataPage.documentRiservatezza).toContainText('riservato');
+      },
+    },
+    {
+      ts: 316,
+      title: "Verificare che l'utente possa visualizzare il tipo di formato del documento selezionato",
+      verify: async ({ technicalMetadataPage }) => {
+        await expect(technicalMetadataPage.formatTipo).toContainText('application/pdf');
+      },
+    },
+    {
+      ts: 317,
+      title: "Verificare che l'utente possa visualizzare il nome del prodotto software che ha generato il documento selezionato",
+      verify: async ({ technicalMetadataPage }) => {
+        await expect(technicalMetadataPage.formatProdotto).toContainText('DocSuite');
+      },
+    },
+    {
+      ts: 318,
+      title: "Verificare che l'utente possa visualizzare la versione del prodotto software che ha generato il documento selezionato",
+      verify: async ({ technicalMetadataPage }) => {
+        await expect(technicalMetadataPage.formatProdotto).toContainText('5.4.1');
+      },
+    },
+    {
+      ts: 319,
+      title: "Verificare che l'utente possa visualizzare il produttore del software che ha generato il documento selezionato",
+      verify: async ({ technicalMetadataPage }) => {
+        await expect(technicalMetadataPage.formatProduttore).toContainText('ACME Software');
+      },
+    },
+    {
+      ts: 320,
+      title: "Verificare che l'utente possa visualizzare le informazioni di verifica del documento selezionato",
+      verify: async ({ technicalMetadataPage }) => {
+        await expect(technicalMetadataPage.verificationHeading).toBeVisible();
+        await expect(technicalMetadataPage.verificationFirma).toBeVisible();
+        await expect(technicalMetadataPage.verificationSigillo).toBeVisible();
+        await expect(technicalMetadataPage.verificationMarcatura).toBeVisible();
+      },
+    },
+    {
+      ts: 321,
+      title: "Verificare che l'utente possa visualizzare se il documento selezionato è firmato digitalmente",
+      verify: async ({ technicalMetadataPage }) => {
+        await expect(technicalMetadataPage.verificationFirma).toContainText('SI');
+      },
+    },
+    {
+      ts: 322,
+      title: "Verificare che l'utente possa visualizzare se il documento selezionato è sigillato elettronicamente",
+      verify: async ({ technicalMetadataPage }) => {
+        await expect(technicalMetadataPage.verificationSigillo).toContainText('SI');
+      },
+    },
+    {
+      ts: 323,
+      title: "Verificare che l'utente possa visualizzare se il documento selezionato è dotato di marcatura temporale",
+      verify: async ({ technicalMetadataPage }) => {
+        await expect(technicalMetadataPage.verificationMarcatura).toContainText('SI');
+      },
+    },
+    {
+      ts: 324,
+      title: "Verificare che l'utente possa visualizzare se vi è conformità alle copie immagine su supporto informatico del documento selezionato",
+      verify: async ({ technicalMetadataPage }) => {
+        await expect(technicalMetadataPage.verificationConformitaCopie).toContainText('CONFORME');
+      },
+    },
+    {
+      ts: 325,
+      title: "Verificare che l'utente possa visualizzare la versione del documento selezionato",
+      verify: async ({ technicalMetadataPage }) => {
+        await expect(technicalMetadataPage.documentVersione).toContainText('3.2');
+      },
+    },
+    {
+      ts: 326,
+      title: "Verificare che l'utente possa visualizzare il nome del documento selezionato",
+      verify: async ({ technicalMetadataPage }) => {
+        await expect(technicalMetadataPage.documentNome).toContainText('Determina-2026.pdf');
+      },
+    },
+    {
+      ts: 327,
+      title: "Verificare che l'utente possa visualizzare le informazioni degli allegati del documento selezionato",
+      verify: async ({ attachmentsPage }) => {
+        await expect(attachmentsPage.heading).toBeVisible();
+        await expect(attachmentsPage.list).toBeVisible();
+      },
+    },
+    {
+      ts: 328,
+      title: "Verificare che l'utente possa visualizzare il numero di allegati del documento selezionato",
+      verify: async ({ attachmentsPage }) => {
+        await expect(attachmentsPage.numeroRow).toContainText('2');
+      },
+    },
+    {
+      ts: 329,
+      title: "Verificare che l'utente possa visualizzare il singolo allegato",
+      verify: async ({ attachmentsPage }) => {
+        await expect(attachmentsPage.item(0)).toBeVisible();
+      },
+    },
+    {
+      ts: 330,
+      title: "Verificare che se il documento ha almeno un allegato, l'utente possa visualizzare l'identificativo di ciascun allegato",
+      verify: async ({ attachmentsPage }) => {
+        await expect(attachmentsPage.itemId(0)).toContainText('ALL-001');
+      },
+    },
+    {
+      ts: 331,
+      title: "Verificare che se l'informazione sull'identificativo dell'allegato non è disponibile, l'utente sia informato con un messaggio di errore",
+      options: {
+        attachments: [{ id: '', descrizione: 'Allegato senza identificativo' }],
+      },
+      verify: async ({ attachmentsPage }) => {
+        await expect(attachmentsPage.itemId(0)).toContainText('Identificativo allegato non disponibile');
+      },
+    },
+    {
+      ts: 332,
+      title: "Verificare che se il documento ha almeno un allegato, l'utente possa visualizzare la descrizione di ciascun allegato",
+      verify: async ({ attachmentsPage }) => {
+        await expect(attachmentsPage.itemDescription(0)).toContainText('Allegato tecnico principale');
+      },
+    },
+    {
+      ts: 333,
+      title: "Verificare che se l'informazione sulla descrizione dell'allegato non è disponibile, l'utente sia informato con un messaggio di errore",
+      options: {
+        attachments: [{ id: 'ALL-ERR-01', descrizione: '' }],
+      },
+      verify: async ({ attachmentsPage }) => {
+        await expect(attachmentsPage.itemDescription(0)).toContainText('Descrizione allegato non disponibile');
+      },
+    },
+    {
+      ts: 334,
+      title: "Verificare che se il documento non ha allegati, l'utente sia informato con un messaggio che indica l'assenza degli allegati",
+      options: {
+        attachments: [],
+      },
+      verify: async ({ attachmentsPage }) => {
+        await expect(attachmentsPage.emptyMessage).toContainText('Nessun dettaglio allegato presente');
+      },
+    },
+    {
+      ts: 335,
+      title: "Verificare che l'utente possa visualizzare tutte le informazioni sulle modifiche di un documento",
+      verify: async ({ technicalMetadataPage }) => {
+        await expect(technicalMetadataPage.changeTrackingHeading).toBeVisible();
+        await expect(technicalMetadataPage.changeTipo).toBeVisible();
+        await expect(technicalMetadataPage.changeSoggetto).toBeVisible();
+        await expect(technicalMetadataPage.changeData).toBeVisible();
+        await expect(technicalMetadataPage.changeIdVersionePrecedente).toBeVisible();
+      },
+    },
+    {
+      ts: 336,
+      title: "Verificare che l'utente possa visualizzare il tipo di modifica per ogni modifica del documento selezionato tra: Annullamento, Rettifica, Integrazione e Annotazione",
+      options: {
+        metadataOverrides: { TipoModifica: 'Annotazione' },
+      },
+      verify: async ({ technicalMetadataPage }) => {
+        await expect(technicalMetadataPage.changeTipo).toContainText('Annotazione');
+      },
+    },
+    {
+      ts: 337,
+      title: "Verificare che l'utente possa visualizzare le informazioni del soggetto autore di ogni modifica del documento selezionato",
+      verify: async ({ technicalMetadataPage }) => {
+        await expect(technicalMetadataPage.changeSoggetto).toContainText('Mario Rossi');
+      },
+    },
+    {
+      ts: 338,
+      title: "Verificare che l'utente possa visualizzare la data e l'ora di ogni modifica del documento selezionato",
+      verify: async ({ technicalMetadataPage }) => {
+        await expect(technicalMetadataPage.changeData).toContainText('2026-04-08 12:30:00');
+      },
+    },
+    {
+      ts: 339,
+      title: "Verificare che l'utente possa visualizzare l'identificativo del documento alla versione precedente alla modifica",
+      verify: async ({ technicalMetadataPage }) => {
+        await expect(technicalMetadataPage.changeIdVersionePrecedente).toContainText('DOC-VER-0001');
+      },
+    },
+    {
+      ts: 366,
+      title: "Verificare che l'utente possa visualizzare la lista dei metadati custom del documento selezionato",
+      verify: async ({ technicalMetadataPage }) => {
+        await expect(technicalMetadataPage.customMetadataHeading).toBeVisible();
+        await expect(technicalMetadataPage.customMetadataRow('MetaCustom.CodiceInterno')).toBeVisible();
+        await expect(technicalMetadataPage.customMetadataRow('MetaCustom.UfficioResponsabile')).toBeVisible();
+      },
+    },
+    {
+      ts: 367,
+      title: "Verificare che l'utente possa visualizzare le informazioni di ciascun metadato custom del documento selezionato",
+      verify: async ({ technicalMetadataPage }) => {
+        await expect(technicalMetadataPage.customMetadataName('MetaCustom.CodiceInterno')).toContainText('Codice Interno');
+        await expect(technicalMetadataPage.customMetadataValue('MetaCustom.CodiceInterno')).toContainText('INT-2026-77');
+      },
+    },
+    {
+      ts: 368,
+      title: "Verificare che l'utente possa visualizzare il nome di ciascun metadato custom del documento selezionato",
+      verify: async ({ technicalMetadataPage }) => {
+        await expect(technicalMetadataPage.customMetadataName('MetaCustom.CodiceInterno')).toContainText('Codice Interno');
+      },
+    },
+    {
+      ts: 369,
+      title: "Verificare che l'utente possa visualizzare il valore di ciascun metadato custom del documento selezionato",
+      verify: async ({ technicalMetadataPage }) => {
+        await expect(technicalMetadataPage.customMetadataValue('MetaCustom.CodiceInterno')).toContainText('INT-2026-77');
+      },
+    },
+    {
+      ts: 370,
+      title: "Verificare che se il documento selezionato non dispone di metadati custom, l'utente sia informato con un messaggio che indica l'assenza dei metadati custom",
+      options: {
+        includeCustomMetadata: false,
+      },
+      verify: async ({ technicalMetadataPage }) => {
+        await expect(technicalMetadataPage.customMetadataHeading).toBeVisible();
+        await expect(technicalMetadataPage.customMetadataRow('MetaCustom.CodiceInterno')).toHaveCount(0);
+        await expect(technicalMetadataPage.customMetadataRow('MetaCustom.UfficioResponsabile')).toHaveCount(0);
+      },
+    },
+    {
+      ts: 373,
+      title: "Verificare che l'utente possa visualizzare le informazioni sul formato del documento e sul prodotto software che lo ha generato",
+      verify: async ({ technicalMetadataPage }) => {
+        await expect(technicalMetadataPage.formatHeading).toBeVisible();
+        await expect(technicalMetadataPage.formatTipo).toContainText('application/pdf');
+        await expect(technicalMetadataPage.formatProdotto).toContainText('DocSuite');
+        await expect(technicalMetadataPage.formatProdotto).toContainText('5.4.1');
+      },
+    },
+    {
+      ts: 379,
+      title: "Verificare che l'utente possa visualizzare l'elenco dei campi specifici per Documenti Informatici / Documenti Amministrativi Informatici disponibili",
+      options: {
+        includeCustomMetadata: false,
+      },
+      verify: async ({ technicalMetadataPage }) => {
+        await expect(technicalMetadataPage.documentMetadataHeading).toBeVisible();
+        await expect(technicalMetadataPage.registrationHeading).toBeVisible();
+        await expect(technicalMetadataPage.formatHeading).toBeVisible();
+        await expect(technicalMetadataPage.verificationHeading).toBeVisible();
+        await expect(technicalMetadataPage.classificationHeading).toBeVisible();
+        await expect(technicalMetadataPage.changeTrackingHeading).toBeVisible();
+        await expect(technicalMetadataPage.customMetadataHeading).toBeVisible();
+        await expect(technicalMetadataPage.customMetadataRow('MetaCustom.CodiceInterno')).toHaveCount(0);
+        await expect(technicalMetadataPage.customMetadataRow('MetaCustom.UfficioResponsabile')).toHaveCount(0);
+      },
+    },
+  ];
+
+  for (const testCase of documentCoverageCases) {
+    test(`[TS-${testCase.ts}] ${testCase.title}`, async ({ page }) => {
+      const fixtures = await openDocumentDetailWithMocks(page, testCase.options);
+      await testCase.verify(fixtures);
+    });
+  }
+
+  const aggregateCoverageCases: Array<{
+    ts: number;
+    title: string;
+    options?: AggregateMockOptions;
+    verify: (fixtures: AggregateDetailFixtures) => Promise<void>;
+  }> = [
+    {
+      ts: 340,
+      title: "Verificare che l'utente possa visualizzare il tipo di aggregazione dell'aggregazione documentale selezionata tra: Fascicolo, Serie Documentale e Serie di Fascicoli",
+      verify: async ({ administrativeProceduresPage }) => {
+        await expect(administrativeProceduresPage.tipoAggregazione).toContainText('Fascicolo');
+      },
+    },
+    {
+      ts: 341,
+      title: "Verificare che l'utente possa visualizzare l'identificativo dell'aggregazione documentale selezionata",
+      verify: async ({ administrativeProceduresPage }) => {
+        await expect(administrativeProceduresPage.idAggregazione).toContainText('AGG-2026-001');
+      },
+    },
+    {
+      ts: 342,
+      title: "Verificare che l'utente possa visualizzare la tipologia di fascicolo dell'aggregazione documentale selezionata tra: Affare, Attività, Persona Fisica, Persona Giuridica e Procedimento Amministrativo",
+      verify: async ({ administrativeProceduresPage }) => {
+        await expect(administrativeProceduresPage.tipologiaFascicolo).toContainText('procedimento amministrativo');
+      },
+    },
+    {
+      ts: 343,
+      title: "Verificare che l'utente possa visualizzare il tipo di assegnazione dell'aggregazione documentale selezionata tra: Per competenza e Per co scenza",
+      verify: async ({ administrativeProceduresPage }) => {
+        await expect(administrativeProceduresPage.tipoAssegnazione).toContainText('Per competenza');
+      },
+    },
+    {
+      ts: 344,
+      title: "Verificare che l'utente possa visualizzare le informazioni del soggetto assegnatario dell'aggregazione documentale selezionata",
+      verify: async ({ administrativeProceduresPage }) => {
+        await expect(administrativeProceduresPage.soggettoAssegnatario).toContainText('Ufficio Gare e Contratti');
+      },
+    },
+    {
+      ts: 345,
+      title: "Verificare che l'utente possa visualizzare la data e l'ora di inizio dell'assegnazione dell'aggregazione documentale selezionata",
+      verify: async ({ administrativeProceduresPage }) => {
+        await expect(administrativeProceduresPage.dataInizioAssegnazione).toContainText('2026/04/01 09:00');
+      },
+    },
+    {
+      ts: 346,
+      title: "Verificare che l'utente possa visualizzare la data e l'ora di fine dell'assegnazione dell'aggregazione documentale selezionata",
+      verify: async ({ administrativeProceduresPage }) => {
+        await expect(administrativeProceduresPage.dataFineAssegnazione).toContainText('2026/04/30 18:00');
+      },
+    },
+    {
+      ts: 347,
+      title: "Verificare che l'utente possa visualizzare la data di apertura dell'aggregazione documentale selezionata",
+      verify: async ({ administrativeProceduresPage }) => {
+        await expect(administrativeProceduresPage.dataApertura).toContainText('2026');
+      },
+    },
+    {
+      ts: 348,
+      title: "Verificare che l'utente possa visualizzare la data di chiusura dell'aggregazione documentale selezionata",
+      verify: async ({ administrativeProceduresPage }) => {
+        await expect(administrativeProceduresPage.dataChiusura).toContainText('2026');
+      },
+    },
+    {
+      ts: 349,
+      title: "Verificare che l'utente possa visualizzare il progressivo dell'aggregazione documentale selezionata",
+      verify: async ({ administrativeProceduresPage }) => {
+        await expect(administrativeProceduresPage.progressivo).toContainText('17');
+      },
+    },
+    {
+      ts: 350,
+      title: "Verificare che l'utente possa visualizzare le informazioni del procedimento amministrativo dell'aggregazione documentale selezionata",
+      verify: async ({ administrativeProceduresPage }) => {
+        await expect(administrativeProceduresPage.adminProcedureHeading).toBeVisible();
+        await expect(administrativeProceduresPage.procedimentoDenominazione).toBeVisible();
+        await expect(administrativeProceduresPage.procedimentoIndiceUri).toBeVisible();
+      },
+    },
+    {
+      ts: 351,
+      title: "Verificare che l'utente possa visualizzare l'indice della materia/argomento/struttura per la quale so  catalogati i procedimenti dell'aggregazione documentale selezionata",
+      verify: async ({ administrativeProceduresPage }) => {
+        await expect(administrativeProceduresPage.procedimentoIndiceUri).toContainText('LavoriPubblici/ImpiantiTecnologici');
+      },
+    },
+    {
+      ts: 352,
+      title: "Verificare che l'utente possa visualizzare la de minazione del procedimento amministrativo dell'aggregazione documentale selezionata",
+      verify: async ({ administrativeProceduresPage }) => {
+        await expect(administrativeProceduresPage.procedimentoDenominazione).toContainText('Affidamento servizio manutenzione');
+      },
+    },
+    {
+      ts: 353,
+      title: "Verificare che l'utente possa visualizzare il catalogo dei procedimenti come URI di pubblicazione dell'aggregazione documentale selezionata",
+      verify: async ({ administrativeProceduresPage }) => {
+        await expect(administrativeProceduresPage.procedimentoIndiceUri).toContainText('https://procedimenti.example.gov/affidamento-manutenzione');
+      },
+    },
+    {
+      ts: 354,
+      title: "Verificare che l'utente possa visualizzare la lista delle fasi del procedimento amministrativo dell'aggregazione documentale selezionata",
+      verify: async ({ administrativeProceduresPage }) => {
+        await expect(administrativeProceduresPage.phase(0)).toBeVisible();
+        await expect(administrativeProceduresPage.phase(1)).toBeVisible();
+      },
+    },
+    {
+      ts: 355,
+      title: "Verificare che l'utente possa visualizzare le singole fasi della lista delle fasi del procedimento amministrativo dell'aggregazione documentale selezionata complete di dati della fase",
+      verify: async ({ administrativeProceduresPage }) => {
+        await expect(administrativeProceduresPage.phaseType(0)).toContainText('Istruttoria');
+        await expect(administrativeProceduresPage.phaseDates(0)).toContainText('2026/04/03 10:00');
+        await expect(administrativeProceduresPage.phaseDates(0)).toContainText('2026/04/10 16:00');
+      },
+    },
+    {
+      ts: 356,
+      title: "Verificare che per ogni fase del procedimento amministrativo, l'utente possa visualizzare il tipo di fase tra: Preparatoria, Istruttoria, Consultiva, Decisoria o deliberativa e Integrazione dell'efficacia",
+      verify: async ({ administrativeProceduresPage }) => {
+        await expect(administrativeProceduresPage.phaseType(0)).toContainText('Istruttoria');
+      },
+    },
+    {
+      ts: 357,
+      title: "Verificare che per ogni fase del procedimento amministrativo, l'utente possa visualizzare la data e l'ora di inizio della fase",
+      verify: async ({ administrativeProceduresPage }) => {
+        await expect(administrativeProceduresPage.phaseDates(0)).toContainText('2026/04/03 10:00');
+      },
+    },
+    {
+      ts: 358,
+      title: "Verificare che per ogni fase del procedimento amministrativo, l'utente possa visualizzare la data e l'ora di fine della fase",
+      verify: async ({ administrativeProceduresPage }) => {
+        await expect(administrativeProceduresPage.phaseDates(0)).toContainText('2026/04/10 16:00');
+      },
+    },
+    {
+      ts: 359,
+      title: "Verificare che l'utente possa visualizzare l'indice dei documenti contenuti nell'aggregazione documentale selezionata",
+      verify: async ({ administrativeProceduresPage }) => {
+        await expect(administrativeProceduresPage.documentIndexHeading).toBeVisible();
+      },
+    },
+    {
+      ts: 360,
+      title: "Verificare che l'utente possa visualizzare ogni voce dell'indice dei documenti dell'aggregazione documentale selezionata",
+      verify: async ({ administrativeProceduresPage }) => {
+        await expect(administrativeProceduresPage.documentIndexRow(0)).toBeVisible();
+        await expect(administrativeProceduresPage.documentIndexRow(1)).toBeVisible();
+      },
+    },
+    {
+      ts: 361,
+      title: "Verificare che per ogni voce dell'indice dei documenti dell'aggregazione, l'utente possa visualizzare il tipo di documento contenuto",
+      verify: async ({ administrativeProceduresPage }) => {
+        await expect(administrativeProceduresPage.documentIndexType(0)).toContainText('Documento');
+      },
+    },
+    {
+      ts: 362,
+      title: "Verificare che per ogni voce dell'indice dei documenti dell'aggregazione, l'utente possa visualizzare l'identificativo del documento contenuto",
+      verify: async ({ administrativeProceduresPage }) => {
+        await expect(administrativeProceduresPage.documentIndexIdentifier(0)).toContainText('Determina-2026.pdf');
+      },
+    },
+    {
+      ts: 363,
+      title: "Verificare che l'utente possa visualizzare la posizione fisica dell'aggregazione documentale selezionata",
+      verify: async ({ administrativeProceduresPage }) => {
+        await expect(administrativeProceduresPage.posizioneFisica).toContainText('Archivio Centrale - Scaffale B/12');
+      },
+    },
+    {
+      ts: 364,
+      title: "Verificare che l'utente possa visualizzare l'identificativo dell'aggregazione primaria dell'aggregazione documentale selezionata",
+      verify: async ({ administrativeProceduresPage }) => {
+        await expect(administrativeProceduresPage.idAggregazionePrimaria).toContainText('AGG-PRIM-900');
+      },
+    },
+    {
+      ts: 365,
+      title: "Verificare che l'utente possa visualizzare il tempo di conservazione dell'aggregazione documentale selezionata",
+      verify: async ({ administrativeProceduresPage }) => {
+        await expect(administrativeProceduresPage.tempoConservazione).toContainText('10 anni');
+      },
+    },
+    {
+      ts: 378,
+      title: "Verificare che l'utente possa visualizzare l'elenco dei campi specifici per aggregazione documentale disponibili",
+      verify: async ({ administrativeProceduresPage }) => {
+        await expect(administrativeProceduresPage.aggregateHeading).toBeVisible();
+        await expect(administrativeProceduresPage.tipoAggregazione).toBeVisible();
+        await expect(administrativeProceduresPage.idAggregazione).toBeVisible();
+        await expect(administrativeProceduresPage.tipologiaFascicolo).toBeVisible();
+        await expect(administrativeProceduresPage.tipoAssegnazione).toBeVisible();
+        await expect(administrativeProceduresPage.soggettoAssegnatario).toBeVisible();
+        await expect(administrativeProceduresPage.dataInizioAssegnazione).toBeVisible();
+        await expect(administrativeProceduresPage.dataFineAssegnazione).toBeVisible();
+        await expect(administrativeProceduresPage.dataApertura).toBeVisible();
+        await expect(administrativeProceduresPage.dataChiusura).toBeVisible();
+        await expect(administrativeProceduresPage.progressivo).toBeVisible();
+        await expect(administrativeProceduresPage.adminProcedureHeading).toBeVisible();
+        await expect(administrativeProceduresPage.documentIndexHeading).toBeVisible();
+        await expect(administrativeProceduresPage.posizioneFisica).toBeVisible();
+        await expect(administrativeProceduresPage.idAggregazionePrimaria).toBeVisible();
+        await expect(administrativeProceduresPage.tempoConservazione).toBeVisible();
+      },
+    },
+  ];
+
+  for (const testCase of aggregateCoverageCases) {
+    test(`[TS-${testCase.ts}] ${testCase.title}`, async ({ page }) => {
+      const fixtures = await openAggregateDetailWithMocks(page, testCase.options);
+      await testCase.verify(fixtures);
+    });
+  }
 });

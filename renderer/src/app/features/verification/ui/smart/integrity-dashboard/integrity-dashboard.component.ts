@@ -7,11 +7,7 @@ import { IntegrityValidPanelComponent } from '../../dumb/integrity-valid-panel/i
 @Component({
   selector: 'app-integrity-dashboard',
   standalone: true,
-  imports: [
-    CommonModule,
-    IntegritySummaryCardsComponent,
-    IntegrityValidPanelComponent,
-  ],
+  imports: [CommonModule, IntegritySummaryCardsComponent, IntegrityValidPanelComponent],
   template: `
     <main class="dashboard-container" aria-live="polite">
       <header class="dashboard-header">
@@ -21,21 +17,21 @@ import { IntegrityValidPanelComponent } from '../../dumb/integrity-valid-panel/i
         </div>
         <button
           (click)="startVerification()"
-          [disabled]="facade.isVerifying()"
+          [disabled]="facade.isVerifying()()"
           class="btn-primary"
           aria-describedby="dashboard-title"
         >
-          {{ facade.isVerifying() ? 'Verifica in corso...' : 'Avvia Nuova Verifica Globale' }}
+          {{ facade.isVerifying()() ? 'Verifica in corso...' : 'Avvia Nuova Verifica Globale' }}
         </button>
       </header>
 
-      @if (facade.error()) {
+      @if (facade.error()()) {
         <div class="error-banner" role="alert">
-          <strong>Errore durante la verifica:</strong> {{ facade.error() }}
+          <strong>Errore durante la verifica:</strong> {{ facade.error()() }}
         </div>
       }
 
-      @if (facade.isVerifying()) {
+      @if (facade.isVerifying()()) {
         <section class="progress-section" aria-busy="true" aria-describedby="progress-status">
           <h3 id="progress-status">Ricalcolo hash in corso...</h3>
           <p class="progress-subtitle">L'operazione potrebbe richiedere alcuni minuti.</p>
@@ -48,10 +44,12 @@ import { IntegrityValidPanelComponent } from '../../dumb/integrity-valid-panel/i
           </div>
         </section>
       } @else {
-        <app-integrity-summary-cards [stats]="facade.overviewStats()"></app-integrity-summary-cards>
+        <app-integrity-summary-cards
+          [stats]="facade.overviewStats()()"
+        ></app-integrity-summary-cards>
         <app-integrity-valid-panel
-          [nodes]="facade.validRolledUpNodes()"
-          [corruptedNodes]="facade.corruptedNodes()"
+          [nodes]="facade.validRolledUpNodes()()"
+          [corruptedNodes]="facade.corruptedNodes()()"
         ></app-integrity-valid-panel>
       }
     </main>
@@ -71,7 +69,7 @@ export class IntegrityDashboardComponent implements OnInit {
     // Il comando di verifica ora aggiornerà gli hash e poi richiamerà in automatico la loadOverview!
     this.facade.verifyDip(this.currentDipId).then(() => {
       // Aggiorniamo l'overview solo se non si sono verificati errori gravi durante la verifica
-      if (!this.facade.error()) {
+      if (!this.facade.error()()) {
         this.facade.loadOverview(this.currentDipId);
       }
     });

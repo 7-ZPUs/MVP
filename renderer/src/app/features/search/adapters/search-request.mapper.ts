@@ -492,6 +492,10 @@ function buildAggregateGroup(aggregate: any): SearchGroupDTO | null {
   );
   appendIfPresent(
     items,
+    scalarCondition(`${AGG_ROOT}.Progressivo`, aggregate?.progressivoAggregazione, 'EQ'),
+  );
+  appendIfPresent(
+    items,
     scalarCondition(
       `${AGG_ROOT}.TipologiaFascicolo`,
       mapPredefinedValue(aggregate?.tipoFascicolo, FASCICOLO_TYPE_TO_XSD),
@@ -585,6 +589,15 @@ function buildAggregateGroup(aggregate: any): SearchGroupDTO | null {
   );
 
   const soggettoAssegn = aggregate?.assegnazione?.soggettoAssegn;
+  if (typeof soggettoAssegn === 'string') {
+    appendIfPresent(
+      items,
+      scalarCondition(
+        `${AGG_ROOT}.Assegnazione.SoggettoAssegnatario.DenominazioneOrganizzazione`,
+        soggettoAssegn,
+      ),
+    );
+  }
   if (soggettoAssegn && typeof soggettoAssegn === 'object') {
     appendIfPresent(
       items,

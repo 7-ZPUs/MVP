@@ -34,6 +34,7 @@ export interface AssegnazioneFilter {
 export interface AggregateFilterValues {
   tipoAggregazione: AggregationType | null;
   idAggregazione: string | null;
+  progressivoAggregazione: string | null;
   tipoFascicolo: FascicoloType | null;
   dataApertura: IsoDateString | null;
   dataChiusura: IsoDateString | null;

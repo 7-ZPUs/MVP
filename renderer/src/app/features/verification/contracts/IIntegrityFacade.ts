@@ -5,13 +5,13 @@ import { IntegrityNodeVM, IntegrityOverviewStats } from '../domain/integrity.vie
 
 export interface IIntegrityFacade {
   // Stato (Signals esposti in sola lettura)
-  isVerifying: Signal<boolean>;
-  error: Signal<string | null>;
-  currentDipStatus: Signal<IntegrityStatusEnum | null>;
-  dipClasses: Signal<DocumentClassDTO[]>;
-  overviewStats: Signal<IntegrityOverviewStats>;
-  corruptedNodes: Signal<IntegrityNodeVM[]>;
-  validRolledUpNodes: Signal<IntegrityNodeVM[]>;
+  isVerifying(): Signal<boolean>;
+  error(): Signal<string | null>;
+  currentDipStatus(): Signal<IntegrityStatusEnum | null>;
+  dipClasses(): Signal<DocumentClassDTO[]>;
+  overviewStats(): Signal<IntegrityOverviewStats>;
+  corruptedNodes(): Signal<IntegrityNodeVM[]>;
+  validRolledUpNodes(): Signal<IntegrityNodeVM[]>;
 
   // Azioni
   loadOverview(dipId: number): Promise<void>;
@@ -20,4 +20,3 @@ export interface IIntegrityFacade {
 }
 
 export const INTEGRITY_FACADE_TOKEN = new InjectionToken<IIntegrityFacade>('IIntegrityFacade');
-

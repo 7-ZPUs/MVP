@@ -42,7 +42,7 @@ test.describe('Integrita e Provenienza - Fullstack', () => {
     await expect(page.getByRole('button', { name: 'Ricerca' })).toBeVisible({ timeout: 15000 });
   }
 
-  test('[TS-122] avviare la verifica dell intero DIP', async () => {
+  test(`[TS-185] Verificare che l'utente possa avviare la verifica del DIP`, async () => {
     await ensureMainPageReady();
 
     const integrityPage = new IntegrityPage(page);
@@ -53,7 +53,7 @@ test.describe('Integrita e Provenienza - Fullstack', () => {
     await expect(integrityPage.startVerificationButton).toBeVisible();
   });
 
-  test('[TS-128] avviare la verifica dell integrita di un singolo documento', async () => {
+  test(`[TS-191] Verificare che l'utente possa avviare la verifica del documento`, async () => {
     await ensureMainPageReady();
 
     const treeToggles = page.getByTestId('dip-tree-toggle');

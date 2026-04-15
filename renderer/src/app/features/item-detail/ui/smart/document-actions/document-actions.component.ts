@@ -43,10 +43,10 @@ import { ExportPageComponent } from '../../../../export-manager/ui/smart/export-
 
         <button
           class="action-btn btn-verify"
-          [disabled]="integrityFacade.isVerifying()"
+          [disabled]="integrityFacade.isVerifying()()"
           (click)="onVerify()"
         >
-          @if (integrityFacade.isVerifying()) {
+          @if (integrityFacade.isVerifying()()) {
             <span class="spinner-small"></span> Verifica in corso...
           } @else {
             <i class="icon bi bi-shield-check" aria-hidden="true"></i> Verifica Integrità

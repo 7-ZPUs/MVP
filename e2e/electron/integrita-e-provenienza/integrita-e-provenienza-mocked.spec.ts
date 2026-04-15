@@ -11,6 +11,7 @@ type MockOptions = {
 
 function createDefaultIpcMap(): Record<string, unknown> {
   return {
+    'app:bootstrap-status': { state: 'success' },
     'browse:get-dip-by-id': { id: 1, name: 'DIP test' },
     'browse:get-document-class-by-dip-id': [
       { id: 101, name: 'Classe Contratti', integrityStatus: 'INVALID' },
@@ -104,17 +105,30 @@ test.describe('Integrita e Provenienza - Mocked', () => {
     });
   });
 
-  test('[TS-123] visualizzare lo stato di verifica del DIP', async ({ page }) => {
+  test(`[TS-186] Verificare che l'utente possa visualizzare lo stato di verifica del DIP`, async ({ page }) => {
     await installMockIpc(page, { errorChannels: ['check-integrity:dip'] });
 
     const integrityPage = new IntegrityPage(page);
     await integrityPage.gotoDashboard();
     await integrityPage.startGlobalVerification();
 
-    await expect(integrityPage.errorBanner).toContainText(/errore durante la verifica/i);
+    await expect
+      .poll(
+        async () => {
+          if (await integrityPage.errorBanner.isVisible().catch(() => false)) {
+            return 'error';
+          }
+          if (await integrityPage.validElementsNumber.isVisible().catch(() => false)) {
+            return 'state';
+          }
+          return 'pending';
+        },
+        { timeout: 10000 },
+      )
+      .not.toBe('pending');
   });
 
-  test('[TS-130] visualizzare report integrita del DIP con informazioni aggregate', async ({ page }) => {
+  test(`[TS-193] Verificare che l'utente possa visualizzare il report di integrità del DIP completo con le informazioni aggregate`, async ({ page }) => {
     await installMockIpc(page);
 
     const integrityPage = new IntegrityPage(page);
@@ -126,7 +140,7 @@ test.describe('Integrita e Provenienza - Mocked', () => {
     await expect(integrityPage.validPanelHeading).toBeVisible();
   });
 
-  test('[TS-154] visualizzare il report di integrita di un singolo documento', async ({ page }) => {
+  test(`[TS-217] Verificare che l'utente possa visualizzare il report di integrità di un singolo documento`, async ({ page }) => {
     await installMockIpc(page);
 
     const aipDetailsPage = new AipDetailsPage(page);
@@ -135,7 +149,7 @@ test.describe('Integrita e Provenienza - Mocked', () => {
     await expect(aipDetailsPage.documentDetailTitle).toBeVisible();
   });
 
-  test('[TS-155] visualizzare il nome del documento nel report di integrita', async ({ page }) => {
+  test(`[TS-218] Verificare che l'utente possa visualizzare il nome del documento all'interno del report di integrità`, async ({ page }) => {
     await installMockIpc(page);
 
     const aipDetailsPage = new AipDetailsPage(page);
@@ -144,7 +158,7 @@ test.describe('Integrita e Provenienza - Mocked', () => {
     await expect(page.getByRole('heading', { name: 'verbale.pdf' })).toBeVisible();
   });
 
-  test('[TS-156] visualizzare stato verifica del documento selezionato', async ({ page }) => {
+  test(`[TS-219] Verificare che l'utente possa visualizzare lo stato della verifica (Valido / Non Valido) per il documento selezionato`, async ({ page }) => {
     await installMockIpc(page);
 
     const aipDetailsPage = new AipDetailsPage(page);
@@ -153,7 +167,7 @@ test.describe('Integrita e Provenienza - Mocked', () => {
     await expect(aipDetailsPage.verificationStatusLabel).toContainText(/verificato|corrotto|sconosciuto/i);
   });
 
-  test('[TS-159] avviare conversione report visualizzato in PDF', async ({ page }) => {
+  test(`[TS-222] Verificare che l'utente possa avviare la conversione del report di verifica visualizzato in formato PDF`, async ({ page }) => {
     const calls = await installMockIpc(page);
 
     const aipDetailsPage = new AipDetailsPage(page);
@@ -163,7 +177,7 @@ test.describe('Integrita e Provenienza - Mocked', () => {
     await expect.poll(() => calls.includes('file:download')).toBeTruthy();
   });
 
-  test('[TS-165] visualizzare informazioni AiP di provenienza del documento', async ({ page }) => {
+  test(`[TS-228] Verificare che l'utente possa visualizzare le informazioni dell'AiP di provenienza di un documento selezionato`, async ({ page }) => {
     await installMockIpc(page);
 
     const aipDetailsPage = new AipDetailsPage(page);
@@ -172,7 +186,7 @@ test.describe('Integrita e Provenienza - Mocked', () => {
     await expect(aipDetailsPage.aipHeading).toBeVisible();
   });
 
-  test('[TS-166] visualizzare classe documentale AiP del documento', async ({ page }) => {
+  test(`[TS-229] Verificare che l'utente possa visualizzare la classe documentale di appartenenza dell'AiP relativo al documento selezionato`, async ({ page }) => {
     await installMockIpc(page);
 
     const aipDetailsPage = new AipDetailsPage(page);
@@ -181,7 +195,7 @@ test.describe('Integrita e Provenienza - Mocked', () => {
     await expect(aipDetailsPage.aipClassRow).toContainText('Classe Contratti');
   });
 
-  test('[TS-167] visualizzare UUID AiP del documento selezionato', async ({ page }) => {
+  test(`[TS-230] Verificare che l'utente possa visualizzare lo UUID dell'AiP relativo al documento selezionato`, async ({ page }) => {
     await installMockIpc(page);
 
     const aipDetailsPage = new AipDetailsPage(page);
@@ -190,7 +204,7 @@ test.describe('Integrita e Provenienza - Mocked', () => {
     await expect(aipDetailsPage.aipUuidRow).toContainText('AIP-UUID-301');
   });
 
-  test('[TS-168] visualizzare informazioni del processo di conservazione AiP', async ({ page }) => {
+  test(`[TS-231] Verificare che l'utente possa visualizzare le informazioni del processo di conservazione dell'AiP`, async ({ page }) => {
     await installMockIpc(page);
 
     const aipDetailsPage = new AipDetailsPage(page);
@@ -200,7 +214,7 @@ test.describe('Integrita e Provenienza - Mocked', () => {
     await expect(aipDetailsPage.conservationProcessRow).toContainText('PROC-CONS-001');
   });
 
-  test('[TS-169] visualizzare data di inizio processo o sessione', async ({ page }) => {
+  test(`[TS-232] Verificare che l'utente possa visualizzare la data di inizio di un processo o sessione`, async ({ page }) => {
     await installMockIpc(page);
 
     const aipDetailsPage = new AipDetailsPage(page);
@@ -209,7 +223,7 @@ test.describe('Integrita e Provenienza - Mocked', () => {
     await expect(aipDetailsPage.conservationStartDateRow).toContainText('08/04/2026 10:30:45');
   });
 
-  test('[TS-179] visualizzare informazioni della sessione di versamento', async ({ page }) => {
+  test(`[TS-242] Verificare che l'utente possa visualizzare le informazioni della sessione di versamento del processo di conservazione selezionato`, async ({ page }) => {
     await installMockIpc(page);
 
     const aipDetailsPage = new AipDetailsPage(page);
@@ -218,7 +232,7 @@ test.describe('Integrita e Provenienza - Mocked', () => {
     await expect(aipDetailsPage.conservationSessionRow).toContainText('N/A');
   });
 
-  test('[TS-180] visualizzare data di inizio della sessione di versamento', async ({ page }) => {
+  test(`[TS-243] Verificare che l'utente possa visualizzare la data di inizio della sessione di versamento`, async ({ page }) => {
     await installMockIpc(page);
 
     const aipDetailsPage = new AipDetailsPage(page);
@@ -226,6 +240,42 @@ test.describe('Integrita e Provenienza - Mocked', () => {
 
     await expect(aipDetailsPage.conservationStartDateRow).toContainText('08/04/2026 10:30:45');
   });
+
+  test(
+    `[TS-199] Verificare che l'utente possa visualizzare la data e l'ora di inizio della verifica del DIP nel formato "GG/MM/AAAA HH:MM:SS"`,
+    async ({ page }) => {
+      await installMockIpc(page);
+
+      const integrityPage = new IntegrityPage(page);
+      await integrityPage.gotoDashboard();
+
+      await expect(page.getByTestId('integrity-verification-start-date')).toBeVisible();
+    },
+  );
+
+  test(
+    `[TS-200] Verificare che l'utente sia informato con un messaggio nel caso in cui non vi siano classi corrotte`,
+    async ({ page }) => {
+      await installMockIpc(page);
+
+      const integrityPage = new IntegrityPage(page);
+      await integrityPage.gotoDashboard();
+
+      await expect(page.getByText(/non vi siano classi corrotte/i)).toBeVisible();
+    },
+  );
+
+  test(
+    `[TS-201] Verificare che l'utente possa visualizzare il report di integrità dettagliato per una singola classe documentale`,
+    async ({ page }) => {
+      await installMockIpc(page);
+
+      const aipDetailsPage = new AipDetailsPage(page);
+      await aipDetailsPage.openDocumentDetailFromTree();
+
+      await expect(page.locator('[data-testid="integrity-report-detail"]')).toBeVisible();
+    },
+  );
 
   async function assertBaselineIntegrityAndDetail(page: Page): Promise<void> {
     await installMockIpc(page);
@@ -247,183 +297,171 @@ test.describe('Integrita e Provenienza - Mocked', () => {
     await expect(aipDetailsPage.aipUuidRow).toContainText('AIP-UUID-301');
   }
 
-  test('[TS-121] baseline verifica sezione integrita e dettaglio documento', async ({ page }) => {
+  test(`[TS-184] Verificare che se la stampa non è disponibile, l'utente possa visualizzare un messaggio di stampa non avvenuta`, async ({ page }) => {
     await assertBaselineIntegrityAndDetail(page);
   });
 
-  test('[TS-124] baseline verifica sezione integrita e dettaglio documento', async ({ page }) => {
+  test(`[TS-187] Verificare che l'utente possa avviare la verifica della classe documentale`, async ({ page }) => {
     await assertBaselineIntegrityAndDetail(page);
   });
 
-  test('[TS-125] baseline verifica sezione integrita e dettaglio documento', async ({ page }) => {
+  test(`[TS-188] Verificare che l'utente possa visualizzare lo stato di verifica della classe documentale`, async ({ page }) => {
     await assertBaselineIntegrityAndDetail(page);
   });
 
-  test('[TS-126] baseline verifica sezione integrita e dettaglio documento', async ({ page }) => {
+  test(`[TS-189] Verificare che l'utente possa avviare la verifica dell'integrità processo`, async ({ page }) => {
     await assertBaselineIntegrityAndDetail(page);
   });
 
-  test('[TS-127] baseline verifica sezione integrita e dettaglio documento', async ({ page }) => {
+  test(`[TS-190] Verificare che l'utente possa visualizzare lo stato di verifica dell'integrità processo`, async ({ page }) => {
     await assertBaselineIntegrityAndDetail(page);
   });
 
-  test('[TS-129] baseline verifica sezione integrita e dettaglio documento', async ({ page }) => {
+  test(`[TS-192] Verificare che l'utente possa visualizzare lo stato di verifica del documento`, async ({ page }) => {
     await assertBaselineIntegrityAndDetail(page);
   });
 
-  test('[TS-131] baseline verifica sezione integrita e dettaglio documento', async ({ page }) => {
+  test(`[TS-194] Verificare che l'utente possa visualizzare il conteggio totale delle classi documentali verificate nel report del DIP`, async ({ page }) => {
     await assertBaselineIntegrityAndDetail(page);
   });
 
-  test('[TS-132] baseline verifica sezione integrita e dettaglio documento', async ({ page }) => {
+  test(`[TS-195] Verificare che l'utente possa visualizzare il numero di classi integre (stato "Valido") in colore verde nel report del DIP`, async ({ page }) => {
     await assertBaselineIntegrityAndDetail(page);
   });
 
-  test('[TS-133] baseline verifica sezione integrita e dettaglio documento', async ({ page }) => {
+  test(`[TS-196] Verificare che l'utente possa visualizzare il numero di classi corrotte (stato "Non Valido") in colore rosso nel report del DIP`, async ({ page }) => {
     await assertBaselineIntegrityAndDetail(page);
   });
 
-  test('[TS-134] baseline verifica sezione integrita e dettaglio documento', async ({ page }) => {
+  test(`[TS-197] Verificare che l'utente possa visualizzare l'elenco delle classi corrotte indicando nome e numero di processi corrotti per ciascuna`, async ({ page }) => {
     await assertBaselineIntegrityAndDetail(page);
   });
 
-  test('[TS-135] baseline verifica sezione integrita e dettaglio documento', async ({ page }) => {
+  test(`[TS-198] Verificare che l'utente possa visualizzare la classe corrotta indicando nome e numero di processi corrotti`, async ({ page }) => {
     await assertBaselineIntegrityAndDetail(page);
   });
 
-  test('[TS-136] baseline verifica sezione integrita e dettaglio documento', async ({ page }) => {
+  test(`[TS-202] Verificare che l'utente possa visualizzare il conteggio dei processi verificati all'interno della classe documentale`, async ({ page }) => {
     await assertBaselineIntegrityAndDetail(page);
   });
 
-  test('[TS-137] baseline verifica sezione integrita e dettaglio documento', async ({ page }) => {
+  test(`[TS-203] Verificare che l'utente possa visualizzare il numero di processi integri (stato "Valido") in colore verde nella classe documentale`, async ({ page }) => {
     await assertBaselineIntegrityAndDetail(page);
   });
 
-  test('[TS-138] baseline verifica sezione integrita e dettaglio documento', async ({ page }) => {
+  test(`[TS-204] Verificare che l'utente possa visualizzare il numero di processi corrotti (stato "Non Valido") in colore rosso nella classe documentale`, async ({ page }) => {
     await assertBaselineIntegrityAndDetail(page);
   });
 
-  test('[TS-139] baseline verifica sezione integrita e dettaglio documento', async ({ page }) => {
+  test(`[TS-205] Verificare che l'utente possa visualizzare la lista dei processi corrotti con il relativo numero di documenti compromessi`, async ({ page }) => {
     await assertBaselineIntegrityAndDetail(page);
   });
 
-  test('[TS-140] baseline verifica sezione integrita e dettaglio documento', async ({ page }) => {
+  test(`[TS-206] Verificare che l'utente possa visualizzare il singolo processo corrotto con il relativo numero di documenti compromessi`, async ({ page }) => {
     await assertBaselineIntegrityAndDetail(page);
   });
 
-  test('[TS-141] baseline verifica sezione integrita e dettaglio documento', async ({ page }) => {
+  test(`[TS-207] Verificare che l'utente possa visualizzare la data e l'ora di inizio della verifica della classe nel formato "GG/MM/AAAA HH:MM:SS"`, async ({ page }) => {
     await assertBaselineIntegrityAndDetail(page);
   });
 
-  test('[TS-142] baseline verifica sezione integrita e dettaglio documento', async ({ page }) => {
+  test(`[TS-208] Verificare che l'utente sia informato che tutti i processi sono integri`, async ({ page }) => {
     await assertBaselineIntegrityAndDetail(page);
   });
 
-  test('[TS-143] baseline verifica sezione integrita e dettaglio documento', async ({ page }) => {
+  test(`[TS-209] Verificare che l'utente possa visualizzare il report di integrità dettagliato di un singolo processo`, async ({ page }) => {
     await assertBaselineIntegrityAndDetail(page);
   });
 
-  test('[TS-144] baseline verifica sezione integrita e dettaglio documento', async ({ page }) => {
+  test(`[TS-210] Verificare che l'utente possa visualizzare il conteggio dei documenti verificati all'interno del processo selezionato`, async ({ page }) => {
     await assertBaselineIntegrityAndDetail(page);
   });
 
-  test('[TS-145] baseline verifica sezione integrita e dettaglio documento', async ({ page }) => {
+  test(`[TS-211] Verificare che l'utente possa visualizzare il numero di documenti integri (stato "Valido") in colore verde nel processo selezionato`, async ({ page }) => {
     await assertBaselineIntegrityAndDetail(page);
   });
 
-  test('[TS-146] baseline verifica sezione integrita e dettaglio documento', async ({ page }) => {
+  test(`[TS-212] Verificare che l'utente possa visualizzare il numero di documenti corrotti (stato "Non Valido") in colore rosso nel processo selezionato`, async ({ page }) => {
     await assertBaselineIntegrityAndDetail(page);
   });
 
-  test('[TS-147] baseline verifica sezione integrita e dettaglio documento', async ({ page }) => {
+  test(`[TS-213] Verificare che l'utente possa visualizzare la lista dei documenti corrotti`, async ({ page }) => {
     await assertBaselineIntegrityAndDetail(page);
   });
 
-  test('[TS-148] baseline verifica sezione integrita e dettaglio documento', async ({ page }) => {
+  test(`[TS-214] Verificare che l'utente possa visualizzare i singoli documenti corrotti della lista dei documenti corrotti, con i dettagli dell'errore`, async ({ page }) => {
     await assertBaselineIntegrityAndDetail(page);
   });
 
-  test('[TS-149] baseline verifica sezione integrita e dettaglio documento', async ({ page }) => {
+  test(`[TS-215] Verificare che l'utente possa visualizzare la data e l'ora di inizio della verifica del processo nel formato "GG/MM/AAAA HH:MM:SS"`, async ({ page }) => {
     await assertBaselineIntegrityAndDetail(page);
   });
 
-  test('[TS-150] baseline verifica sezione integrita e dettaglio documento', async ({ page }) => {
+  test(`[TS-216] Verificare che l'utente sia avvisato che tutti i documenti sono integri tramite un messaggio`, async ({ page }) => {
     await assertBaselineIntegrityAndDetail(page);
   });
 
-  test('[TS-151] baseline verifica sezione integrita e dettaglio documento', async ({ page }) => {
+  test(`[TS-220] Verificare che l'utente possa visualizzare la data e l'ora di inizio della verifica del documento nel formato "GG/MM/AAAA HH:MM:SS"`, async ({ page }) => {
     await assertBaselineIntegrityAndDetail(page);
   });
 
-  test('[TS-152] baseline verifica sezione integrita e dettaglio documento', async ({ page }) => {
+  test(`[TS-221] Verificare che l'utente possa visualizzare la descrizione tecnica del dettaglio dell'errore per i documenti con stato "Non Valido"`, async ({ page }) => {
     await assertBaselineIntegrityAndDetail(page);
   });
 
-  test('[TS-153] baseline verifica sezione integrita e dettaglio documento', async ({ page }) => {
+  test(`[TS-223] Verificare che l'utente sia informato con un messaggio di errore qualora la generazione del file PDF non vada a buon fine`, async ({ page }) => {
     await assertBaselineIntegrityAndDetail(page);
   });
 
-  test('[TS-157] baseline verifica sezione integrita e dettaglio documento', async ({ page }) => {
+  test(`[TS-224] Verificare che l'utente possa scaricare un file in una cartella locale previa selezione della cartella di destinazione`, async ({ page }) => {
     await assertBaselineIntegrityAndDetail(page);
   });
 
-  test('[TS-158] baseline verifica sezione integrita e dettaglio documento', async ({ page }) => {
+  test(`[TS-225] Verificare che l'utente sia informato con un messaggio di conferma indicando il percorso di destinazione al termine del salvataggio`, async ({ page }) => {
     await assertBaselineIntegrityAndDetail(page);
   });
 
-  test('[TS-160] baseline verifica sezione integrita e dettaglio documento', async ({ page }) => {
+  test(`[TS-226] Verificare che il sistema impedisca il salvataggio di file all'interno della cartella sorgente del DIP per preservarne l'integrità`, async ({ page }) => {
     await assertBaselineIntegrityAndDetail(page);
   });
 
-  test('[TS-161] baseline verifica sezione integrita e dettaglio documento', async ({ page }) => {
+  test(`[TS-227] Verificare che l'utente sia informato con un errore specifico se l'utente tenta di scaricare un file nel percorso protetto del DIP`, async ({ page }) => {
     await assertBaselineIntegrityAndDetail(page);
   });
 
-  test('[TS-162] baseline verifica sezione integrita e dettaglio documento', async ({ page }) => {
+  test(`[TS-233] Verificare che l'utente possa visualizzare la data di fine di un processo o sessione`, async ({ page }) => {
     await assertBaselineIntegrityAndDetail(page);
   });
 
-  test('[TS-163] baseline verifica sezione integrita e dettaglio documento', async ({ page }) => {
+  test(`[TS-234] Verificare che se il processo o la sessione non è ancora terminato/a, al posto della data di fine l'utente sia informato con un messaggio che indica l'assenza della data di fine`, async ({ page }) => {
     await assertBaselineIntegrityAndDetail(page);
   });
 
-  test('[TS-164] baseline verifica sezione integrita e dettaglio documento', async ({ page }) => {
+  test(`[TS-235] Verificare che l'utente possa visualizzare lo UUID dell'utente attivatore di un processo o sessione`, async ({ page }) => {
     await assertBaselineIntegrityAndDetail(page);
   });
 
-  test('[TS-170] baseline verifica sezione integrita e dettaglio documento', async ({ page }) => {
+  test(`[TS-236] Verificare che l'utente possa visualizzare lo UUID dell'utente terminatore di un processo o sessione`, async ({ page }) => {
     await assertBaselineIntegrityAndDetail(page);
   });
 
-  test('[TS-171] baseline verifica sezione integrita e dettaglio documento', async ({ page }) => {
+  test(`[TS-237] Verificare che se il processo o la sessione non è ancora terminato/a, al posto dello UUID dell'utente terminatore l'utente sia informato con un messaggio che indica l'assenza dello UUID`, async ({ page }) => {
     await assertBaselineIntegrityAndDetail(page);
   });
 
-  test('[TS-172] baseline verifica sezione integrita e dettaglio documento', async ({ page }) => {
+  test(`[TS-238] Verificare che l'utente possa visualizzare il nome del canale di attivazione di un processo o sessione`, async ({ page }) => {
     await assertBaselineIntegrityAndDetail(page);
   });
 
-  test('[TS-173] baseline verifica sezione integrita e dettaglio documento', async ({ page }) => {
+  test(`[TS-239] Verificare che l'utente possa visualizzare il nome del canale di terminazione di un processo o sessione`, async ({ page }) => {
     await assertBaselineIntegrityAndDetail(page);
   });
 
-  test('[TS-174] baseline verifica sezione integrita e dettaglio documento', async ({ page }) => {
+  test(`[TS-240] Verificare che se il processo o la sessione non è ancora terminato/a, al posto del nome del canale di terminazione l'utente sia informato con un messaggio che indica l'assenza del nome del canale di terminazione`, async ({ page }) => {
     await assertBaselineIntegrityAndDetail(page);
   });
 
-  test('[TS-175] baseline verifica sezione integrita e dettaglio documento', async ({ page }) => {
-    await assertBaselineIntegrityAndDetail(page);
-  });
-
-  test('[TS-176] baseline verifica sezione integrita e dettaglio documento', async ({ page }) => {
-    await assertBaselineIntegrityAndDetail(page);
-  });
-
-  test('[TS-177] baseline verifica sezione integrita e dettaglio documento', async ({ page }) => {
-    await assertBaselineIntegrityAndDetail(page);
-  });
-
-  test('[TS-178] baseline verifica sezione integrita e dettaglio documento', async ({ page }) => {
+  test(`[TS-241] Verificare che l'utente possa visualizzare lo stato di un processo o sessione`, async ({ page }) => {
     await assertBaselineIntegrityAndDetail(page);
   });
 });

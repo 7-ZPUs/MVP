@@ -1,0 +1,758 @@
+TS-1 & Verificare che l'utente possa visualizzare l'elenco di classi documentali nel DIP & R-1-F-Ob  
+ 
+TS-2 & Verificare che in caso non vi siano classi documentali nel DIP, l'utente possa visualizzare un messaggio di errore & R-2-F-Ob  
+ 
+TS-3 & Verificare che quando viene selezionata una classe documentale, l'utente possa visualizzare ciascuna classe documentale all'interno dell'elenco & R-3-F-Ob  
+ 
+TS-4 & Verificare che l'utente possa visualizzare il nome della classe documentale & R-4-F-Ob  
+ 
+TS-5 & Verificare che l'utente possa visualizzare lo stato di verifica della classe documentale & R-5-F-Ob  
+ 
+TS-6 & Verificare che l'utente possa visualizzare la marcatura temporale della classe documentale & R-6-F-Ob  
+ 
+TS-7 & Verificare che l'utente possa visualizzare l'elenco dei processi associati alla classe documentale & R-7-F-Ob  
+ 
+TS-8 & Verificare che in caso non vi siano processi associati alla classe documentale, l'utente possa visualizzare un messaggio di errore & R-8-F-Ob  
+ 
+TS-9 & Verificare che quando viene selezionato un processo, l'utente possa visualizzare ciascun processo all'interno dell'elenco & R-9-F-Ob  
+ 
+TS-10 & Verificare che l'utente possa visualizzare il nome del processo & R-10-F-Ob  
+ 
+TS-11 & Verificare che l'utente possa visualizzare l'elenco di documenti associati a un processo & R-12-F-Ob  
+ 
+TS-12 & Verificare che in caso non vi siano documenti associati al processo, l'utente possa visualizzare un messaggio di errore & R-13-F-Ob  
+ 
+TS-13 & Verificare che quando viene selezionato un documento, l'utente possa visualizzare ciascun documento all'interno dell'elenco & R-14-F-Ob  
+ 
+TS-14 & Verificare che l'utente possa visualizzare il nome del documento & R-15-F-Ob  
+ 
+TS-15 & Verificare che l'utente possa visualizzare lo stato di verifica del documento & R-16-F-Ob  
+ 
+TS-16 & Verificare che l'utente possa visualizzare la marcatura temporale del documento & R-17-F-Ob  
+ 
+TS-17 & Verificare che l'utente possa essere informato se un elenco di elementi del DIP risulta vuoto & R-18-F-Ob  
+ 
+TS-18 & L'utente deve poter visualizzare se il risultato dello stato di verifica di un elemento è "Non valido" & R-18-F-Ob  
+ 
+TS-19 & L'utente deve poter visualizzare se il risultato dello stato di verifica din elemento è "Valido" & R-19-F-Ob   
+ 
+TS-20 & L'utente deve poter visualizzare se il risultato dello stato di verifica di un elemento è "Non verificato" & R-20-F-Ob  
+ 
+TS-21 & Verificare che l'utente possa visualizzare l'anteprima di un documento selezionato & R-21-F-Ob  
+ 
+TS-22 & Verificare che se il documento selezionato non è visualizzabile in anteprima, l'utente possa visualizzare un messaggio di errore & R-22-F-Ob  
+ 
+TS-23 & Verificare che l'utente possa ricercare un documento, un processo, o una classe documentale & R-23-F-Ob  
+ 
+TS-24 & Verificare che l'utente possa cercare una classe documentale esclusivamente per nome & R-24-F-Ob  
+ 
+TS-25 & Verificare che l'utente possa effettuare una ricerca semantica basata sui metadati dei documenti presenti nel DIP & R-25-F-Op  
+ 
+TS-26 & Verificare che l'utente possa visualizzare lo stato dell'indicizzazione semantica & R-26-F-Op & NO \\
+ 
+TS-27 & Verificare che l'utente possa visualizzare lo stato di indicizzazione semantica "Non completata" & R-27-F-Op & NO \\
+ 
+TS-28 & Verificare che l'utente possa visualizzare lo stato di indicizzazione semantica "Completata" & R-28-F-Op & NO \\
+ 
+TS-29 & Verificare che il sistema renda disponibile un campo di ricerca & R-29-F-Ob  
+ 
+TS-30 & Verificare che il sistema comunichi all'utente quando inserisce un valore non valido nel campo di ricerca & R-30-F-Ob  
+ 
+TS-31 & Verificare che il sistema renda disponibile l'opzione di ricerca per documenti & R-31-F-Ob  
+ 
+TS-32 & Verificare che il sistema renda disponibile l'opzione di ricerca per processi & R-32-F-Ob  
+ 
+TS-33 & Verificare che l'utente possa cercare un processo esclusivamente per uuid & R-33-F-Ob  
+ 
+TS-34 & Verificare che il sistema renda disponibile l'opzione di ricerca per classi documentali & R-34-F-Ob  
+ 
+TS-35 & Verificare che il sistema renda disponibile la ricerca avanzata con filtri & R-35-F-Ob  
+ 
+TS-36 & Verificare che il sistema renda disponibile la sezione di filtri di ricerca comuni & R-36-F-Ob  
+ 
+TS-37 & Verificare che il sistema renda disponibile la sezione di filtri di ricerca specifici per tipo documentale & R-37-F-Ob  
+ 
+TS-38 & Verificare che il sistema renda disponibile la sezione di filtri di ricerca specifici per metadati custom & R-38-F-Ob  
+ 
+TS-39 & Verificare che il sistema permetta di applicare più filtri contemporaneamente & R-39-F-Ob  
+ 
+TS-40 & Verificare che il sistema permetta di rimuovere i filtri applicati & R-40-F-Ob  
+ 
+TS-41 & Verificare che il sistema permetta di rimuovere tutti i filtri applicati & R-41-F-Ob  
+ 
+TS-42 & Verificare che il sistema permetta di selezionare filtri per tipo documentale per un singolo tipo di documento & R-42-F-Ob  
+ 
+TS-43 & Verificare che il sistema permetta di specificare il valore per i filtri per tipo Documento Informatico e Amministrativo Informatico & R-43-F-Ob  
+ 
+TS-44 & Verificare che il sistema racchiuda i filtri di ricerca comuni in una sezione espandibile dedicata & R-44-F-Ob  
+ 
+TS-45 & Verificare che il sistema racchiuda i filtri di ricerca specifici per tipo documentale in una sezione espandibile dedicata & R-45-F-Ob  
+ 
+TS-46 & Verificare che il sistema racchiuda i filtri di ricerca specifici per metadati custom in una sezione espandibile dedicata & R-46-F-Ob  
+ 
+TS-47 & Verificare che il sistema permetta di visualizzare i filtri comuni applicabili & R-47-F-Ob  
+ 
+TS-48 & Verificare che il sistema permetta di selezionare per la compilazione e l'aggiunta alla ricerca i filtri comuni & R-48-F-Ob  
+ 
+TS-49 & Verificare che il sistema renda disponibile una sezione per il filtro comune "Chiave Descrittiva" & R-49-F-Ob  
+ 
+TS-50 & Verificare che l'utente possa inserire il valore per il campo "Oggetto" & R-50-F-Ob  
+ 
+TS-51 & Verificare che l'utente possa inserire il valore per il campo "Parole chiave" & R-51-F-Ob  
+ 
+TS-52 & Verificare che il sistema renda disponibile una sezione per il filtro comune "Classificazione" & R-52-F-Ob  
+ 
+TS-53 & Verificare che l'utente possa inserire il valore per il campo "Indice di classificazione" & R-53-F-Ob  
+ 
+TS-54 & Verificare che l'utente possa inserire il valore per il campo "Descrizione" & R-54-F-Ob  
+ 
+TS-55 & Verificare che l'utente possa inserire il valore per il campo "Piano di classificazione" & R-55-F-Ob  
+ 
+TS-56 & Verificare che il sistema renda disponibile una sezione per il filtro comune "Tempo di conservazione" & R-56-F-Ob  
+ 
+TS-57 & Verificare che l'utente possa inserire il valore per il filtro "Tempo di conservazione" & R-57-F-Ob  
+ 
+TS-58 & Verificare che l'utente possa selezionare l'opzione "Perenne" per il filtro "Tempo di conservazione" & R-58-F-Ob  
+ 
+TS-59 & Verificare che il sistema renda disponibile una sezione per il filtro comune "Note" & R-59-F-Ob  
+ 
+TS-60 & Verificare che l'utente possa inserire il valore per il filtro "Note" & R-60-F-Ob  
+ 
+TS-61 & Verificare che il sistema renda disponibile una sezione per il filtro comune "Tipo di documento" & R-61-F-Ob  
+ 
+TS-62 & Verificare che l'utente possa selezionare il valore per il filtro "Tipo di documento" per il filtro "Documento informatico", "Documento amministrativo informatico", "Aggregazione documentale" & R-62-F-Ob  
+ 
+TS-63 & Verificare che l'utente possa selezionare il valore per il filtro "Tipo di documento" per il filtro "Documento amministrativo informatico" & R-63-F-Ob  
+ 
+TS-64 & Verificare che l'utente possa selezionare il valore per il filtro "Tipo di documento" per il filtro "Aggregazione documentale" & R-64-F-Ob  
+ 
+TS-65 & Verificare che il sistema renda disponibile una sezione per il filtro comune "Soggetto" & R-65-F-Ob  
+ 
+TS-66 & Verificare che l'utente possa inserire il valore per il filtro "Soggetto" & R-66-F-Ob  
+ 
+TS-67 & Verificare che il sistema renda disponibile una sezione per il filtro del Ruolo del Soggetto & R-67-F-Ob  
+ 
+TS-68 & Verificare che il sistema renda disponibile una sezione per il filtro del Tipo di Soggetto & R-68-F-Ob  
+ 
+TS-69 & Verificare che il sistema renda disponibile una sezione per il filtro "Dettagli" del Soggetto & R-69-F-Ob  
+ 
+TS-70 & Verificare che se il soggetto selezionato è di tipo "PAI", all'interno della sezione del filtro "Dettagli" del Soggetto, l'utente possa inserire il valore per i campi "Denominazione Amministrazione/Codice IPA", "Denominazione Amministrazione AOO/Codice IPA AOO", "Denominazione Amministrazione UOR/Codice IPA UOR" e "Indirizzi digitali di riferimento" & R-70-F-Ob  
+ 
+TS-71 & Verificare che l'utente possa inserire il valore per il campo "Denomizazione Amministrazione/Codice IPA" R-71-F-Ob  
+ 
+TS-72 & Verificare che l'utente possa inserire il valore per il campo "Denominazione Amministrazione AOO/Codice IPA AOO" R-72-F-Ob  
+ 
+TS-73 & Verificare che l'utente possa inserire il valore per il campo "Denominazione Amministrazione UOR/Codice IPA UOR" R-73-F-Ob  
+ 
+TS-74 & Verificare che l'utente possa inserire il valore per il campo "Indirizzi digitali di riferimento" R-74-F-Ob  
+
+ 
+TS-75 & Verificare che se il soggetto selezionato è di tipo "PAE", all'interno della sezione del filtro "Dettagli" del Soggetto, l'utente possa inserire il valore per i campi "Denominazione Amministrazione", "Denominazione Ufficio" e "Indirizzi digitali di riferimento" & R-75-F-Ob  
+ 
+TS-76 & Verificare che l'utente possa inserire il valore per il campo "Denominazione Amministrazione" R-76-F-Ob  
+ 
+TS-77 & Verificare che l'utente possa inserire il valore per il campo "Denominazione Ufficio" R-77-F-Ob  
+ 
+TS-78 & Verificare che se il soggetto selezionato è di tipo "AS", all'interno della sezione del filtro "Dettagli" del Soggetto, l'utente possa inserire il valore per i campi "Cognome", "Nome", "Codice Fiscale", "Denominazione Amministrazione AOO/Codice IPA AOO", "Denominazione Amministrazione UOR/Codice IPA UOR" e "Indirizzi digitali di riferimento" & R-78-F-Ob  
+ 
+TS-79 & Verificare che l'utente possa inserire il valore per il campo "Cognome" R-79-F-Ob  
+ 
+TS-80 & Verificare che l'utente possa inserire il valore per il campo "Nome" R-80-F-Ob  
+ 
+TS-81 & Verificare che l'utente possa inserire il valore per il campo "Codice Fiscale/Partita IVA" R-81-F-Ob  
+ 
+TS-82 & Verificare che se il soggetto selezionato è di tipo "PG", all'interno della sezione del filtro "Dettagli" del Soggetto, l'utente possa inserire il valore per i campi "Denominazione Organizzazione", "Codice Fiscale/Partita IVA", "Denominazione Ufficio" e "Indirizzi digitali di riferimento" & R-82-F-Ob  
+ 
+TS-83 & Verificare che l'utente possa inserire il valore per il campo "Denominazione Organizzazione" R-83-F-Ob  
+ 
+TS-84 & Verificare che se il soggetto selezionato è di tipo "PF", all'interno della sezione del filtro "Dettagli" del Soggetto, l'utente possa inserire il valore per i campi "Cognome", "Nome" e "Indirizzi digitali di riferimento" & R-84-F-Ob  
+ 
+TS-85 & Verificare che se il soggetto selezionato è di tipo "RUP", all'interno della sezione del filtro "Dettagli" del Soggetto, l'utente possa inserire il valore per i campi "Cognome", "Nome", "Codice Fiscale" "Denominazione Amministrazione/Codice IPA", "Denominazione Amministrazione AOO/Codice IPA AOO", "Denominazione Amministrazione UOR/Codice IPA UOR" e "Indirizzi digitali di riferimento" & R-85-F-Ob  
+ 
+TS-86 & Verificare che se il soggetto selezionato è di tipo "SW", all'interno della sezione del filtro "Dettagli" del Soggetto, l'utente possa inserire il valore per il campo "Denominazione Sistema" & R-86-F-Ob  
+ 
+TS-87 & Verificare che l'utente possa inserire il valore per il campo "Denominazione Sistema" R-87-F-Ob  
+ 
+TS-88 & Verificare che all'interno di una ricerca con filtri, l'utente possa visualizzare il nome del campo in una lista & R-88-F-Ob  
+ 
+TS-89 & Verificare che all'interno della sezione di filtri per tipo documentale, il sistema permetta di selezionare i filtri specifici per il tipo "Documento Informatico e Amministrativo Informatico" & R-89-F-Ob  
+ 
+TS-90 & Verificare che per il Documento Informatico e Amministrativo Informatico, il sistema renda disponibile una sezione per il filtro "Dati di Registrazione" & R-90-F-Ob  
+ 
+TS-91 & Verificare che l'utente possa inserire il valore per il campo "Tipologia di flusso" & R-91-F-Ob  
+ 
+TS-92 & Verificare che l'utente possa specificare la tipologia "Entrata" per la tipologia di flusso & R-92-F-Ob  
+ 
+TS-93 & Verificare che l'utente possa specificare la tipologia "Uscita" per la tipologia di flusso & R-93-F-Ob  
+ 
+TS-94 & Verificare che l'utente possa specificare la tipologia "Interno" per la tipologia di flusso & R-94-F-Ob  
+ 
+TS-95 & Verificare che l'utente possa inserire il valore per il campo "Tipo di registro" & R-95-F-Ob  
+ 
+TS-96 & Verificare che l'utente possa specificare la tipologia "Nessuno" per il tipo di registro & R-96-F-Ob  
+ 
+TS-97 & Verificare che l'utente possa specificare la tipologia "Protocolo Ordinario/Protocollo Emergenza" per il tipo di registro & R-97-F-Ob  
+ 
+TS-98 & Verificare che l'utente possa specificare la tipologia "Repertorio/Registro" per il tipo di registro & R-98-F-Ob  
+ 
+TS-99 & Verificare che l'utente possa inserire il valore per il campo "Data di registrazione" & R-99-F-Ob  
+ 
+TS-100 & Verificare che l'utente possa inserire il valore per il campo "Numero documento" & R-100-F-Ob  
+ 
+TS-101 & Verificare che l'utente possa inserire il valore per il campo "Codice registro" & R-101-F-Ob  
+ 
+TS-102 & Verificare che per il Documento Informatico e Amministrativo Informatico, l'utente possa inserire il valore per il filtro "Tipologia Documentale" & R-102-F-Ob  
+ 
+TS-103 & Verificare che per il Documento Informatico e Amministrativo Informatico, l'utente possa inserire il valore per il filtro "Modalità di Formazione" & R-103-F-Ob  
+ 
+TS-104 & Verificare che l'utente possa specificare la modalità "Ex novo" per il filtro "Modalità di Formazione" & R-104-F-Ob  
+ 
+TS-105 & Verificare che l'utente possa specificare la modalità "Acquisizione da altro documento o supporto informatico" per il filtro "Modalità di Formazione" & R-105-F-Ob  
+ 
+TS-106 & Verificare che l'utente possa specificare la modalità "Memorizzazione su supporto informatico in formato digitale" per il filtro "Modalità di Formazione" & R-106-F-Ob  
+ 
+TS-107 & Verificare che l'utente possa specificare la modalità "Generazione o raggruppamento in forma statica" per il filtro "Modalità di Formazione" & R-107-F-Ob  
+ 
+TS-108 & Verificare che per il Documento Informatico e Amministrativo Informatico, l'utente possa inserire il valore per il filtro "Campo Riservato" tra " " o "No" & R-108-F-Ob  
+ 
+TS-109 & Verificare che per il Documento Informatico e Amministrativo Informatico, il sistema renda disponibile una sezione per il filtro "Identificativo del Formato" & R-109-F-Ob  
+ 
+TS-110 & Verificare che l'utente possa inserire il valore per il campo "Formato" & R-110-F-Ob  
+ 
+TS-111 & Verificare che l'utente possa inserire il valore per il campo "Prodotto Software" & R-111-F-Ob  
+ 
+TS-112 & Verificare che l'utente possa inserire il valore per il campo "Versione Prodotto" & R-112-F-Ob  
+ 
+TS-113 & Verificare che l'utente possa inserire il valore per il campo "Produttore" & R-113-F-Ob  
+ 
+TS-114 & Verificare che per il Documento Informatico e Amministrativo Informatico, il sistema renda disponibile una sezione per il filtro "Dati di Verifica" & R-114-F-Ob  
+ 
+TS-115 & Verificare che l'utente possa inserire il valore per il campo "Firmato Digitalmente" tra " " o "No" all'interno della sezione del filtro "Dati di Verifica" & R-115-F-Ob  
+ 
+TS-116 & Verificare che l'utente possa inserire il valore per il campo "Sigillato Elettronicamente" tra " " o "No" all'interno della sezione del filtro "Dati di Verifica" & R-116-F-Ob  
+ 
+TS-117 & Verificare che l'utente possa inserire il valore per il campo "Marcatura Temporale" tra " " o "No" all'interno della sezione del filtro "Dati di Verifica" & R-117-F-Ob  
+ 
+TS-118 & Verificare che l'utente possa inserire il valore per il campo "Conformità copie immagine su supporto informatico" tra " " o "No" all'interno della sezione del filtro "Dati di Verifica" & R-118-F-Ob  
+ 
+TS-119 & Verificare che per il Documento Informatico e Amministrativo Informatico, l'utente possa inserire il valore per il filtro "Nome del Documento" & R-119-F-Ob  
+ 
+TS-120 & Verificare che per il Documento Informatico e Amministrativo Informatico, l'utente possa inserire il valore per il filtro "Versione del Documento" & R-120-F-Ob  
+ 
+TS-121 & Verificare che per il Documento Informatico e Amministrativo Informatico, l'utente possa inserire il valore per il filtro "Identificativo del Documento Primario" & R-121-F-Ob  
+ 
+TS-122 & Verificare che per il Documento Informatico e Amministrativo Informatico, il sistema renda disponibile una sezione per il filtro "Tracciatura Modifiche di Documento" & R-122-F-Ob  
+ 
+TS-123 & Verificare che l'utente possa inserire il valore per i campi "Tipo di Modifica" all'interno della sezione del filtro "Tracciatura Modifiche di Documento" & R-123-F-Ob  
+ 
+TS-124 & Verificare che l'utente possa specificare il valore "Annullamento" per il campo "Tipo di Modifica" & R-124-F-Ob  
+ 
+TS-125 & Verificare che l'utente possa specificare il valore "Rettifica" per il campo "Tipo di Modifica" & R-125-F-Ob  
+ 
+TS-126 & Verificare che l'utente possa specificare il valore "Integrazione" per il campo "Tipo di Modifica" & R-126-F-Ob  
+ 
+TS-127 & Verificare che l'utente possa specificare il valore "Annotazione" per il campo "Tipo di Modifica" & R-127-F-Ob  
+ 
+TS-128 & Verificare che l'utente possa inserire il valore per il campo "Data/Ora della Modifica" all'interno della sezione del filtro "Tracciatura Modifiche di Documento" & R-128-F-Ob  
+ 
+TS-129 & Verificare che l'utente possa inserire il valore per il campo "Identificativo Documento Versione Precedente" all'interno della sezione del filtro "Tracciatura Modifiche di Documento" & R-129-F-Ob  
+ 
+TS-130 & Verificare che all'interno della sezione di filtri per tipo documentale, il sistema permetta di selezionare i filtri specifici per il tipo "Aggregazione Documentale Informatica" & R-130-F-Ob  
+ 
+TS-131 & Verificare che per l'Aggregazione Documentale Informatica, il sistema renda disponibili per la compilazione e l'aggiunta alla ricerca i filtri specifici & R-131-F-Ob   
+ 
+TS-132 & Verificare che per l'Aggregazione Documentale Informatica, il sistema renda disponibile una sezione per il filtro "Tipo di Aggregazione" & R-132-F-Ob  
+ 
+TS-133 & Verificare che l'utente possa inserire il valore "Fascicolo" per il filtro "Tipo di Aggregazione" & R-133-F-Ob  
+ 
+TS-134 & Verificare che l'utente possa inserire il valore "Serie Documentale" per il filtro "Tipo di Aggregazione" & R-134-F-Ob  
+ 
+TS-135 & Verificare che l'utente possa inserire il valore "Serie di fascicoli" per il filtro "Tipo di Aggregazione" & R-135-F-Ob  
+ 
+TS-136 & Verificare che per l'Aggregazione Documentale Informatica, l'utente possa inserire il valore per il filtro "Identificativo dell'Aggregazione Documentale" & R-136-F-Ob  
+ 
+TS-137 & Verificare che l'utente possa inserire il valore per il filtro "Tipologia di Fascicolo" & R-137-F-Ob  
+ 
+TS-138 & Verificare che l'utente possa specificare il valore "Affare" per il filtro "Tipologia di Fascicolo" & R-138-F-Ob  
+ 
+TS-139 & Verificare che l'utente possa specificare il valore "Attività" per il filtro "Tipologia di Fascicolo" & R-139-F-Ob  
+ 
+TS-140 & Verificare che l'utente possa specificare il valore "Persona Fisica" per il filtro "Tipologia di Fascicolo" & R-140-F-Ob  
+ 
+TS-141 & Verificare che l'utente possa specificare il valore "Persona Giuridica" per il filtro "Tipologia di Fascicolo" & R-141-F-Ob  
+ 
+TS-142 & Verificare che l'utente possa specificare il valore "Procedimento Amministrativo" per il filtro "Tipologia di Fascicolo" & R-142-F-Ob  
+ 
+TS-143 & Verificare che per l'Aggregazione Documentale Informatica, l'utente possa inserire il valore per il filtro "Id Aggregazione Primario" & R-143-F-Ob  
+ 
+TS-144 & Verificare che per l'Aggregazione Documentale Informatica, l'utente possa inserire il valore per il filtro "Data Apertura" & R-144-F-Ob  
+ 
+TS-145 & Verificare che per l'Aggregazione Documentale Informatica, l'utente possa inserire il valore per il filtro "Data Chiusura" & R-145-F-Ob  
+ 
+TS-146 & Verificare che per l'Aggregazione Documentale Informatica, il sistema renda disponibile una sezione per il filtro "Procedimento Amministrativo" & R-146-F-Ob  
+ 
+TS-147 & Verificare che l'utente possa inserire il valore per il campo "Materia/Argomento/Struttura" & R-147-F-Ob  
+ 
+TS-148 & Verificare che l'utente possa inserire il valore per il campo "Procedimento" & R-148-F-Ob  
+ 
+TS-149 & Verificare che l'utente possa inserire il valore per il campo "Catalogo Procedimenti" & R-149-F-Ob  
+ 
+TS-150 & Verificare che per l'Aggregazione Documentale Informatica, il sistema renda disponibile una sezione per il filtro "Fasi" & R-150-F-Ob  
+ 
+TS-151 & Verificare che l'utente possa inserire il valore per il campo "Tipo Fase" all'interno della sezione del filtro "Fasi". & R-151-F-Ob  
+ 
+TS-152 & Verificare che l'utente possa specificare il valore "Preparatoria" per il campo "Tipo Fase" & R-152-F-Ob  
+ 
+TS-153 & Verificare che l'utente possa specificare il valore "Istruttoria" per il campo "Tipo Fase" & R-153-F-Ob  
+ 
+TS-154 & Verificare che l'utente possa specificare il valore "Consultiva" per il campo "Tipo Fase" & R-154-F-Ob  
+ 
+TS-155 & Verificare che l'utente possa specificare il valore "Decisoria" per il campo "Tipo Fase" & R-155-F-Ob  
+ 
+TS-156 & Verificare che l'utente possa specificare il valore "Integrazione dell'efficacia" per il campo "Tipo Fase" & R-156-F-Ob  
+ 
+TS-157 & Verificare che l'utente possa inserire il valore per il campo "Data Inizio Fase" all'interno della sezione del filtro "Fasi" & R-157-F-Ob  
+ 
+TS-158 & Verificare che l'utente possa inserire il valore per il campo "Data Fine Fase" all'interno della sezione del filtro "Fasi" & R-158-F-Ob  
+ 
+TS-159 & Verificare che per l'Aggregazione Documentale Informatica, il sistema renda disponibile una sezione per il filtro "Assegnazione" & R-159-F-Ob  
+ 
+TS-160 & Verificare che l'utente possa inserire il valore per il campo "Assegnazione" all'interno della sezione del filtro "Assegnazione" & R-160-F-Ob  
+ 
+TS-161 & Verificare che l'utente possa inserire il valore per il campo "Tipo Assegnazione" & R-161-F-Ob  
+ 
+TS-162 & Verificare che l'utente possa specificare il valore "Per competenza" per il campo "Tipo Assegnazione" & R-162-F-Ob  
+ 
+TS-163 & Verificare che l'utente possa specificare il valore "Per conoscenza" per il campo "Tipo Assegnazione" & R-163-F-Ob  
+ 
+TS-164 & Verificare che l'utente possa inserire il valore per il campo "Data Inizio Assegnazione" all'interno della sezione del filtro "Assegnazione" & R-164-F-Ob  
+ 
+TS-165 & Verificare che l'utente possa inserire il valore per il campo "Data Fine Assegnazione" all'interno della sezione del filtro "Assegnazione" & R-165-F-Ob  
+ 
+TS-166 & Verificare che per l'Aggregazione Documentale Informatica, l'utente possa inserire il valore per il filtro "Progressivo Aggregazione" & R-166-F-Ob  
+ 
+TS-167 & Verificare che all'interno della sezione di filtri per custom metadata, il sistema permetta di selezionare i filtri specifici per i metadata presenti & R-167-F-Ob  
+ 
+TS-168 & Verificare che per ciascun custom metadata, l'utente possa inserire il nome del metadato e il relativo valore & R-168-F-Ob  
+ 
+TS-169 & Verificare che quando viene eseguita una ricerca, l'utente possa visualizzare i risultati della ricerca & R-169-F-Ob  
+ 
+TS-170 & Verificare che l'utente possa visualizzare per ogni risultato le informazioni rilevanti: Nome del documento o aggregazione, Data di registrazione/creazione del documento/aggregazione, Tipo di elemento tra Documento, Aggregazione, Processo o Classe Documentale & R-170-F-Ob  
+ 
+TS-171 & Verificare che l'utente possa visualizzare il nome del documento o aggregazione & R-171-F-Ob  
+ 
+TS-172 & Verificare che l'utente possa visualizzare il tipo del documento o aggregazione & R-172-F-Ob  
+ 
+TS-173 & Verificare che se la ricerca non produce risultati, l'utente possa visualizzare un messaggio di errore & R-173-F-Ob  
+ 
+TS-174 & Verificare che il sistema prevenga l'inserimento di valori testuali non validi & R-174-F-Ob  
+ 
+TS-175 & Verificare che il sistema prevenga l'inserimento di valori numerici non validi & R-175-F-Ob  
+ 
+TS-176 & Verificare che il sistema informi l'utente quando il formato del valore data inserito non è valido & R-176-F-Ob  
+ 
+TS-177 & Verificare che il sistema informi l'utente quando il formato del valore numerico positivo inserito non è valido & R-177-F-Ob  
+ 
+TS-178 & Verificare che l'utente possa salvare un documento in locale in una cartella selezionata & R-178-F-Ob  
+ 
+TS-179 & Verificare che l'utente possa salvare più file documentali in una cartella selezionata & R-179-F-Ob  
+ 
+TS-180 & Verificare che se il salvataggio di uno o più documenti fallisce, l'utente possa visualizzare un messaggio di errore & R-180-F-Ob  
+ 
+TS-181 & Verificare che l'utente possa stampare un documento & R-181-F-Ob  
+ 
+TS-182 & Verificare che l'utente possa stampare un insieme di documenti & R-182-F-Op & NO \\
+ 
+TS-183 & Verificare che se la stampa di uno o più documenti fallisce, l'utente possa visualizzare un messaggio di errore & R-183-F-Op  
+ 
+TS-184 & Verificare che se la stampa non è disponibile, l'utente possa visualizzare un messaggio di stampa non avvenuta & R-184-F-Ob  
+ 
+TS-185 & Verificare che l'utente possa avviare la verifica del DIP & R-185-F-Ob  
+ 
+TS-186 & Verificare che l'utente possa visualizzare lo stato di verifica del DIP & R-186-F-Ob  
+ 
+TS-187 & Verificare che l'utente possa avviare la verifica della classe documentale & R-187-F-Ob  
+ 
+TS-188 & Verificare che l'utente possa visualizzare lo stato di verifica della classe documentale & R-188-F-Ob  
+ 
+TS-189 & Verificare che l'utente possa avviare la verifica dell'integrità processo & R-189-F-Ob  
+ 
+TS-190 & Verificare che l'utente possa visualizzare lo stato di verifica dell'integrità processo & R-190-F-Ob  
+ 
+TS-191 & Verificare che l'utente possa avviare la verifica del documento & R-191-F-Ob  
+ 
+TS-192 & Verificare che l'utente possa visualizzare lo stato di verifica del documento & R-192-F-Ob  
+ 
+TS-193 & Verificare che l'utente possa visualizzare il report di integrità del DIP completo con le informazioni aggregate & R-193-F-Ob  
+ 
+TS-194 & Verificare che l'utente possa visualizzare il conteggio totale delle classi documentali verificate nel report del DIP & R-194-F-Ob  
+ 
+TS-195 & Verificare che l'utente possa visualizzare il numero di classi integre (stato "Valido") in colore verde nel report del DIP & R-195-F-Ob  
+ 
+TS-196 & Verificare che l'utente possa visualizzare il numero di classi corrotte (stato "Non Valido") in colore rosso nel report del DIP & R-196-F-Ob  
+ 
+TS-197 & Verificare che l'utente possa visualizzare l'elenco delle classi corrotte indicando nome e numero di processi corrotti per ciascuna & R-197-F-Ob  
+ 
+TS-198 & Verificare che l'utente possa visualizzare la classe corrotta indicando nome e numero di processi corrotti & R-198-F-Ob  
+ 
+TS-199 & Verificare che l'utente possa visualizzare la data e l'ora di inizio della verifica del DIP nel formato "GG/MM/AAAA HH:MM:SS" & R-199-F-Op & NO \\
+ 
+TS-200 & Verificare che l'utente sia informato con un messaggio nel caso in cui non vi siano classi corrotte & R-200-F-Op & NO \\
+ 
+TS-201 & Verificare che l'utente possa visualizzare il report di integrità dettagliato per una singola classe documentale & R-201-F-Op & NO \\
+ 
+TS-202 & Verificare che l'utente possa visualizzare il conteggio dei processi verificati all'interno della classe documentale & R-202-F-Ob  
+ 
+TS-203 & Verificare che l'utente possa visualizzare il numero di processi integri (stato "Valido") in colore verde nella classe documentale & R-203-F-Ob  
+ 
+TS-204 & Verificare che l'utente possa visualizzare il numero di processi corrotti (stato "Non Valido") in colore rosso nella classe documentale & R-204-F-Ob  
+ 
+TS-205 & Verificare che l'utente possa visualizzare la lista dei processi corrotti con il relativo numero di documenti compromessi & R-205-F-Ob  
+ 
+TS-206 & Verificare che l'utente possa visualizzare il singolo processo corrotto con il relativo numero di documenti compromessi & R-206-F-Ob  
+ 
+TS-207 & Verificare che l'utente possa visualizzare la data e l'ora di inizio della verifica della classe nel formato "GG/MM/AAAA HH:MM:SS" & R-207-F-Ob  
+ 
+TS-208 & Verificare che l'utente sia informato che tutti i processi sono integri & R-208-F-Ob  
+ 
+TS-209 & Verificare che l'utente possa visualizzare il report di integrità dettagliato di un singolo processo & R-209-F-Ob  
+ 
+TS-210 & Verificare che l'utente possa visualizzare il conteggio dei documenti verificati all'interno del processo selezionato & R-210-F-Ob  
+ 
+TS-211 & Verificare che l'utente possa visualizzare il numero di documenti integri (stato "Valido") in colore verde nel processo selezionato & R-211-F-Ob  
+ 
+TS-212 & Verificare che l'utente possa visualizzare il numero di documenti corrotti (stato "Non Valido") in colore rosso nel processo selezionato & R-212-F-Ob  
+ 
+TS-213 & Verificare che l'utente possa visualizzare la lista dei documenti corrotti & R-213-F-Ob  
+ 
+TS-214 & Verificare che l'utente possa visualizzare i singoli documenti corrotti della lista dei documenti corrotti, con i dettagli dell'errore & R-214-F-Ob  
+ 
+TS-215 & Verificare che l'utente possa visualizzare la data e l'ora di inizio della verifica del processo nel formato "GG/MM/AAAA HH:MM:SS" & R-215-F-Ob  
+ 
+TS-216 & Verificare che l'utente sia avvisato che tutti i documenti sono integri tramite un messaggio & R-216-F-Ob  
+ 
+TS-217 & Verificare che l'utente possa visualizzare il report di integrità di un singolo documento & R-217-F-Ob  
+ 
+TS-218 & Verificare che l'utente possa visualizzare il nome del documento all'interno del report di integrità & R-218-F-Ob  
+ 
+TS-219 & Verificare che l'utente possa visualizzare lo stato della verifica (Valido / Non Valido) per il documento selezionato & R-219-F-Ob  
+ 
+TS-220 & Verificare che l'utente possa visualizzare la data e l'ora di inizio della verifica del documento nel formato "GG/MM/AAAA HH:MM:SS" & R-220-F-Ob  
+ 
+TS-221 & Verificare che l'utente possa visualizzare la descrizione tecnica del dettaglio dell'errore per i documenti con stato "Non Valido" & R-221-F-Ob  
+ 
+TS-222 & Verificare che l'utente possa avviare la conversione del report di verifica visualizzato in formato PDF & R-222-F-Ob  
+ 
+TS-223 & Verificare che l'utente sia informato con un messaggio di errore qualora la generazione del file PDF non vada a buon fine & R-223-F-Ob  
+ 
+TS-224 & Verificare che l'utente possa scaricare un file in una cartella locale previa selezione della cartella di destinazione & R-224-F-Ob  
+ 
+TS-225 & Verificare che l'utente sia informato con un messaggio di conferma indicando il percorso di destinazione al termine del salvataggio & R-225-F-Ob  
+ 
+TS-226 & Verificare che il sistema impedisca il salvataggio di file all'interno della cartella sorgente del DIP per preservarne l'integrità & R-226-F-Ob  
+ 
+TS-227 & Verificare che l'utente sia informato con un errore specifico se l'utente tenta di scaricare un file nel percorso protetto del DIP & R-227-F-Ob  
+ 
+TS-228 & Verificare che l'utente possa visualizzare le informazioni dell'AiP di provenienza di un documento selezionato & R-228-F-Ob  
+ 
+TS-229 & Verificare che l'utente possa visualizzare la classe documentale di appartenenza dell'AiP relativo al documento selezionato & R-229-F-Ob  
+ 
+TS-230 & Verificare che l'utente possa visualizzare lo UUID dell'AiP relativo al documento selezionato & R-230-F-Ob  
+ 
+TS-231 & Verificare che l'utente possa visualizzare le informazioni del processo di conservazione dell'AiP & R-231-F-Ob  
+ 
+TS-232 & Verificare che l'utente possa visualizzare la data di inizio di un processo o sessione & R-232-F-Ob  
+ 
+TS-233 & Verificare che l'utente possa visualizzare la data di fine di un processo o sessione & R-233-F-Ob  
+ 
+TS-234 & Verificare che se il processo o la sessione non è ancora terminato/a, al posto della data di fine l'utente sia informato con un messaggio che indica l'assenza della data di fine & R-234-F-Ob  
+ 
+TS-235 & Verificare che l'utente possa visualizzare lo UUID dell'utente attivatore di un processo o sessione & R-235-F-Ob  
+ 
+TS-236 & Verificare che l'utente possa visualizzare lo UUID dell'utente terminatore di un processo o sessione & R-236-F-Ob  
+ 
+TS-237 & Verificare che se il processo o la sessione non è ancora terminato/a, al posto dello UUID dell'utente terminatore l'utente sia informato con un messaggio che indica l'assenza dello UUID & R-237-F-Ob  
+ 
+TS-238 & Verificare che l'utente possa visualizzare il nome del canale di attivazione di un processo o sessione & R-238-F-Ob  
+ 
+TS-239 & Verificare che l'utente possa visualizzare il nome del canale di terminazione di un processo o sessione & R-239-F-Ob  
+ 
+TS-240 & Verificare che se il processo o la sessione non è ancora terminato/a, al posto del nome del canale di terminazione l'utente sia informato con un messaggio che indica l'assenza del nome del canale di terminazione & R-240-F-Ob  
+ 
+TS-241 & Verificare che l'utente possa visualizzare lo stato di un processo o sessione & R-241-F-Ob  
+ 
+TS-242 & Verificare che l'utente possa visualizzare le informazioni della sessione di versamento del processo di conservazione selezionato & R-242-F-Ob  
+ 
+TS-243 & Verificare che l'utente possa visualizzare la data di inizio della sessione di versamento & R-243-F-Ob  
+ 
+TS-244 & Verificare che l'utente possa visualizzare la data di fine della sessione di versamento & R-244-F-Ob  
+ 
+TS-245 & Verificare che se la sessione di versamento non è ancora terminata, al posto della data di fine l'utente sia informato con un messaggio che indica l'assenza della data di fine & R-245-F-Ob  
+ 
+TS-246 & Verificare che l'utente possa visualizzare lo UUID dell'utente attivatore della sessione di versamento & R-246-F-Ob  
+ 
+TS-247 & Verificare che l'utente possa visualizzare lo UUID dell'utente terminatore della sessione di versamento & R-247-F-Ob  
+ 
+TS-248 & Verificare che se la sessione di versamento non è ancora terminata, al posto dello UUID dell'utente terminatore l'utente sia informato con un messaggio che indica l'assenza dello UUID & R-248-F-Ob  
+ 
+TS-249 & Verificare che l'utente possa visualizzare il nome del canale di attivazione della sessione di versamento & R-249-F-Ob  
+ 
+TS-250 & Verificare che l'utente possa visualizzare il nome del canale di terminazione della sessione di versamento & R-250-F-Ob  
+ 
+TS-251 & Verificare che se la sessione di versamento non è ancora terminata, al posto del nome del canale di terminazione l'utente sia informato con un messaggio che indica l'assenza del nome del canale di terminazione & R-251-F-Ob  
+ 
+TS-252 & Verificare che l'utente possa visualizzare lo stato della sessione di versamento & R-252-F-Ob  
+ 
+TS-253 & Verificare che l'utente possa visualizzare le informazioni della sessione di conservazione del processo di conservazione selezionato & R-253-F-Ob  
+ 
+TS-254 & Verificare che l'utente possa visualizzare la data di inizio della sessione di conservazione & R-254-F-Ob  
+ 
+TS-255 & Verificare che l'utente possa visualizzare la data di fine della sessione di conservazione & R-255-F-Ob  
+ 
+TS-256 & Verificare che se la sessione di conservazione non è ancora terminata, al posto della data di fine l'utente sia informato con un messaggio che indica l'assenza della data di fine & R-256-F-Ob  
+ 
+TS-257 & Verificare che l'utente possa visualizzare lo UUID dell'utente attivatore della sessione di conservazione & R-257-F-Ob  
+ 
+TS-258 & Verificare che l'utente possa visualizzare lo UUID dell'utente terminatore della sessione di conservazione & R-258-F-Ob  
+ 
+TS-259 & Verificare che se la sessione di conservazione non è ancora terminata, al posto dello UUID dell'utente terminatore l'utente sia informato con un messaggio che indica l'assenza dello UUID & R-259-F-Ob  
+ 
+TS-260 & Verificare che l'utente possa visualizzare il nome del canale di attivazione della sessione di conservazione & R-260-F-Ob  
+ 
+TS-261 & Verificare che l'utente possa visualizzare il nome del canale di terminazione della sessione di conservazione & R-261-F-Ob  
+ 
+TS-262 & Verificare che se la sessione di conservazione non è ancora terminata, al posto del nome del canale di terminazione l'utente sia informato con un messaggio che indica l'assenza del nome del canale di terminazione & R-262-F-Ob  
+ 
+TS-263 & Verificare che l'utente possa visualizzare lo stato della sessione di conservazione & R-263-F-Ob  
+ 
+TS-264 & Verificare che l'utente possa visualizzare la descrizione del documento selezionato & R-264-F-Ob  
+ 
+TS-265 & Verificare che l'utente possa visualizzare la lista dei soggetti coinvolti nel documento selezionato & R-265-F-Ob  
+ 
+TS-266 & Verificare che per ogni soggetto coinvolto nel documento, l'utente possa visualizzare il ruolo del soggetto nel documento & R-266-F-Ob  
+ 
+TS-267 & Verificare che per ogni soggetto coinvolto nel documento, l'utente possa visualizzare il tipo di soggetto & R-267-F-Ob  
+ 
+TS-268 & Verificare che se il soggetto coinvolto nel documento è di tipo Persona Fisica, l'utente possa visualizzare tutti i dati legati a questo tipo di soggetto & R-268-F-Ob  
+ 
+TS-269 & Verificare che se il soggetto coinvolto nel documento è di tipo Persona Fisica, l'utente possa visualizzare il nome del soggetto & R-269-F-Ob  
+ 
+TS-270 & Verificare che se il soggetto coinvolto nel documento è di tipo Persona Fisica, l'utente possa visualizzare il cognome del soggetto & R-270-F-Ob  
+ 
+TS-271 & Verificare che se il soggetto coinvolto nel documento è di tipo Persona Fisica, l'utente possa visualizzare il codice fiscale del soggetto & R-271-F-Ob  
+ 
+TS-272 & Verificare che se il soggetto coinvolto nel documento è di tipo Persona Fisica, l'utente possa visualizzare gli indirizzi digitali di riferimento del soggetto & R-272-F-Ob  
+ 
+TS-273 & Verificare che se il soggetto coinvolto nel documento è di tipo Persona Giuridica, l'utente possa visualizzare tutti i dati legati a questo tipo di soggetto & R-273-F-Ob  
+ 
+TS-274 & Verificare che se il soggetto coinvolto nel documento è di tipo Persona Giuridica, l'utente possa visualizzare la denominazione dell'organizzazione del soggetto & R-274-F-Ob  
+ 
+TS-275 & Verificare che se il soggetto coinvolto nel documento è di tipo Persona Giuridica, l'utente possa visualizzare la partita IVA del soggetto & R-275-F-Ob  
+ 
+TS-276 & Verificare che se il soggetto coinvolto nel documento è di tipo Persona Giuridica, l'utente possa visualizzare il codice fiscale del soggetto & R-276-F-Ob  
+ 
+TS-277 & Verificare che se il soggetto coinvolto nel documento è di tipo Persona Giuridica, l'utente possa visualizzare la denominazione dell'ufficio del soggetto & R-277-F-Ob  
+ 
+TS-278 & Verificare che se il soggetto coinvolto nel documento è di tipo Persona Giuridica, l'utente possa visualizzare gli indirizzi digitali di riferimento del soggetto & R-278-F-Ob  
+ 
+TS-279 & Verificare che se il soggetto coinvolto nel documento è di tipo AS, l'utente possa visualizzare tutti i dati legati a questo tipo di soggetto & R-279-F-Ob  
+ 
+TS-280 & Verificare che se il soggetto coinvolto nel documento è di tipo AS, l'utente possa visualizzare il cognome del soggetto & R-280-F-Ob  
+ 
+TS-281 & Verificare che se il soggetto coinvolto nel documento è di tipo AS, l'utente possa visualizzare il nome del soggetto & R-281-F-Ob  
+ 
+TS-282 & Verificare che se il soggetto coinvolto nel documento è di tipo AS, l'utente possa visualizzare il codice fiscale del soggetto & R-282-F-Ob  
+ 
+TS-283 & Verificare che se il soggetto coinvolto nel documento è di tipo AS, l'utente possa visualizzare la denominazione dell'organizzazione del soggetto & R-283-F-Ob  
+ 
+TS-284 & Verificare che se il soggetto coinvolto nel documento è di tipo AS, l'utente possa visualizzare la denominazione dell'ufficio del soggetto & R-284-F-Ob  
+ 
+TS-285 & Verificare che se il soggetto coinvolto nel documento è di tipo AS, l'utente possa visualizzare gli indirizzi digitali di riferimento del soggetto & R-285-F-Ob  
+ 
+TS-286 & Verificare che se il soggetto coinvolto nel documento è di tipo PAI, l'utente possa visualizzare tutti i dati legati a questo tipo di soggetto & R-286-F-Ob  
+ 
+TS-287 & Verificare che se il soggetto coinvolto nel documento è di tipo PAI, l'utente possa visualizzare la denominazione dell'amministrazione e il codice IPA del soggetto & R-287-F-Ob  
+ 
+TS-288 & Verificare che se il soggetto coinvolto nel documento è di tipo PAI, l'utente possa visualizzare la denominazione dell'amministrazione AOO e il codice IPA AOO del soggetto & R-288-F-Ob  
+ 
+TS-289 & Verificare che se il soggetto coinvolto nel documento è di tipo PAI, l'utente possa visualizzare la denominazione dell'amministrazione UOR e il codice IPA UOR del soggetto & R-289-F-Ob  
+ 
+TS-290 & Verificare che se il soggetto coinvolto nel documento è di tipo PAI, l'utente possa visualizzare gli indirizzi digitali di riferimento del soggetto & R-290-F-Ob  
+ 
+TS-291 & Verificare che se il soggetto coinvolto nel documento è di tipo PAE, l'utente possa visualizzare tutti i dati legati a questo tipo di soggetto & R-291-F-Ob  
+ 
+TS-292 & Verificare che se il soggetto coinvolto nel documento è di tipo PAE, l'utente possa visualizzare la denominazione dell'amministrazione del soggetto & R-292-F-Ob  
+ 
+TS-293 & Verificare che se il soggetto coinvolto nel documento è di tipo PAE, l'utente possa visualizzare la denominazione dell'ufficio del soggetto & R-293-F-Ob  
+ 
+TS-294 & Verificare che se il soggetto coinvolto nel documento è di tipo PAE, l'utente possa visualizzare gli indirizzi digitali di riferimento del soggetto & R-294-F-Ob  
+ 
+TS-295 & Verificare che se il soggetto coinvolto nel documento è di tipo SW, l'utente possa visualizzare tutti i dati legati a questo tipo di soggetto & R-295-F-Ob  
+ 
+TS-296 & Verificare che se il soggetto coinvolto nel documento è di tipo SW, l'utente possa visualizzare la denominazione del sistema del soggetto & R-296-F-Ob  
+ 
+TS-297 & Verificare che l'utente possa visualizzare l'indice di classificazione del documento selezionato & R-297-F-Ob  
+ 
+TS-298 & Verificare che l'utente possa visualizzare la descrizione dell'indice di classificazione del documento selezionato & R-298-F-Ob  
+ 
+TS-299 & Verificare che l'utente possa visualizzare l'URI del piano di classificazione del documento selezionato & R-299-F-Ob  
+ 
+TS-300 & Verificare che se il documento selezionato ha un tempo di conservazione diverso da quello assegnato all'aggregazione documentale informatica a cui appartiene, l'utente possa visualizzare il tempo di conservazione effettivo del documento & R-300-F-Ob   
+ 
+TS-301 & Verificare che se il tempo di conservazione del documento coincide con quello assegnato all'aggregazione documentale a cui appartiene, l'utente sia informato con un messaggio che indica questa coincidenza & R-301-F-Ob  
+ 
+TS-302 & Verificare che l'utente possa visualizzare le note relative al documento selezionato & R-302-F-Ob  
+ 
+TS-303 & Verificare che se le note del documento sono assenti o vuote, l'utente sia informato con un messaggio che indica l'assenza delle note & R-303-F-Ob  
+ 
+TS-304 & Verificare che l'utente possa visualizzare la tipologia di flusso del documento selezionato & R-304-F-Ob  
+ 
+TS-305 & Verificare che l'utente possa visualizzare il tipo di registro del documento selezionato & R-305-F-Ob  
+ 
+TS-306 & Verificare che l'utente possa visualizzare la data di registrazione del documento selezionato & R-306-F-Ob  
+ 
+TS-307 & Verificare che l'utente possa visualizzare la data di registrazione del documento non protocollato selezionato & R-307-F-Ob  
+ 
+TS-308 & Verificare che l'utente possa visualizzare la data di protocollazione del documento protocollato selezionato & R-308-F-Ob  
+ 
+TS-309 & Verificare che l'utente possa visualizzare il numero del documento selezionato & R-309-F-Ob  
+ 
+TS-310 & Verificare che l'utente possa visualizzare il numero di registrazione del documento non protocollato selezionato & R-310-F-Ob  
+ 
+TS-311 & Verificare che l'utente possa visualizzare il numero di protocollo del documento protocollato selezionato & R-311-F-Ob  
+ 
+TS-312 & Verificare che l'utente possa visualizzare il codice identificativo del registro di appartenenza del documento selezionato & R-312-F-Ob  
+ 
+TS-313 & Verificare che l'utente possa visualizzare la tipologia documentale del documento selezionato & R-313-F-Ob  
+ 
+TS-314 & Verificare che l'utente possa visualizzare la modalità di formazione del documento selezionato & R-314-F-Ob  
+ 
+TS-315 & Verificare che l'utente possa visualizzare lo stato di riservatezza del documento selezionato & R-315-F-Ob  
+ 
+TS-316 & Verificare che l'utente possa visualizzare il tipo di formato del documento selezionato & R-316-F-Ob  
+ 
+TS-317 & Verificare che l'utente possa visualizzare il nome del prodotto software che ha generato il documento selezionato & R-317-F-Ob  
+ 
+TS-318 & Verificare che l'utente possa visualizzare la versione del prodotto software che ha generato il documento selezionato & R-318-F-Ob  
+ 
+TS-319 & Verificare che l'utente possa visualizzare il produttore del software che ha generato il documento selezionato & R-319-F-Ob  
+ 
+TS-320 & Verificare che l'utente possa visualizzare le informazioni di verifica del documento selezionato & R-320-F-Ob  
+ 
+TS-321 & Verificare che l'utente possa visualizzare se il documento selezionato è firmato digitalmente & R-321-F-Ob  
+ 
+TS-322 & Verificare che l'utente possa visualizzare se il documento selezionato è sigillato elettronicamente & R-322-F-Ob  
+ 
+TS-323 & Verificare che l'utente possa visualizzare se il documento selezionato è dotato di marcatura temporale & R-323-F-Ob  
+ 
+TS-324 & Verificare che l'utente possa visualizzare se vi è conformità alle copie immagine su supporto informatico del documento selezionato & R-324-F-Ob  
+ 
+TS-325 & Verificare che l'utente possa visualizzare la versione del documento selezionato & R-325-F-Ob  
+ 
+TS-326 & Verificare che l'utente possa visualizzare il nome del documento selezionato & R-326-F-Ob  
+ 
+TS-327 & Verificare che l'utente possa visualizzare le informazioni degli allegati del documento selezionato & R-327-F-Ob  
+ 
+TS-328 & Verificare che l'utente possa visualizzare il numero di allegati del documento selezionato & R-328-F-Ob  
+ 
+TS-329 & Verificare che l'utente possa visualizzare il singolo allegato & R-329-F-Ob  
+ 
+TS-330 & Verificare che se il documento ha almeno un allegato, l'utente possa visualizzare l'identificativo di ciascun allegato & R-330-F-Ob  
+ 
+TS-331 & Verificare che se l'informazione sull'identificativo dell'allegato non è disponibile, l'utente sia informato con un messaggio di errore & R-331-F-Ob  
+ 
+TS-332 & Verificare che se il documento ha almeno un allegato, l'utente possa visualizzare la descrizione di ciascun allegato & R-332-F-Ob  
+ 
+TS-333 & Verificare che se l'informazione sulla descrizione dell'allegato non è disponibile, l'utente sia informato con un messaggio di errore & R-333-F-Ob  
+ 
+TS-334 & Verificare che se il documento non ha allegati, l'utente sia informato con un messaggio che indica l'assenza degli allegati & R-334-F-Ob  
+ 
+TS-335 & Verificare che l'utente possa visualizzare tutte le informazioni sulle modifiche di un documento & R-335-F-Ob  
+ 
+TS-336 & Verificare che l'utente possa visualizzare il tipo di modifica per ogni modifica del documento selezionato tra: Annullamento, Rettifica, Integrazione e Annotazione & R-336-F-Ob  
+ 
+TS-337 & Verificare che l'utente possa visualizzare le informazioni del soggetto autore di ogni modifica del documento selezionato & R-337-F-Ob  
+ 
+TS-338 & Verificare che l'utente possa visualizzare la data e l'ora di ogni modifica del documento selezionato & R-338-F-Ob  
+ 
+TS-339 & Verificare che l'utente possa visualizzare l'identificativo del documento alla versione precedente alla modifica & R-339-F-Ob  
+ 
+TS-340 & Verificare che l'utente possa visualizzare il tipo di aggregazione dell'aggregazione documentale selezionata tra: Fascicolo, Serie Documentale e Serie di Fascicoli & R-340-F-Ob  
+ 
+TS-341 & Verificare che l'utente possa visualizzare l'identificativo dell'aggregazione documentale selezionata & R-341-F-Ob  
+ 
+TS-342 & Verificare che l'utente possa visualizzare la tipologia di fascicolo dell'aggregazione documentale selezionata tra: Affare, Attività, Persona Fisica, Persona Giuridica e Procedimento Amministrativo & R-342-F-Ob  
+ 
+TS-343 & Verificare che l'utente possa visualizzare il tipo di assegnazione dell'aggregazione documentale selezionata tra: Per competenza e Per co scenza & R-343-F-Ob  
+ 
+TS-344 & Verificare che l'utente possa visualizzare le informazioni del soggetto assegnatario dell'aggregazione documentale selezionata & R-344-F-Ob  
+ 
+TS-345 & Verificare che l'utente possa visualizzare la data e l'ora di inizio dell'assegnazione dell'aggregazione documentale selezionata & R-345-F-Ob  
+ 
+TS-346 & Verificare che l'utente possa visualizzare la data e l'ora di fine dell'assegnazione dell'aggregazione documentale selezionata & R-346-F-Ob  
+ 
+TS-347 & Verificare che l'utente possa visualizzare la data di apertura dell'aggregazione documentale selezionata & R-347-F-Ob  
+ 
+TS-348 & Verificare che l'utente possa visualizzare la data di chiusura dell'aggregazione documentale selezionata & R-348-F-Ob  
+ 
+TS-349 & Verificare che l'utente possa visualizzare il progressivo dell'aggregazione documentale selezionata & R-349-F-Ob  
+ 
+TS-350 & Verificare che l'utente possa visualizzare le informazioni del procedimento amministrativo dell'aggregazione documentale selezionata & R-350-F-Ob  
+ 
+TS-351 & Verificare che l'utente possa visualizzare l'indice della materia/argomento/struttura per la quale so  catalogati i procedimenti dell'aggregazione documentale selezionata & R-351-F-Ob  
+ 
+TS-352 & Verificare che l'utente possa visualizzare la de minazione del procedimento amministrativo dell'aggregazione documentale selezionata & R-352-F-Ob  
+ 
+TS-353 & Verificare che l'utente possa visualizzare il catalogo dei procedimenti come URI di pubblicazione dell'aggregazione documentale selezionata & R-353-F-Ob  
+ 
+TS-354 & Verificare che l'utente possa visualizzare la lista delle fasi del procedimento amministrativo dell'aggregazione documentale selezionata & R-354-F-Ob  
+ 
+TS-355 & Verificare che l'utente possa visualizzare le singole fasi della lista delle fasi del procedimento amministrativo dell'aggregazione documentale selezionata complete di dati della fase & R-355-F-Ob  
+ 
+TS-356 & Verificare che per ogni fase del procedimento amministrativo, l'utente possa visualizzare il tipo di fase tra: Preparatoria, Istruttoria, Consultiva, Decisoria o deliberativa e Integrazione dell'efficacia & R-356-F-Ob  
+ 
+TS-357 & Verificare che per ogni fase del procedimento amministrativo, l'utente possa visualizzare la data e l'ora di inizio della fase & R-357-F-Ob  
+ 
+TS-358 & Verificare che per ogni fase del procedimento amministrativo, l'utente possa visualizzare la data e l'ora di fine della fase & R-358-F-Ob  
+ 
+TS-359 & Verificare che l'utente possa visualizzare l'indice dei documenti contenuti nell'aggregazione documentale selezionata & R-359-F-Ob  
+ 
+TS-360 & Verificare che l'utente possa visualizzare ogni voce dell'indice dei documenti dell'aggregazione documentale selezionata & R-360-F-Ob  
+ 
+TS-361 & Verificare che per ogni voce dell'indice dei documenti dell'aggregazione, l'utente possa visualizzare il tipo di documento contenuto & R-361-F-Ob  
+ 
+TS-362 & Verificare che per ogni voce dell'indice dei documenti dell'aggregazione, l'utente possa visualizzare l'identificativo del documento contenuto & R-362-F-Ob  
+ 
+TS-363 & Verificare che l'utente possa visualizzare la posizione fisica dell'aggregazione documentale selezionata & R-363-F-Ob  
+ 
+TS-364 & Verificare che l'utente possa visualizzare l'identificativo dell'aggregazione primaria dell'aggregazione documentale selezionata & R-364-F-Ob  
+ 
+TS-365 & Verificare che l'utente possa visualizzare il tempo di conservazione dell'aggregazione documentale selezionata & R-365-F-Ob  
+ 
+TS-366 & Verificare che l'utente possa visualizzare la lista dei metadati custom del documento selezionato & R-366-F-Ob  
+ 
+TS-367 & Verificare che l'utente possa visualizzare le informazioni di ciascun metadato custom del documento selezionato & R-367-F-Ob  
+ 
+TS-368 & Verificare che l'utente possa visualizzare il  me di ciascun metadato custom del documento selezionato & R-368-F-Ob  
+ 
+TS-369 & Verificare che l'utente possa visualizzare il valore di ciascun metadato custom del documento selezionato & R-369-F-Ob  
+ 
+TS-370 & Verificare che se il documento selezionato  n dispone di metadati custom, l'utente sia informato con un messaggio che indica l'assenza dei metadati custom & R-370-F-Ob  
+ 
+TS-371 & Verificare che l'utente possa visualizzare i dati di registrazione del documento selezionato & R-371-F-Ob  
+ 
+TS-372 & Verificare che l'utente possa visualizzare informazioni di classificazione del documento selezionato & R-372-F-Ob  
+ 
+TS-373 & Verificare che l'utente possa visualizzare le informazioni sul formato del documento e sul prodotto software che lo ha generato & R-373-F-Ob  
+ 
+TS-374 & Verificare che l'utente possa visualizzare ogni ruolo disponibile per il tipo di documento selezionato & R-374-F-Ob  
+ 
+TS-375 & Verificare che l'utente possa visualizzare il  me del ruolo nella lista dei ruoli disponibili per il tipo di documento selezionato & R-375-F-Ob  
+ 
+TS-376 & Verificare che l'utente possa visualizzare i tipi di soggetto per ogni soggetto disponibile per il ruolo selezionato & R-376-F-Ob  
+ 
+TS-377 & Verificare che l'utente possa visualizzare il  me del tipo di soggetto nella lista dei tipi di soggetto per il ruolo selezionato & R-377-F-Ob  
+ 
+TS-378 & Verificare che l'utente possa visualizzare l'elenco dei campi specifici per aggregazione documentale disponibili & R-378-F-Ob  
+ 
+TS-379 & Verificare che l'utente possa visualizzare l'elenco dei campi specifici per Documenti Informatici / Documenti Amministrativi Informatici disponibili & R-379-F-Ob  
