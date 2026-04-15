@@ -1,15 +1,16 @@
-<div
+<button
   class="result-card process-card"
   data-testid="search-result-card"
-  role="button"
+  type="button"
   tabindex="0"
   (click)="onSelectAction(result)"
-  (keydown.enter)="onSelectAction(result)"
-  (keydown.space)="onSelectAction(result); $event.preventDefault()"
 >
   <i class="card-icon bi bi-gear" aria-hidden="true"></i>
   <div class="card-content">
-    <h3 class="document-name" data-testid="search-result-title">{{ result.uuid || 'Processo senza titolo' }}</h3>
+    <h3 class="document-name" data-testid="search-result-title">
+      {{ result.name || 'Processo senza titolo' }}
+    </h3>
+    <span class="document-id" data-testid="search-result-id">ID Processo: {{ result.uuid }}</span>
   </div>
   <div class="card-meta">
     <span class="badge process-badge">{{ result.type }}</span>
@@ -21,4 +22,4 @@
   >
     {{ result.integrityStatus }}
   </span>
-</div>
+</button>

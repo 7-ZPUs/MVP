@@ -62,14 +62,14 @@ describe('ItemDetailPageComponent', () => {
 
     routerMock = { navigate: vi.fn() };
 
-    let mockOutputFacade = {
+    const mockOutputFacade = {
       isWorking: signal(false),
       printDocument: vi.fn(),
       saveDocument: vi.fn(),
     };
 
-    let mockIntegrityFacade = {
-      isVerifying: signal(false),
+    const mockIntegrityFacade = {
+      isVerifying: vi.fn().mockReturnValue(signal(false)),
       verifyIntegrity: vi.fn(),
     };
 
