@@ -20,6 +20,7 @@ import {
 } from '../../../shared/contracts';
 import { SearchQueryType } from '../../../../../../shared/domain/metadata/search.enum';
 import { SEARCH_CHANNEL_TOKEN } from '../contracts/search-channel.interface';
+import { SEARCH_FACADE_TOKEN } from '../contracts/search-facade.interface';
 import { FILTER_VALIDATOR_TOKEN } from '../../validation/contracts/filter-validator.interface';
 import { SEMANTIC_INDEX_STATUS_TOKEN } from '../contracts/semantic-index.interface';
 
@@ -38,6 +39,7 @@ describe('Broad Integration: Full Search Engine Flow (Servizi Reali)', () => {
       imports: [SearchPageComponent],
       providers: [
         SearchFacade,
+        { provide: SEARCH_FACADE_TOKEN, useExisting: SearchFacade },
         SearchIpcGateway,
         FilterValidatorService,
         IpcErrorHandlerService,

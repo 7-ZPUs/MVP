@@ -8,6 +8,7 @@ import { SearchQueryType } from '../../../../../../../../shared/domain/metadata/
 import { SearchState } from '../../../../../../../../shared/domain/metadata';
 import { SearchBarComponent } from '../../dumb/search-bar.component/search-bar.component';
 import { SEARCH_FACADE_TOKEN } from '../../../contracts/search-facade.interface';
+import { FILTER_VALIDATOR_TOKEN } from '../../../../validation/contracts/filter-validator.interface';
 
 describe('SearchPageComponent', () => {
   let component: SearchPageComponent;
@@ -56,6 +57,10 @@ describe('SearchPageComponent', () => {
       imports: [SearchPageComponent],
       providers: [
         { provide: SEARCH_FACADE_TOKEN, useValue: mockFacade },
+        {
+          provide: FILTER_VALIDATOR_TOKEN,
+          useValue: { validate: vi.fn().mockReturnValue({ isValid: true, errors: new Map() }) },
+        },
       ],
     }).compileComponents();
 
