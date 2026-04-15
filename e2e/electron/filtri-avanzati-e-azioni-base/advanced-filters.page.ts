@@ -1,8 +1,7 @@
 import { expect, Locator, Page } from '@playwright/test';
 
 /**
- * Page Object Model for Advanced Filters and File Actions
- * Covers Subject Filters, DiDai Filters, Aggregate Filters, Custom Metadata, and File Actions
+ * Page Object Model for Advanced Filters and File Actions.
  */
 export class AdvancedFiltersPage {
   constructor(private readonly page: Page) {}
@@ -70,12 +69,10 @@ export class AdvancedFiltersPage {
       return;
     }
 
-    const firstSelectableValue = await target
-      .locator('option')
-      .evaluateAll((nodes) => {
-        const option = nodes.find((node) => (node as HTMLOptionElement).value);
-        return option ? (option as HTMLOptionElement).value : null;
-      });
+    const firstSelectableValue = await target.locator('option').evaluateAll((nodes) => {
+      const option = nodes.find((node) => (node as HTMLOptionElement).value);
+      return option ? (option as HTMLOptionElement).value : null;
+    });
 
     if (firstSelectableValue) {
       await target.selectOption(firstSelectableValue);
@@ -115,7 +112,7 @@ export class AdvancedFiltersPage {
     return this.page.getByTestId('search-retry-button');
   }
 
-  // ===== SUBJECT FILTERS (TS-61 to TS-72) =====
+  // ===== SUBJECT FILTERS =====
   get addSubjectButton(): Locator {
     return this.page.getByTestId('add-subject-button');
   }
@@ -136,74 +133,73 @@ export class AdvancedFiltersPage {
     return this.page.locator(`button:has-text("${role}")`);
   }
 
-  // Subject detail fields by type (TS-65 to TS-72)
   get paiDenominationInput(): Locator {
-    return this.page.locator('input[placeholder*="Denominazione"]').or(this.page.locator('#denominazione'));
+    return this.page.locator('#denominazione');
   }
 
   get paiCodiceIpaInput(): Locator {
-    return this.page.locator('input[placeholder*="Codice IPA"]').or(this.page.locator('#codiceIPA'));
+    return this.page.locator('#codiceIPA');
   }
 
   get paiIndirizziDigitaliInputs(): Locator {
-    return this.page.locator('input[placeholder*="Indirizzo digitale"]');
+    return this.page.locator('#indirizziDigitali');
   }
 
   get paeDenominationInput(): Locator {
-    return this.page.locator('input[placeholder*="Denominazione Amm"]');
+    return this.page.locator('#denominazioneAmm');
   }
 
   get paeUfficioInput(): Locator {
-    return this.page.locator('input[placeholder*="Ufficio"]');
+    return this.page.locator('#denominazioneUfficio');
   }
 
   get asCognomeInput(): Locator {
-    return this.page.locator('input[placeholder*="Cognome"]');
+    return this.page.locator('#cognomeAssegnatario');
   }
 
   get asNomeInput(): Locator {
-    return this.page.locator('input[placeholder*="Nome"]');
+    return this.page.locator('#nomeAssegnatario');
   }
 
   get asCFInput(): Locator {
-    return this.page.locator('input[placeholder*="Codice Fiscale"]').or(this.page.locator('input[placeholder*="CF"]'));
+    return this.page.locator('#codiceFiscaleAssegnatario');
   }
 
   get pgDenominationInput(): Locator {
-    return this.page.locator('input[placeholder*="Denominazione Org"]');
+    return this.page.locator('#denominazioneOrga');
   }
 
   get pgPIVACFInput(): Locator {
-    return this.page.locator('input[placeholder*="P.IVA"]').or(this.page.locator('input[placeholder*="P.IVA/CF"]'));
+    return this.page.locator('#codiceFiscalePartitaIvaPG');
   }
 
   get pfCognomeInput(): Locator {
-    return this.page.locator('input[placeholder*="Cognome"]').first();
+    return this.page.locator('#cognomePF');
   }
 
   get pfNomeInput(): Locator {
-    return this.page.locator('input[placeholder*="Nome"]').first();
+    return this.page.locator('#nomePF');
   }
 
   get rupCFInput(): Locator {
-    return this.page.locator('input[placeholder*="CF"]').first();
+    return this.page.locator('#codiceFiscaleRUP');
   }
 
   get swDenominationInput(): Locator {
-    return this.page.locator('input[placeholder*="Denominazione Sistema"]');
+    return this.page.locator('#denominazioneSistema');
   }
 
-  // ===== DOCUMENT & ADMINISTRATIVE DOCUMENT FILTERS (TS-73 to TS-89) =====
+  // ===== DOCUMENT & ADMINISTRATIVE DOCUMENT FILTERS =====
   get documentTypeSelect(): Locator {
     return this.page.getByTestId('document-type-select').or(this.page.locator('#tipoDoc'));
   }
 
   get documentTypeFilterSection(): Locator {
-    return this.page.locator('fieldset:has-text("Tipo di Documento")');
+    return this.page.getByTestId('filter-section-general');
   }
 
   get specificDocumentFiltersSection(): Locator {
-    return this.page.locator('fieldset:has-text("Filtri specifici")');
+    return this.page.getByText('Dati Base (DiDai)');
   }
 
   get registrationTypeSelect(): Locator {
@@ -231,39 +227,39 @@ export class AdvancedFiltersPage {
   }
 
   get documentaryTypeInput(): Locator {
-    return this.page.locator('input[placeholder*="Tipo"]').or(this.page.locator('#tipologiaDocumentale'));
+    return this.page.locator('#tipologiaDidai');
   }
 
   get formationModeSelect(): Locator {
-    return this.page.locator('select[name="formationMode"]').or(this.page.locator('#modalitaFormazione'));
+    return this.page.locator('#modFormazione');
   }
 
   get reservedFieldCheckbox(): Locator {
-    return this.page.locator('input[type="checkbox"][name="reserved"]').or(this.page.locator('#campoRiservato'));
+    return this.page.locator('#riservatezzaDidai');
   }
 
   get formatInput(): Locator {
-    return this.page.locator('input[placeholder*="Formato"]').or(this.page.locator('#formato'));
+    return this.page.locator('#formatoAgid');
   }
 
   get softwareProductInput(): Locator {
-    return this.page.locator('input[placeholder*="Prodotto Software"]').or(this.page.locator('#prodottoSoftware'));
+    return this.page.locator('#nomeProdCreazione');
   }
 
   get signedCheckbox(): Locator {
-    return this.page.locator('input[type="checkbox"][name="signed"]').or(this.page.locator('#firmato'));
+    return this.page.locator('#formatoDig');
   }
 
   get sealeCheckbox(): Locator {
-    return this.page.locator('input[type="checkbox"][name="sealed"]').or(this.page.locator('#sigillato'));
+    return this.page.locator('#sigillatoElettr');
   }
 
   get timestampCheckbox(): Locator {
-    return this.page.locator('input[type="checkbox"][name="timestamp"]').or(this.page.locator('#marcatura'));
+    return this.page.locator('#marcaturaTemp');
   }
 
   get imageCopyComplianceCheckbox(): Locator {
-    return this.page.locator('input[type="checkbox"][name="imageCopy"]').or(this.page.locator('#conformitaCopieImmagine'));
+    return this.page.locator('#confCopie');
   }
 
   get documentNameInput(): Locator {
@@ -271,36 +267,36 @@ export class AdvancedFiltersPage {
   }
 
   get documentVersionInput(): Locator {
-    return this.page.locator('input[placeholder*="Versione"]').or(this.page.locator('#versioneDocumento'));
+    return this.page.locator('#versioneDidai');
   }
 
   get primaryDocumentIdInput(): Locator {
-    return this.page.locator('input[placeholder*="Identificativo del Documento Primario"]').or(this.page.locator('#idDocPrimario'));
+    return this.page.locator('#idPrimarioDidai');
   }
 
   get documentChangeTrackingSection(): Locator {
-    return this.page.locator('fieldset:has("Tracciatura Modifiche")');
+    return this.page.getByText('Tracciature Modifiche');
   }
 
   get modificationTypeSelect(): Locator {
-    return this.page.locator('select[name="modificationType"]').or(this.page.locator('#tipoModifica'));
+    return this.page.locator('[id^="tipoModifica_"]');
   }
 
   get modificationSubjectInput(): Locator {
-    return this.page.locator('input[placeholder*="Soggetto Autore"]').or(this.page.locator('#soggettoAutore'));
+    return this.page.locator('[id^="soggettoAutore_"]');
   }
 
   get modificationDateInput(): Locator {
-    return this.page.locator('input[type="date"][name="modificationDate"]').or(this.page.locator('#dataModifica'));
+    return this.page.locator('[id^="dataModifica_"]');
   }
 
   get previousDocIdInput(): Locator {
-    return this.page.locator('input[placeholder*="IdDoc precedente"]').or(this.page.locator('#idDocPrecedente'));
+    return this.page.locator('[id^="idVersionePrec_"]');
   }
 
-  // ===== AGGREGATE FILTERS (TS-90 to TS-105) =====
+  // ===== AGGREGATE FILTERS =====
   get aggregateFiltersSection(): Locator {
-    return this.page.locator('fieldset:has-text("Aggregazione Documentale")');
+    return this.page.getByText('Dati Aggregazione');
   }
 
   get aggregationTypeSelect(): Locator {
@@ -312,11 +308,11 @@ export class AdvancedFiltersPage {
   }
 
   get fileTypeSelect(): Locator {
-    return this.page.locator('select[name="fileType"]').or(this.page.locator('#tipologiaFascicolo'));
+    return this.page.locator('#tipologiaFascicolo');
   }
 
   get primaryAggregateIdInput(): Locator {
-    return this.page.locator('input[placeholder*="Id Aggregazione Primario"]').or(this.page.locator('#idAggregPrimario'));
+    return this.page.locator('#idAggregPrimario');
   }
 
   get aggregateOpenDateInput(): Locator {
@@ -328,15 +324,15 @@ export class AdvancedFiltersPage {
   }
 
   get procedureSubjectInput(): Locator {
-    return this.page.locator('input[placeholder*="Materia"]').or(this.page.locator('#materia'));
+    return this.page.locator('#materiaProcedimento');
   }
 
   get procedureInput(): Locator {
-    return this.page.locator('input[placeholder*="Procedimento"]').or(this.page.locator('#procedimento'));
+    return this.page.locator('#denomProcedimento');
   }
 
   get procedureCatalogInput(): Locator {
-    return this.page.locator('input[placeholder*="Catalogo Procedimenti"]').or(this.page.locator('#catalogoProcedimenti'));
+    return this.page.locator('#uriCatalogo');
   }
 
   get procedurePhaseSelect(): Locator {
@@ -344,15 +340,15 @@ export class AdvancedFiltersPage {
   }
 
   get phaseTypeSelect(): Locator {
-    return this.page.locator('select[name="phaseType"]').or(this.page.locator('#tipoFase'));
+    return this.page.locator('[id^="tipoFase_"]');
   }
 
   get phaseStartDateInput(): Locator {
-    return this.page.locator('input[type="date"][name="phaseStart"]').or(this.page.locator('#dataInizioFase'));
+    return this.page.locator('[id^="dataInizioFase_"]');
   }
 
   get phaseEndDateInput(): Locator {
-    return this.page.locator('input[type="date"][name="phaseEnd"]').or(this.page.locator('#dataFineFase'));
+    return this.page.locator('[id^="dataFineFase_"]');
   }
 
   get assignmentTypeSelect(): Locator {
@@ -360,28 +356,30 @@ export class AdvancedFiltersPage {
   }
 
   get assignmentSubjectInput(): Locator {
-    return this.page.locator('input[placeholder*="Soggetto"]').or(this.page.locator('#soggetto'));
+    return this.page.locator('#soggetto');
   }
 
   get assignmentStartDateInput(): Locator {
-    return this.page.locator('input[type="date"][name="assignmentStart"]').or(this.page.locator('#dataInizioAssegnazione'));
+    return this.page.locator('#dataInizioAssegn');
   }
 
   get assignmentEndDateInput(): Locator {
-    return this.page.locator('input[type="date"][name="assignmentEnd"]').or(this.page.locator('#dataFineAssegnazione'));
+    return this.page.locator('#dataFineAssegn');
   }
 
   get aggregateProgressiveInput(): Locator {
     return this.page.locator('input[placeholder*="Progressivo"]').or(this.page.locator('#progressivoAggregazione'));
   }
 
-  // ===== CUSTOM METADATA FILTERS (TS-106 to TS-107) =====
+  // ===== CUSTOM METADATA FILTERS =====
   get customMetadataSection(): Locator {
     return this.page.locator('fieldset:has-text("Metadati Personalizzati")');
   }
 
   get addCustomMetadataButton(): Locator {
-    return this.page.getByRole('button', { name: /aggiungi metadato/i }).or(this.page.locator('button:has-text("+ Aggiungi Metadato")'));
+    return this.page
+      .getByRole('button', { name: /aggiungi metadato/i })
+      .or(this.page.locator('button:has-text("+ Aggiungi Metadato")'));
   }
 
   get customMetadataNameInputs(): Locator {
@@ -396,7 +394,7 @@ export class AdvancedFiltersPage {
     return this.page.locator('button:has-text("Rimuovi")').or(this.page.locator('button[name="removeMetadata"]'));
   }
 
-  // ===== SEARCH RESULTS (TS-108 to TS-112) =====
+  // ===== SEARCH RESULTS =====
   get searchResultsList(): Locator {
     return this.page.locator('app-search-results, .search-results-container');
   }
@@ -406,7 +404,9 @@ export class AdvancedFiltersPage {
   }
 
   get documentNameInResults(): Locator {
-    return this.page.locator('[data-testid="result-name"], .result-name, [class*="name"]');
+    return this.searchResultItems
+      .locator('[data-testid="result-name"], .result-name, h3, [class*="result"] [class*="name"]')
+      .or(this.page.locator('main h3'));
   }
 
   get documentDateInResults(): Locator {
@@ -421,7 +421,7 @@ export class AdvancedFiltersPage {
     return this.page.getByText(/nessun risultato/i);
   }
 
-  // ===== FILTER VALIDATION (TS-113 to TS-115) =====
+  // ===== FILTER VALIDATION =====
   get invalidFilterError(): Locator {
     return this.page.getByTestId('filter-error').or(this.page.locator('.validation-error')).first();
   }
@@ -434,21 +434,29 @@ export class AdvancedFiltersPage {
     return this.page.locator('.error-banner:has-text("filtri contengono errori")');
   }
 
-  // ===== FILE ACTIONS (TS-116 to TS-120) =====
+  // ===== FILE ACTIONS =====
   get saveDocumentButton(): Locator {
-    return this.page.getByRole('button', { name: /salva/i }).or(this.page.locator('button[title="Salva"]'));
+    return this.page
+      .getByRole('button', { name: /scarica documento|salva/i })
+      .or(this.page.locator('button[title="Salva"]'));
   }
 
   get saveMultipleButton(): Locator {
-    return this.page.getByRole('button', { name: /salva documenti/i }).or(this.page.locator('button:has-text("Salva Documenti")'));
+    return this.page
+      .getByRole('button', { name: /scarica \(\d+\)|salva documenti/i })
+      .or(this.page.locator('button:has-text("Scarica (")'));
   }
 
   get printButton(): Locator {
-    return this.page.getByRole('button', { name: /stampa/i }).or(this.page.locator('button[title="Stampa"]'));
+    return this.page
+      .getByRole('button', { name: /stampa documento|stampa/i })
+      .or(this.page.locator('button[title="Stampa"]'));
   }
 
   get printMultipleButton(): Locator {
-    return this.page.getByRole('button', { name: /stampa documenti/i }).or(this.page.locator('button:has-text("Stampa Documenti")'));
+    return this.page
+      .getByRole('button', { name: /stampa \(\d+\)|stampa documenti/i })
+      .or(this.page.locator('button:has-text("Stampa (")'));
   }
 
   get fileActionMenu(): Locator {
@@ -456,18 +464,37 @@ export class AdvancedFiltersPage {
   }
 
   get saveSuccessMessage(): Locator {
-    return this.page.getByText(/salvataggio completato/i).or(this.page.getByText(/documento salvato/i));
+    return this.page
+      .getByText(/documento salvato con successo/i)
+      .or(this.page.getByText(/documenti salvati/i))
+      .or(this.page.getByText(/documento inviato alla stampante/i))
+      .or(this.page.getByText(/documenti inviati alla stampante/i));
   }
 
   get saveErrorMessage(): Locator {
-    return this.page.getByText(/errore durante il salvataggio/i).or(this.page.getByText(/salvataggio fallito/i));
+    return this.page
+      .getByText(/errore durante il salvataggio/i)
+      .or(this.page.getByText(/salvataggio fallito/i))
+      .or(this.page.getByText(/stampa fallita/i));
   }
 
   // ===== NAVIGATION & ACTIONS =====
   async gotoSearchPage(): Promise<void> {
+    const filtersToggle = this.page.getByTestId('search-filters-toggle');
+
+    await this.page.goto('/#/search');
+    if (await filtersToggle.isVisible().catch(() => false)) {
+      return;
+    }
+
     await this.page.goto('/');
-    await expect(this.searchButton).toBeVisible();
-    await this.searchButton.click();
+    if (await filtersToggle.isVisible().catch(() => false)) {
+      return;
+    }
+
+    await expect(this.searchButton).toBeVisible({ timeout: 10000 });
+    await this.searchButton.click({ force: true });
+    await expect(filtersToggle).toBeVisible({ timeout: 15000 });
   }
 
   async openAdvancedFilters(): Promise<void> {
@@ -480,16 +507,21 @@ export class AdvancedFiltersPage {
   }
 
   async selectSubjectRole(role: string): Promise<void> {
+    const roleStep = this.page.getByTestId('subject-wizard-step-role');
+    await expect(roleStep).toBeVisible({ timeout: 8000 });
+
+    const roleStepButtons = this.page.getByTestId(/subject-role-option-/);
+    await expect(roleStepButtons.first()).toBeVisible({ timeout: 8000 });
+
     const roleByTestId = this.page.getByTestId(`subject-role-option-${role}`);
-    if ((await roleByTestId.count()) > 0) {
+    if (await roleByTestId.isVisible().catch(() => false)) {
       await this.clickInSidebar(roleByTestId.first());
       return;
     }
 
-    const roleStepButtons = this.page.getByTestId(/subject-role-option-/);
     const exactButton = roleStepButtons.filter({ hasText: role });
 
-    if ((await exactButton.count()) > 0) {
+    if (await exactButton.first().isVisible().catch(() => false)) {
       await this.clickInSidebar(exactButton.first());
       return;
     }
@@ -500,16 +532,21 @@ export class AdvancedFiltersPage {
   }
 
   async selectSubjectType(type: string): Promise<void> {
+    const typeStep = this.page.getByTestId('subject-wizard-step-type');
+    await expect(typeStep).toBeVisible({ timeout: 8000 });
+
+    const typeStepButtons = this.page.getByTestId(/subject-type-option-/);
+    await expect(typeStepButtons.first()).toBeVisible({ timeout: 8000 });
+
     const typeByTestId = this.page.getByTestId(`subject-type-option-${type}`);
-    if ((await typeByTestId.count()) > 0) {
+    if (await typeByTestId.isVisible().catch(() => false)) {
       await this.clickInSidebar(typeByTestId.first());
       return;
     }
 
-    const typeStepButtons = this.page.getByTestId(/subject-type-option-/);
     const exactButton = typeStepButtons.filter({ hasText: type });
 
-    if ((await exactButton.count()) > 0) {
+    if (await exactButton.first().isVisible().catch(() => false)) {
       await this.clickInSidebar(exactButton.first());
       return;
     }
@@ -522,7 +559,7 @@ export class AdvancedFiltersPage {
   async fillSubjectDetails(fieldValues: Record<string, string>): Promise<void> {
     for (const [field, value] of Object.entries(fieldValues)) {
       const locator = this.page.locator(`input[name="${field}"], input[placeholder*="${field}"]`).first();
-      if (await locator.count() > 0) {
+      if ((await locator.count()) > 0) {
         await locator.fill(value);
       }
     }
@@ -561,7 +598,7 @@ export class AdvancedFiltersPage {
   }
 
   async clearFilters(): Promise<void> {
-    await this.clearFiltersButton.click();
+    await this.clickInSidebar(this.clearFiltersButton);
   }
 
   async saveDocument(): Promise<void> {
@@ -578,8 +615,7 @@ export class AdvancedFiltersPage {
   }
 
   async getResultsCount(): Promise<number> {
-    const count = await this.searchResultItems.count();
-    return count;
+    return this.searchResultItems.count();
   }
 
   async waitForResults(): Promise<void> {

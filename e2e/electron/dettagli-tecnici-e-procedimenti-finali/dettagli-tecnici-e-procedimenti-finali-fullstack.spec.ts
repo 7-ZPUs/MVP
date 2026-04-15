@@ -51,7 +51,7 @@ test.describe('Dettagli Tecnici e Procedimenti Finali - Fullstack', () => {
     await treeNodes.nth(3).click();
   }
 
-  test('[FULLSTACK] Happy path dettagli tecnici documento caricati dal backend Electron', async () => {
+  test(`[TS-371] Verificare che l'utente possa visualizzare i dati di registrazione del documento selezionato`, async () => {
     await ensureMainPageReady();
     await openFirstDocumentDetailFromTree();
 
@@ -61,7 +61,7 @@ test.describe('Dettagli Tecnici e Procedimenti Finali - Fullstack', () => {
     await expect(technicalMetadataPage.documentNome).toBeVisible();
   });
 
-  test('[FULLSTACK] Happy path caricamento classificazione documento dal backend Electron', async () => {
+  test(`[TS-372] Verificare che l'utente possa visualizzare informazioni di classificazione del documento selezionato`, async () => {
     await ensureMainPageReady();
     await openFirstDocumentDetailFromTree();
 

@@ -50,6 +50,7 @@ export class AggregateFiltersComponent implements OnChanges, OnDestroy {
     this.form = this.fb.group({
       tipoAggregazione: [null],
       idAggregazione: [null],
+      progressivoAggregazione: [null],
       tipoFascicolo: [null],
       dataApertura: [null],
       dataChiusura: [null],
