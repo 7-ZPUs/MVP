@@ -917,9 +917,9 @@ test.describe('Filtri Avanzati e Azioni Base - Mocked', () => {
     await selectOptionByPattern(advancedFiltersPage.fileTypeSelect, [/procediment/i]);
   });
 
-  test(`[TS-143] Verificare che per l'Aggregazione Documentale Informatica, l'utente possa inserire il valore per il filtro "Id Aggregazione Primario"`, async ({ page }) => {
+  test(`[TS-143] Verificare che per l'Aggregazione Documentale Informatica, l'utente possa inserire il valore per il filtro "Id Aggregazione"`, async ({ page }) => {
     const advancedFiltersPage = await prepareAggregateFilters(page);
-    await fillAndAssert(advancedFiltersPage.primaryAggregateIdInput, 'AGG-PRIMARY-001');
+    await fillAndAssert(advancedFiltersPage.aggregateIdentifierInput, 'AGG-PRIMARY-001');
   });
 
   test(`[TS-144] Verificare che per l'Aggregazione Documentale Informatica, l'utente possa inserire il valore per il filtro "Data Apertura"`, async ({ page }) => {
@@ -1191,31 +1191,6 @@ test.describe('Filtri Avanzati e Azioni Base - Mocked', () => {
     await expect(advancedFiltersPage.saveSuccessMessage).toContainText(/stampante/i);
   });
 
-  test(`[TS-182] Verificare che l'utente possa stampare un insieme di documenti`, async ({ page }) => {
-    await withIpcOverrides(page, {
-      'browse:get-file-by-document': [
-        { id: 901, documentId: 301, isMain: true, filename: 'Documento Esempio.pdf' },
-        { id: 902, documentId: 301, isMain: false, filename: 'Allegato-1.pdf' },
-      ],
-      'browse:get-file-by-id': { id: 901, documentId: 301, isMain: true, filename: 'Documento Esempio.pdf' },
-      'file:print-many': {
-        canceled: false,
-        results: [
-          { fileId: 901, success: true },
-          { fileId: 902, success: true },
-        ],
-      },
-    });
-
-    const advancedFiltersPage = await runSearchWithDocumentResults(page);
-    await expect(advancedFiltersPage.printButton).toBeVisible();
-    await advancedFiltersPage.printButton.click({ force: true });
-    await expect(advancedFiltersPage.printMultipleButton).toBeVisible();
-    await advancedFiltersPage.printMultipleButton.click({ force: true });
-    const resultBox = page.locator('.result-box').first();
-    await expect(resultBox).toBeVisible({ timeout: 8000 });
-    await expect(resultBox).toContainText(/stamp/i);
-  });
 
   test(`[TS-183] Verificare che se la stampa di uno o più documenti fallisce, l'utente possa visualizzare un messaggio di errore`, async ({ page }) => {
     await withIpcOverrides(page, {

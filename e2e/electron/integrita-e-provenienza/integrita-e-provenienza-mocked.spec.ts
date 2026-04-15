@@ -241,6 +241,42 @@ test.describe('Integrita e Provenienza - Mocked', () => {
     await expect(aipDetailsPage.conservationStartDateRow).toContainText('08/04/2026 10:30:45');
   });
 
+  test(
+    `[TS-199] Verificare che l'utente possa visualizzare la data e l'ora di inizio della verifica del DIP nel formato "GG/MM/AAAA HH:MM:SS"`,
+    async ({ page }) => {
+      await installMockIpc(page);
+
+      const integrityPage = new IntegrityPage(page);
+      await integrityPage.gotoDashboard();
+
+      await expect(page.getByTestId('integrity-verification-start-date')).toBeVisible();
+    },
+  );
+
+  test(
+    `[TS-200] Verificare che l'utente sia informato con un messaggio nel caso in cui non vi siano classi corrotte`,
+    async ({ page }) => {
+      await installMockIpc(page);
+
+      const integrityPage = new IntegrityPage(page);
+      await integrityPage.gotoDashboard();
+
+      await expect(page.getByText(/non vi siano classi corrotte/i)).toBeVisible();
+    },
+  );
+
+  test(
+    `[TS-201] Verificare che l'utente possa visualizzare il report di integrità dettagliato per una singola classe documentale`,
+    async ({ page }) => {
+      await installMockIpc(page);
+
+      const aipDetailsPage = new AipDetailsPage(page);
+      await aipDetailsPage.openDocumentDetailFromTree();
+
+      await expect(page.locator('[data-testid="integrity-report-detail"]')).toBeVisible();
+    },
+  );
+
   async function assertBaselineIntegrityAndDetail(page: Page): Promise<void> {
     await installMockIpc(page);
 
@@ -302,18 +338,6 @@ test.describe('Integrita e Provenienza - Mocked', () => {
   });
 
   test(`[TS-198] Verificare che l'utente possa visualizzare la classe corrotta indicando nome e numero di processi corrotti`, async ({ page }) => {
-    await assertBaselineIntegrityAndDetail(page);
-  });
-
-  test(`[TS-199] Verificare che l'utente possa visualizzare la data e l'ora di inizio della verifica del DIP nel formato "GG/MM/AAAA HH:MM:SS"`, async ({ page }) => {
-    await assertBaselineIntegrityAndDetail(page);
-  });
-
-  test(`[TS-200] Verificare che l'utente sia informato con un messaggio nel caso in cui non vi siano classi corrotte`, async ({ page }) => {
-    await assertBaselineIntegrityAndDetail(page);
-  });
-
-  test(`[TS-201] Verificare che l'utente possa visualizzare il report di integrità dettagliato per una singola classe documentale`, async ({ page }) => {
     await assertBaselineIntegrityAndDetail(page);
   });
 

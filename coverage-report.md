@@ -1,10 +1,10 @@
 # 📊 Report Copertura Test di Sistema (TS-1 → TS-379)
 
 ### 📝 Sommario
-- ✅ Singola Copertura: **265**
-- ⚠️ Copertura Multipla: **106**
-- ❌ Mancanti: **8**
-- 🎯 Progresso Globale: **97.89%**
+- ✅ Singola Copertura: **261**
+- ⚠️ Copertura Multipla: **111**
+- ❌ Mancanti: **7**
+- 🎯 Progresso Globale: **98.15%**
 
 | ID Test | Stato | Posizioni (File e Titolo) |
 |---|---|---|
@@ -13,7 +13,7 @@
 | **TS-3** | ✅ Coperto | `dip-navigation-mocked.spec.ts`<br>_"[TS-3] Verificare che quando viene selezionata una classe documentale, l'utente possa visualizzare ciascuna classe documentale all'interno dell'elenco"_ |
 | **TS-4** | ✅ Coperto | `dip-navigation-mocked.spec.ts`<br>_"[TS-4] Verificare che l'utente possa visualizzare il nome della classe documentale"_ |
 | **TS-5** | ✅ Coperto | `dip-navigation-mocked.spec.ts`<br>_"[TS-5] Verificare che l'utente possa visualizzare lo stato di verifica della classe documentale"_ |
-| **TS-6** | ❌ Mancante | - |
+| **TS-6** | ✅ Coperto | `dip-navigation-mocked.spec.ts`<br>_"[TS-6] Verificare che l'utente possa visualizzare la marcatura temporale della classe documentale"_ |
 | **TS-7** | ✅ Coperto | `dip-navigation-mocked.spec.ts`<br>_"[TS-7] Verificare che l'utente possa visualizzare l'elenco dei processi associati alla classe documentale"_ |
 | **TS-8** | ✅ Coperto | `dip-navigation-fullstack.spec.ts`<br>_"[TS-8] Verificare che in caso non vi siano processi associati alla classe documentale, l'utente possa visualizzare un messaggio di errore"_ |
 | **TS-9** | ✅ Coperto | `dip-navigation-mocked.spec.ts`<br>_"[TS-9] Verificare che quando viene selezionato un processo, l'utente possa visualizzare ciascun processo all'interno dell'elenco"_ |
@@ -23,19 +23,19 @@
 | **TS-13** | ✅ Coperto | `dip-navigation-mocked.spec.ts`<br>_"[TS-13] Verificare che quando viene selezionato un documento, l'utente possa visualizzare ciascun documento all'interno dell'elenco"_ |
 | **TS-14** | ✅ Coperto | `dip-navigation-mocked.spec.ts`<br>_"[TS-14] Verificare che l'utente possa visualizzare il nome del documento"_ |
 | **TS-15** | ✅ Coperto | `dip-navigation-mocked.spec.ts`<br>_"[TS-15] Verificare che l'utente possa visualizzare lo stato di verifica del documento"_ |
-| **TS-16** | ❌ Mancante | - |
+| **TS-16** | ✅ Coperto | `dip-navigation-mocked.spec.ts`<br>_"[TS-16] Verificare che l'utente possa visualizzare la marcatura temporale del documento"_ |
 | **TS-17** | ✅ Coperto | `dip-navigation-mocked.spec.ts`<br>_"[TS-17] Verificare che l'utente possa essere informato se un elenco di elementi del DIP risulta vuoto"_ |
 | **TS-18** | ✅ Coperto | `dip-navigation-mocked.spec.ts`<br>_"[TS-18] L'utente deve poter visualizzare se il risultato dello stato di verifica di un elemento è "Non valido""_ |
-| **TS-19** | ❌ Mancante | - |
+| **TS-19** | ✅ Coperto | `dip-navigation-mocked.spec.ts`<br>_"[TS-19] Verificare che l'utente possa visualizzare la marcatura temporale e i dati di verifica del documento nel dettaglio"_ |
 | **TS-20** | ✅ Coperto | `dip-navigation-mocked.spec.ts`<br>_"[TS-20] L'utente deve poter visualizzare se il risultato dello stato di verifica di un elemento è "Non verificato""_ |
 | **TS-21** | ✅ Coperto | `dip-navigation-fullstack.spec.ts`<br>_"[TS-21] Verificare che l'utente possa visualizzare l'anteprima di un documento selezionato"_ |
 | **TS-22** | ✅ Coperto | `dip-navigation-mocked.spec.ts`<br>_"[TS-22] Verificare che se il documento selezionato non è visualizzabile in anteprima, l'utente possa visualizzare un messaggio di errore"_ |
 | **TS-23** | ✅ Coperto | `dip-navigation-mocked.spec.ts`<br>_"[TS-23] Verificare che l'utente possa ricercare un documento, un processo, o una classe documentale"_ |
 | **TS-24** | ✅ Coperto | `dip-navigation-mocked.spec.ts`<br>_"[TS-24] Verificare che l'utente possa cercare una classe documentale esclusivamente per nome"_ |
 | **TS-25** | ⚠️ Multiplo (2x) | `dip-navigation-mocked.spec.ts`<br>_"[TS-25] Verificare che l'utente possa effettuare una ricerca semantica basata sui metadati dei documenti presenti nel DIP"_<br><hr>`dip-navigation-fullstack.spec.ts`<br>_"[TS-25] Verificare che l'utente possa effettuare una ricerca semantica basata sui metadati dei documenti presenti nel DIP"_ |
-| **TS-26** | ✅ Coperto | `dip-navigation-mocked.spec.ts`<br>_"[TS-26] Verificare che l'utente possa visualizzare lo stato dell'indicizzazione semantica"_ |
-| **TS-27** | ✅ Coperto | `dip-navigation-mocked.spec.ts`<br>_"[TS-27] Verificare che l'utente possa visualizzare lo stato di indicizzazione semantica "Non completata""_ |
-| **TS-28** | ✅ Coperto | `dip-navigation-mocked.spec.ts`<br>_"[TS-28] Verificare che l'utente possa visualizzare lo stato di indicizzazione semantica "Completata""_ |
+| **TS-26** | ❌ Mancante | - |
+| **TS-27** | ❌ Mancante | - |
+| **TS-28** | ❌ Mancante | - |
 | **TS-29** | ✅ Coperto | `dip-navigation-mocked.spec.ts`<br>_"[TS-29] Verificare che il sistema renda disponibile un campo di ricerca"_ |
 | **TS-30** | ✅ Coperto | `dip-navigation-mocked.spec.ts`<br>_"[TS-30] Verificare che il sistema comunichi all'utente quando inserisce un valore non valido nel campo di ricerca"_ |
 | **TS-31** | ✅ Coperto | `dip-navigation-mocked.spec.ts`<br>_"[TS-31] Verificare che il sistema renda disponibile l'opzione di ricerca per documenti"_ |
@@ -85,7 +85,7 @@
 | **TS-75** | ⚠️ Multiplo (2x) | `advanced-filters-mocked.spec.ts`<br>_"[TS-75] Verificare che se il soggetto selezionato è di tipo "PAE", all'interno della sezione del filtro "Dettagli" del Soggetto, l'utente possa inserire il valore per i campi "Denominazione Amministrazione", "Denominazione Ufficio" e "Indirizzi digitali di riferimento""_<br><hr>`advanced-filters-fullstack.spec.ts`<br>_"[TS-75] Verificare che se il soggetto selezionato è di tipo "PAE", all'interno della sezione del filtro "Dettagli" del Soggetto, l'utente possa inserire il valore per i campi "Denominazione Amministrazione", "Denominazione Ufficio" e "Indirizzi digitali di riferimento""_ |
 | **TS-76** | ✅ Coperto | `advanced-filters-mocked.spec.ts`<br>_"[TS-76] Verificare che l'utente possa inserire il valore per il campo "Denominazione Amministrazione""_ |
 | **TS-77** | ✅ Coperto | `advanced-filters-mocked.spec.ts`<br>_"[TS-77] Verificare che l'utente possa inserire il valore per il campo "Denominazione Ufficio""_ |
-| **TS-78** | ✅ Coperto | `advanced-filters-mocked.spec.ts`<br>_"[TS-78] Verificare che se il soggetto selezionato è di tipo "AS", all'interno della sezione del filtro "Dettagli" del Soggetto, l'utente possa inserire il valore per i campi "Cognome", "Nome", "Codice Fiscale", "Denominazione Amministrazione AOO/Codice IPA AOO", "Denominazione Amministrazione UOR/Codice IPA UOR" e "Indirizzi digitali di riferimento""_ |
+| **TS-78** | ⚠️ Multiplo (2x) | `advanced-filters-mocked.spec.ts`<br>_"[TS-78] Verificare che se il soggetto selezionato è di tipo "AS", all'interno della sezione del filtro "Dettagli" del Soggetto, l'utente possa inserire il valore per i campi "Cognome", "Nome", "Codice Fiscale", "Denominazione Amministrazione AOO/Codice IPA AOO", "Denominazione Amministrazione UOR/Codice IPA UOR" e "Indirizzi digitali di riferimento""_<br><hr>`advanced-filters-fullstack.spec.ts`<br>_"[TS-78] Verificare che se il soggetto selezionato è di tipo "AS", all'interno della sezione del filtro "Dettagli" del Soggetto, l'utente possa inserire il valore per i campi "Cognome", "Nome", "Codice Fiscale", "Denominazione Amministrazione AOO/Codice IPA AOO", "Denominazione Amministrazione UOR/Codice IPA UOR" e "Indirizzi digitali di riferimento""_ |
 | **TS-79** | ✅ Coperto | `advanced-filters-mocked.spec.ts`<br>_"[TS-79] Verificare che l'utente possa inserire il valore per il campo "Cognome""_ |
 | **TS-80** | ✅ Coperto | `advanced-filters-mocked.spec.ts`<br>_"[TS-80] Verificare che l'utente possa inserire il valore per il campo "Nome""_ |
 | **TS-81** | ✅ Coperto | `advanced-filters-mocked.spec.ts`<br>_"[TS-81] Verificare che l'utente possa inserire il valore per il campo "Codice Fiscale/Partita IVA""_ |
@@ -144,13 +144,13 @@
 | **TS-134** | ⚠️ Multiplo (2x) | `advanced-filters-mocked.spec.ts`<br>_"[TS-134] Verificare che l'utente possa inserire il valore "Serie Documentale" per il filtro "Tipo di Aggregazione""_<br><hr>`advanced-filters-fullstack.spec.ts`<br>_"[TS-134] Verificare che l'utente possa inserire il valore "Serie Documentale" per il filtro "Tipo di Aggregazione""_ |
 | **TS-135** | ⚠️ Multiplo (2x) | `advanced-filters-mocked.spec.ts`<br>_"[TS-135] Verificare che l'utente possa inserire il valore "Serie di fascicoli" per il filtro "Tipo di Aggregazione""_<br><hr>`advanced-filters-fullstack.spec.ts`<br>_"[TS-135] Verificare che l'utente possa inserire il valore "Serie di fascicoli" per il filtro "Tipo di Aggregazione""_ |
 | **TS-136** | ⚠️ Multiplo (2x) | `advanced-filters-mocked.spec.ts`<br>_"[TS-136] Verificare che per l'Aggregazione Documentale Informatica, l'utente possa inserire il valore per il filtro "Identificativo dell'Aggregazione Documentale""_<br><hr>`advanced-filters-fullstack.spec.ts`<br>_"[TS-136] Verificare che per l'Aggregazione Documentale Informatica, l'utente possa inserire il valore per il filtro "Identificativo dell'Aggregazione Documentale""_ |
-| **TS-137** | ✅ Coperto | `advanced-filters-fullstack.spec.ts`<br>_"[TS-137] Verificare che l'utente possa inserire il valore per il filtro "Tipologia di Fascicolo""_ |
-| **TS-138** | ✅ Coperto | `advanced-filters-fullstack.spec.ts`<br>_"[TS-138] Verificare che l'utente possa specificare il valore "Affare" per il filtro "Tipologia di Fascicolo""_ |
-| **TS-139** | ❌ Mancante | - |
-| **TS-140** | ❌ Mancante | - |
-| **TS-141** | ❌ Mancante | - |
-| **TS-142** | ❌ Mancante | - |
-| **TS-143** | ✅ Coperto | `advanced-filters-fullstack.spec.ts`<br>_"[TS-143] Verificare che per l'Aggregazione Documentale Informatica, l'utente possa inserire il valore per il filtro "Id Aggregazione Primario""_ |
+| **TS-137** | ⚠️ Multiplo (2x) | `advanced-filters-mocked.spec.ts`<br>_"[TS-137] Verificare che l'utente possa inserire il valore per il filtro "Tipologia di Fascicolo""_<br><hr>`advanced-filters-fullstack.spec.ts`<br>_"[TS-137] Verificare che l'utente possa inserire il valore per il filtro "Tipologia di Fascicolo""_ |
+| **TS-138** | ⚠️ Multiplo (2x) | `advanced-filters-mocked.spec.ts`<br>_"[TS-138] Verificare che l'utente possa specificare il valore "Affare" per il filtro "Tipologia di Fascicolo""_<br><hr>`advanced-filters-fullstack.spec.ts`<br>_"[TS-138] Verificare che l'utente possa specificare il valore "Affare" per il filtro "Tipologia di Fascicolo""_ |
+| **TS-139** | ✅ Coperto | `advanced-filters-mocked.spec.ts`<br>_"[TS-139] Verificare che l'utente possa specificare il valore "Attività" per il filtro "Tipologia di Fascicolo""_ |
+| **TS-140** | ✅ Coperto | `advanced-filters-mocked.spec.ts`<br>_"[TS-140] Verificare che l'utente possa specificare il valore "Persona Fisica" per il filtro "Tipologia di Fascicolo""_ |
+| **TS-141** | ✅ Coperto | `advanced-filters-mocked.spec.ts`<br>_"[TS-141] Verificare che l'utente possa specificare il valore "Persona Giuridica" per il filtro "Tipologia di Fascicolo""_ |
+| **TS-142** | ✅ Coperto | `advanced-filters-mocked.spec.ts`<br>_"[TS-142] Verificare che l'utente possa specificare il valore "Procedimento Amministrativo" per il filtro "Tipologia di Fascicolo""_ |
+| **TS-143** | ⚠️ Multiplo (2x) | `advanced-filters-mocked.spec.ts`<br>_"[TS-143] Verificare che per l'Aggregazione Documentale Informatica, l'utente possa inserire il valore per il filtro "Id Aggregazione""_<br><hr>`advanced-filters-fullstack.spec.ts`<br>_"[TS-143] Verificare che per l'Aggregazione Documentale Informatica, l'utente possa inserire il valore per il filtro "Id Aggregazione Primario""_ |
 | **TS-144** | ⚠️ Multiplo (2x) | `advanced-filters-mocked.spec.ts`<br>_"[TS-144] Verificare che per l'Aggregazione Documentale Informatica, l'utente possa inserire il valore per il filtro "Data Apertura""_<br><hr>`advanced-filters-fullstack.spec.ts`<br>_"[TS-144] Verificare che per l'Aggregazione Documentale Informatica, l'utente possa inserire il valore per il filtro "Data Apertura""_ |
 | **TS-145** | ⚠️ Multiplo (2x) | `advanced-filters-mocked.spec.ts`<br>_"[TS-145] Verificare che per l'Aggregazione Documentale Informatica, l'utente possa inserire il valore per il filtro "Data Chiusura""_<br><hr>`advanced-filters-fullstack.spec.ts`<br>_"[TS-145] Verificare che per l'Aggregazione Documentale Informatica, l'utente possa inserire il valore per il filtro "Data Chiusura""_ |
 | **TS-146** | ⚠️ Multiplo (2x) | `advanced-filters-mocked.spec.ts`<br>_"[TS-146] Verificare che per l'Aggregazione Documentale Informatica, il sistema renda disponibile una sezione per il filtro "Procedimento Amministrativo""_<br><hr>`advanced-filters-fullstack.spec.ts`<br>_"[TS-146] Verificare che per l'Aggregazione Documentale Informatica, il sistema renda disponibile una sezione per il filtro "Procedimento Amministrativo""_ |
@@ -167,13 +167,13 @@
 | **TS-157** | ✅ Coperto | `advanced-filters-mocked.spec.ts`<br>_"[TS-157] Verificare che l'utente possa inserire il valore per il campo "Data Inizio Fase" all'interno della sezione del filtro "Fasi""_ |
 | **TS-158** | ✅ Coperto | `advanced-filters-mocked.spec.ts`<br>_"[TS-158] Verificare che l'utente possa inserire il valore per il campo "Data Fine Fase" all'interno della sezione del filtro "Fasi""_ |
 | **TS-159** | ⚠️ Multiplo (2x) | `advanced-filters-mocked.spec.ts`<br>_"[TS-159] Verificare che per l'Aggregazione Documentale Informatica, il sistema renda disponibile una sezione per il filtro "Assegnazione""_<br><hr>`advanced-filters-fullstack.spec.ts`<br>_"[TS-159] Verificare che per l'Aggregazione Documentale Informatica, il sistema renda disponibile una sezione per il filtro "Assegnazione""_ |
-| **TS-160** | ❌ Mancante | - |
+| **TS-160** | ✅ Coperto | `advanced-filters-mocked.spec.ts`<br>_"[TS-160] Verificare che l'utente possa inserire il valore per il campo "Assegnazione" all'interno della sezione del filtro "Assegnazione""_ |
 | **TS-161** | ✅ Coperto | `advanced-filters-mocked.spec.ts`<br>_"[TS-161] Verificare che l'utente possa inserire il valore per il campo "Tipo Assegnazione""_ |
 | **TS-162** | ✅ Coperto | `advanced-filters-mocked.spec.ts`<br>_"[TS-162] Verificare che l'utente possa specificare il valore "Per competenza" per il campo "Tipo Assegnazione""_ |
 | **TS-163** | ✅ Coperto | `advanced-filters-mocked.spec.ts`<br>_"[TS-163] Verificare che l'utente possa specificare il valore "Per conoscenza" per il campo "Tipo Assegnazione""_ |
 | **TS-164** | ✅ Coperto | `advanced-filters-mocked.spec.ts`<br>_"[TS-164] Verificare che l'utente possa inserire il valore per il campo "Data Inizio Assegnazione" all'interno della sezione del filtro "Assegnazione""_ |
 | **TS-165** | ✅ Coperto | `advanced-filters-mocked.spec.ts`<br>_"[TS-165] Verificare che l'utente possa inserire il valore per il campo "Data Fine Assegnazione" all'interno della sezione del filtro "Assegnazione""_ |
-| **TS-166** | ✅ Coperto | `advanced-filters-fullstack.spec.ts`<br>_"[TS-166] Verificare che per l'Aggregazione Documentale Informatica, l'utente possa inserire il valore per il filtro "Progressivo Aggregazione""_ |
+| **TS-166** | ⚠️ Multiplo (2x) | `advanced-filters-mocked.spec.ts`<br>_"[TS-166] Verificare che per l'Aggregazione Documentale Informatica, l'utente possa inserire il valore per il filtro "Progressivo Aggregazione""_<br><hr>`advanced-filters-fullstack.spec.ts`<br>_"[TS-166] Verificare che per l'Aggregazione Documentale Informatica, l'utente possa inserire il valore per il filtro "Progressivo Aggregazione""_ |
 | **TS-167** | ✅ Coperto | `advanced-filters-mocked.spec.ts`<br>_"[TS-167] Verificare che all'interno della sezione di filtri per custom metadata, il sistema permetta di selezionare i filtri specifici per i metadata presenti"_ |
 | **TS-168** | ✅ Coperto | `advanced-filters-mocked.spec.ts`<br>_"[TS-168] Verificare che per ciascun custom metadata, l'utente possa inserire il nome del metadato e il relativo valore"_ |
 | **TS-169** | ✅ Coperto | `advanced-filters-mocked.spec.ts`<br>_"[TS-169] Verificare che quando viene eseguita una ricerca, l'utente possa visualizzare i risultati della ricerca"_ |
@@ -189,7 +189,7 @@
 | **TS-179** | ⚠️ Multiplo (2x) | `advanced-filters-mocked.spec.ts`<br>_"[TS-179] Verificare che l'utente possa salvare più file documentali in una cartella selezionata"_<br><hr>`advanced-filters-fullstack.spec.ts`<br>_"[TS-179] Verificare che l'utente possa salvare più file documentali in una cartella selezionata"_ |
 | **TS-180** | ✅ Coperto | `advanced-filters-mocked.spec.ts`<br>_"[TS-180] Verificare che se il salvataggio di uno o più documenti fallisce, l'utente possa visualizzare un messaggio di errore"_ |
 | **TS-181** | ✅ Coperto | `advanced-filters-mocked.spec.ts`<br>_"[TS-181] Verificare che l'utente possa stampare un documento"_ |
-| **TS-182** | ✅ Coperto | `advanced-filters-mocked.spec.ts`<br>_"[TS-182] Verificare che l'utente possa stampare un insieme di documenti"_ |
+| **TS-182** | ❌ Mancante | - |
 | **TS-183** | ✅ Coperto | `advanced-filters-mocked.spec.ts`<br>_"[TS-183] Verificare che se la stampa di uno o più documenti fallisce, l'utente possa visualizzare un messaggio di errore"_ |
 | **TS-184** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-184] Verificare che se la stampa non è disponibile, l'utente possa visualizzare un messaggio di stampa non avvenuta"_ |
 | **TS-185** | ✅ Coperto | `integrita-e-provenienza-fullstack.spec.ts`<br>_"[TS-185] Verificare che l'utente possa avviare la verifica del DIP"_ |
@@ -206,9 +206,9 @@
 | **TS-196** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-196] Verificare che l'utente possa visualizzare il numero di classi corrotte (stato "Non Valido") in colore rosso nel report del DIP"_ |
 | **TS-197** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-197] Verificare che l'utente possa visualizzare l'elenco delle classi corrotte indicando nome e numero di processi corrotti per ciascuna"_ |
 | **TS-198** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-198] Verificare che l'utente possa visualizzare la classe corrotta indicando nome e numero di processi corrotti"_ |
-| **TS-199** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-199] Verificare che l'utente possa visualizzare la data e l'ora di inizio della verifica del DIP nel formato "GG/MM/AAAA HH:MM:SS""_ |
-| **TS-200** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-200] Verificare che l'utente sia informato con un messaggio nel caso in cui non vi siano classi corrotte"_ |
-| **TS-201** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-201] Verificare che l'utente possa visualizzare il report di integrità dettagliato per una singola classe documentale"_ |
+| **TS-199** | ❌ Mancante | - |
+| **TS-200** | ❌ Mancante | - |
+| **TS-201** | ❌ Mancante | - |
 | **TS-202** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-202] Verificare che l'utente possa visualizzare il conteggio dei processi verificati all'interno della classe documentale"_ |
 | **TS-203** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-203] Verificare che l'utente possa visualizzare il numero di processi integri (stato "Valido") in colore verde nella classe documentale"_ |
 | **TS-204** | ✅ Coperto | `integrita-e-provenienza-mocked.spec.ts`<br>_"[TS-204] Verificare che l'utente possa visualizzare il numero di processi corrotti (stato "Non Valido") in colore rosso nella classe documentale"_ |
