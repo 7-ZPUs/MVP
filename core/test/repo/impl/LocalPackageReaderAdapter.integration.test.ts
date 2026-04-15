@@ -3,6 +3,7 @@ import * as os from "node:os";
 import * as path from "node:path";
 import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
+import { container } from "tsyringe";
 import { PackageReaderService } from "../../../src/services/impl/PackageReaderService";
 import { XmlDipParser } from "../../../src/repo/impl/utils/XmlDipParser";
 import { FileSystemPort } from "../../../src/repo/impl/utils/FileSystemProvider";
@@ -71,6 +72,7 @@ describe("LocalPackageReaderAdapter integration tests", () => {
 
   beforeAll(async () => {
     dipPackagePath = await createSampleDipPackageFromResources();
+    container.registerInstance("DIP_PATH_TOKEN", dipPackagePath);
     adapter = new PackageReaderService(
       new XmlDipParser(),
       new FileSystemPort(),
@@ -216,7 +218,7 @@ describe("LocalPackageReaderAdapter integration tests", () => {
     expect(primary1).toBeDefined();
     expect(primary1?.getId()).toBeNull();
     expect(primary1?.getPath()).toBe(
-      "./class-1/aip-1/documents/doc-1/primary.pdf",
+      path.join(dipPackagePath, "./class-1/aip-1/documents/doc-1/primary.pdf"),
     );
     expect(primary1?.getHash()).toBe("");
     expect(primary1?.getIsMain()).toBe(true);
@@ -227,7 +229,7 @@ describe("LocalPackageReaderAdapter integration tests", () => {
     const primary2 = files.find((f) => f.getFilename() === "./primary2.pdf");
     expect(primary2).toBeDefined();
     expect(primary2?.getPath()).toBe(
-      "./class-2/aip-2/documents/doc-2/primary2.pdf",
+      path.join(dipPackagePath, "./class-2/aip-2/documents/doc-2/primary2.pdf"),
     );
     expect(primary2?.getHash()).toBe("");
     expect(primary2?.getId()).toBeNull();
@@ -239,7 +241,9 @@ describe("LocalPackageReaderAdapter integration tests", () => {
 
     const att1 = files.find((f) => f.getFilename() === "./att1.pdf");
     expect(att1).toBeDefined();
-    expect(att1?.getPath()).toBe("./class-2/aip-2/documents/doc-2/att1.pdf");
+    expect(att1?.getPath()).toBe(
+      path.join(dipPackagePath, "./class-2/aip-2/documents/doc-2/att1.pdf"),
+    );
     expect(att1?.getHash()).toBe("");
     expect(att1?.getId()).toBeNull();
     expect(att1?.getDocumentId()).toBeNull();
@@ -250,7 +254,9 @@ describe("LocalPackageReaderAdapter integration tests", () => {
 
     const att2 = files.find((f) => f.getFilename() === "./att2.pdf");
     expect(att2).toBeDefined();
-    expect(att2?.getPath()).toBe("./class-2/aip-2/documents/doc-2/att2.pdf");
+    expect(att2?.getPath()).toBe(
+      path.join(dipPackagePath, "./class-2/aip-2/documents/doc-2/att2.pdf"),
+    );
     expect(att2?.getHash()).toBe("");
     expect(att2?.getId()).toBeNull();
     expect(att2?.getDocumentId()).toBeNull();
@@ -262,7 +268,7 @@ describe("LocalPackageReaderAdapter integration tests", () => {
     const primary3 = files.find((f) => f.getFilename() === "./primary3.pdf");
     expect(primary3).toBeDefined();
     expect(primary3?.getPath()).toBe(
-      "./class-2/aip-3/documents/doc-3/primary3.pdf",
+      path.join(dipPackagePath, "./class-2/aip-3/documents/doc-3/primary3.pdf"),
     );
     expect(primary3?.getHash()).toBe("");
     expect(primary3?.getId()).toBeNull();

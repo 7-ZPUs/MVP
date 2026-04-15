@@ -21,6 +21,7 @@ import { SqliteTransactionManager } from "../../../../../src/repo/impl/SqliteTra
 import { ISaveVectorPort } from "../../../../../src/repo/IVectorRepository";
 import { IEmbeddingService } from "../../../../../src/services/IEmbeddingService";
 import { Vector } from "../../../../../src/entity/Vector";
+import { container } from "tsyringe";
 
 describe("IndexDip", () => {
   let db: Database.Database;
@@ -30,6 +31,8 @@ describe("IndexDip", () => {
   let embeddingService: IEmbeddingService;
 
   beforeEach(() => {
+    container.registerInstance("DIP_PATH_TOKEN", "");
+
     db = new Database(":memory:");
     const schema = readFileSync("db/schema.sql", "utf-8");
     db.exec(schema);
@@ -85,6 +88,8 @@ describe("IndexDip", () => {
   // expected_value: returns { success: true } and persists dip, document class, process, document, metadata and file records
   it("TU-F-Indexing-27: execute() should orchestrate reader and repository writes parsing real XML", async () => {
     const dipPath = "/dip/path";
+    container.registerInstance("DIP_PATH_TOKEN", dipPath);
+
     vi.mocked(embeddingService.generateDocumentEmbedding).mockResolvedValue(
       new Float32Array([0.1, 0.2]),
     );
@@ -168,6 +173,7 @@ describe("IndexDip", () => {
   // expected_value: throws an error and keeps dip and document_class tables empty
   it("TU-F-Indexing-28: execute() should throw on structurally invalid empty files and avoid persistence", async () => {
     const dipPath = "empty/dip/path";
+    container.registerInstance("DIP_PATH_TOKEN", dipPath);
 
     vi.mocked(fileSystemProvider.listFiles).mockResolvedValue([
       "DiPIndex.empty.xml",
@@ -200,6 +206,8 @@ describe("IndexDip", () => {
   // expected_value: returns success, persists file records, and does not persist vectors
   it("TU-F-Indexing-29: execute() should continue indexing when vector generation fails", async () => {
     const dipPath = "/dip/path";
+    container.registerInstance("DIP_PATH_TOKEN", dipPath);
+
     vi.mocked(embeddingService.generateDocumentEmbedding).mockRejectedValue(
       new Error("missing model file"),
     );

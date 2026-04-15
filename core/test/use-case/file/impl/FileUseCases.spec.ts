@@ -51,7 +51,7 @@ describe("File use-cases", () => {
     const repo: IGetFileByIdPort = {
       getById: vi.fn().mockReturnValue(entity),
     };
-    const uc = new GetFileByIdUC(repo as IFileRepository);
+    const uc = new GetFileByIdUC(repo);
     const result = uc.execute(11);
     expect(repo.getById).toHaveBeenCalledWith(11);
     expect(result).toBe(entity);
@@ -62,7 +62,7 @@ describe("File use-cases", () => {
     const repo: IGetFileByDocumentIdPort = {
       getByDocumentId: vi.fn().mockReturnValue(list),
     };
-    const uc = new GetFileByDocumentUC(repo as IFileRepository);
+    const uc = new GetFileByDocumentUC(repo);
     const result = uc.execute(8);
     expect(repo.getByDocumentId).toHaveBeenCalledWith(8);
     expect(result).toBe(list);
@@ -73,37 +73,58 @@ describe("File use-cases", () => {
     const repo: IGetFileByStatusPort = {
       getByStatus: vi.fn().mockReturnValue(list),
     };
-    const uc = new GetFileByStatusUC(repo as IFileRepository);
+    const uc = new GetFileByStatusUC(repo);
     const result = uc.execute(IntegrityStatusEnum.UNKNOWN);
     expect(repo.getByStatus).toHaveBeenCalledWith(IntegrityStatusEnum.UNKNOWN);
     expect(result).toBe(list);
   });
 
   it("TU-S-browsing-99: CheckFileIntegrityStatusUC imposta VALID se hash coincide", async () => {
-    const integrityService: Pick<IIntegrityVerificationService, "checkFileIntegrityStatus"> = {
-      checkFileIntegrityStatus: vi.fn().mockResolvedValue(IntegrityStatusEnum.VALID),
+    const integrityService: Pick<
+      IIntegrityVerificationService,
+      "checkFileIntegrityStatus"
+    > = {
+      checkFileIntegrityStatus: vi
+        .fn()
+        .mockResolvedValue(IntegrityStatusEnum.VALID),
     };
-    const uc = new CheckFileIntegrityStatusUC(integrityService as IIntegrityVerificationService);
+    const uc = new CheckFileIntegrityStatusUC(
+      integrityService as IIntegrityVerificationService,
+    );
     const result = await uc.execute(8);
     expect(result).toBe(IntegrityStatusEnum.VALID);
     expect(integrityService.checkFileIntegrityStatus).toHaveBeenCalledWith(8);
   });
 
   it("TU-S-browsing-100: CheckFileIntegrityStatusUC propaga UNKNOWN", async () => {
-    const integrityService: Pick<IIntegrityVerificationService, "checkFileIntegrityStatus"> = {
-      checkFileIntegrityStatus: vi.fn().mockResolvedValue(IntegrityStatusEnum.UNKNOWN),
+    const integrityService: Pick<
+      IIntegrityVerificationService,
+      "checkFileIntegrityStatus"
+    > = {
+      checkFileIntegrityStatus: vi
+        .fn()
+        .mockResolvedValue(IntegrityStatusEnum.UNKNOWN),
     };
-    const uc = new CheckFileIntegrityStatusUC(integrityService as IIntegrityVerificationService);
+    const uc = new CheckFileIntegrityStatusUC(
+      integrityService as IIntegrityVerificationService,
+    );
     const result = await uc.execute(8);
     expect(result).toBe(IntegrityStatusEnum.UNKNOWN);
     expect(integrityService.checkFileIntegrityStatus).toHaveBeenCalledWith(8);
   });
 
   it("TU-S-browsing-101: CheckFileIntegrityStatusUC lancia errore se file inesistente", async () => {
-    const integrityService: Pick<IIntegrityVerificationService, "checkFileIntegrityStatus"> = {
-      checkFileIntegrityStatus: vi.fn().mockRejectedValue(new Error("File with id 99 not found")),
+    const integrityService: Pick<
+      IIntegrityVerificationService,
+      "checkFileIntegrityStatus"
+    > = {
+      checkFileIntegrityStatus: vi
+        .fn()
+        .mockRejectedValue(new Error("File with id 99 not found")),
     };
-    const uc = new CheckFileIntegrityStatusUC(integrityService as IIntegrityVerificationService);
+    const uc = new CheckFileIntegrityStatusUC(
+      integrityService as IIntegrityVerificationService,
+    );
     await expect(uc.execute(99)).rejects.toThrow("File with id 99 not found");
   });
 });
@@ -162,7 +183,10 @@ describe("ExportFileUC", () => {
     const stream = Readable.from(Buffer.from("abc"));
     const file = makeFile(1, "docs/f.pdf");
     fileRepo.getById.mockReturnValue(file);
-    dialogPort.showSaveDialog.mockResolvedValue({ canceled: false, filePath: "/dest/f.pdf" });
+    dialogPort.showSaveDialog.mockResolvedValue({
+      canceled: false,
+      filePath: "/dest/f.pdf",
+    });
     // openReadStream viene chiamato con il path assoluto risolto da require("path").resolve
     // Verifichiamo il comportamento osservabile: che openReadStream venga invocato
     // con un path che contiene sia DIP_PATH che il file path relativo
@@ -173,7 +197,8 @@ describe("ExportFileUC", () => {
     const result = await makeUC().execute(1);
 
     // Il path assoluto passato a openReadStream deve contenere entrambe le parti
-    const openReadStreamArg = fileSystemProvider.openReadStream.mock.calls[0][0] as string;
+    const openReadStreamArg = fileSystemProvider.openReadStream.mock
+      .calls[0][0] as string;
     expect(openReadStreamArg).toContain("base/dip");
     expect(openReadStreamArg).toContain("docs/f.pdf");
 
@@ -184,8 +209,13 @@ describe("ExportFileUC", () => {
   it("propaga eccezioni di exportPort.exportFile", async () => {
     const file = makeFile(1, "docs/f.pdf");
     fileRepo.getById.mockReturnValue(file);
-    dialogPort.showSaveDialog.mockResolvedValue({ canceled: false, filePath: "/dest/f.pdf" });
-    fileSystemProvider.openReadStream.mockResolvedValue(Readable.from(Buffer.from("")));
+    dialogPort.showSaveDialog.mockResolvedValue({
+      canceled: false,
+      filePath: "/dest/f.pdf",
+    });
+    fileSystemProvider.openReadStream.mockResolvedValue(
+      Readable.from(Buffer.from("")),
+    );
     exportPort.exportFile.mockRejectedValue(new Error("disk full"));
 
     await expect(makeUC().execute(1)).rejects.toThrow("disk full");
@@ -232,7 +262,10 @@ describe("ExportFilesUC", () => {
   });
 
   it("registra errore per file non trovato senza interrompere il loop", async () => {
-    dialogPort.showFolderDialog.mockResolvedValue({ canceled: false, folderPath: "/dest" });
+    dialogPort.showFolderDialog.mockResolvedValue({
+      canceled: false,
+      folderPath: "/dest",
+    });
     fileRepo.getById.mockReturnValueOnce(null);
     const onProgress = vi.fn();
 
@@ -245,7 +278,10 @@ describe("ExportFilesUC", () => {
 
   it("esporta ogni file nel folder scelto e chiama onProgress", async () => {
     const stream = Readable.from(Buffer.from("data"));
-    dialogPort.showFolderDialog.mockResolvedValue({ canceled: false, folderPath: "/dest" });
+    dialogPort.showFolderDialog.mockResolvedValue({
+      canceled: false,
+      folderPath: "/dest",
+    });
     fileRepo.getById.mockReturnValue(makeFile(1, "docs/f.pdf", "f.pdf"));
     fileSystemProvider.openReadStream.mockResolvedValue(stream);
     exportPort.exportFile.mockResolvedValue(ExportResult.ok());
@@ -275,7 +311,8 @@ describe("PrintFileUC", () => {
   let printPort: { printSingle: ReturnType<typeof vi.fn> };
   const DIP_PATH = "/base/dip";
 
-  const makeUC = () => new PrintFileUC(fileRepo as any, DIP_PATH, printPort as any);
+  const makeUC = () =>
+    new PrintFileUC(fileRepo as any, DIP_PATH, printPort as any);
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -343,7 +380,12 @@ describe("PrintFilesUC", () => {
   const DIP_PATH = "/base/dip";
 
   const makeUC = () =>
-    new PrintFilesUC(fileRepo as any, printPort as any, dialogPort as any, DIP_PATH);
+    new PrintFilesUC(
+      fileRepo as any,
+      printPort as any,
+      dialogPort as any,
+      DIP_PATH,
+    );
 
   beforeEach(() => {
     vi.clearAllMocks();

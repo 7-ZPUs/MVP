@@ -1,6 +1,9 @@
 import { inject, injectable } from "tsyringe";
 import { IPrintFilesUC } from "../IPrintFilesUC";
-import { IFileRepository, FILE_REPOSITORY_TOKEN } from "../../../repo/IFileRepository";
+import {
+  FILE_GET_BY_ID_PORT_TOKEN,
+  IGetFileByIdPort,
+} from "../../../repo/IFileRepository";
 import { IPrintPort, PRINT_PORT_TOKEN } from "../../../repo/IPrintPort";
 import { IDialogPort, DIALOG_PORT_TOKEN } from "../../../repo/IDialogPort";
 import { ExportFileResults } from "../../../value-objects/ExportFileResults";
@@ -9,8 +12,8 @@ import * as path from "node:path";
 @injectable()
 export class PrintFilesUC implements IPrintFilesUC {
   constructor(
-    @inject(FILE_REPOSITORY_TOKEN)
-    private readonly fileRepo: IFileRepository,
+    @inject(FILE_GET_BY_ID_PORT_TOKEN)
+    private readonly fileRepo: IGetFileByIdPort,
     @inject(PRINT_PORT_TOKEN)
     private readonly printPort: IPrintPort,
     @inject(DIALOG_PORT_TOKEN)
@@ -23,9 +26,10 @@ export class PrintFilesUC implements IPrintFilesUC {
     fileIds: number[],
     onProgress: (current: number, total: number) => void,
   ): Promise<ExportFileResults> {
-
     // Il confirm dialog appartiene qui, non nell'adapter
-    const { confirmed } = await this.dialogPort.showConfirmPrint(fileIds.length);
+    const { confirmed } = await this.dialogPort.showConfirmPrint(
+      fileIds.length,
+    );
     if (!confirmed) {
       return { canceled: true, results: [] };
     }
@@ -37,7 +41,11 @@ export class PrintFilesUC implements IPrintFilesUC {
       const file = this.fileRepo.getById(fileId);
 
       if (!file) {
-        results.push({ fileId, success: false, error: `File ${fileId} non trovato` });
+        results.push({
+          fileId,
+          success: false,
+          error: `File ${fileId} non trovato`,
+        });
         onProgress(i + 1, fileIds.length);
         continue;
       }

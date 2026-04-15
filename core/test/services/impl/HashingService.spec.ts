@@ -5,7 +5,7 @@ import { Readable } from "node:stream";
 describe("HashingService", () => {
   it("TU-S-browsing-57: checkFileIntegrity() should return VALID for a file with correct hash", async () => {
     const hs = new HashingService({
-      readFileBytes: async (filePath: string) => {
+      openReadStream: async (filePath: string) => {
         const content = "Hello, World!";
         const buffer = Buffer.from(content, "utf-8");
         return Readable.from(buffer);
@@ -19,7 +19,7 @@ describe("HashingService", () => {
 
   it("TU-S-browsing-58: checkFileIntegrity() should return INVALID for a file with incorrect hash", async () => {
     const hs = new HashingService({
-      readFileBytes: async (filePath: string) => {
+      openReadStream: async (filePath: string) => {
         const content = "Hello, World!";
         const buffer = Buffer.from(content, "utf-8");
         return Readable.from(buffer);
@@ -33,7 +33,7 @@ describe("HashingService", () => {
 
   it("TU-S-browsing-59: checkFileIntegrity() should handle empty files", async () => {
     const hs = new HashingService({
-      readFileBytes: async (filePath: string) => {
+      openReadStream: async (filePath: string) => {
         const buffer = Buffer.from("", "utf-8");
         return Readable.from(buffer);
       },

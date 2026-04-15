@@ -449,7 +449,7 @@ describe("DataMapper", () => {
     expect(mappedFiles[0].getUuid()).toBe("prim-1");
     expect(mappedFiles[0].getFilename()).toBe("./primary.pdf");
     expect(mappedFiles[0].getPath()).toBe(
-      "./class-1/aip-1/documents/doc-1/primary.pdf",
+      "class-1/aip-1/documents/doc-1/primary.pdf",
     );
     expect(mappedFiles[0].getHash()).toBe("hash-main-prim-1");
     expect(mappedFiles[0].getIsMain()).toBe(true);
@@ -466,7 +466,7 @@ describe("DataMapper", () => {
     expect(mappedFiles[3].getUuid()).toBe("att-1");
     expect(mappedFiles[3].getFilename()).toBe("./att1.pdf");
     expect(mappedFiles[3].getPath()).toBe(
-      "./class-2/aip-2/documents/doc-2/att1.pdf",
+      "class-2/aip-2/documents/doc-2/att1.pdf",
     );
     expect(mappedFiles[3].getHash()).toBe("hash-att-1");
     expect(mappedFiles[3].getIsMain()).toBe(false);
@@ -474,7 +474,7 @@ describe("DataMapper", () => {
     expect(mappedFiles[4].getUuid()).toBe("att-2");
     expect(mappedFiles[4].getFilename()).toBe("./att2.pdf");
     expect(mappedFiles[4].getPath()).toBe(
-      "./class-2/aip-2/documents/doc-2/att2.pdf",
+      "class-2/aip-2/documents/doc-2/att2.pdf",
     );
     expect(mappedFiles[4].getHash()).toBe("hash-att-2");
     expect(mappedFiles[4].getIsMain()).toBe(false);

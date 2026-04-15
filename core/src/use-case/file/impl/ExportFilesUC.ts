@@ -1,17 +1,23 @@
 import { inject, injectable } from "tsyringe";
 import { IExportFilesUC } from "../IExportFilesUC";
-import { IFileRepository, FILE_REPOSITORY_TOKEN } from "../../../repo/IFileRepository";
-import { ExportResult } from "../../../../../shared/domain/ExportResult";
+import {
+  FILE_GET_BY_ID_PORT_TOKEN,
+  IGetFileByIdPort,
+} from "../../../repo/IFileRepository";
 import { EXPORT_TOKEN, IExportPort } from "../../../repo/IExportPort";
-import { FILE_SYSTEM_PROVIDER_TOKEN, IFileSystemPort } from "../../../repo/impl/utils/IFileSystemProvider";
+import {
+  FILE_SYSTEM_PROVIDER_TOKEN,
+  IFileSystemPort,
+} from "../../../repo/impl/utils/IFileSystemProvider";
 import { IDialogPort, DIALOG_PORT_TOKEN } from "../../../repo/IDialogPort";
 import { ExportFileResults } from "../../../value-objects/ExportFileResults";
+import * as path from "node:path";
 
 @injectable()
 export class ExportFilesUC implements IExportFilesUC {
   constructor(
-    @inject(FILE_REPOSITORY_TOKEN)
-    private readonly fileRepo: IFileRepository,
+    @inject(FILE_GET_BY_ID_PORT_TOKEN)
+    private readonly fileRepo: IGetFileByIdPort,
     @inject(EXPORT_TOKEN)
     private readonly exportPort: IExportPort,
     @inject(FILE_SYSTEM_PROVIDER_TOKEN)
@@ -26,13 +32,11 @@ export class ExportFilesUC implements IExportFilesUC {
     fileIds: number[],
     onProgress: (current: number, total: number) => void,
   ): Promise<ExportFileResults> {
-
     const dialog = await this.dialogPort.showFolderDialog();
     if (dialog.canceled || !dialog.folderPath) {
       return { canceled: true, results: [] };
     }
 
-    const path = require("path");
     const results: { fileId: number; success: boolean; error?: string }[] = [];
 
     for (let i = 0; i < fileIds.length; i++) {
@@ -40,7 +44,11 @@ export class ExportFilesUC implements IExportFilesUC {
       const file = this.fileRepo.getById(fileId);
 
       if (!file) {
-        results.push({ fileId, success: false, error: `File ${fileId} non trovato` });
+        results.push({
+          fileId,
+          success: false,
+          error: `File ${fileId} non trovato`,
+        });
         onProgress(i + 1, fileIds.length);
         continue;
       }

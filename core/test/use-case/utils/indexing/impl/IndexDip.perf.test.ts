@@ -23,6 +23,7 @@ import Database from "better-sqlite3";
 import { SqliteTransactionManager } from "../../../../../src/repo/impl/SqliteTransactionManager";
 import { ISaveVectorPort } from "../../../../../src/repo/IVectorRepository";
 import { IEmbeddingService } from "../../../../../src/services/IEmbeddingService";
+import { container } from "tsyringe";
 
 const DEFAULT_REAL_DIP_PATH = "core/test/resources/real_dip_heavy";
 const PROJECT_ROOT = path.resolve(__dirname, "../../../../../../");
@@ -64,6 +65,8 @@ describe("IndexDip use-case performance", () => {
 
     const absoluteDipPath = path.resolve(realDipPath);
     const durationsMs: number[] = [];
+
+    container.registerInstance("DIP_PATH_TOKEN", absoluteDipPath);
 
     for (let i = 0; i < runs; i += 1) {
       // Each run gets a fresh DB to simulate cold indexing

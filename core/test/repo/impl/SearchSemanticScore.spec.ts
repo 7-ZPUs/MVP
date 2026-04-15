@@ -15,7 +15,6 @@ vi.mock("@xenova/transformers", () => ({
 import { IGetDocumentByIdPort } from "../../../src/repo/IDocumentRepository";
 import { IWordEmbedding } from "../../../src/repo/IWordEmbedding";
 import { ISearchSimilarVectorsPort } from "../../../src/repo/IVectorRepository";
-import { IVectorRepository } from "../../../src/repo/IVectorRepository";
 import { SearchSemanticUC } from "../../../src/use-case/document/impl/SearchSemanticUC";
 import { DocumentMapper } from "../../../src/dao/mappers/DocumentMapper";
 import { MetadataType } from "../../../src/value-objects/Metadata";
@@ -69,10 +68,9 @@ const makeAiAdapter = (vector: Float32Array): IWordEmbedding => ({
  */
 const makeVectorRepo = (
   results: { documentId: number; score: number }[],
-): IVectorRepository => ({
+): ISearchSimilarVectorsPort => ({
   searchSimilarVectors: vi.fn().mockResolvedValue(results),
-  // Aggiungere altri metodi dell'interfaccia se necessario
-} as unknown as IVectorRepository);
+});
 
 /**
  * Costruisce un mock di IDocumentRepository il cui getById
@@ -81,11 +79,13 @@ const makeVectorRepo = (
  */
 const makeDocumentRepo = (
   docs: ReturnType<typeof makeDocument>[],
-): IDocumentRepository => ({
-  getById: vi.fn().mockImplementation((id: number) =>
-    docs.find((d) => (d as any).id === id) ?? null,
-  ),
-} as unknown as IDocumentRepository);
+): IGetDocumentByIdPort => ({
+  getById: vi
+    .fn()
+    .mockImplementation(
+      (id: number) => docs.find((d) => (d as any).id === id) ?? null,
+    ),
+});
 
 // Istanzia il caso d'uso con i tre mock richiesti
 const makeUC = (
@@ -122,7 +122,7 @@ describe("SearchSemanticUC — calcolo score", () => {
     const results = await uc.execute("query senza match");
 
     expect(results[0].score).toBe(0);
-  });  
+  });
 
   it("preserva l'ordine decrescente per score restituito dal repository", async () => {
     const docs = [1, 2, 3, 4].map((id) => {

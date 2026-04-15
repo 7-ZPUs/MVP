@@ -27,6 +27,7 @@ import Database from "better-sqlite3";
 import { SqliteTransactionManager } from "../../../../../src/repo/impl/SqliteTransactionManager";
 import { ISaveVectorPort } from "../../../../../src/repo/IVectorRepository";
 import { IEmbeddingService } from "../../../../../src/services/IEmbeddingService";
+import { container } from "tsyringe";
 
 // ---------------------------------------------------------------------------
 // Realistic DiP index XML — one DocumentClass, one AiP, two Documents
@@ -159,6 +160,7 @@ async function setupRealisticDip(baseDir: string): Promise<string> {
 // ---------------------------------------------------------------------------
 describe("Index use-case integration tests", () => {
   let testHomeDir: string;
+  let indexedDipPath: string;
   let db: Database.Database;
   let dipRepository: DipPersistenceAdapter;
   let documentClassRepository: DocumentClassPersistenceAdapter;
@@ -168,7 +170,8 @@ describe("Index use-case integration tests", () => {
 
   beforeAll(async () => {
     testHomeDir = await fs.mkdtemp(path.join(os.tmpdir(), "dip-index-it-"));
-    const mockDipPath = await setupRealisticDip(testHomeDir);
+    indexedDipPath = await setupRealisticDip(testHomeDir);
+    container.registerInstance("DIP_PATH_TOKEN", indexedDipPath);
     const dbPath = path.join(testHomeDir, ".dip-viewer", "dip-viewer.db");
     await fs.mkdir(path.dirname(dbPath), { recursive: true });
 
@@ -212,7 +215,7 @@ describe("Index use-case integration tests", () => {
       new SqliteTransactionManager(db),
     );
 
-    const result = await useCase.execute(mockDipPath);
+    const result = await useCase.execute(indexedDipPath);
     expect(result.success).toBe(true);
   });
 
@@ -389,7 +392,10 @@ describe("Index use-case integration tests", () => {
     expect(primary?.getIsMain()).toBe(true);
     expect(primary?.getHash()).toBe("primary-hash");
     expect(primary?.getPath()).toBe(
-      "documents/39e0cf29-10d2-40c1-af00-ec098cb8c98a/Schermata.png",
+      path.join(
+        indexedDipPath,
+        "documents/39e0cf29-10d2-40c1-af00-ec098cb8c98a/Schermata.png",
+      ),
     );
 
     const attachment = files.find((f) => f.getFilename() === "allegato1.pdf");
@@ -397,14 +403,19 @@ describe("Index use-case integration tests", () => {
     expect(attachment?.getIsMain()).toBe(false);
     expect(attachment?.getHash()).toBe("file-002-hash");
     expect(attachment?.getPath()).toBe(
-      "documents/39e0cf29-10d2-40c1-af00-ec098cb8c98a/allegato1.pdf",
+      path.join(
+        indexedDipPath,
+        "documents/39e0cf29-10d2-40c1-af00-ec098cb8c98a/allegato1.pdf",
+      ),
     );
 
     const noMetaFile = files.find((f) => f.getFilename() === "main.pdf");
     expect(noMetaFile).toBeDefined();
     expect(noMetaFile?.getIsMain()).toBe(true);
     expect(noMetaFile?.getHash()).toBe("");
-    expect(noMetaFile?.getPath()).toBe("documents/doc-no-meta/main.pdf");
+    expect(noMetaFile?.getPath()).toBe(
+      path.join(indexedDipPath, "documents/doc-no-meta/main.pdf"),
+    );
   });
 
   // -----------------------------------------------------------------------

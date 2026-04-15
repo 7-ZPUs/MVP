@@ -15,7 +15,7 @@ const dynamicImport = new Function("specifier", "return import(specifier)") as (
 
 const isVitestRuntime = process.env["VITEST"] === "true";
 
-const isDev = !app.isPackaged;
+const isDev = app?.isPackaged;
 const modelsPath = isDev
   ? path.join(__dirname, "..", "..", "models", "Xenova")
   : path.join(process.resourcesPath, "models", "Xenova");
