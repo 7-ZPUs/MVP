@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Dip, DipRow } from "../../src/entity/Dip";
+import { Dip } from "../../src/entity/Dip";
 import { IntegrityStatusEnum } from "../../src/value-objects/IntegrityStatusEnum";
 
 describe("Dip entity", () => {

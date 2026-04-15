@@ -2,7 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import Database from "better-sqlite3";
 
 import { DocumentDAO } from "../../../src/dao/DocumentDAO";
-import { DocumentRepository } from "../../../src/repo/impl/DocumentRepository";
+import { DocumentPersistenceAdapter } from "../../../src/repo/impl/DocumentPersistenceAdapter";
 import { SearchDocumentsUC } from "../../../src/use-case/document/impl/SearchDocumentsUC";
 import { SearchDocumentsQuery } from "../../../src/entity/search/SearchQuery.model";
 
@@ -16,7 +16,7 @@ describe("SearchUseCases integration tests with real DB", () => {
     
     // Wire up the real stack
     const dao = new DocumentDAO(db);
-    const repo = new DocumentRepository(dao);
+    const repo = new DocumentPersistenceAdapter(dao);
     useCase = new SearchDocumentsUC(repo);
   });
 

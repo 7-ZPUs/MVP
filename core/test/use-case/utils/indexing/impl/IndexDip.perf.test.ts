@@ -7,13 +7,13 @@ import { performance } from "node:perf_hooks";
 
 import { IndexDipUC } from "../../../../../src/use-case/utils/indexing/impl/IndexDip";
 import { XmlDipParser } from "../../../../../src/repo/impl/utils/XmlDipParser";
-import { FileSystemProvider } from "../../../../../src/repo/impl/utils/FileSystemProvider";
-import { LocalPackageReaderAdapter } from "../../../../../src/repo/impl/LocalPackageReaderAdapter";
-import { DipRepository } from "../../../../../src/repo/impl/DipRepository";
-import { DocumentClassRepository } from "../../../../../src/repo/impl/DocumentClassRepository";
-import { ProcessRepository } from "../../../../../src/repo/impl/ProcessRepository";
-import { DocumentRepository } from "../../../../../src/repo/impl/DocumentRepository";
-import { FileRepository } from "../../../../../src/repo/impl/FileRepository";
+import { FileSystemPort } from "../../../../../src/repo/impl/utils/FileSystemProvider";
+import { PackageReaderService } from "../../../../../src/services/impl/PackageReaderService";
+import { DipPersistenceAdapter } from "../../../../../src/repo/impl/DipPersistenceAdapter";
+import { DocumentClassPersistenceAdapter } from "../../../../../src/repo/impl/DocumentClassPersistenceAdapter";
+import { ProcessPersistenceAdapter } from "../../../../../src/repo/impl/ProcessPersistenceAdapter";
+import { DocumentPersistenceAdapter } from "../../../../../src/repo/impl/DocumentPersistenceAdapter";
+import { FilePersistenceAdapter } from "../../../../../src/repo/impl/FilePersistenceAdapter";
 import { DipDAO } from "../../../../../src/dao/DipDAO";
 import { FileDAO } from "../../../../../src/dao/FileDAO";
 import { DocumentDAO } from "../../../../../src/dao/DocumentDAO";
@@ -21,8 +21,9 @@ import { ProcessDAO } from "../../../../../src/dao/ProcessDAO";
 import { DocumentClassDAO } from "../../../../../src/dao/DocumentClassDAO";
 import Database from "better-sqlite3";
 import { SqliteTransactionManager } from "../../../../../src/repo/impl/SqliteTransactionManager";
-import { IVectorRepository } from "../../../../../src/repo/IVectorRepository";
+import { ISaveVectorPort } from "../../../../../src/repo/IVectorRepository";
 import { IEmbeddingService } from "../../../../../src/services/IEmbeddingService";
+import { container } from "tsyringe";
 
 const DEFAULT_REAL_DIP_PATH = "core/test/resources/real_dip_heavy";
 const PROJECT_ROOT = path.resolve(__dirname, "../../../../../../");
@@ -50,7 +51,7 @@ describe("IndexDip use-case performance", () => {
       return;
     }
 
-    const fsProvider = new FileSystemProvider();
+    const fsProvider = new FileSystemPort();
     const dipPathExists = await fsProvider.fileExists(realDipPath);
 
     if (!dipPathExists) {
@@ -65,6 +66,8 @@ describe("IndexDip use-case performance", () => {
     const absoluteDipPath = path.resolve(realDipPath);
     const durationsMs: number[] = [];
 
+    container.registerInstance("DIP_PATH_TOKEN", absoluteDipPath);
+
     for (let i = 0; i < runs; i += 1) {
       // Each run gets a fresh DB to simulate cold indexing
       const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "dip-perf-"));
@@ -77,25 +80,28 @@ describe("IndexDip use-case performance", () => {
       );
       db.exec(schema);
 
-      const packageReader = new LocalPackageReaderAdapter(
+      const packageReader = new PackageReaderService(
         new XmlDipParser(),
-        new FileSystemProvider(),
+        new FileSystemPort(),
         new DataMapper(),
       );
-      const dipRepository = new DipRepository(new DipDAO(db));
-      const documentClassRepository = new DocumentClassRepository(
+      const dipRepository = new DipPersistenceAdapter(new DipDAO(db));
+      const documentClassRepository = new DocumentClassPersistenceAdapter(
         new DocumentClassDAO(db),
       );
-      const processRepository = new ProcessRepository(new ProcessDAO(db));
-      const documentRepository = new DocumentRepository(new DocumentDAO(db));
-      const fileRepository = new FileRepository(new FileDAO(db));
-      const vectorRepository: IVectorRepository = {
+      const processRepository = new ProcessPersistenceAdapter(
+        new ProcessDAO(db),
+      );
+      const documentRepository = new DocumentPersistenceAdapter(
+        new DocumentDAO(db),
+      );
+      const fileRepository = new FilePersistenceAdapter(new FileDAO(db));
+      const vectorRepository: ISaveVectorPort = {
         saveVector: async () => {},
-        getVector: async () => null,
-        searchSimilarVectors: async () => [],
       };
       const embeddingService: IEmbeddingService = {
         generateDocumentEmbedding: async () => null,
+        setEmbeddingConfiguration: () => {},
       };
 
       const useCase = new IndexDipUC(

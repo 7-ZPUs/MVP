@@ -163,7 +163,11 @@ export class ExportPageComponent implements OnInit {
     this.showPrintSelector.set(false);
     this.isPrinting.set(true);
     try {
-      await this.exportFacade.printDocuments(ids);
+      if (ids.length === 1) {
+        await this.exportFacade.printDocument(ids[0]);
+      } else {
+        await this.exportFacade.printDocuments(ids);
+      }
     } finally {
       this.isPrinting.set(false);
     }

@@ -3,6 +3,7 @@ import {
   SearchGroup,
 } from "../../entity/search/SearchQuery.model";
 import { MetadataFilter } from "../../../../shared/domain/metadata";
+import { SearchGroupDTO } from "../../../../shared/domain/metadata/search.models";
 
 export class MetadataKeyMapper {
   static toPascalCase(key: string): string {
@@ -29,14 +30,30 @@ export class MetadataKeyMapper {
       .join(separator);
   }
 
-  static mapFilters(filters: MetadataFilter[]): MetadataFilter[] {
-    return filters.map((filter) => ({
-      key: MetadataKeyMapper.toPascalCase(filter.key),
-      value: filter.value,
-    }));
+  static fromLegacyFilters(filters: MetadataFilter[]): SearchGroup {
+    const items: SearchCondition[] = filters
+      .filter(({ value }) => {
+        if (value === null || value === undefined) {
+          return false;
+        }
+        if (typeof value === "string") {
+          return value.trim().length > 0;
+        }
+        return true;
+      })
+      .map(({ key, value }) => ({
+        path: MetadataKeyMapper.toPascalCase(key),
+        operator: "EQ" as const,
+        value,
+      }));
+
+    return {
+      logicOperator: "AND",
+      items,
+    };
   }
 
-  static mapGroup(group: SearchGroup): SearchGroup {
+  static mapGroup(group: SearchGroupDTO): SearchGroup {
     return {
       logicOperator: group.logicOperator,
       items: group.items.map((item) => {
@@ -55,38 +72,13 @@ export class MetadataKeyMapper {
         ) {
           return {
             ...mapped,
-            value: MetadataKeyMapper.mapGroup(mapped.value),
+            value: MetadataKeyMapper.mapGroup(item.value),
           };
         }
 
         return mapped;
       }),
     };
-  }
-
-  static fromLegacyFilters(filters: MetadataFilter[]): SearchGroup {
-    return {
-      logicOperator: "AND",
-      items: filters
-        .filter((filter) => MetadataKeyMapper.hasMeaningfulValue(filter.value))
-        .map((filter) => ({
-          path: MetadataKeyMapper.toPascalCase(filter.key),
-          operator: "EQ" as const,
-          value: filter.value,
-        })),
-    };
-  }
-
-  private static hasMeaningfulValue(value: unknown): boolean {
-    if (value === null || value === undefined) {
-      return false;
-    }
-
-    if (typeof value === "string") {
-      return value.trim().length > 0;
-    }
-
-    return true;
   }
 
   private static isGroup(value: unknown): value is SearchGroup {

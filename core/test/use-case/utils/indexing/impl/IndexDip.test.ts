@@ -3,14 +3,14 @@ import Database from "better-sqlite3";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 import { IndexDipUC } from "../../../../../src/use-case/utils/indexing/impl/IndexDip";
-import { DipRepository } from "../../../../../src/repo/impl/DipRepository";
-import { DocumentClassRepository } from "../../../../../src/repo/impl/DocumentClassRepository";
-import { ProcessRepository } from "../../../../../src/repo/impl/ProcessRepository";
-import { DocumentRepository } from "../../../../../src/repo/impl/DocumentRepository";
-import { FileRepository } from "../../../../../src/repo/impl/FileRepository";
-import { LocalPackageReaderAdapter } from "../../../../../src/repo/impl/LocalPackageReaderAdapter";
+import { DipPersistenceAdapter } from "../../../../../src/repo/impl/DipPersistenceAdapter";
+import { DocumentClassPersistenceAdapter } from "../../../../../src/repo/impl/DocumentClassPersistenceAdapter";
+import { ProcessPersistenceAdapter } from "../../../../../src/repo/impl/ProcessPersistenceAdapter";
+import { DocumentPersistenceAdapter } from "../../../../../src/repo/impl/DocumentPersistenceAdapter";
+import { FilePersistenceAdapter } from "../../../../../src/repo/impl/FilePersistenceAdapter";
+import { PackageReaderService } from "../../../../../src/services/impl/PackageReaderService";
 import { XmlDipParser } from "../../../../../src/repo/impl/utils/XmlDipParser";
-import { IFileSystemProvider } from "../../../../../src/repo/impl/utils/IFileSystemProvider";
+import { IFileSystemPort } from "../../../../../src/repo/impl/utils/IFileSystemProvider";
 import { DipDAO } from "../../../../../src/dao/DipDAO";
 import { DocumentClassDAO } from "../../../../../src/dao/DocumentClassDAO";
 import { ProcessDAO } from "../../../../../src/dao/ProcessDAO";
@@ -18,36 +18,40 @@ import { DocumentDAO } from "../../../../../src/dao/DocumentDAO";
 import { FileDAO } from "../../../../../src/dao/FileDAO";
 import { readFileSync } from "node:fs";
 import { SqliteTransactionManager } from "../../../../../src/repo/impl/SqliteTransactionManager";
-import { IVectorRepository } from "../../../../../src/repo/IVectorRepository";
+import { ISaveVectorPort } from "../../../../../src/repo/IVectorRepository";
 import { IEmbeddingService } from "../../../../../src/services/IEmbeddingService";
 import { Vector } from "../../../../../src/entity/Vector";
+import { container } from "tsyringe";
 
 describe("IndexDip", () => {
   let db: Database.Database;
-  let fileSystemProvider: IFileSystemProvider;
+  let fileSystemProvider: IFileSystemPort;
   let useCase: IndexDipUC;
-  let vectorRepository: IVectorRepository;
+  let vectorRepository: ISaveVectorPort;
   let embeddingService: IEmbeddingService;
 
   beforeEach(() => {
+    container.registerInstance("DIP_PATH_TOKEN", "");
+
     db = new Database(":memory:");
     const schema = readFileSync("db/schema.sql", "utf-8");
     db.exec(schema);
 
-    const dipRepository = new DipRepository(new DipDAO(db));
-    const documentClassRepository = new DocumentClassRepository(
+    const dipRepository = new DipPersistenceAdapter(new DipDAO(db));
+    const documentClassRepository = new DocumentClassPersistenceAdapter(
       new DocumentClassDAO(db),
     );
-    const processRepository = new ProcessRepository(new ProcessDAO(db));
-    const documentRepository = new DocumentRepository(new DocumentDAO(db));
-    const fileRepository = new FileRepository(new FileDAO(db));
+    const processRepository = new ProcessPersistenceAdapter(new ProcessDAO(db));
+    const documentRepository = new DocumentPersistenceAdapter(
+      new DocumentDAO(db),
+    );
+    const fileRepository = new FilePersistenceAdapter(new FileDAO(db));
     vectorRepository = {
       saveVector: vi.fn().mockResolvedValue(undefined),
-      getVector: vi.fn().mockResolvedValue(null),
-      searchSimilarVectors: vi.fn().mockResolvedValue([]),
     };
     embeddingService = {
       generateDocumentEmbedding: vi.fn().mockResolvedValue(null),
+      setEmbeddingConfiguration: vi.fn(),
     };
 
     const parser = new XmlDipParser();
@@ -59,7 +63,7 @@ describe("IndexDip", () => {
       listFiles: vi.fn(),
     };
 
-    const packageReader = new LocalPackageReaderAdapter(
+    const packageReader = new PackageReaderService(
       parser,
       fileSystemProvider,
       new DataMapper(),
@@ -84,6 +88,8 @@ describe("IndexDip", () => {
   // expected_value: returns { success: true } and persists dip, document class, process, document, metadata and file records
   it("TU-F-Indexing-27: execute() should orchestrate reader and repository writes parsing real XML", async () => {
     const dipPath = "/dip/path";
+    container.registerInstance("DIP_PATH_TOKEN", dipPath);
+
     vi.mocked(embeddingService.generateDocumentEmbedding).mockResolvedValue(
       new Float32Array([0.1, 0.2]),
     );
@@ -152,9 +158,9 @@ describe("IndexDip", () => {
     expect((files[0] as any).filename).toBe("./primary.pdf");
 
     expect(embeddingService.generateDocumentEmbedding).toHaveBeenCalledTimes(1);
-    expect(embeddingService.generateDocumentEmbedding).toHaveBeenCalledWith(
-      expect.stringContaining("primary.pdf"),
-    );
+    const [calledFile] = vi.mocked(embeddingService.generateDocumentEmbedding)
+      .mock.calls[0];
+    expect(calledFile.getPath()).toContain("primary.pdf");
     expect(vectorRepository.saveVector).toHaveBeenCalledTimes(1);
     expect(vectorRepository.saveVector).toHaveBeenCalledWith(
       expect.any(Vector),
@@ -167,6 +173,7 @@ describe("IndexDip", () => {
   // expected_value: throws an error and keeps dip and document_class tables empty
   it("TU-F-Indexing-28: execute() should throw on structurally invalid empty files and avoid persistence", async () => {
     const dipPath = "empty/dip/path";
+    container.registerInstance("DIP_PATH_TOKEN", dipPath);
 
     vi.mocked(fileSystemProvider.listFiles).mockResolvedValue([
       "DiPIndex.empty.xml",
@@ -199,6 +206,8 @@ describe("IndexDip", () => {
   // expected_value: returns success, persists file records, and does not persist vectors
   it("TU-F-Indexing-29: execute() should continue indexing when vector generation fails", async () => {
     const dipPath = "/dip/path";
+    container.registerInstance("DIP_PATH_TOKEN", dipPath);
+
     vi.mocked(embeddingService.generateDocumentEmbedding).mockRejectedValue(
       new Error("missing model file"),
     );

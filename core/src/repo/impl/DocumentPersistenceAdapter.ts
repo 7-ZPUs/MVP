@@ -2,7 +2,17 @@ import { inject, injectable } from "tsyringe";
 
 import { Document } from "../../entity/Document";
 import { IntegrityStatusEnum } from "../../value-objects/IntegrityStatusEnum";
-import type { IDocumentRepository } from "../IDocumentRepository";
+import type {
+  IGetDistinctDocumentCustomMetadataKeysPort,
+  IGetDocumentByIdPort,
+  IGetDocumentByProcessIdPort,
+  IGetDocumentByStatusPort,
+  IGetIndexedDocumentsCountPort,
+  ISaveDocumentPort,
+  ISearchDocumentPort,
+  ISearchDocumentSemanticPort,
+  IUpdateDocumentIntegrityStatusPort,
+} from "../IDocumentRepository";
 
 import { DOCUMENT_DAO_TOKEN } from "../../dao/IDocumentDAO";
 import { DocumentDAO } from "../../dao/DocumentDAO";
@@ -12,7 +22,18 @@ const METADATA_TABLE = "document_metadata";
 const METADATA_FK = "document_id";
 
 @injectable()
-export class DocumentRepository implements IDocumentRepository {
+export class DocumentPersistenceAdapter
+  implements
+    IGetDocumentByIdPort,
+    IGetDocumentByProcessIdPort,
+    IGetDocumentByStatusPort,
+    ISaveDocumentPort,
+    IUpdateDocumentIntegrityStatusPort,
+    ISearchDocumentPort,
+    ISearchDocumentSemanticPort,
+    IGetDistinctDocumentCustomMetadataKeysPort,
+    IGetIndexedDocumentsCountPort
+{
   constructor(
     @inject(DOCUMENT_DAO_TOKEN)
     private readonly dao: DocumentDAO,

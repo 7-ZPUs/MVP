@@ -1,12 +1,25 @@
 import { inject, injectable } from "tsyringe";
 import { File } from "../../entity/File";
 import { IntegrityStatusEnum } from "../../value-objects/IntegrityStatusEnum";
-import type { IFileRepository } from "../IFileRepository";
+import type {
+  IGetFileByDocumentIdPort,
+  IGetFileByIdPort,
+  IGetFileByStatusPort,
+  ISaveFilePort,
+  IUpdateFileIntegrityStatusPort,
+} from "../IFileRepository";
 import { FileDAO } from "../../dao/FileDAO";
 import { FILE_DAO_TOKEN } from "../../dao/IFileDAO";
 
 @injectable()
-export class FileRepository implements IFileRepository {
+export class FilePersistenceAdapter
+  implements
+    IGetFileByIdPort,
+    IGetFileByDocumentIdPort,
+    IGetFileByStatusPort,
+    ISaveFilePort,
+    IUpdateFileIntegrityStatusPort
+{
   constructor(
     @inject(FILE_DAO_TOKEN)
     private readonly dao: FileDAO,

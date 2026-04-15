@@ -1,79 +1,37 @@
-import { IpcMain, dialog } from "electron";
+import { IpcMain, WebContents } from "electron";
 import { container } from "tsyringe";
 import { IpcChannels } from "../../../shared/ipc-channels";
 import type { IExportFileUC } from "../use-case/file/IExportFileUC";
-import { FileUC } from "../use-case/file/tokens";
+import type { IExportFilesUC } from "../use-case/file/IExportFilesUC";
 import type { IPrintFileUC } from "../use-case/file/IPrintFileUC";
+import { FileUC } from "../use-case/file/tokens";
+import { IPrintFilesUC } from "../use-case/file/IPrintFilesUC";
 
 export class FileViewerIpcAdapter {
   static register(ipcMain: IpcMain): void {
-    const exportFileUC: IExportFileUC = container.resolve<IExportFileUC>(
-      FileUC.EXPORT_FILE,
-    );
-    const printFileUC: IPrintFileUC = container.resolve<IPrintFileUC>(
-      FileUC.PRINT_FILE,
-    );
+    const exportFileUC  = container.resolve<IExportFileUC>(FileUC.EXPORT_FILE);
+    const exportFilesUC = container.resolve<IExportFilesUC>(FileUC.EXPORT_FILES);
+    const printFileUC   = container.resolve<IPrintFileUC>(FileUC.PRINT_FILE);
+    const printFilesUC = container.resolve<IPrintFilesUC>(FileUC.PRINT_FILES)
 
-    ipcMain.handle(IpcChannels.FILE_PRINT, async (_event, fileId: number) => {
-      return printFileUC.execute(fileId);
-    });
-
-    ipcMain.handle(
-      IpcChannels.FILE_PRINT_MANY,
-      async (event, fileIds: number[]) => {
-        const { response } = await dialog.showMessageBox({
-          type: "question",
-          buttons: ["Stampa", "Annulla"],
-          defaultId: 0,
-          cancelId: 1,
-          title: "Conferma stampa",
-          message: `Stai per stampare ${fileIds.length} document${fileIds.length === 1 ? "o" : "i"}.`,
-          detail: `Attenzione che proseguendo verr${fileIds.length === 1 ? "à" : "anno"} aperte ${fileIds.length} finestr${fileIds.length === 1 ? "a" : "e"} di stampa.
-                Vuoi continuare?`,
-        });
-
-        if (response === 1) return { canceled: true, results: [] };
-
-        const results = [];
-        for (let i = 0; i < fileIds.length; i++) {
-          event.sender.send(IpcChannels.FILE_PRINT_PROGRESS, {
-            current: i + 1,
-            total: fileIds.length,
-          });
-          const outcome = await printFileUC.execute(fileIds[i]);
-          results.push({ fileId: fileIds[i], ...outcome });
-        }
-
-        return { canceled: false, results };
-      },
+    ipcMain.handle(IpcChannels.FILE_DOWNLOAD, (_event, fileId: number) =>
+      exportFileUC.execute(fileId)
     );
 
-    ipcMain.handle(
-      IpcChannels.FILE_SAVE_DIALOG,
-      async (_event, defaultName?: string) => {
-        const result = await dialog.showSaveDialog({
-          defaultPath: defaultName,
-          filters: [{ name: "All Files", extensions: ["*"] }],
-        });
-        return { canceled: result.canceled, filePath: result.filePath };
-      },
+    ipcMain.handle(IpcChannels.FILE_DOWNLOAD_MANY, (event, fileIds: number[]) =>
+      exportFilesUC.execute(fileIds, (current, total) => {
+        event.sender.send(IpcChannels.FILE_DOWNLOAD_PROGRESS, { current, total });
+      })
     );
 
-    ipcMain.handle(
-      IpcChannels.FILE_DOWNLOAD,
-      (_event, { fileId, destPath }: { fileId: number; destPath: string }) => {
-        return exportFileUC.execute(fileId, destPath);
-      },
+    ipcMain.handle(IpcChannels.FILE_PRINT, (_event, fileId: number) =>
+      printFileUC.execute(fileId)
     );
 
-    ipcMain.handle(IpcChannels.FILE_FOLDER_DIALOG, async () => {
-      const result = await dialog.showOpenDialog({
-        properties: ["openDirectory"],
-      });
-      return {
-        canceled: result.canceled,
-        folderPath: result.filePaths[0] ?? undefined,
-      };
-    });
+    ipcMain.handle(IpcChannels.FILE_PRINT_MANY, (event, fileIds: number[]) =>
+      printFilesUC.execute(fileIds, (current, total) => {
+        event.sender.send(IpcChannels.FILE_PRINT_PROGRESS, { current, total });
+      })
+    );
   }
 }

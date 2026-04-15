@@ -1,12 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { DocumentRepository } from "../../../src/repo/impl/DocumentRepository";
+import { DocumentPersistenceAdapter } from "../../../src/repo/impl/DocumentPersistenceAdapter";
 import { DocumentDAO } from "../../../src/dao/DocumentDAO";
 import { Document } from "../../../src/entity/Document";
 import { IntegrityStatusEnum } from "../../../src/value-objects/IntegrityStatusEnum";
 import { Metadata, MetadataType } from "../../../src/value-objects/Metadata";
 
-describe("DocumentRepository", () => {
+describe("DocumentPersistenceAdapter", () => {
   let dao: {
     getById: ReturnType<typeof vi.fn>;
     getByProcessId: ReturnType<typeof vi.fn>;
@@ -17,7 +17,7 @@ describe("DocumentRepository", () => {
     searchDocumentSemantic: ReturnType<typeof vi.fn>;
     getIndexedDocumentsCount: ReturnType<typeof vi.fn>;
   };
-  let repo: DocumentRepository;
+  let repo: DocumentPersistenceAdapter;
 
   beforeEach(() => {
     dao = {
@@ -30,7 +30,7 @@ describe("DocumentRepository", () => {
       searchDocumentSemantic: vi.fn(),
       getIndexedDocumentsCount: vi.fn(),
     };
-    repo = new DocumentRepository(dao as unknown as DocumentDAO);
+    repo = new DocumentPersistenceAdapter(dao as unknown as DocumentDAO);
   });
 
   const metadata = new Metadata(

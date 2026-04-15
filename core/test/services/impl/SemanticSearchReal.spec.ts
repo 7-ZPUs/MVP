@@ -19,25 +19,6 @@ const describeIfLocal = isCI || !modelExists ? describe.skip : describe;
 
 let adapter: any;
 
-const makeStmt = (opts: { get?: any; all?: any; run?: any } = {}) => ({
-  get: vi.fn().mockReturnValue(opts.get ?? null),
-  all: vi.fn().mockReturnValue(opts.all ?? []),
-  run: vi.fn().mockReturnValue(opts.run ?? { lastInsertRowid: 1 }),
-});
-
-const makeDb = () => ({
-  exec: vi.fn(),
-  prepare: vi.fn().mockReturnValue(makeStmt()),
-});
-
-// Costruisce una riga documento SQLite
-const makeDocRow = (id: number, uuid: string) => ({
-  id,
-  uuid,
-  integrityStatus: "UNKNOWN",
-  processId: 1,
-});
-
 beforeAll(async () => {
   if (isCI || !modelExists) return;
 
@@ -48,12 +29,10 @@ beforeAll(async () => {
   await adapter.initialize();
 }, 30_000);
 
-// ─── Helper: calcola similarità coseno ───────────────────────────────────────
+// ─── Helper: calcolo coseno ───────────────────────────────────────────────────
 
 const cosineSimilarity = (a: Float32Array, b: Float32Array): number => {
-  let dot = 0,
-    normA = 0,
-    normB = 0;
+  let dot = 0, normA = 0, normB = 0;
   for (let i = 0; i < a.length; i++) {
     dot += a[i] * b[i];
     normA += a[i] * a[i];
@@ -92,10 +71,7 @@ describeIfLocal("WordEmbedding reale — generazione embedding", () => {
     const v2 = await adapter.generateEmbedding("verbale di assemblea");
     let areDifferent = false;
     for (let i = 0; i < v1.length; i++) {
-      if (Math.abs(v1[i] - v2[i]) > 0.001) {
-        areDifferent = true;
-        break;
-      }
+      if (Math.abs(v1[i] - v2[i]) > 0.001) { areDifferent = true; break; }
     }
     expect(areDifferent).toBe(true);
   }, 10_000);
@@ -104,9 +80,7 @@ describeIfLocal("WordEmbedding reale — generazione embedding", () => {
     const text = "documento informatico";
     const v1 = await adapter.generateEmbedding(text);
     const v2 = await adapter.generateEmbedding(text);
-    for (let i = 0; i < v1.length; i++) {
-      expect(v1[i]).toBeCloseTo(v2[i], 5);
-    }
+    for (let i = 0; i < v1.length; i++) expect(v1[i]).toBeCloseTo(v2[i], 5);
   }, 10_000);
 });
 
@@ -114,47 +88,31 @@ describeIfLocal("WordEmbedding reale — generazione embedding", () => {
 
 describeIfLocal("WordEmbedding reale — similarità semantica", () => {
   it("frasi semanticamente simili hanno similarità > 0.7", async () => {
-    const v1 = await adapter.generateEmbedding(
-      "contratto di compravendita immobile",
-    );
-    const v2 = await adapter.generateEmbedding(
-      "accordo per la vendita di un immobile",
-    );
+    const v1 = await adapter.generateEmbedding("contratto di compravendita immobile");
+    const v2 = await adapter.generateEmbedding("accordo per la vendita di un immobile");
     expect(cosineSimilarity(v1, v2)).toBeGreaterThan(0.7);
   }, 15_000);
 
   it("frasi semanticamente diverse hanno similarità < 0.5", async () => {
-    const v1 = await adapter.generateEmbedding(
-      "contratto di compravendita immobile",
-    );
-    const v2 = await adapter.generateEmbedding(
-      "ricetta della pizza margherita",
-    );
+    const v1 = await adapter.generateEmbedding("contratto di compravendita immobile");
+    const v2 = await adapter.generateEmbedding("ricetta della pizza margherita");
     expect(cosineSimilarity(v1, v2)).toBeLessThan(0.5);
   }, 15_000);
 
   it("la stessa frase ha similarità = 1.0 con se stessa", async () => {
-    const v = await adapter.generateEmbedding(
-      "documento amministrativo informatico",
-    );
+    const v = await adapter.generateEmbedding("documento amministrativo informatico");
     expect(cosineSimilarity(v, v)).toBeCloseTo(1, 4);
   }, 10_000);
 
   it("frasi in italiano simili hanno similarità alta", async () => {
-    const v1 = await adapter.generateEmbedding(
-      "verbale di riunione del consiglio",
-    );
-    const v2 = await adapter.generateEmbedding(
-      "resoconto della seduta del consiglio",
-    );
+    const v1 = await adapter.generateEmbedding("verbale di riunione del consiglio");
+    const v2 = await adapter.generateEmbedding("resoconto della seduta del consiglio");
     expect(cosineSimilarity(v1, v2)).toBeGreaterThan(0.75);
   }, 15_000);
 
   it("documenti amministrativi simili hanno similarità > 0.7", async () => {
     const v1 = await adapter.generateEmbedding("delibera di giunta comunale");
-    const v2 = await adapter.generateEmbedding(
-      "deliberazione della giunta municipale",
-    );
+    const v2 = await adapter.generateEmbedding("deliberazione della giunta municipale");
     expect(cosineSimilarity(v1, v2)).toBeGreaterThan(0.7);
   }, 15_000);
 
@@ -195,62 +153,60 @@ describeIfLocal("WordEmbedding reale — robustezza input", () => {
   }, 10_000);
 
   it("gestisce caratteri speciali e unicode", async () => {
-    const result = await adapter.generateEmbedding(
-      'àèìòù — §42 "contratto" 中文',
-    );
+    const result = await adapter.generateEmbedding('àèìòù — §42 "contratto" 中文');
     expect(result).toBeInstanceOf(Float32Array);
     expect(result.length).toBe(384);
   }, 10_000);
 
   it("gestisce numeri e codici", async () => {
-    const result = await adapter.generateEmbedding(
-      "UUID-2026-ABC-123 protocollo n. 42/2026",
-    );
+    const result = await adapter.generateEmbedding("UUID-2026-ABC-123 protocollo n. 42/2026");
     expect(result).toBeInstanceOf(Float32Array);
     expect(result.length).toBe(384);
   }, 10_000);
 });
 
-// ─── Test ricerca semantica con DAO mockato ───────────────────────────────────
+// ─── Test ricerca semantica con repository mockati ────────────────────────────
+//
+// SearchSemanticUC(documentRepo, vectorRepo, aiAdapter)
+//   - vectorRepo.searchSimilarVectors(vector, limit) → { documentId, score }[]
+//   - documentRepo.getById(id) → Document | null
+//
+// Il flusso reale NON chiama più searchDocumentSemantic sul DAO.
 
 describeIfLocal("Ricerca semantica reale — con DAO mockato", () => {
-  let DocumentRepositoryClass: any;
   let SearchSemanticUCClass: any;
 
   beforeAll(async () => {
     if (isCI || !modelExists) return;
-    const repoMod = await import("../../../src/repo/impl/DocumentRepository");
-    const ucMod =
-      await import("../../../src/use-case/document/impl/SearchSemanticUC");
-    DocumentRepositoryClass = repoMod.DocumentRepository;
+    const ucMod = await import("../../../src/use-case/document/impl/SearchSemanticUC");
     SearchSemanticUCClass = ucMod.SearchSemanticUC;
   }, 10_000);
 
-  const makeDaoMock = () => ({
-    getById: vi.fn(),
-    getByProcessId: vi.fn(),
-    getByStatus: vi.fn(),
-    searchDocument: vi.fn(),
-    searchDocumentSemantic: vi.fn().mockResolvedValue([]),
-    getIndexedDocumentsCount: vi.fn().mockReturnValue(0),
-    save: vi.fn(),
-    updateIntegrityStatus: vi.fn(),
-  });
+  // Costruisce il triplice mock e istanzia il caso d'uso
+  const makeUc = (
+    vectorResults: { documentId: number; score: number }[] = [],
+    documents: { id: number; doc: any }[] = [],
+  ) => {
+    const vectorRepo = {
+      searchSimilarVectors: vi.fn().mockResolvedValue(vectorResults),
+    };
 
-  const makeUc = () => {
-    const dao = makeDaoMock();
-    const repo = new DocumentRepositoryClass(dao as any);
-    const uc = new SearchSemanticUCClass(repo, adapter);
-    return { dao, repo, uc };
+    const documentRepo = {
+      getById: vi.fn().mockImplementation((id: number) =>
+        documents.find((d) => d.id === id)?.doc ?? null,
+      ),
+    };
+
+    const uc = new SearchSemanticUCClass(documentRepo, vectorRepo, adapter);
+    return { vectorRepo, documentRepo, uc };
   };
 
-  it("genera un embedding reale dalla query e lo passa al DAO come Float32Array", async () => {
-    const { dao, uc } = makeUc();
+  it("genera un embedding reale dalla query e lo passa al vectorRepo come Float32Array", async () => {
+    const { vectorRepo, uc } = makeUc();
 
     await uc.execute("contratto di lavoro");
 
-    const vectorArg = dao.searchDocumentSemantic.mock
-      .calls[0][0] as Float32Array;
+    const [vectorArg] = vectorRepo.searchSimilarVectors.mock.calls[0];
     expect(vectorArg).toBeInstanceOf(Float32Array);
     expect(vectorArg.length).toBe(384);
   }, 15_000);
@@ -262,8 +218,8 @@ describeIfLocal("Ricerca semantica reale — con DAO mockato", () => {
     await ctx1.uc.execute("contratto di lavoro");
     await ctx2.uc.execute("accordo lavorativo");
 
-    const v1 = ctx1.dao.searchDocumentSemantic.mock.calls[0][0] as Float32Array;
-    const v2 = ctx2.dao.searchDocumentSemantic.mock.calls[0][0] as Float32Array;
+    const v1 = ctx1.vectorRepo.searchSimilarVectors.mock.calls[0][0] as Float32Array;
+    const v2 = ctx2.vectorRepo.searchSimilarVectors.mock.calls[0][0] as Float32Array;
 
     expect(v1).not.toEqual(v2);
     expect(cosineSimilarity(v1, v2)).toBeGreaterThan(0.7);
@@ -276,25 +232,28 @@ describeIfLocal("Ricerca semantica reale — con DAO mockato", () => {
     await ctx1.uc.execute("contratto di compravendita");
     await ctx2.uc.execute("ricetta della pizza");
 
-    const v1 = ctx1.dao.searchDocumentSemantic.mock.calls[0][0] as Float32Array;
-    const v2 = ctx2.dao.searchDocumentSemantic.mock.calls[0][0] as Float32Array;
+    const v1 = ctx1.vectorRepo.searchSimilarVectors.mock.calls[0][0] as Float32Array;
+    const v2 = ctx2.vectorRepo.searchSimilarVectors.mock.calls[0][0] as Float32Array;
 
     expect(cosineSimilarity(v1, v2)).toBeLessThan(0.5);
   }, 15_000);
 
-  it("flusso completo SearchSemanticUC — embedding reale e risultati DAO invariati", async () => {
-    const { dao, uc } = makeUc();
+  it("flusso completo SearchSemanticUC — embedding reale e risultati vectorRepo passano invariati", async () => {
+    const fakeDoc1 = { getUuid: () => "uuid-doc-1" };
+    const fakeDoc2 = { getUuid: () => "uuid-doc-2" };
 
-    const expected = [
-      { document: { getUuid: () => "uuid-doc-1" }, score: 0.9 },
-      { document: { getUuid: () => "uuid-doc-2" }, score: 0.6 },
-    ];
-    dao.searchDocumentSemantic.mockResolvedValue(expected);
+    const { uc } = makeUc(
+      [{ documentId: 1, score: 0.9 }, { documentId: 2, score: 0.6 }],
+      [{ id: 1, doc: fakeDoc1 }, { id: 2, doc: fakeDoc2 }],
+    );
 
     const results = await uc.execute("contratto di lavoro");
 
-    expect(results).toEqual(expected);
-    expect(dao.searchDocumentSemantic).toHaveBeenCalledTimes(1);
+    expect(results).toHaveLength(2);
+    expect(results[0].score).toBeCloseTo(0.9, 5);
+    expect(results[1].score).toBeCloseTo(0.6, 5);
+    expect(results[0].document).toBe(fakeDoc1);
+    expect(results[1].document).toBe(fakeDoc2);
   }, 15_000);
 
   it("query identica genera embedding identico", async () => {
@@ -304,17 +263,19 @@ describeIfLocal("Ricerca semantica reale — con DAO mockato", () => {
     await ctx1.uc.execute("documento informatico");
     await ctx2.uc.execute("documento informatico");
 
-    const v1 = ctx1.dao.searchDocumentSemantic.mock.calls[0][0] as Float32Array;
-    const v2 = ctx2.dao.searchDocumentSemantic.mock.calls[0][0] as Float32Array;
+    const v1 = ctx1.vectorRepo.searchSimilarVectors.mock.calls[0][0] as Float32Array;
+    const v2 = ctx2.vectorRepo.searchSimilarVectors.mock.calls[0][0] as Float32Array;
 
     expect(Array.from(v1)).toEqual(Array.from(v2));
   }, 15_000);
 
   it("flusso completo con query in inglese — modello multilingua", async () => {
-    const { dao, uc } = makeUc();
-    dao.searchDocumentSemantic.mockResolvedValue([
-      { document: { getUuid: () => "uuid-en" }, score: 0.85 },
-    ]);
+    const fakeDoc = { getUuid: () => "uuid-en" };
+
+    const { uc } = makeUc(
+      [{ documentId: 1, score: 0.85 }],
+      [{ id: 1, doc: fakeDoc }],
+    );
 
     const results = await uc.execute("employment contract");
 
@@ -323,12 +284,18 @@ describeIfLocal("Ricerca semantica reale — con DAO mockato", () => {
   }, 15_000);
 
   it("vettore generato da embedding reale non è nullo o tutto zero", async () => {
-    const { dao, uc } = makeUc();
+    const { vectorRepo, uc } = makeUc();
 
     await uc.execute("contratto notarile");
 
-    const vector = dao.searchDocumentSemantic.mock.calls[0][0] as Float32Array;
+    const vector = vectorRepo.searchSimilarVectors.mock.calls[0][0] as Float32Array;
     const hasNonZero = Array.from(vector).some((v) => v !== 0);
     expect(hasNonZero).toBe(true);
+  }, 15_000);
+
+  it("lancia un errore se vectorRepo restituisce un documentId inesistente", async () => {
+    const { uc } = makeUc([{ documentId: 999, score: 0.8 }], []);
+
+    await expect(uc.execute("query senza documenti")).rejects.toThrow("999");
   }, 15_000);
 });

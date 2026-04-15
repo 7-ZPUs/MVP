@@ -18,6 +18,7 @@ import {
 import { SearchFacade } from '../services';
 import { SearchQueryType } from '../../../../../../shared/domain/metadata/search.enum';
 import { SEARCH_CHANNEL_TOKEN } from '../contracts/search-channel.interface';
+import { SEARCH_FACADE_TOKEN } from '../contracts/search-facade.interface';
 import { FILTER_VALIDATOR_TOKEN } from '../../validation/contracts/filter-validator.interface';
 import { SEMANTIC_INDEX_STATUS_TOKEN } from '../contracts/semantic-index.interface';
 
@@ -55,6 +56,7 @@ describe('Integration: Search Flow (UI -> Facade -> IPC Gateway)', () => {
       imports: [SearchPageComponent],
       providers: [
         SearchFacade,
+        { provide: SEARCH_FACADE_TOKEN, useExisting: SearchFacade },
         SearchIpcGateway,
         { provide: SEARCH_CHANNEL_TOKEN, useExisting: SearchIpcGateway },
         { provide: ELECTRON_CONTEXT_BRIDGE_TOKEN, useValue: mockElectronBridge },

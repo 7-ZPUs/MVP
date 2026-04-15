@@ -1,14 +1,12 @@
 import { inject, injectable } from "tsyringe";
-
-import {
-  IPackageReaderPort,
-  PACKAGE_READER_PORT_TOKEN,
-} from "../../repo/IPackageReaderPort";
 import {
   IWordEmbedding,
   WORD_EMBEDDING_PORT_TOKEN,
 } from "../../repo/IWordEmbedding";
 import { IEmbeddingService } from "../IEmbeddingService";
+import { File } from "../../entity/File";
+import { FILE_SYSTEM_PROVIDER_TOKEN, IFileSystemPort } from "../../repo/impl/utils/IFileSystemProvider";
+import path from "node:path";
 
 export interface IEmbeddingConfiguration {
   chunkSize: number;
@@ -24,16 +22,19 @@ export class EmbeddingService implements IEmbeddingService {
     maxEmbeddingChunks: 5,
   };
   constructor(
-    @inject(PACKAGE_READER_PORT_TOKEN)
-    private readonly packageReader: IPackageReaderPort,
     @inject(WORD_EMBEDDING_PORT_TOKEN)
     private readonly embeddingAdapter: IWordEmbedding,
+    @inject(FILE_SYSTEM_PROVIDER_TOKEN)
+    private readonly fileSystemProvider: IFileSystemPort,
   ) {}
 
   async generateDocumentEmbedding(
-    filePath: string,
+    file: File,
   ): Promise<Float32Array | null> {
-    const text = await this.readTextFromStream(filePath);
+    if(!file.getPath()) {
+      throw new Error("File path not set in EmbeddingService");
+    }
+    const text = await this.readTextFromStream(file.getPath());
     if (!text) {
       return null;
     }
@@ -63,7 +64,7 @@ export class EmbeddingService implements IEmbeddingService {
   }
 
   private async readTextFromStream(filePath: string): Promise<string> {
-    const stream = await this.packageReader.readFileBytes(filePath);
+    const stream = await this.fileSystemProvider.openReadStream(filePath);
     const textParts: string[] = [];
     let processedBytes = 0;
     const { chunkSize, chunkOverlap, maxEmbeddingChunks } =

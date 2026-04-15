@@ -2,14 +2,27 @@ import { inject, injectable } from "tsyringe";
 
 import { Dip } from "../../entity/Dip";
 import { IntegrityStatusEnum } from "../../value-objects/IntegrityStatusEnum";
-import { IDipRepository } from "../IDipRepository";
+import type {
+  IGetDipByIdPort,
+  IGetDipByStatusPort,
+  IGetDipByUuidPort,
+  ISaveDipPort,
+  IUpdateDipIntegrityStatusPort,
+} from "../IDipRepository";
 import { DIP_DAO_TOKEN, IDipDAO } from "../../dao/IDipDAO";
 
 @injectable()
-export class DipRepository implements IDipRepository {
+export class DipPersistenceAdapter
+  implements
+    IGetDipByIdPort,
+    IGetDipByUuidPort,
+    ISaveDipPort,
+    IGetDipByStatusPort,
+    IUpdateDipIntegrityStatusPort
+{
   constructor(
     @inject(DIP_DAO_TOKEN)
-    private readonly dao: IDipDAO
+    private readonly dao: IDipDAO,
   ) {}
 
   getById(id: number): Dip | null {

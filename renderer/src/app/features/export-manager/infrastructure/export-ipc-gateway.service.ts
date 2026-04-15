@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { IExportChannel } from '../contracts/i-export-channel';
 import { ExportResult } from '../../../../../../shared/domain/ExportResult';
-import { SaveDialogResponseDto, FileDTO } from '../domain/dtos';
+import { FileDTO } from '../domain/dtos';
+import { IpcChannels } from '@shared/ipc-channels';
 
 @Injectable({ providedIn: 'root' })
 export class ExportIpcGateway implements IExportChannel {
@@ -9,56 +10,49 @@ export class ExportIpcGateway implements IExportChannel {
     return (globalThis as any).electronAPI;
   }
 
-  constructor() {
-    if (!this.ipc) {
-      console.warn('Electron Bridge non trovato in ExportIpcGateway.');
-    }
+  // --- Export singolo: non passa più destPath, il dialog è nel UC ---
+  async exportFile(fileId: number): Promise<ExportResult> {
+    if (!this.ipc) return ExportResult.fail('BRIDGE_UNAVAILABLE', 'Bridge non disponibile');
+    return this.ipc.invoke(IpcChannels.FILE_DOWNLOAD, fileId);
   }
 
-  async exportFile(fileId: number, destPath: string): Promise<ExportResult> {
-    if (!this.ipc) {
-      return ExportResult.fail('BRIDGE_UNAVAILABLE', 'Electron bridge non disponibile');
-    }
-    return await this.ipc.invoke('file:download', { fileId, destPath });
-  }
-
-  async openSaveDialog(defaultName?: string): Promise<SaveDialogResponseDto> {
-    if (!this.ipc) return { canceled: true };
-    return await this.ipc.invoke('file:save-dialog', defaultName);
-  }
-
-  async openFolderDialog(): Promise<{ canceled: boolean; folderPath?: string }> {
-    if (!this.ipc) return { canceled: true };
-    return await this.ipc.invoke('file:folder-dialog');
+  // --- Export multiplo: niente dialog qui, solo i fileIds ---
+  async exportFiles(
+    fileIds: number[],
+  ): Promise<{ canceled: boolean; results: { fileId: number; success: boolean; error?: string }[] }> {
+    if (!this.ipc) return { canceled: false, results: [] };
+    return this.ipc.invoke(IpcChannels.FILE_DOWNLOAD_MANY, fileIds);
   }
 
   async getFileDto(fileId: number): Promise<FileDTO | null> {
     if (!this.ipc) return null;
-    return await this.ipc.invoke('browse:get-file-by-id', fileId);
+    return this.ipc.invoke('browse:get-file-by-id', fileId);
   }
 
   async getFilesByDocumentId(documentId: number): Promise<FileDTO[]> {
     if (!this.ipc) return [];
-    return await this.ipc.invoke('browse:get-file-by-document', documentId);
+    return this.ipc.invoke('browse:get-file-by-document', documentId);
   }
 
   async printFile(fileId: number): Promise<{ success: boolean; error?: string }> {
     if (!this.ipc) return { success: false, error: 'Bridge non disponibile' };
-    return await this.ipc.invoke('file:print', fileId);
+    return this.ipc.invoke(IpcChannels.FILE_PRINT, fileId);
   }
 
   async printFiles(
     fileIds: number[],
-  ): Promise<{
-    canceled: boolean;
-    results: { fileId: number; success: boolean; error?: string }[];
-  }> {
+  ): Promise<{ canceled: boolean; results: { fileId: number; success: boolean; error?: string }[] }> {
     if (!this.ipc) return { canceled: false, results: [] };
-    return await this.ipc.invoke('file:print-many', fileIds);
+    return this.ipc.invoke(IpcChannels.FILE_PRINT_MANY, fileIds);
+  }
+
+  onExportProgress(callback: (data: { current: number; total: number }) => void): () => void {
+    const unsub = this.ipc?.on(IpcChannels.FILE_DOWNLOAD_PROGRESS, (data: any) => callback(data));
+    return unsub ?? (() => {});
   }
 
   onPrintProgress(callback: (data: { current: number; total: number }) => void): () => void {
-    const unsubscribe = this.ipc?.on('file:print-progress', (data: any) => callback(data));
-    return unsubscribe ?? (() => {});
+    const unsub = this.ipc?.on(IpcChannels.FILE_PRINT_PROGRESS, (data: any) => callback(data));
+    return unsub ?? (() => {});
   }
 }

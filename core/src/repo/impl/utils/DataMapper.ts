@@ -6,20 +6,23 @@ import { Dip } from "../../../entity/Dip";
 import { Metadata, MetadataType } from "../../../value-objects/Metadata";
 import { DocumentMetadataHashMapper } from "./DocumentMetadataHashMapper";
 import { IDataMapper, MapperRequest } from "./IDataMapper";
+import path from "node:path";
+import { container } from "../../../container";
 
 export class DataMapper implements IDataMapper {
   private readonly hashMapper = new DocumentMetadataHashMapper();
+  private rawDipIndex: any;
 
-  public mapDip(rawDipIndex: any): Dip {
-    if (!rawDipIndex?.DiPIndex?.PackageContent?.DiPDocuments?.DocumentClass) {
+  public mapDip(): Dip {
+    if (!this.rawDipIndex?.DiPIndex?.PackageContent?.DiPDocuments?.DocumentClass) {
       throw new Error("Missing DocumentClass fragments");
     }
-    return new Dip(rawDipIndex?.DiPIndex?.PackageInfo?.ProcessUUID || "");
+    return new Dip(this.rawDipIndex?.DiPIndex?.PackageInfo?.ProcessUUID || "");
   }
 
-  public mapDocumentClasses(rawDipIndex: any): DocumentClass[] {
-    const classes = this.extractDocumentClassFragments(rawDipIndex);
-    const dipUuid = rawDipIndex?.DiPIndex?.PackageInfo?.ProcessUUID || "";
+  public mapDocumentClasses(): DocumentClass[] {
+    const classes = this.extractDocumentClassFragments();
+    const dipUuid = this.rawDipIndex?.DiPIndex?.PackageInfo?.ProcessUUID || "";
     return classes.map((c) => {
       // Support both xml2js ($) and legacy (@_uuid/@_name) attribute formats
       const uuid = c.$?.uuid ?? c["@_uuid"] ?? "";
@@ -29,8 +32,8 @@ export class DataMapper implements IDataMapper {
     });
   }
 
-  public getProcessMappers(rawDipIndex: any): MapperRequest<Process>[] {
-    const fragments = this.extractProcessFragments(rawDipIndex);
+  public getProcessMappers(): MapperRequest<Process>[] {
+    const fragments = this.extractProcessFragments();
     return fragments.map((proc) => {
       // Support both xml2js ($) and legacy (@_uuid) attribute formats
       const uuid = proc.$?.uuid ?? proc["@_uuid"] ?? "";
@@ -47,8 +50,8 @@ export class DataMapper implements IDataMapper {
     });
   }
 
-  public getDocumentMappers(rawDipIndex: any): MapperRequest<Document>[] {
-    const fragments = this.extractDocumentFragments(rawDipIndex);
+  public getDocumentMappers(): MapperRequest<Document>[] {
+    const fragments = this.extractDocumentFragments();
     return fragments.map((doc) => {
       // Support both xml2js ($) and legacy (@_uuid) attribute formats
       const uuid = doc.$?.uuid ?? doc["@_uuid"] ?? "";
@@ -66,9 +69,9 @@ export class DataMapper implements IDataMapper {
     });
   }
 
-  public getFileMappers(rawDipIndex: any): MapperRequest<File>[] {
-    const docFragments = this.extractDocumentFragments(rawDipIndex);
-    const fileFragments = this.extractFileFragments(rawDipIndex).filter(
+  public getFileMappers(): MapperRequest<File>[] {
+    const docFragments = this.extractDocumentFragments();
+    const fileFragments = this.extractFileFragments().filter(
       (file) => !this.shouldIgnoreFilePath(this.extractNodeText(file)),
     );
 
@@ -109,7 +112,7 @@ export class DataMapper implements IDataMapper {
 
           return new File(
             text,
-            physicalPath,
+            path.join(container.resolve("DIP_PATH_TOKEN"), physicalPath),
             hash ?? "",
             isMain,
             uuid,
@@ -145,15 +148,15 @@ export class DataMapper implements IDataMapper {
     return path.toLowerCase().endsWith(".metadata.xml");
   }
 
-  private extractDocumentClassFragments(rawDipIndex: any): any[] {
+  private extractDocumentClassFragments(): any[] {
     const classes =
-      rawDipIndex?.DiPIndex?.PackageContent?.DiPDocuments?.DocumentClass;
+      this.rawDipIndex?.DiPIndex?.PackageContent?.DiPDocuments?.DocumentClass;
     if (!classes) return [];
     return Array.isArray(classes) ? classes : [classes];
   }
 
-  private extractProcessFragments(rawDipIndex: any): any[] {
-    const classes = this.extractDocumentClassFragments(rawDipIndex);
+  private extractProcessFragments(): any[] {
+    const classes = this.extractDocumentClassFragments();
     const fragments: any[] = [];
     for (const dc of classes) {
       // Support both xml2js ($) and legacy (@_uuid) attribute formats
@@ -171,8 +174,8 @@ export class DataMapper implements IDataMapper {
     return fragments;
   }
 
-  private extractDocumentFragments(rawDipIndex: any): any[] {
-    const processes = this.extractProcessFragments(rawDipIndex);
+  private extractDocumentFragments(): any[] {
+    const processes = this.extractProcessFragments();
     const fragments: any[] = [];
     for (const p of processes) {
       // Support both xml2js ($) and legacy (@_uuid) attribute formats
@@ -211,8 +214,8 @@ export class DataMapper implements IDataMapper {
     };
   }
 
-  private extractFileFragments(rawDipIndex: any): any[] {
-    const documents = this.extractDocumentFragments(rawDipIndex);
+  private extractFileFragments(): any[] {
+    const documents = this.extractDocumentFragments();
     const primaryFragments = documents
       .map((doc) => this.extractPrimaryFileFragment(doc))
       .filter((fragment): fragment is Record<string, unknown> =>
@@ -352,5 +355,9 @@ export class DataMapper implements IDataMapper {
     if (typeof value === "number") return MetadataType.NUMBER;
     if (typeof value === "boolean") return MetadataType.BOOLEAN;
     return MetadataType.STRING;
+  }
+
+  public setRawDipIndex(rawDipIndex: any): void {
+    this.rawDipIndex = rawDipIndex;
   }
 }

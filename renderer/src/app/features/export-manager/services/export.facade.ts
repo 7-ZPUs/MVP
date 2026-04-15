@@ -1,225 +1,190 @@
 import { Injectable, Signal } from '@angular/core';
-import { ExportResult as IpcResult } from '../../../../../../shared/domain/ExportResult';
 import { IExportFacade } from '../contracts/i-export-facade';
 import { ExportIpcGateway } from '../infrastructure/export-ipc-gateway.service';
 import { ExportState } from '../domain/export.state';
-import { DownloadQueueItem, ExportError, ExportItemError, ExportResult } from '../domain/models';
+import { DownloadQueueItem, ExportError, ExportResult } from '../domain/models';
 import { ExportErrorCode, ExportPhase, OutputContext } from '../domain/enums';
-import { FileDTO } from '../domain/dtos';
 
 const PRINTABLE_FORMATS = ['pdf', 'png', 'jpg', 'jpeg', 'tiff'];
 
 @Injectable()
 export class ExportFacade implements IExportFacade {
 
-    constructor(
-        private readonly exportState: ExportState,
-        private readonly ipcGateway: ExportIpcGateway,
-    ) { }
+  constructor(
+    private readonly exportState: ExportState,
+    private readonly ipcGateway: ExportIpcGateway,
+  ) {}
 
-    get phase(): Signal<ExportPhase> { return this.exportState.phase; }
-    get outputContext(): Signal<OutputContext | null> { return this.exportState.outputContext; }
-    get result(): Signal<ExportResult | null> { return this.exportState.result; }
-    get progress(): Signal<number> { return this.exportState.progress; }
-    get error(): Signal<ExportError | null> { return this.exportState.error; }
-    get loading(): Signal<boolean> { return this.exportState.loading; }
-    get queue(): Signal<DownloadQueueItem[]> { return this.exportState.queue; }
+  get phase(): Signal<ExportPhase>           { return this.exportState.phase; }
+  get outputContext(): Signal<OutputContext | null> { return this.exportState.outputContext; }
+  get result(): Signal<ExportResult | null>  { return this.exportState.result; }
+  get progress(): Signal<number>             { return this.exportState.progress; }
+  get error(): Signal<ExportError | null>    { return this.exportState.error; }
+  get loading(): Signal<boolean>             { return this.exportState.loading; }
+  get queue(): Signal<DownloadQueueItem[]>   { return this.exportState.queue; }
 
-    // ------------------------------------------------------------------
-    // UC-19 — export singolo file
-    // ------------------------------------------------------------------
-    async exportFile(fileId: number): Promise<void> {
-        this.exportState.setProcessing(OutputContext.SINGLE_EXPORT);
-        try {
-            const dto = await this.ipcGateway.getFileDto(fileId);
-            if (!dto) throw new Error(`File con id ${fileId} non trovato`);
+  // UC-19 — export singolo
+  async exportFile(fileId: number): Promise<void> {
+    this.exportState.setProcessing(OutputContext.SINGLE_EXPORT);
+    try {
+      const result = await this.ipcGateway.exportFile(fileId);
 
-            const dialog = await this.ipcGateway.openSaveDialog(dto.filename);
-            if (dialog.canceled || !dialog.filePath) {
-                this.exportState.reset();
-                return;
-            }
+      if (result.canceled) {
+        this.exportState.reset();
+        return;
+      }
+      if (!result.success) {
+        throw new Error(result.errorMessage ?? result.errorCode ?? 'Export fallito');
+      }
+      this.exportState.setSuccess(
+        new ExportResult(OutputContext.SINGLE_EXPORT, 1, 1, 0, '')
+      );
+    } catch (err) {
+      this.handleError(ExportErrorCode.EXPORT_WRITE_FAILED, err, 'exportFile');
+    }
+  }
 
-            const ipcResult: IpcResult = await this.ipcGateway.exportFile(fileId, dialog.filePath);
-            if (!ipcResult.success) {
-                throw new Error(ipcResult.errorMessage ?? ipcResult.errorCode ?? 'Export fallito');
-            }
+  // UC-20 — export multiplo
+  async exportFiles(fileIds: number[]): Promise<void> {
+    this.exportState.setProcessing(OutputContext.MULTI_EXPORT);
 
-            this.exportState.setSuccess(
-                new ExportResult(OutputContext.SINGLE_EXPORT, 1, 1, 0, dialog.filePath)
-            );
-        } catch (err) {
-            this.handleError(ExportErrorCode.EXPORT_WRITE_FAILED, err, 'exportFile');
-        }
+    // Costruisce la coda ottimisticamente con i DTO per mostrare i nomi
+    // I DTO servono solo alla UI per visualizzare lo stato — la logica è nel UC
+    const dtos = await Promise.all(fileIds.map(id => this.ipcGateway.getFileDto(id)));
+    const queue: DownloadQueueItem[] = dtos.reduce<DownloadQueueItem[]>((acc, dto, i) => {
+      if (dto) acc.push({ fileId: fileIds[i], filename: dto.filename, status: 'pending' });
+      return acc;
+    }, []);
+
+    if (queue.length === 0) {
+      this.handleError(ExportErrorCode.EXPORT_WRITE_FAILED, new Error('Nessun file valido'), 'exportFiles');
+      return;
     }
 
-    // ------------------------------------------------------------------
-    // UC-20 — export multiplo con coda sequenziale
-    // ------------------------------------------------------------------
-    async exportFiles(fileIds: number[]): Promise<void> {
-        this.exportState.setProcessing(OutputContext.MULTI_EXPORT);
-        try {
-            // 1. Recupera tutti i DTO per avere i filename
-            const dtos = await Promise.all(
-                fileIds.map(id => this.ipcGateway.getFileDto(id))
-            );
+    this.exportState.initQueue(queue);
 
-            // 2. Filtra i null e costruisce la coda
-            const queue: DownloadQueueItem[] = dtos
-                .reduce<DownloadQueueItem[]>((acc, dto, i) => {
-                    if (dto) {
-                        acc.push({ fileId: fileIds[i], filename: dto.filename, status: 'pending' });
-                    }
-                    return acc;
-                }, []);
-            if (queue.length === 0) throw new Error('Nessun file valido trovato');
+    // Progress: aggiorna la coda UI man mano che arrivano gli eventi
+    const unsubscribe = this.ipcGateway.onExportProgress(({ current, total }) => {
+      this.exportState.setProgress((current / total) * 100);
+    });
 
-            this.exportState.initQueue(queue);
+    try {
+      const { canceled, results } = await this.ipcGateway.exportFiles(fileIds);
+      unsubscribe();
 
-            // 3. Un solo dialog per la cartella di destinazione
-            const dialog = await this.ipcGateway.openFolderDialog();
-            if (dialog.canceled || !dialog.folderPath) {
-                this.exportState.reset();
-                return;
-            }
+      if (canceled) {
+        this.exportState.reset();
+        return;
+      }
 
-            // 4. Scarica in sequenza
-            let successCount = 0;
-            const errors: ExportItemError[] = [];
+      // Aggiorna lo stato visuale della coda in base ai risultati
+      for (const r of results) {
+        this.exportState.updateQueueItem(r.fileId, {
+          status: r.success ? 'done' : 'error',
+          error: r.error,
+        });
+      }
 
-            for (let i = 0; i < queue.length; i++) {
-                const item = queue[i];
-                this.exportState.updateQueueItem(item.fileId, { status: 'downloading' });
+      const successCount = results.filter(r => r.success).length;
+      const errors = results
+        .filter(r => !r.success)
+        .map(r => ({
+          nodeId: String(r.fileId),
+          nodeName: queue.find(q => q.fileId === r.fileId)?.filename ?? String(r.fileId),
+          reason: r.error ?? 'Errore sconosciuto',
+        }));
 
-                const filename = item.filename.split('/').pop() ?? item.filename;
-                const destPath = `${dialog.folderPath}/${filename}`;
-                const ipcResult: IpcResult = await this.ipcGateway.exportFile(item.fileId, destPath);
-
-                if (ipcResult.success) {
-                    successCount++;
-                    this.exportState.updateQueueItem(item.fileId, { status: 'done' });
-                } else {
-                    const reason = ipcResult.errorMessage ?? ipcResult.errorCode ?? 'Errore sconosciuto';
-                    errors.push({ nodeId: String(item.fileId), nodeName: item.filename, reason });
-                    this.exportState.updateQueueItem(item.fileId, { status: 'error', error: reason });
-                }
-
-                this.exportState.setProgress(((i + 1) / queue.length) * 100);
-            }
-
-            this.exportState.setSuccess(
-                new ExportResult(
-                    OutputContext.MULTI_EXPORT,
-                    queue.length,
-                    successCount,
-                    errors.length,
-                    dialog.folderPath,
-                    errors,
-                )
-            );
-        } catch (err) {
-            this.handleError(ExportErrorCode.EXPORT_WRITE_FAILED, err, 'exportFiles');
-        }
+      this.exportState.setSuccess(
+        new ExportResult(OutputContext.MULTI_EXPORT, queue.length, successCount, errors.length, '', errors)
+      );
+    } catch (err) {
+      unsubscribe();
+      this.handleError(ExportErrorCode.EXPORT_WRITE_FAILED, err, 'exportFiles');
     }
+  }
 
-    // UC-22 — stampa singolo file
-    async printDocument(fileId: number): Promise<void> {
-        this.exportState.setProcessing(OutputContext.SINGLE_PRINT);
-        try {
-            // la validazione del formato la facciamo ancora qui per UX immediata
-            const dto = await this.ipcGateway.getFileDto(fileId);
-            if (!dto) throw new Error('File non trovato');
+  // UC-22 — stampa singolo
+  async printDocument(fileId: number): Promise<void> {
+    this.exportState.setProcessing(OutputContext.SINGLE_PRINT);
+    try {
+      const dto = await this.ipcGateway.getFileDto(fileId);
+      if (!dto) throw new Error('File non trovato');
 
-            if (!this.checkPrintable(dto.filename)) {
-                this.exportState.setUnavailable(new ExportError(
-                    ExportErrorCode.PRINT_UNAVAILABLE,
-                    'VALIDATION' as any,
-                    'printDocument',
-                    `Formato non supportato: ${dto.filename}`,
-                    false,
-                ));
-                return;
-            }
+      if (!this.checkPrintable(dto.filename)) {
+        this.exportState.setUnavailable(new ExportError(
+          ExportErrorCode.PRINT_UNAVAILABLE, 'VALIDATION' as any, 'printDocument',
+          `Formato non supportato: ${dto.filename}`, false,
+        ));
+        return;
+      }
+      console.log(`Iniziando stampa SINGOLA file ${dto.filename} (id: ${fileId})`);
+      const result = await this.ipcGateway.printFile(fileId);
+      if (!result.success) throw new Error(result.error ?? 'Stampa fallita');
 
-            // passa solo fileId, il path lo risolve PrintFileUC nel main process
-            const result = await this.ipcGateway.printFile(fileId);
-            if (!result.success) throw new Error(result.error ?? 'Stampa fallita');
-
-            this.exportState.setSuccess(
-                new ExportResult(OutputContext.SINGLE_PRINT, 1, 1, 0, '')
-            );
-        } catch (err) {
-            this.handleError(ExportErrorCode.PRINT_FAILED, err, 'printDocument');
-        }
+      this.exportState.setSuccess(
+        new ExportResult(OutputContext.SINGLE_PRINT, 1, 1, 0, '')
+      );
+    } catch (err) {
+      this.handleError(ExportErrorCode.PRINT_FAILED, err, 'printDocument');
     }
+  }
 
-    async printDocuments(fileIds: number[]): Promise<void> {
-        this.exportState.setProcessing(OutputContext.MULTI_PRINT);
-        try {
-            // valida i formati prima di inviare al main process
-            const dtos = await Promise.all(
-                fileIds.map(id => this.ipcGateway.getFileDto(id))
-            );
+  // UC-23 — stampa multipla
+  async printDocuments(fileIds: number[]): Promise<void> {
+    this.exportState.setProcessing(OutputContext.MULTI_PRINT);
+    try {
+      const dtos = await Promise.all(fileIds.map(id => this.ipcGateway.getFileDto(id)));
+      const printableIds = fileIds.filter((_, i) => {
+        const dto = dtos[i];
+        return !!dto && this.checkPrintable(dto.filename);
+      });
+      console.log(`Iniziando stampa MULTIPLA file ${dtos.map(dto => dto?.filename).filter((v): v is string => !!v).join(', ')} (ids: ${printableIds.join(', ')})`);
 
-            const printableIds = fileIds.filter((_, i) => {
-                const dto = dtos[i];
-                return !!dto && this.checkPrintable(dto.filename);
-            });
+      if (printableIds.length === 0) {
+        this.exportState.setUnavailable(new ExportError(
+          ExportErrorCode.PRINT_UNAVAILABLE, 'VALIDATION' as any, 'printDocuments',
+          'Nessun file supportato per la stampa', false,
+        ));
+        return;
+      }
 
-            if (printableIds.length === 0) {
-                this.exportState.setUnavailable(new ExportError(
-                    ExportErrorCode.PRINT_UNAVAILABLE,
-                    'VALIDATION' as any,
-                    'printDocuments',
-                    'Nessun file supportato per la stampa',
-                    false,
-                ));
-                return;
-            }
+      const unsubscribe = this.ipcGateway.onPrintProgress(({ current, total }) => {
+        this.exportState.setProgress((current / total) * 100);
+      });
 
-            const unsubscribe = this.ipcGateway.onPrintProgress(({ current, total }) => {
-                this.exportState.setProgress((current / total) * 100);
-            });
+      const { canceled, results } = await this.ipcGateway.printFiles(printableIds);
+      unsubscribe();
 
-            // passa fileIds, non path
-            const { canceled, results } = await this.ipcGateway.printFiles(printableIds);
+      if (canceled) {
+        this.exportState.reset();
+        return;
+      }
 
-            unsubscribe();
+      const errors = results
+        .filter(r => !r.success)
+        .map(r => ({
+          nodeId: String(r.fileId),
+          nodeName: String(r.fileId),
+          reason: r.error ?? 'Errore sconosciuto',
+        }));
 
-            if (canceled) {
-                this.exportState.reset();
-                return;
-            }
-
-            const errors: ExportItemError[] = results
-                .filter(r => !r.success)
-                .map(r => ({
-                    nodeId: String(r.fileId),
-                    nodeName: String(r.fileId),
-                    reason: r.error ?? 'Errore sconosciuto',
-                }));
-
-            this.exportState.setSuccess(new ExportResult(
-                OutputContext.MULTI_PRINT,
-                printableIds.length,
-                results.filter(r => r.success).length,
-                errors.length,
-                '',
-                errors,
-            ));
-        } catch (err) {
-            this.handleError(ExportErrorCode.PRINT_FAILED, err, 'printDocuments');
-        }
+      this.exportState.setSuccess(new ExportResult(
+        OutputContext.MULTI_PRINT, printableIds.length,
+        results.filter(r => r.success).length, errors.length, '', errors,
+      ));
+    } catch (err) {
+      this.handleError(ExportErrorCode.PRINT_FAILED, err, 'printDocuments');
     }
+  }
 
-    reset(): void { this.exportState.reset(); }
+  reset(): void { this.exportState.reset(); }
 
-    private checkPrintable(filename: string): boolean {
-        return PRINTABLE_FORMATS.some(ext => filename.toLowerCase().endsWith(`.${ext}`));
-    }
+  private checkPrintable(filename: string): boolean {
+    return PRINTABLE_FORMATS.some(ext => filename.toLowerCase().endsWith(`.${ext}`));
+  }
 
-    private handleError(code: ExportErrorCode, err: unknown, context: string): void {
-        const message = err instanceof Error ? err.message : 'Errore sconosciuto';
-        this.exportState.setError(new ExportError(code, 'IPC' as any, context, message, true));
-    }
+  private handleError(code: ExportErrorCode, err: unknown, context: string): void {
+    const message = err instanceof Error ? err.message : 'Errore sconosciuto';
+    this.exportState.setError(new ExportError(code, 'IPC' as any, context, message, true));
+  }
 }

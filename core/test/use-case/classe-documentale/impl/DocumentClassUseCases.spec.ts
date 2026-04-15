@@ -5,7 +5,11 @@ import { GetDocumentClassByDipIdUC } from "../../../../src/use-case/classe-docum
 import { GetDocumentClassByStatusUC } from "../../../../src/use-case/classe-documentale/impl/GetDocumentClassByStatusUC";
 import { CheckDocumentClassIntegrityStatusUC } from "../../../../src/use-case/classe-documentale/impl/CheckDocumentClassIntegrityStatusUC";
 import { DocumentClass } from "../../../../src/entity/DocumentClass";
-import { IDocumentClassRepository } from "../../../../src/repo/IDocumentClassRepository";
+import {
+  IGetDocumentClassByDipIdPort,
+  IGetDocumentClassByIdPort,
+  IGetDocumentClassByStatusPort,
+} from "../../../../src/repo/IDocumentClassRepository";
 import { IntegrityStatusEnum } from "../../../../src/value-objects/IntegrityStatusEnum";
 import { IIntegrityVerificationService } from "../../../../src/services/IIntegrityVerificationService";
 
@@ -16,11 +20,11 @@ describe("DocumentClass use-cases", () => {
   // expected_value: matches asserted behavior: GetDocumentClassByIdUC delega a repo.getById
   it("TU-S-browsing-80: execute() should GetDocumentClassByIdUC delega a repo.getById", () => {
     const entity = new DocumentClass("1", "dc-1", "Classe", "2026-01-01");
-    const repo: Pick<IDocumentClassRepository, "getById"> = {
+    const repo: IGetDocumentClassByIdPort = {
       getById: vi.fn().mockReturnValue(entity),
     };
 
-    const uc = new GetDocumentClassByIdUC(repo as IDocumentClassRepository);
+    const uc = new GetDocumentClassByIdUC(repo);
     const result = uc.execute(5);
 
     expect(repo.getById).toHaveBeenCalledWith(5);
@@ -33,11 +37,11 @@ describe("DocumentClass use-cases", () => {
   // expected_value: matches asserted behavior: GetDocumentClassByDipIdUC delega a repo.getByDipId
   it("TU-S-browsing-81: execute() should GetDocumentClassByDipIdUC delega a repo.getByDipId", () => {
     const list = [new DocumentClass("9", "dc-2", "Classe", "2026-01-01")];
-    const repo: Pick<IDocumentClassRepository, "getByDipId"> = {
+    const repo: IGetDocumentClassByDipIdPort = {
       getByDipId: vi.fn().mockReturnValue(list),
     };
 
-    const uc = new GetDocumentClassByDipIdUC(repo as IDocumentClassRepository);
+    const uc = new GetDocumentClassByDipIdUC(repo);
     const result = uc.execute(9);
 
     expect(repo.getByDipId).toHaveBeenCalledWith(9);
@@ -50,11 +54,11 @@ describe("DocumentClass use-cases", () => {
   // expected_value: matches asserted behavior: GetDocumentClassByStatusUC delega a repo.getByStatus
   it("TU-S-browsing-82: execute() should GetDocumentClassByStatusUC delega a repo.getByStatus", () => {
     const list = [new DocumentClass("1", "dc-3", "Classe", "2026-01-01")];
-    const repo: Pick<IDocumentClassRepository, "getByStatus"> = {
+    const repo: IGetDocumentClassByStatusPort = {
       getByStatus: vi.fn().mockReturnValue(list),
     };
 
-    const uc = new GetDocumentClassByStatusUC(repo as IDocumentClassRepository);
+    const uc = new GetDocumentClassByStatusUC(repo);
     const result = uc.execute(IntegrityStatusEnum.INVALID);
 
     expect(repo.getByStatus).toHaveBeenCalledWith(IntegrityStatusEnum.INVALID);
@@ -80,9 +84,9 @@ describe("DocumentClass use-cases", () => {
     );
     const result = await uc.execute(1);
 
-    expect(integrityService.checkDocumentClassIntegrityStatus).toHaveBeenCalledWith(
-      1,
-    );
+    expect(
+      integrityService.checkDocumentClassIntegrityStatus,
+    ).toHaveBeenCalledWith(1);
     expect(result).toBe(IntegrityStatusEnum.UNKNOWN);
   });
 
@@ -104,6 +108,8 @@ describe("DocumentClass use-cases", () => {
       integrityService as IIntegrityVerificationService,
     );
 
-    await expect(uc.execute(14)).rejects.toThrow("DocumentClass with id 14 not found");
+    await expect(uc.execute(14)).rejects.toThrow(
+      "DocumentClass with id 14 not found",
+    );
   });
 });

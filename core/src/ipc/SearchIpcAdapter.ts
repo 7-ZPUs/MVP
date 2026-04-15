@@ -9,7 +9,7 @@ import type { ISearchDocumentsUC } from "../use-case/document/ISearchDocumentsUC
 import type { ISearchSemanticUC } from "../use-case/document/ISearchSemanticUC";
 import type { IGetCustomMetadataKeysUC } from "../use-case/document/IGetCustomMetadataKeysUC";
 import type { IWordEmbedding } from "../repo/IWordEmbedding";
-import type { IDocumentRepository } from "../repo/IDocumentRepository";
+import type { IGetIndexedDocumentsCountPort } from "../repo/IDocumentRepository";
 import {
   IndexingStatus,
   SearchQueryType,
@@ -19,7 +19,7 @@ import { DocumentClassUC } from "../use-case/classe-documentale/tokens";
 import { ProcessUC } from "../use-case/process/token";
 import { DocumentoUC } from "../use-case/document/tokens";
 import { WORD_EMBEDDING_PORT_TOKEN } from "../repo/IWordEmbedding";
-import { DOCUMENTO_REPOSITORY_TOKEN } from "../repo/IDocumentRepository";
+import { DOCUMENT_GET_INDEXED_COUNT_PORT_TOKEN } from "../repo/IDocumentRepository";
 import { DocumentClassMapper } from "../dao/mappers/DocumentClassMapper";
 import { ProcessMapper } from "../dao/mappers/ProcessMapper";
 import { DocumentMapper } from "../dao/mappers/DocumentMapper";
@@ -50,8 +50,10 @@ export class SearchIpcAdapter {
     const aiAdapter: IWordEmbedding = container.resolve<IWordEmbedding>(
       WORD_EMBEDDING_PORT_TOKEN,
     );
-    const documentRepo: IDocumentRepository =
-      container.resolve<IDocumentRepository>(DOCUMENTO_REPOSITORY_TOKEN);
+    const documentRepo: IGetIndexedDocumentsCountPort =
+      container.resolve<IGetIndexedDocumentsCountPort>(
+        DOCUMENT_GET_INDEXED_COUNT_PORT_TOKEN,
+      );
 
     ipcMain.handle(
       IpcChannels.SEARCH_CLASSES,

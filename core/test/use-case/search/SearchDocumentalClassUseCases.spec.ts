@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { SearchDocumentalClassUC } from "../../../src/use-case/classe-documentale/impl/SearchDocumentalClassUC";
-import { IDocumentClassRepository } from "../../../src/repo/IDocumentClassRepository";
+import { ISearchDocumentClassPort } from "../../../src/repo/IDocumentClassRepository";
 import { DocumentClassMapper } from "../../../src/dao/mappers/DocumentClassMapper";
 
 // Costruisce una DocumentClass già persistita
@@ -18,7 +18,7 @@ const makeDocumentClass = (id: number, name: string, uuid = `uuid-${id}`) => {
 };
 
 describe("SearchDocumentalClassUC", () => {
-  let repo: Pick<IDocumentClassRepository, "searchDocumentalClasses">;
+  let repo: ISearchDocumentClassPort;
 
   beforeEach(() => {
     repo = { searchDocumentalClasses: vi.fn() };
@@ -31,7 +31,7 @@ describe("SearchDocumentalClassUC", () => {
       dc,
     ]);
 
-    const uc = new SearchDocumentalClassUC(repo as IDocumentClassRepository);
+    const uc = new SearchDocumentalClassUC(repo);
     const results = await uc.execute("Contratti");
 
     expect(results).toHaveLength(1);
@@ -46,7 +46,7 @@ describe("SearchDocumentalClassUC", () => {
       [],
     );
 
-    const uc = new SearchDocumentalClassUC(repo as IDocumentClassRepository);
+    const uc = new SearchDocumentalClassUC(repo);
     await uc.execute("Fatture 2026");
 
     expect(repo.searchDocumentalClasses).toHaveBeenCalledWith("Fatture 2026");
@@ -58,7 +58,7 @@ describe("SearchDocumentalClassUC", () => {
       [],
     );
 
-    const uc = new SearchDocumentalClassUC(repo as IDocumentClassRepository);
+    const uc = new SearchDocumentalClassUC(repo);
     const results = await uc.execute("inesistente");
 
     expect(results).toHaveLength(0);
@@ -75,7 +75,7 @@ describe("SearchDocumentalClassUC", () => {
       dcs,
     );
 
-    const uc = new SearchDocumentalClassUC(repo as IDocumentClassRepository);
+    const uc = new SearchDocumentalClassUC(repo);
     const results = await uc.execute("");
 
     expect(repo.searchDocumentalClasses).toHaveBeenCalledWith("");
@@ -93,7 +93,7 @@ describe("SearchDocumentalClassUC", () => {
       dcs,
     );
 
-    const uc = new SearchDocumentalClassUC(repo as IDocumentClassRepository);
+    const uc = new SearchDocumentalClassUC(repo);
     const results = await uc.execute("");
 
     expect(results.map((r) => r.getName())).toEqual(["AAA", "BBB", "CCC"]);
@@ -105,7 +105,7 @@ describe("SearchDocumentalClassUC", () => {
       dc,
     ]);
 
-    const uc = new SearchDocumentalClassUC(repo as IDocumentClassRepository);
+    const uc = new SearchDocumentalClassUC(repo);
     const results = await uc.execute("Originale");
 
     expect(results[0].getId()).toBe(1);
@@ -120,7 +120,7 @@ describe("SearchDocumentalClassUC", () => {
       throw new Error("document class search failed");
     });
 
-    const uc = new SearchDocumentalClassUC(repo as IDocumentClassRepository);
+    const uc = new SearchDocumentalClassUC(repo);
 
     expect(() => uc.execute("Contratti")).toThrow(
       "document class search failed",

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { SearchProcessUC } from "../../../src/use-case/process/impl/SearchProcessUC";
-import { IProcessRepository } from "../../../src/repo/IProcessRepository";
+import { ISearchProcessesPort } from "../../../src/repo/IProcessRepository";
 import { ProcessMapper } from "../../../src/dao/mappers/ProcessMapper";
 import { MetadataType } from "../../../src/value-objects/Metadata";
 
@@ -40,7 +40,7 @@ const makeProcess = (
 };
 
 describe("SearchProcessUC", () => {
-  let repo: Pick<IProcessRepository, "searchProcesses">;
+  let repo: ISearchProcessesPort;
 
   beforeEach(() => {
     repo = { searchProcesses: vi.fn() };
@@ -54,7 +54,7 @@ describe("SearchProcessUC", () => {
     ]);
     (repo.searchProcesses as ReturnType<typeof vi.fn>).mockReturnValue([proc]);
 
-    const uc = new SearchProcessUC(repo as IProcessRepository);
+    const uc = new SearchProcessUC(repo);
     const results = await uc.execute("proc-uuid-abc");
 
     expect(results).toHaveLength(1);
@@ -72,7 +72,7 @@ describe("SearchProcessUC", () => {
   it("passa l'uuid al repository senza modificarlo", async () => {
     (repo.searchProcesses as ReturnType<typeof vi.fn>).mockReturnValue([]);
 
-    const uc = new SearchProcessUC(repo as IProcessRepository);
+    const uc = new SearchProcessUC(repo);
     await uc.execute("uuid-specifico-123");
 
     expect(repo.searchProcesses).toHaveBeenCalledWith("uuid-specifico-123");
@@ -82,7 +82,7 @@ describe("SearchProcessUC", () => {
   it("ritorna array vuoto se nessun processo corrisponde all'uuid", async () => {
     (repo.searchProcesses as ReturnType<typeof vi.fn>).mockReturnValue([]);
 
-    const uc = new SearchProcessUC(repo as IProcessRepository);
+    const uc = new SearchProcessUC(repo);
     const results = await uc.execute("uuid-inesistente");
 
     expect(results).toHaveLength(0);
@@ -93,7 +93,7 @@ describe("SearchProcessUC", () => {
     const procs = [makeProcess(1, "uuid-1"), makeProcess(2, "uuid-2")];
     (repo.searchProcesses as ReturnType<typeof vi.fn>).mockReturnValue(procs);
 
-    const uc = new SearchProcessUC(repo as IProcessRepository);
+    const uc = new SearchProcessUC(repo);
     const results = await uc.execute("");
 
     expect(repo.searchProcesses).toHaveBeenCalledWith("");
@@ -109,7 +109,7 @@ describe("SearchProcessUC", () => {
     ];
     (repo.searchProcesses as ReturnType<typeof vi.fn>).mockReturnValue(procs);
 
-    const uc = new SearchProcessUC(repo as IProcessRepository);
+    const uc = new SearchProcessUC(repo);
     const results = await uc.execute("");
 
     expect(results.map((r) => r.getId())).toEqual([1, 2, 3]);
@@ -119,7 +119,7 @@ describe("SearchProcessUC", () => {
     const proc = makeProcess(1, "uuid-originale");
     (repo.searchProcesses as ReturnType<typeof vi.fn>).mockReturnValue([proc]);
 
-    const uc = new SearchProcessUC(repo as IProcessRepository);
+    const uc = new SearchProcessUC(repo);
     const results = await uc.execute("uuid-originale");
 
     expect(results[0].getMetadata().findNodeByName("name")).toBeNull();
@@ -130,7 +130,7 @@ describe("SearchProcessUC", () => {
   it("accetta uuid parziali per ricerche per prefisso", async () => {
     (repo.searchProcesses as ReturnType<typeof vi.fn>).mockReturnValue([]);
 
-    const uc = new SearchProcessUC(repo as IProcessRepository);
+    const uc = new SearchProcessUC(repo);
     await uc.execute("proc-");
 
     expect(repo.searchProcesses).toHaveBeenCalledWith("proc-");
@@ -143,7 +143,7 @@ describe("SearchProcessUC", () => {
       },
     );
 
-    const uc = new SearchProcessUC(repo as IProcessRepository);
+    const uc = new SearchProcessUC(repo);
 
     expect(() => uc.execute("proc-uuid")).toThrow("process search failed");
   });

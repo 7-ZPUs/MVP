@@ -27,7 +27,7 @@ vi.mock("electron", () => ({
 }));
 
 vi.mock("tsyringe", () => ({
-  injectable: () => () => {},
+  injectable: () => () => { },
 }));
 
 // ---------------------------------------------------------------------------
@@ -135,7 +135,9 @@ describe("PrintPort", () => {
     emitter.emit("did-finish-load");
     const result = await promise;
 
-    expect(result).toEqual({ success: false, error: "printer not found" });
+    expect(result.success).toBe(false);
+    expect(result.errorMessage).toBe("printer not found");
+    expect(result.errorCode).toBe("PRINT_ERROR");
   });
 
   it("distrugge la finestra anche quando la stampa fallisce", async () => {
@@ -158,10 +160,9 @@ describe("PrintPort", () => {
     emitter.emit("did-fail-load", {}, -6, "ERR_FILE_NOT_FOUND");
     const result = await promise;
 
-    expect(result).toEqual({
-      success: false,
-      error: "did-fail-load: ERR_FILE_NOT_FOUND (codice: -6)",
-    });
+    expect(result.success).toBe(false);
+    expect(result.errorMessage).toBe("did-fail-load: ERR_FILE_NOT_FOUND (codice: -6)");
+    expect(result.errorCode).toBe("LOAD_ERROR");
   });
 
   it("distrugge la finestra su did-fail-load", async () => {

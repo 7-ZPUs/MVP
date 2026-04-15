@@ -6,13 +6,13 @@ import * as path from "node:path";
 
 import { IndexDipUC } from "../../../../../src/use-case/utils/indexing/impl/IndexDip";
 import { XmlDipParser } from "../../../../../src/repo/impl/utils/XmlDipParser";
-import { FileSystemProvider } from "../../../../../src/repo/impl/utils/FileSystemProvider";
-import { LocalPackageReaderAdapter } from "../../../../../src/repo/impl/LocalPackageReaderAdapter";
-import { DipRepository } from "../../../../../src/repo/impl/DipRepository";
-import { DocumentClassRepository } from "../../../../../src/repo/impl/DocumentClassRepository";
-import { ProcessRepository } from "../../../../../src/repo/impl/ProcessRepository";
-import { DocumentRepository } from "../../../../../src/repo/impl/DocumentRepository";
-import { FileRepository } from "../../../../../src/repo/impl/FileRepository";
+import { FileSystemPort } from "../../../../../src/repo/impl/utils/FileSystemProvider";
+import { PackageReaderService } from "../../../../../src/services/impl/PackageReaderService";
+import { DipPersistenceAdapter } from "../../../../../src/repo/impl/DipPersistenceAdapter";
+import { DocumentClassPersistenceAdapter } from "../../../../../src/repo/impl/DocumentClassPersistenceAdapter";
+import { ProcessPersistenceAdapter } from "../../../../../src/repo/impl/ProcessPersistenceAdapter";
+import { DocumentPersistenceAdapter } from "../../../../../src/repo/impl/DocumentPersistenceAdapter";
+import { FilePersistenceAdapter } from "../../../../../src/repo/impl/FilePersistenceAdapter";
 import { IntegrityStatusEnum } from "../../../../../src/value-objects/IntegrityStatusEnum";
 import { MetadataType } from "../../../../../src/value-objects/Metadata";
 import { Document } from "../../../../../src/entity/Document";
@@ -25,9 +25,9 @@ import { readFileSync } from "node:fs";
 import { nukeTestDb } from "../../../../dao/helpers/testDb";
 import Database from "better-sqlite3";
 import { SqliteTransactionManager } from "../../../../../src/repo/impl/SqliteTransactionManager";
-import { IVectorRepository } from "../../../../../src/repo/IVectorRepository";
+import { ISaveVectorPort } from "../../../../../src/repo/IVectorRepository";
 import { IEmbeddingService } from "../../../../../src/services/IEmbeddingService";
-import { mock } from "node:test";
+import { container } from "tsyringe";
 
 // ---------------------------------------------------------------------------
 // Realistic DiP index XML — one DocumentClass, one AiP, two Documents
@@ -160,16 +160,18 @@ async function setupRealisticDip(baseDir: string): Promise<string> {
 // ---------------------------------------------------------------------------
 describe("Index use-case integration tests", () => {
   let testHomeDir: string;
+  let indexedDipPath: string;
   let db: Database.Database;
-  let dipRepository: DipRepository;
-  let documentClassRepository: DocumentClassRepository;
-  let processRepository: ProcessRepository;
-  let documentRepository: DocumentRepository;
-  let fileRepository: FileRepository;
+  let dipRepository: DipPersistenceAdapter;
+  let documentClassRepository: DocumentClassPersistenceAdapter;
+  let processRepository: ProcessPersistenceAdapter;
+  let documentRepository: DocumentPersistenceAdapter;
+  let fileRepository: FilePersistenceAdapter;
 
   beforeAll(async () => {
     testHomeDir = await fs.mkdtemp(path.join(os.tmpdir(), "dip-index-it-"));
-    const mockDipPath = await setupRealisticDip(testHomeDir);
+    indexedDipPath = await setupRealisticDip(testHomeDir);
+    container.registerInstance("DIP_PATH_TOKEN", indexedDipPath);
     const dbPath = path.join(testHomeDir, ".dip-viewer", "dip-viewer.db");
     await fs.mkdir(path.dirname(dbPath), { recursive: true });
 
@@ -178,28 +180,27 @@ describe("Index use-case integration tests", () => {
     nukeTestDb(db);
     db.exec(schema);
 
-    const packageReader = new LocalPackageReaderAdapter(
+    const packageReader = new PackageReaderService(
       new XmlDipParser(),
-      new FileSystemProvider(),
+      new FileSystemPort(),
       new DataMapper(),
     );
 
-    dipRepository = new DipRepository(new DipDAO(db));
-    documentClassRepository = new DocumentClassRepository(
+    dipRepository = new DipPersistenceAdapter(new DipDAO(db));
+    documentClassRepository = new DocumentClassPersistenceAdapter(
       new DocumentClassDAO(db),
     );
 
-    processRepository = new ProcessRepository(new ProcessDAO(db));
-    documentRepository = new DocumentRepository(new DocumentDAO(db));
-    fileRepository = new FileRepository(new FileDAO(db));
+    processRepository = new ProcessPersistenceAdapter(new ProcessDAO(db));
+    documentRepository = new DocumentPersistenceAdapter(new DocumentDAO(db));
+    fileRepository = new FilePersistenceAdapter(new FileDAO(db));
 
-    const vectorRepository: IVectorRepository = {
+    const vectorRepository: ISaveVectorPort = {
       saveVector: async () => {},
-      getVector: async () => null,
-      searchSimilarVectors: async () => [],
     };
     const embeddingService: IEmbeddingService = {
       generateDocumentEmbedding: async () => null,
+      setEmbeddingConfiguration: () => {},
     };
 
     const useCase = new IndexDipUC(
@@ -214,7 +215,7 @@ describe("Index use-case integration tests", () => {
       new SqliteTransactionManager(db),
     );
 
-    const result = await useCase.execute(mockDipPath);
+    const result = await useCase.execute(indexedDipPath);
     expect(result.success).toBe(true);
   });
 
@@ -391,7 +392,10 @@ describe("Index use-case integration tests", () => {
     expect(primary?.getIsMain()).toBe(true);
     expect(primary?.getHash()).toBe("primary-hash");
     expect(primary?.getPath()).toBe(
-      "documents/39e0cf29-10d2-40c1-af00-ec098cb8c98a/Schermata.png",
+      path.join(
+        indexedDipPath,
+        "documents/39e0cf29-10d2-40c1-af00-ec098cb8c98a/Schermata.png",
+      ),
     );
 
     const attachment = files.find((f) => f.getFilename() === "allegato1.pdf");
@@ -399,14 +403,19 @@ describe("Index use-case integration tests", () => {
     expect(attachment?.getIsMain()).toBe(false);
     expect(attachment?.getHash()).toBe("file-002-hash");
     expect(attachment?.getPath()).toBe(
-      "documents/39e0cf29-10d2-40c1-af00-ec098cb8c98a/allegato1.pdf",
+      path.join(
+        indexedDipPath,
+        "documents/39e0cf29-10d2-40c1-af00-ec098cb8c98a/allegato1.pdf",
+      ),
     );
 
     const noMetaFile = files.find((f) => f.getFilename() === "main.pdf");
     expect(noMetaFile).toBeDefined();
     expect(noMetaFile?.getIsMain()).toBe(true);
     expect(noMetaFile?.getHash()).toBe("");
-    expect(noMetaFile?.getPath()).toBe("documents/doc-no-meta/main.pdf");
+    expect(noMetaFile?.getPath()).toBe(
+      path.join(indexedDipPath, "documents/doc-no-meta/main.pdf"),
+    );
   });
 
   // -----------------------------------------------------------------------

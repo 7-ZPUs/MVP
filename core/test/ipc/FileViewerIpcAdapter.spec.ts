@@ -58,24 +58,18 @@ describe("FileViewerIpcAdapter", () => {
   });
 
   describe("FILE_DOWNLOAD", () => {
-    it("chiama exportFileUC.execute con fileId e targetPath", async () => {
+    it("chiama exportFileUC.execute con fileId", async () => {
       exportFileUC.execute.mockResolvedValue(ExportResult.ok());
 
-      await ipcMain.invoke(IpcChannels.FILE_DOWNLOAD, {
-        fileId: 1,
-        destPath: "/dest/file.pdf",
-      });
+      await ipcMain.invoke(IpcChannels.FILE_DOWNLOAD, 1);
 
-      expect(exportFileUC.execute).toHaveBeenCalledWith(1, "/dest/file.pdf");
+      expect(exportFileUC.execute).toHaveBeenCalledWith(1);
     });
 
     it("ritorna ExportResult.ok() se l'esportazione riesce", async () => {
       exportFileUC.execute.mockResolvedValue(ExportResult.ok());
 
-      const result = await ipcMain.invoke(IpcChannels.FILE_DOWNLOAD, {
-        fileId: 1,
-        destPath: "/dest/file.pdf",
-      });
+      const result = await ipcMain.invoke(IpcChannels.FILE_DOWNLOAD, 1);
 
       expect(result.success).toBe(true);
     });
@@ -85,10 +79,7 @@ describe("FileViewerIpcAdapter", () => {
         ExportResult.fail("NOT_FOUND", "File non trovato"),
       );
 
-      const result = await ipcMain.invoke(IpcChannels.FILE_DOWNLOAD, {
-        fileId: 99,
-        destPath: "/dest/file.pdf",
-      });
+      const result = await ipcMain.invoke(IpcChannels.FILE_DOWNLOAD, 99);
 
       expect(result.success).toBe(false);
       expect(result.errorCode).toBe("NOT_FOUND");
@@ -99,10 +90,7 @@ describe("FileViewerIpcAdapter", () => {
         ExportResult.fail("WRITE_ERROR", "Permesso negato"),
       );
 
-      const result = await ipcMain.invoke(IpcChannels.FILE_DOWNLOAD, {
-        fileId: 1,
-        destPath: "/dest/protetto/file.pdf",
-      });
+      const result = await ipcMain.invoke(IpcChannels.FILE_DOWNLOAD, 1);
 
       expect(result.success).toBe(false);
       expect(result.errorCode).toBe("WRITE_ERROR");
@@ -112,10 +100,7 @@ describe("FileViewerIpcAdapter", () => {
       exportFileUC.execute.mockRejectedValue(new Error("export exploded"));
 
       await expect(
-        ipcMain.invoke(IpcChannels.FILE_DOWNLOAD, {
-          fileId: 1,
-          destPath: "/dest/file.pdf",
-        }),
+        ipcMain.invoke(IpcChannels.FILE_DOWNLOAD, 1),
       ).rejects.toThrow("export exploded");
     });
   });

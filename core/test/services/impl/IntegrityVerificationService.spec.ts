@@ -5,11 +5,30 @@ import { Document } from "../../../src/entity/Document";
 import { DocumentClass } from "../../../src/entity/DocumentClass";
 import { File } from "../../../src/entity/File";
 import { Process } from "../../../src/entity/Process";
-import type { IDipRepository } from "../../../src/repo/IDipRepository";
-import type { IDocumentClassRepository } from "../../../src/repo/IDocumentClassRepository";
-import type { IDocumentRepository } from "../../../src/repo/IDocumentRepository";
-import type { IFileRepository } from "../../../src/repo/IFileRepository";
-import type { IProcessRepository } from "../../../src/repo/IProcessRepository";
+import type {
+  IGetDipByIdPort,
+  IUpdateDipIntegrityStatusPort,
+} from "../../../src/repo/IDipRepository";
+import type {
+  IGetDocumentClassByDipIdPort,
+  IGetDocumentClassByIdPort,
+  IUpdateDocumentClassIntegrityStatusPort,
+} from "../../../src/repo/IDocumentClassRepository";
+import type {
+  IGetDocumentByIdPort,
+  IGetDocumentByProcessIdPort,
+  IUpdateDocumentIntegrityStatusPort,
+} from "../../../src/repo/IDocumentRepository";
+import type {
+  IGetFileByDocumentIdPort,
+  IGetFileByIdPort,
+  IUpdateFileIntegrityStatusPort,
+} from "../../../src/repo/IFileRepository";
+import type {
+  IGetProcessByDocumentClassIdPort,
+  IGetProcessByIdPort,
+  IUpdateProcessIntegrityStatusPort,
+} from "../../../src/repo/IProcessRepository";
 import type { ITransactionManager } from "../../../src/repo/ITransactionManager";
 import { IntegrityVerificationService } from "../../../src/services/impl/IntegrityVerificationService";
 import type { IHashingService } from "../../../src/services/IHashingService";
@@ -74,13 +93,23 @@ function createHarness() {
   };
 
   const service = new IntegrityVerificationService(
-    fileRepo as unknown as IFileRepository,
-    documentRepo as unknown as IDocumentRepository,
-    processRepo as unknown as IProcessRepository,
-    documentClassRepo as unknown as IDocumentClassRepository,
-    dipRepo as unknown as IDipRepository,
+    fileRepo as unknown as IGetFileByIdPort,
+    fileRepo as unknown as IGetFileByDocumentIdPort,
+    fileRepo as unknown as IUpdateFileIntegrityStatusPort,
+    documentRepo as unknown as IGetDocumentByIdPort,
+    documentRepo as unknown as IGetDocumentByProcessIdPort,
+    documentRepo as unknown as IUpdateDocumentIntegrityStatusPort,
+    processRepo as unknown as IGetProcessByIdPort,
+    processRepo as unknown as IGetProcessByDocumentClassIdPort,
+    processRepo as unknown as IUpdateProcessIntegrityStatusPort,
+    documentClassRepo as unknown as IGetDocumentClassByIdPort,
+    documentClassRepo as unknown as IGetDocumentClassByDipIdPort,
+    documentClassRepo as unknown as IUpdateDocumentClassIntegrityStatusPort,
+    dipRepo as unknown as IGetDipByIdPort,
+    dipRepo as unknown as IUpdateDipIntegrityStatusPort,
     hashingService as unknown as IHashingService,
     transactionManager as unknown as ITransactionManager,
+    "/",
   );
 
   return {
@@ -299,7 +328,9 @@ describe("IntegrityVerificationService", () => {
     );
 
     h.fileRepo.getById.mockReturnValue(file);
-    h.hashingService.checkFileIntegrity.mockResolvedValue(IntegrityStatusEnum.VALID);
+    h.hashingService.checkFileIntegrity.mockResolvedValue(
+      IntegrityStatusEnum.VALID,
+    );
 
     const status = await h.service.checkFileIntegrityStatus(1);
 
@@ -353,7 +384,9 @@ describe("IntegrityVerificationService", () => {
 
     h.documentRepo.getById.mockReturnValue(document);
     h.fileRepo.getByDocumentId.mockReturnValue(files);
-    h.hashingService.checkFileIntegrity.mockResolvedValue(IntegrityStatusEnum.VALID);
+    h.hashingService.checkFileIntegrity.mockResolvedValue(
+      IntegrityStatusEnum.VALID,
+    );
 
     const status = await h.service.checkDocumentIntegrityStatus(10);
 
@@ -401,7 +434,9 @@ describe("IntegrityVerificationService", () => {
     h.processRepo.getById.mockReturnValue(process);
     h.documentRepo.getByProcessId.mockReturnValue([document]);
     h.fileRepo.getByDocumentId.mockReturnValue([file]);
-    h.hashingService.checkFileIntegrity.mockResolvedValue(IntegrityStatusEnum.VALID);
+    h.hashingService.checkFileIntegrity.mockResolvedValue(
+      IntegrityStatusEnum.VALID,
+    );
 
     const status = await h.service.checkProcessIntegrityStatus(20);
 
@@ -467,7 +502,9 @@ describe("IntegrityVerificationService", () => {
     h.processRepo.getByDocumentClassId.mockReturnValue([process]);
     h.documentRepo.getByProcessId.mockReturnValue([document]);
     h.fileRepo.getByDocumentId.mockReturnValue([file]);
-    h.hashingService.checkFileIntegrity.mockResolvedValue(IntegrityStatusEnum.VALID);
+    h.hashingService.checkFileIntegrity.mockResolvedValue(
+      IntegrityStatusEnum.VALID,
+    );
 
     const status = await h.service.checkDocumentClassIntegrityStatus(30);
 
@@ -495,19 +532,23 @@ describe("IntegrityVerificationService", () => {
     const hierarchy = buildFullHierarchy();
 
     h.dipRepo.getById.mockReturnValue(hierarchy.dip);
-    h.documentClassRepo.getByDipId.mockImplementation(
-      (dipId: number) => (dipId === hierarchy.dip.getId() ? hierarchy.documentClasses : []),
+    h.documentClassRepo.getByDipId.mockImplementation((dipId: number) =>
+      dipId === hierarchy.dip.getId() ? hierarchy.documentClasses : [],
     );
     h.processRepo.getByDocumentClassId.mockImplementation(
-      (documentClassId: number) => hierarchy.processesByDocumentClassId.get(documentClassId) ?? [],
+      (documentClassId: number) =>
+        hierarchy.processesByDocumentClassId.get(documentClassId) ?? [],
     );
     h.documentRepo.getByProcessId.mockImplementation(
-      (processId: number) => hierarchy.documentsByProcessId.get(processId) ?? [],
+      (processId: number) =>
+        hierarchy.documentsByProcessId.get(processId) ?? [],
     );
     h.fileRepo.getByDocumentId.mockImplementation(
       (documentId: number) => hierarchy.filesByDocumentId.get(documentId) ?? [],
     );
-    h.hashingService.checkFileIntegrity.mockResolvedValue(IntegrityStatusEnum.VALID);
+    h.hashingService.checkFileIntegrity.mockResolvedValue(
+      IntegrityStatusEnum.VALID,
+    );
 
     const status = await h.service.checkDipIntegrityStatus(1);
 
@@ -517,15 +558,18 @@ describe("IntegrityVerificationService", () => {
     const fileValidUpdates = h.fileRepo.updateIntegrityStatus.mock.calls.filter(
       ([, currentStatus]) => currentStatus === IntegrityStatusEnum.VALID,
     );
-    const documentValidUpdates = h.documentRepo.updateIntegrityStatus.mock.calls.filter(
-      ([, currentStatus]) => currentStatus === IntegrityStatusEnum.VALID,
-    );
-    const processValidUpdates = h.processRepo.updateIntegrityStatus.mock.calls.filter(
-      ([, currentStatus]) => currentStatus === IntegrityStatusEnum.VALID,
-    );
-    const documentClassValidUpdates = h.documentClassRepo.updateIntegrityStatus.mock.calls.filter(
-      ([, currentStatus]) => currentStatus === IntegrityStatusEnum.VALID,
-    );
+    const documentValidUpdates =
+      h.documentRepo.updateIntegrityStatus.mock.calls.filter(
+        ([, currentStatus]) => currentStatus === IntegrityStatusEnum.VALID,
+      );
+    const processValidUpdates =
+      h.processRepo.updateIntegrityStatus.mock.calls.filter(
+        ([, currentStatus]) => currentStatus === IntegrityStatusEnum.VALID,
+      );
+    const documentClassValidUpdates =
+      h.documentClassRepo.updateIntegrityStatus.mock.calls.filter(
+        ([, currentStatus]) => currentStatus === IntegrityStatusEnum.VALID,
+      );
 
     expect(fileValidUpdates).toHaveLength(16);
     expect(documentValidUpdates).toHaveLength(8);
@@ -544,10 +588,12 @@ describe("IntegrityVerificationService", () => {
     h.dipRepo.getById.mockReturnValue(hierarchy.dip);
     h.documentClassRepo.getByDipId.mockReturnValue(hierarchy.documentClasses);
     h.processRepo.getByDocumentClassId.mockImplementation(
-      (documentClassId: number) => hierarchy.processesByDocumentClassId.get(documentClassId) ?? [],
+      (documentClassId: number) =>
+        hierarchy.processesByDocumentClassId.get(documentClassId) ?? [],
     );
     h.documentRepo.getByProcessId.mockImplementation(
-      (processId: number) => hierarchy.documentsByProcessId.get(processId) ?? [],
+      (processId: number) =>
+        hierarchy.documentsByProcessId.get(processId) ?? [],
     );
     h.fileRepo.getByDocumentId.mockImplementation(
       (documentId: number) => hierarchy.filesByDocumentId.get(documentId) ?? [],

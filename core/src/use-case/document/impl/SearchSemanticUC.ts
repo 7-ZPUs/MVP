@@ -1,26 +1,39 @@
 import { inject, injectable } from "tsyringe";
 import { ISearchSemanticUC, SemanticSearchMatch } from "../ISearchSemanticUC";
 import {
-  IDocumentRepository,
-  DOCUMENTO_REPOSITORY_TOKEN,
+  DOCUMENT_GET_BY_ID_PORT_TOKEN,
+  IGetDocumentByIdPort,
 } from "../../../repo/IDocumentRepository";
 import {
   IWordEmbedding,
   WORD_EMBEDDING_PORT_TOKEN,
 } from "../../../repo/IWordEmbedding";
+import {
+  ISearchSimilarVectorsPort,
+  VECTOR_SEARCH_SIMILAR_PORT_TOKEN,
+} from "../../../repo/IVectorRepository";
 
 @injectable()
 export class SearchSemanticUC implements ISearchSemanticUC {
   constructor(
-    @inject(DOCUMENTO_REPOSITORY_TOKEN)
-    private readonly documentRepo: IDocumentRepository,
+    @inject(DOCUMENT_GET_BY_ID_PORT_TOKEN)
+    private readonly documentRepo: IGetDocumentByIdPort,
+    @inject(VECTOR_SEARCH_SIMILAR_PORT_TOKEN)
+    private readonly vectorRepo: ISearchSimilarVectorsPort,
     @inject(WORD_EMBEDDING_PORT_TOKEN)
     private readonly aiAdapter: IWordEmbedding,
   ) {}
 
   async execute(query: string): Promise<SemanticSearchMatch[]> {
     const queryVector = await this.aiAdapter.generateEmbedding(query);
-    return this.documentRepo.searchDocumentSemantic(queryVector);
+    let docIds = await this.vectorRepo.searchSimilarVectors(queryVector, 10);
+    return docIds.map(({ documentId, score }) => {
+      const document = this.documentRepo.getById(documentId);
+      if (!document) {
+        throw new Error(`Document with ID ${documentId} not found`);
+      }
+      return { document, score };
+    });
   }
 
   /**

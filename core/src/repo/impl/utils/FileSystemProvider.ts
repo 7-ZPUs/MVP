@@ -1,8 +1,8 @@
 import * as fs from "node:fs";
 import { readFile } from "node:fs/promises";
-import type { IFileSystemProvider } from "./IFileSystemProvider";
+import type { IFileSystemPort } from "./IFileSystemProvider";
 
-export class FileSystemProvider implements IFileSystemProvider {
+export class FileSystemPort implements IFileSystemPort {
   public async readFile(filePath: string): Promise<Uint8Array> {
     const file = await readFile(filePath);
     return new Uint8Array(file);

@@ -42,7 +42,9 @@ describe('SearchFacade', () => {
       searchSemantic: vi.fn(),
       getCustomMetadataKeys: vi.fn().mockReturnValue(of([])),
     };
-    mockValidator = { validate: vi.fn() };
+    mockValidator = {
+      validate: vi.fn().mockReturnValue({ isValid: true, errors: new Map() }),
+    };
     mockErrorHandler = { handle: vi.fn() };
     mockTelemetry = { trackEvent: vi.fn(), trackTiming: vi.fn(), trackError: vi.fn() };
 

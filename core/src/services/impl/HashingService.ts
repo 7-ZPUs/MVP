@@ -3,15 +3,16 @@ import { createHash } from "node:crypto";
 import { IntegrityStatusEnum } from "../../value-objects/IntegrityStatusEnum";
 import { IHashingService } from "../IHashingService";
 import {
-  IPackageReaderPort,
+  IPackageReaderService,
   PACKAGE_READER_PORT_TOKEN,
-} from "../../repo/IPackageReaderPort";
+} from "../IPackageReaderService";
+import { FILE_SYSTEM_PROVIDER_TOKEN, IFileSystemPort } from "../../repo/impl/utils/IFileSystemProvider";
 
 @injectable()
 export class HashingService implements IHashingService {
   constructor(
-    @inject(PACKAGE_READER_PORT_TOKEN)
-    private readonly packageReader: IPackageReaderPort,
+    @inject(FILE_SYSTEM_PROVIDER_TOKEN)
+    private readonly fileSystemProvider: IFileSystemPort
   ) {}
 
   async checkFileIntegrity(
@@ -26,7 +27,7 @@ export class HashingService implements IHashingService {
 
   private async checkHash(filePath: string): Promise<string> {
     try {
-      const byteStream = await this.packageReader.readFileBytes(filePath);
+      const byteStream = await this.fileSystemProvider.openReadStream(filePath);
       const hash = createHash("sha256");
 
       for await (const chunk of byteStream) {

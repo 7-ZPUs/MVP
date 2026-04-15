@@ -2,7 +2,8 @@ import { TestBed } from '@angular/core/testing';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 import { ExportIpcGateway } from './export-ipc-gateway.service';
-import { FileDTO, SaveDialogResponseDto } from '../domain/dtos';
+import { FileDTO } from '../domain/dtos';
+import { IpcChannels } from '@shared/ipc-channels';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -19,8 +20,11 @@ function makeFileDTO(overrides: Partial<FileDTO> = {}): FileDTO {
   };
 }
 
-function makeIpcMock(methods: Record<string, unknown> = {}) {
-  return { invoke: vi.fn(), ...methods };
+function makeIpcMock() {
+  return {
+    invoke: vi.fn(),
+    on: vi.fn().mockReturnValue(vi.fn()),
+  };
 }
 
 // ─── Setup ────────────────────────────────────────────────────────────────────
@@ -54,26 +58,20 @@ describe('ExportIpcGateway', () => {
   describe('senza Electron bridge', () => {
     it('exportFile ritorna ExportResult con successo=false', async () => {
       const { gateway } = setupNoElectron();
-      const result = await gateway.exportFile(1, '/out.pdf');
+      const result = await gateway.exportFile(1);
       expect(result.success).toBe(false);
     });
 
     it('exportFile ritorna errorCode BRIDGE_UNAVAILABLE', async () => {
       const { gateway } = setupNoElectron();
-      const result = await gateway.exportFile(1, '/out.pdf');
+      const result = await gateway.exportFile(1);
       expect(result.errorCode).toBe('BRIDGE_UNAVAILABLE');
     });
 
-    it('openSaveDialog ritorna { canceled: true }', async () => {
+    it('exportFiles ritorna canceled=false e results vuoti', async () => {
       const { gateway } = setupNoElectron();
-      const result = await gateway.openSaveDialog('file.pdf');
-      expect(result).toEqual({ canceled: true });
-    });
-
-    it('openFolderDialog ritorna { canceled: true }', async () => {
-      const { gateway } = setupNoElectron();
-      const result = await gateway.openFolderDialog();
-      expect(result).toEqual({ canceled: true });
+      const result = await gateway.exportFiles([1, 2]);
+      expect(result).toEqual({ canceled: false, results: [] });
     });
 
     it('getFileDto ritorna null', async () => {
@@ -87,21 +85,42 @@ describe('ExportIpcGateway', () => {
       const result = await gateway.getFilesByDocumentId(10);
       expect(result).toEqual([]);
     });
+
+    it('printFile ritorna success=false', async () => {
+      const { gateway } = setupNoElectron();
+      const result = await gateway.printFile(1);
+      expect(result.success).toBe(false);
+    });
+
+    it('printFiles ritorna canceled=false e results vuoti', async () => {
+      const { gateway } = setupNoElectron();
+      const result = await gateway.printFiles([1]);
+      expect(result).toEqual({ canceled: false, results: [] });
+    });
+
+    it('onExportProgress ritorna una funzione di unsubscribe no-op', () => {
+      const { gateway } = setupNoElectron();
+      const unsub = gateway.onExportProgress(vi.fn());
+      expect(() => unsub()).not.toThrow();
+    });
+
+    it('onPrintProgress ritorna una funzione di unsubscribe no-op', () => {
+      const { gateway } = setupNoElectron();
+      const unsub = gateway.onPrintProgress(vi.fn());
+      expect(() => unsub()).not.toThrow();
+    });
   });
 
   // ── exportFile ─────────────────────────────────────────────────────────────
 
   describe('exportFile()', () => {
-    it('invoca il canale corretto con fileId e destPath', async () => {
+    it('invoca il canale corretto con fileId', async () => {
       const ipc = makeIpcMock();
       ipc.invoke.mockResolvedValue({ success: true });
       const { gateway } = setup(ipc);
 
-      await gateway.exportFile(42, '/dest/file.pdf');
-      expect(ipc.invoke).toHaveBeenCalledWith('file:download', {
-        fileId: 42,
-        destPath: '/dest/file.pdf',
-      });
+      await gateway.exportFile(42);
+      expect(ipc.invoke).toHaveBeenCalledWith(IpcChannels.FILE_DOWNLOAD, 42);
     });
 
     it('ritorna il risultato IPC invariato', async () => {
@@ -110,7 +129,7 @@ describe('ExportIpcGateway', () => {
       ipc.invoke.mockResolvedValue(ipcResult);
       const { gateway } = setup(ipc);
 
-      const result = await gateway.exportFile(1, '/out.pdf');
+      const result = await gateway.exportFile(1);
       expect(result).toEqual(ipcResult);
     });
 
@@ -119,80 +138,53 @@ describe('ExportIpcGateway', () => {
       ipc.invoke.mockRejectedValue(new Error('IPC crash'));
       const { gateway } = setup(ipc);
 
-      await expect(gateway.exportFile(1, '/out.pdf')).rejects.toThrow('IPC crash');
+      await expect(gateway.exportFile(1)).rejects.toThrow('IPC crash');
     });
   });
 
-  // ── openSaveDialog ─────────────────────────────────────────────────────────
+  // ── exportFiles ────────────────────────────────────────────────────────────
 
-  describe('openSaveDialog()', () => {
-    it('invoca il canale corretto con defaultName', async () => {
+  describe('exportFiles()', () => {
+    it('invoca il canale corretto con i fileIds', async () => {
       const ipc = makeIpcMock();
-      ipc.invoke.mockResolvedValue({ canceled: false, filePath: '/out.pdf' });
+      ipc.invoke.mockResolvedValue({ canceled: false, results: [] });
       const { gateway } = setup(ipc);
 
-      await gateway.openSaveDialog('report.pdf');
-      expect(ipc.invoke).toHaveBeenCalledWith('file:save-dialog', 'report.pdf');
+      await gateway.exportFiles([1, 2, 3]);
+      expect(ipc.invoke).toHaveBeenCalledWith(IpcChannels.FILE_DOWNLOAD_MANY, [1, 2, 3]);
     });
 
-    it('funziona senza defaultName', async () => {
+    it('ritorna la risposta IPC invariata', async () => {
+      const ipcResult = {
+        canceled: false,
+        results: [
+          { fileId: 1, success: true },
+          { fileId: 2, success: false, error: 'IO fail' },
+        ],
+      };
       const ipc = makeIpcMock();
-      ipc.invoke.mockResolvedValue({ canceled: false, filePath: '/out.pdf' });
+      ipc.invoke.mockResolvedValue(ipcResult);
       const { gateway } = setup(ipc);
 
-      await gateway.openSaveDialog();
-      expect(ipc.invoke).toHaveBeenCalledWith('file:save-dialog', undefined);
+      const result = await gateway.exportFiles([1, 2]);
+      expect(result).toEqual(ipcResult);
     });
 
-    it('ritorna la risposta IPC', async () => {
+    it("ritorna canceled=true se l'utente annulla", async () => {
       const ipc = makeIpcMock();
-      const response: SaveDialogResponseDto = { canceled: false, filePath: '/docs/out.pdf' };
-      ipc.invoke.mockResolvedValue(response);
+      ipc.invoke.mockResolvedValue({ canceled: true, results: [] });
       const { gateway } = setup(ipc);
 
-      const result = await gateway.openSaveDialog('out.pdf');
-      expect(result).toEqual(response);
-    });
-
-    it("ritorna { canceled: true } se l'utente annulla", async () => {
-      const ipc = makeIpcMock();
-      ipc.invoke.mockResolvedValue({ canceled: true });
-      const { gateway } = setup(ipc);
-
-      const result = await gateway.openSaveDialog();
+      const result = await gateway.exportFiles([1]);
       expect(result.canceled).toBe(true);
     });
-  });
 
-  // ── openFolderDialog ───────────────────────────────────────────────────────
-
-  describe('openFolderDialog()', () => {
-    it('invoca il canale corretto', async () => {
+    it("propaga l'eccezione se ipc.invoke rigetta", async () => {
       const ipc = makeIpcMock();
-      ipc.invoke.mockResolvedValue({ canceled: false, folderPath: '/tmp' });
+      ipc.invoke.mockRejectedValue(new Error('IPC crash'));
       const { gateway } = setup(ipc);
 
-      await gateway.openFolderDialog();
-      expect(ipc.invoke).toHaveBeenCalledWith('file:folder-dialog');
-    });
-
-    it('ritorna folderPath dalla risposta IPC', async () => {
-      const ipc = makeIpcMock();
-      ipc.invoke.mockResolvedValue({ canceled: false, folderPath: '/tmp/export' });
-      const { gateway } = setup(ipc);
-
-      const result = await gateway.openFolderDialog();
-      expect(result.folderPath).toBe('/tmp/export');
-    });
-
-    it("ritorna { canceled: true } se l'utente annulla", async () => {
-      const ipc = makeIpcMock();
-      ipc.invoke.mockResolvedValue({ canceled: true });
-      const { gateway } = setup(ipc);
-
-      const result = await gateway.openFolderDialog();
-      expect(result.canceled).toBe(true);
-      expect(result.folderPath).toBeUndefined();
+      await expect(gateway.exportFiles([1])).rejects.toThrow('IPC crash');
     });
   });
 
@@ -258,6 +250,136 @@ describe('ExportIpcGateway', () => {
 
       const result = await gateway.getFilesByDocumentId(10);
       expect(result).toEqual([]);
+    });
+  });
+
+  // ── printFile ──────────────────────────────────────────────────────────────
+
+  describe('printFile()', () => {
+    it('invoca il canale corretto con fileId', async () => {
+      const ipc = makeIpcMock();
+      ipc.invoke.mockResolvedValue({ success: true });
+      const { gateway } = setup(ipc);
+
+      await gateway.printFile(5);
+      expect(ipc.invoke).toHaveBeenCalledWith(IpcChannels.FILE_PRINT, 5);
+    });
+
+    it('ritorna la risposta IPC invariata', async () => {
+      const ipc = makeIpcMock();
+      ipc.invoke.mockResolvedValue({ success: true });
+      const { gateway } = setup(ipc);
+
+      const result = await gateway.printFile(5);
+      expect(result).toEqual({ success: true });
+    });
+
+    it('ritorna success=false con error in caso di fallimento IPC', async () => {
+      const ipc = makeIpcMock();
+      ipc.invoke.mockResolvedValue({ success: false, error: 'Stampante non trovata' });
+      const { gateway } = setup(ipc);
+
+      const result = await gateway.printFile(5);
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('Stampante non trovata');
+    });
+
+    it("propaga l'eccezione se ipc.invoke rigetta", async () => {
+      const ipc = makeIpcMock();
+      ipc.invoke.mockRejectedValue(new Error('IPC crash'));
+      const { gateway } = setup(ipc);
+
+      await expect(gateway.printFile(1)).rejects.toThrow('IPC crash');
+    });
+  });
+
+  // ── printFiles ─────────────────────────────────────────────────────────────
+
+  describe('printFiles()', () => {
+    it('invoca il canale corretto con i fileIds', async () => {
+      const ipc = makeIpcMock();
+      ipc.invoke.mockResolvedValue({ canceled: false, results: [] });
+      const { gateway } = setup(ipc);
+
+      await gateway.printFiles([10, 11]);
+      expect(ipc.invoke).toHaveBeenCalledWith(IpcChannels.FILE_PRINT_MANY, [10, 11]);
+    });
+
+    it('ritorna la risposta IPC invariata', async () => {
+      const ipcResult = {
+        canceled: false,
+        results: [
+          { fileId: 10, success: true },
+          { fileId: 11, success: false, error: 'Offline' },
+        ],
+      };
+      const ipc = makeIpcMock();
+      ipc.invoke.mockResolvedValue(ipcResult);
+      const { gateway } = setup(ipc);
+
+      const result = await gateway.printFiles([10, 11]);
+      expect(result).toEqual(ipcResult);
+    });
+
+    it("ritorna canceled=true se l'utente annulla", async () => {
+      const ipc = makeIpcMock();
+      ipc.invoke.mockResolvedValue({ canceled: true, results: [] });
+      const { gateway } = setup(ipc);
+
+      const result = await gateway.printFiles([1]);
+      expect(result.canceled).toBe(true);
+    });
+
+    it("propaga l'eccezione se ipc.invoke rigetta", async () => {
+      const ipc = makeIpcMock();
+      ipc.invoke.mockRejectedValue(new Error('IPC crash'));
+      const { gateway } = setup(ipc);
+
+      await expect(gateway.printFiles([1])).rejects.toThrow('IPC crash');
+    });
+  });
+
+  // ── onExportProgress ───────────────────────────────────────────────────────
+
+  describe('onExportProgress()', () => {
+    it('registra il listener sul canale corretto', () => {
+      const ipc = makeIpcMock();
+      const { gateway } = setup(ipc);
+
+      gateway.onExportProgress(vi.fn());
+      expect(ipc.on).toHaveBeenCalledWith(IpcChannels.FILE_DOWNLOAD_PROGRESS, expect.any(Function));
+    });
+
+    it('ritorna la funzione di unsubscribe fornita da ipc.on', () => {
+      const ipc = makeIpcMock();
+      const unsub = vi.fn();
+      ipc.on.mockReturnValue(unsub);
+      const { gateway } = setup(ipc);
+
+      const result = gateway.onExportProgress(vi.fn());
+      expect(result).toBe(unsub);
+    });
+  });
+
+  // ── onPrintProgress ────────────────────────────────────────────────────────
+
+  describe('onPrintProgress()', () => {
+    it('registra il listener sul canale corretto', () => {
+      const ipc = makeIpcMock();
+      const { gateway } = setup(ipc);
+
+      gateway.onPrintProgress(vi.fn());
+      expect(ipc.on).toHaveBeenCalledWith(IpcChannels.FILE_PRINT_PROGRESS, expect.any(Function));
+    });
+
+    it('ritorna la funzione di unsubscribe fornita da ipc.on', () => {
+      const ipc = makeIpcMock();
+      const unsub = vi.fn();
+      ipc.on.mockReturnValue(unsub);
+      const { gateway } = setup(ipc);
+
+      const result = gateway.onPrintProgress(vi.fn());
+      expect(result).toBe(unsub);
     });
   });
 });

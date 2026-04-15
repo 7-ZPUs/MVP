@@ -1,5 +1,5 @@
 /**
- * DocumentRepository — Infrastructure Repository (SQLite)
+ * DocumentPersistenceAdapter — Infrastructure Repository (SQLite)
  *
  * Implementa IDocumentRepository usando better-sqlite3.
  * Zero business logic: solo persistenza.
