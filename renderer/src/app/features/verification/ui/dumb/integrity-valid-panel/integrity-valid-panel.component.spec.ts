@@ -125,4 +125,68 @@ describe('IntegrityValidPanelComponent', () => {
       'status-pill status-pill--unknown',
     );
   });
+
+  it('should correctly sort classNodes: INVALID first, then alphabetically by name', () => {
+    componentRef.setInput('nodes', [
+      { id: 1, name: 'Zebra', type: 'CLASS', status: IntegrityStatusEnum.VALID },
+      { id: 2, name: 'Alpha', type: 'CLASS', status: IntegrityStatusEnum.VALID },
+      { id: 3, name: 'Delta', type: 'CLASS', status: IntegrityStatusEnum.INVALID },
+      { id: 4, name: 'Process 1', type: 'PROCESS', status: IntegrityStatusEnum.INVALID }, // should be filtered out
+    ]);
+
+    const computedNodes = component.classNodes();
+    expect(computedNodes.length).toBe(3);
+    // order should be: Delta (INVALID), Alpha (VALID, alphabetically first), Zebra (VALID)
+    expect(computedNodes[0].name).toBe('Delta');
+    expect(computedNodes[1].name).toBe('Alpha');
+    expect(computedNodes[2].name).toBe('Zebra');
+  });
+
+  it('should parse various contextPath formats correctly in groupedErrors', () => {
+    componentRef.setInput('nodes', []);
+    componentRef.setInput('corruptedNodes', [
+      {
+        id: 1,
+        name: 'Doc 1',
+        type: 'DOCUMENT',
+        status: IntegrityStatusEnum.INVALID,
+        contextPath: undefined,
+      },
+      {
+        id: 2,
+        name: 'Doc 2',
+        type: 'DOCUMENT',
+        status: IntegrityStatusEnum.INVALID,
+        contextPath: 'Classe: C1 | Processo: P1',
+      },
+      {
+        id: 3,
+        name: 'Doc 3',
+        type: 'DOCUMENT',
+        status: IntegrityStatusEnum.INVALID,
+        contextPath: 'C2 > P2',
+      },
+      {
+        id: 4,
+        name: 'Doc 4',
+        type: 'DOCUMENT',
+        status: IntegrityStatusEnum.INVALID,
+        contextPath: 'C3',
+      },
+    ]);
+
+    const errors = component.groupedErrors();
+
+    // Undefined fallback
+    expect(errors.get('Classe non disponibile')?.processes[0].processName).toBe(
+      'Processo non disponibile',
+    );
+    // Regex match (Classe: ... | Processo: ...)
+    expect(errors.get('C1')?.processes[0].processName).toBe('P1');
+    expect(errors.get('C1')?.totalDocuments).toBe(1);
+    // Split match (C2 > P2)
+    expect(errors.get('C2')?.processes[0].processName).toBe('P2');
+    // Fallback match with class only (C3)
+    expect(errors.get('C3')?.processes[0].processName).toBe('Processo non disponibile');
+  });
 });
