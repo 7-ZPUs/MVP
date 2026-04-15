@@ -117,7 +117,7 @@ export class ExportFacade implements IExportFacade {
         ));
         return;
       }
-
+      console.log(`Iniziando stampa SINGOLA file ${dto.filename} (id: ${fileId})`);
       const result = await this.ipcGateway.printFile(fileId);
       if (!result.success) throw new Error(result.error ?? 'Stampa fallita');
 
@@ -138,6 +138,7 @@ export class ExportFacade implements IExportFacade {
         const dto = dtos[i];
         return !!dto && this.checkPrintable(dto.filename);
       });
+      console.log(`Iniziando stampa MULTIPLA file ${dtos.map(dto => dto?.filename).filter((v): v is string => !!v).join(', ')} (ids: ${printableIds.join(', ')})`);
 
       if (printableIds.length === 0) {
         this.exportState.setUnavailable(new ExportError(

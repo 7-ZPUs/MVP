@@ -30,8 +30,8 @@ export class ElectronDialogPort implements IDialogPort {
       defaultId: 0,
       cancelId: 1,
       title: "Conferma stampa",
-      message: `Stai per stampare ${fileCount} document${fileCount === 1 ? "o" : "i"}.`,
-      detail: `Attenzione che proseguendo verr${fileCount === 1 ? "à" : "anno"} apert${fileCount === 1 ? "a" : "e"} ${fileCount} finestr${fileCount === 1 ? "a" : "e"} di stampa. Vuoi continuare comunque?`,
+      message: `Stai per stampare ${fileCount} documenti.`,
+      detail: `Attenzione che proseguendo verranno aperte ${fileCount} finestre di stampa. Vuoi continuare comunque?`,
     });
     return { confirmed: response === 0 };
   }
