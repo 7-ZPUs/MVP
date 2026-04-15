@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { DocumentRepository } from "../../../src/repo/impl/DocumentRepository";
+import { DocumentPersistenceAdapter } from "../../../src/repo/impl/DocumentPersistenceAdapter";
 import { DocumentDAO } from "../../../src/dao/DocumentDAO";
 import { Document } from "../../../src/entity/Document";
 import { IntegrityStatusEnum } from "../../../src/value-objects/IntegrityStatusEnum";
@@ -12,14 +12,14 @@ describe("searchDocumentSemantic — delega al DAO", () => {
   let dao: {
     searchDocumentSemantic: ReturnType<typeof vi.fn>;
   };
-  let repo: DocumentRepository;
+  let repo: DocumentPersistenceAdapter;
 
   beforeEach(() => {
     dao = {
       searchDocumentSemantic: vi.fn(),
     };
 
-    repo = new DocumentRepository(dao as unknown as DocumentDAO);
+    repo = new DocumentPersistenceAdapter(dao as unknown as DocumentDAO);
   });
 
   it("propaga la query invariata al DAO", async () => {

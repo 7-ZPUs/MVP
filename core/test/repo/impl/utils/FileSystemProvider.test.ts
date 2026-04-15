@@ -1,17 +1,17 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { FileSystemProvider } from "../../../../src/repo/impl/utils/FileSystemProvider";
+import { FileSystemPort } from "../../../../src/repo/impl/utils/FileSystemProvider";
 import * as os from "node:os";
 import * as path from "node:path";
 import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
 
 describe("FileSystemProvider", () => {
-  let provider: FileSystemProvider;
+  let provider: FileSystemPort;
   let tempDir: string;
   let existingFilePath: string;
   let testDirPath: string;
 
   beforeEach(async () => {
-    provider = new FileSystemProvider();
+    provider = new FileSystemPort();
     tempDir = await mkdtemp(path.join(os.tmpdir(), "fsp-test-"));
     existingFilePath = path.join(tempDir, "sample.txt");
     testDirPath = path.join(tempDir, "nested");
@@ -90,6 +90,9 @@ describe("FileSystemProvider", () => {
   it("TU-F-browsing-75: listFiles() should return directory contents from the real filesystem", async () => {
     const result = await provider.listFiles(testDirPath);
 
-    expect(result.sort((a, b) => a.localeCompare(b))).toEqual(["file1.txt", "file2.txt"]);
+    expect(result.sort((a: string, b: string) => a.localeCompare(b))).toEqual([
+      "file1.txt",
+      "file2.txt",
+    ]);
   });
 });

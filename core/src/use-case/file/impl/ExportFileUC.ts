@@ -1,18 +1,21 @@
 import { inject, injectable } from "tsyringe";
 import { IExportFileUC } from "../IExportFileUC";
 import {
-  IFileRepository,
-  FILE_REPOSITORY_TOKEN,
+  IGetFileByIdPort,
+  FILE_GET_BY_ID_PORT_TOKEN,
 } from "../../../repo/IFileRepository";
 import { ExportResult } from "../../../../../shared/domain/ExportResult";
 import { EXPORT_TOKEN, IExportPort } from "../../../repo/IExportPort";
-import { FILE_SYSTEM_PROVIDER_TOKEN, IFileSystemPort } from "../../../repo/impl/utils/IFileSystemProvider";
+import {
+  FILE_SYSTEM_PROVIDER_TOKEN,
+  IFileSystemPort,
+} from "../../../repo/impl/utils/IFileSystemProvider";
 
 @injectable()
 export class ExportFileUC implements IExportFileUC {
   constructor(
-    @inject(FILE_REPOSITORY_TOKEN)
-    private readonly fileRepo: IFileRepository,
+    @inject(FILE_GET_BY_ID_PORT_TOKEN)
+    private readonly fileRepo: IGetFileByIdPort,
     @inject(EXPORT_TOKEN)
     private readonly exportPort: IExportPort,
     @inject(FILE_SYSTEM_PROVIDER_TOKEN)

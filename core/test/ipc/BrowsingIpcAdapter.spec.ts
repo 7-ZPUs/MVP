@@ -44,11 +44,7 @@ import { DipUC } from "../../src/use-case/dip/token";
 
 type IpcHandler = (_event: unknown, ...args: unknown[]) => unknown;
 
-function createIpcMainMock(): {
-  ipcMain: IpcMain;
-  handleMock: ReturnType<typeof vi.fn>;
-  handlers: Map<string, IpcHandler>;
-} {
+function createIpcMainMock() {
   const handlers = new Map<string, IpcHandler>();
   const handleMock = vi.fn((channel: string, handler: IpcHandler) => {
     handlers.set(channel, handler);
@@ -61,7 +57,10 @@ function createIpcMainMock(): {
   };
 }
 
-function getHandler(handlers: Map<string, IpcHandler>, channel: string): IpcHandler {
+function getHandler(
+  handlers: Map<string, IpcHandler>,
+  channel: string,
+): IpcHandler {
   const handler = handlers.get(channel);
   if (!handler) {
     throw new Error(`Handler not registered for channel: ${channel}`);
@@ -172,7 +171,9 @@ describe("BrowsingIpcAdapter", () => {
 
     expect(handleMock).toHaveBeenCalledTimes(15);
     expect(handlers.has(IpcChannels.BROWSE_GET_DOCUMENT_BY_ID)).toBe(true);
-    expect(handlers.has(IpcChannels.BROWSE_GET_DOCUMENTS_BY_PROCESS)).toBe(true);
+    expect(handlers.has(IpcChannels.BROWSE_GET_DOCUMENTS_BY_PROCESS)).toBe(
+      true,
+    );
     expect(handlers.has(IpcChannels.BROWSE_GET_DOCUMENTS_BY_STATUS)).toBe(true);
     expect(handlers.has(IpcChannels.BROWSE_GET_FILE_BY_ID)).toBe(true);
     expect(handlers.has(IpcChannels.BROWSE_GET_FILE_BUFFER_BY_ID)).toBe(true);
@@ -180,14 +181,24 @@ describe("BrowsingIpcAdapter", () => {
     expect(handlers.has(IpcChannels.BROWSE_GET_FILE_BY_STATUS)).toBe(true);
     expect(handlers.has(IpcChannels.BROWSE_GET_PROCESS_BY_ID)).toBe(true);
     expect(handlers.has(IpcChannels.BROWSE_GET_PROCESS_BY_STATUS)).toBe(true);
-    expect(handlers.has(IpcChannels.BROWSE_GET_PROCESS_BY_DOCUMENT_CLASS)).toBe(true);
-    expect(handlers.has(IpcChannels.BROWSE_GET_DOCUMENT_CLASS_BY_DIP_ID)).toBe(true);
-    expect(handlers.has(IpcChannels.BROWSE_GET_DOCUMENT_CLASS_BY_STATUS)).toBe(true);
-    expect(handlers.has(IpcChannels.BROWSE_GET_DOCUMENT_CLASS_BY_ID)).toBe(true);
+    expect(handlers.has(IpcChannels.BROWSE_GET_PROCESS_BY_DOCUMENT_CLASS)).toBe(
+      true,
+    );
+    expect(handlers.has(IpcChannels.BROWSE_GET_DOCUMENT_CLASS_BY_DIP_ID)).toBe(
+      true,
+    );
+    expect(handlers.has(IpcChannels.BROWSE_GET_DOCUMENT_CLASS_BY_STATUS)).toBe(
+      true,
+    );
+    expect(handlers.has(IpcChannels.BROWSE_GET_DOCUMENT_CLASS_BY_ID)).toBe(
+      true,
+    );
     expect(handlers.has(IpcChannels.BROWSE_GET_DIP_BY_ID)).toBe(true);
     expect(handlers.has(IpcChannels.BROWSE_GET_DIP_BY_STATUS)).toBe(true);
 
-    expect(handlers.has(IpcChannels.BROWSE_GET_DIP_BY_DOCUMENT_CLASS)).toBe(false);
+    expect(handlers.has(IpcChannels.BROWSE_GET_DIP_BY_DOCUMENT_CLASS)).toBe(
+      false,
+    );
   });
 
   // identifier: TU-S-browsing-112
@@ -217,11 +228,26 @@ describe("BrowsingIpcAdapter", () => {
 
     BrowsingIpcAdapter.register(ipcMain);
 
-    const docResult = getHandler(handlers, IpcChannels.BROWSE_GET_DOCUMENT_BY_ID)({}, 10);
-    const fileResult = getHandler(handlers, IpcChannels.BROWSE_GET_FILE_BY_ID)({}, 11);
-    const processResult = getHandler(handlers, IpcChannels.BROWSE_GET_PROCESS_BY_ID)({}, 12);
-    const docClassResult = getHandler(handlers, IpcChannels.BROWSE_GET_DOCUMENT_CLASS_BY_ID)({}, 13);
-    const dipResult = getHandler(handlers, IpcChannels.BROWSE_GET_DIP_BY_ID)({}, 14);
+    const docResult = getHandler(
+      handlers,
+      IpcChannels.BROWSE_GET_DOCUMENT_BY_ID,
+    )({}, 10);
+    const fileResult = getHandler(handlers, IpcChannels.BROWSE_GET_FILE_BY_ID)(
+      {},
+      11,
+    );
+    const processResult = getHandler(
+      handlers,
+      IpcChannels.BROWSE_GET_PROCESS_BY_ID,
+    )({}, 12);
+    const docClassResult = getHandler(
+      handlers,
+      IpcChannels.BROWSE_GET_DOCUMENT_CLASS_BY_ID,
+    )({}, 13);
+    const dipResult = getHandler(handlers, IpcChannels.BROWSE_GET_DIP_BY_ID)(
+      {},
+      14,
+    );
 
     expect(getDocByIdUC.execute).toHaveBeenCalledWith(10);
     expect(getFileByIdUC.execute).toHaveBeenCalledWith(11);
@@ -257,11 +283,26 @@ describe("BrowsingIpcAdapter", () => {
 
     BrowsingIpcAdapter.register(ipcMain);
 
-    const docResult = getHandler(handlers, IpcChannels.BROWSE_GET_DOCUMENT_BY_ID)({}, 100);
-    const fileResult = getHandler(handlers, IpcChannels.BROWSE_GET_FILE_BY_ID)({}, 101);
-    const processResult = getHandler(handlers, IpcChannels.BROWSE_GET_PROCESS_BY_ID)({}, 102);
-    const docClassResult = getHandler(handlers, IpcChannels.BROWSE_GET_DOCUMENT_CLASS_BY_ID)({}, 103);
-    const dipResult = getHandler(handlers, IpcChannels.BROWSE_GET_DIP_BY_ID)({}, 104);
+    const docResult = getHandler(
+      handlers,
+      IpcChannels.BROWSE_GET_DOCUMENT_BY_ID,
+    )({}, 100);
+    const fileResult = getHandler(handlers, IpcChannels.BROWSE_GET_FILE_BY_ID)(
+      {},
+      101,
+    );
+    const processResult = getHandler(
+      handlers,
+      IpcChannels.BROWSE_GET_PROCESS_BY_ID,
+    )({}, 102);
+    const docClassResult = getHandler(
+      handlers,
+      IpcChannels.BROWSE_GET_DOCUMENT_CLASS_BY_ID,
+    )({}, 103);
+    const dipResult = getHandler(handlers, IpcChannels.BROWSE_GET_DIP_BY_ID)(
+      {},
+      104,
+    );
 
     expect(docResult).toBeNull();
     expect(fileResult).toBeNull();
@@ -288,21 +329,25 @@ describe("BrowsingIpcAdapter", () => {
     getDocByProcessUC.execute.mockReturnValue([doc1, doc2]);
     getDocByStatusUC.execute.mockReturnValue([doc1]);
 
-    documentToDtoMock.mockImplementation((entity: unknown) => ({ mapped: entity }));
+    documentToDtoMock.mockImplementation((entity: unknown) => ({
+      mapped: entity,
+    }));
 
     BrowsingIpcAdapter.register(ipcMain);
 
-    const byProcessResult = getHandler(handlers, IpcChannels.BROWSE_GET_DOCUMENTS_BY_PROCESS)(
-      {},
-      200,
-    );
-    const byStatusResult = getHandler(handlers, IpcChannels.BROWSE_GET_DOCUMENTS_BY_STATUS)(
-      {},
-      IntegrityStatusEnum.VALID,
-    );
+    const byProcessResult = getHandler(
+      handlers,
+      IpcChannels.BROWSE_GET_DOCUMENTS_BY_PROCESS,
+    )({}, 200);
+    const byStatusResult = getHandler(
+      handlers,
+      IpcChannels.BROWSE_GET_DOCUMENTS_BY_STATUS,
+    )({}, IntegrityStatusEnum.VALID);
 
     expect(getDocByProcessUC.execute).toHaveBeenCalledWith(200);
-    expect(getDocByStatusUC.execute).toHaveBeenCalledWith(IntegrityStatusEnum.VALID);
+    expect(getDocByStatusUC.execute).toHaveBeenCalledWith(
+      IntegrityStatusEnum.VALID,
+    );
 
     expect(documentToDtoMock).toHaveBeenCalledWith(doc1);
     expect(documentToDtoMock).toHaveBeenCalledWith(doc2);
@@ -326,17 +371,19 @@ describe("BrowsingIpcAdapter", () => {
 
     BrowsingIpcAdapter.register(ipcMain);
 
-    const byDocumentResult = getHandler(handlers, IpcChannels.BROWSE_GET_FILE_BY_DOCUMENT)(
-      {},
-      300,
-    );
-    const byStatusResult = getHandler(handlers, IpcChannels.BROWSE_GET_FILE_BY_STATUS)(
-      {},
-      IntegrityStatusEnum.UNKNOWN,
-    );
+    const byDocumentResult = getHandler(
+      handlers,
+      IpcChannels.BROWSE_GET_FILE_BY_DOCUMENT,
+    )({}, 300);
+    const byStatusResult = getHandler(
+      handlers,
+      IpcChannels.BROWSE_GET_FILE_BY_STATUS,
+    )({}, IntegrityStatusEnum.UNKNOWN);
 
     expect(getFileByDocUC.execute).toHaveBeenCalledWith(300);
-    expect(getFileByStatusUC.execute).toHaveBeenCalledWith(IntegrityStatusEnum.UNKNOWN);
+    expect(getFileByStatusUC.execute).toHaveBeenCalledWith(
+      IntegrityStatusEnum.UNKNOWN,
+    );
 
     expect(fileToDtoMock).toHaveBeenCalledWith(file1);
     expect(fileToDtoMock).toHaveBeenCalledWith(file2);
@@ -356,25 +403,32 @@ describe("BrowsingIpcAdapter", () => {
     getProcessByStatusUC.execute.mockReturnValue([process1, process2]);
     getProcessByDocumentClassUC.execute.mockReturnValue([process2]);
 
-    processToDtoMock.mockImplementation((entity: unknown) => ({ mapped: entity }));
+    processToDtoMock.mockImplementation((entity: unknown) => ({
+      mapped: entity,
+    }));
 
     BrowsingIpcAdapter.register(ipcMain);
 
-    const byStatusResult = getHandler(handlers, IpcChannels.BROWSE_GET_PROCESS_BY_STATUS)(
-      {},
-      IntegrityStatusEnum.INVALID,
-    );
+    const byStatusResult = getHandler(
+      handlers,
+      IpcChannels.BROWSE_GET_PROCESS_BY_STATUS,
+    )({}, IntegrityStatusEnum.INVALID);
     const byDocClassResult = getHandler(
       handlers,
       IpcChannels.BROWSE_GET_PROCESS_BY_DOCUMENT_CLASS,
     )({}, 400);
 
-    expect(getProcessByStatusUC.execute).toHaveBeenCalledWith(IntegrityStatusEnum.INVALID);
+    expect(getProcessByStatusUC.execute).toHaveBeenCalledWith(
+      IntegrityStatusEnum.INVALID,
+    );
     expect(getProcessByDocumentClassUC.execute).toHaveBeenCalledWith(400);
 
     expect(processToDtoMock).toHaveBeenCalledWith(process1);
     expect(processToDtoMock).toHaveBeenCalledWith(process2);
-    expect(byStatusResult).toEqual([{ mapped: process1 }, { mapped: process2 }]);
+    expect(byStatusResult).toEqual([
+      { mapped: process1 },
+      { mapped: process2 },
+    ]);
     expect(byDocClassResult).toEqual([{ mapped: process2 }]);
   });
 
@@ -390,21 +444,25 @@ describe("BrowsingIpcAdapter", () => {
     getDocClassByDipIdUC.execute.mockReturnValue([docClass1, docClass2]);
     getDocClassByStatusUC.execute.mockReturnValue([docClass2]);
 
-    documentClassToDtoMock.mockImplementation((entity: unknown) => ({ mapped: entity }));
+    documentClassToDtoMock.mockImplementation((entity: unknown) => ({
+      mapped: entity,
+    }));
 
     BrowsingIpcAdapter.register(ipcMain);
 
-    const byDipResult = getHandler(handlers, IpcChannels.BROWSE_GET_DOCUMENT_CLASS_BY_DIP_ID)(
-      {},
-      500,
-    );
+    const byDipResult = getHandler(
+      handlers,
+      IpcChannels.BROWSE_GET_DOCUMENT_CLASS_BY_DIP_ID,
+    )({}, 500);
     const byStatusResult = getHandler(
       handlers,
       IpcChannels.BROWSE_GET_DOCUMENT_CLASS_BY_STATUS,
     )({}, IntegrityStatusEnum.VALID);
 
     expect(getDocClassByDipIdUC.execute).toHaveBeenCalledWith(500);
-    expect(getDocClassByStatusUC.execute).toHaveBeenCalledWith(IntegrityStatusEnum.VALID);
+    expect(getDocClassByStatusUC.execute).toHaveBeenCalledWith(
+      IntegrityStatusEnum.VALID,
+    );
 
     expect(documentClassToDtoMock).toHaveBeenCalledWith(docClass1);
     expect(documentClassToDtoMock).toHaveBeenCalledWith(docClass2);
@@ -431,7 +489,9 @@ describe("BrowsingIpcAdapter", () => {
       IntegrityStatusEnum.UNKNOWN,
     );
 
-    expect(getDipByStatusUC.execute).toHaveBeenCalledWith(IntegrityStatusEnum.UNKNOWN);
+    expect(getDipByStatusUC.execute).toHaveBeenCalledWith(
+      IntegrityStatusEnum.UNKNOWN,
+    );
     expect(dipToDtoMock).toHaveBeenCalledWith(dip1);
     expect(dipToDtoMock).toHaveBeenCalledWith(dip2);
     expect(result).toEqual([{ mapped: dip1 }, { mapped: dip2 }]);

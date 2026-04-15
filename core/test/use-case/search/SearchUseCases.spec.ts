@@ -1,7 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { SearchDocumentsUC } from "../../../src/use-case/document/impl/SearchDocumentsUC";
 import { SearchSemanticUC } from "../../../src/use-case/document/impl/SearchSemanticUC";
-import { IDocumentRepository } from "../../../src/repo/IDocumentRepository";
+import {
+  IGetDocumentByIdPort,
+  ISearchDocumentPort,
+} from "../../../src/repo/IDocumentRepository";
+import { ISearchSimilarVectorsPort } from "../../../src/repo/IVectorRepository";
 import { IWordEmbedding } from "../../../src/repo/IWordEmbedding";
 import { SearchDocumentsQuery } from "../../../src/entity/search/SearchQuery.model";
 import { DocumentMapper } from "../../../src/dao/mappers/DocumentMapper";
@@ -51,7 +55,7 @@ const emptyFilters = new SearchDocumentsQuery({
 // ─── SearchDocumentsUC ───────────────────────────────────────────────────────
 
 describe("SearchDocumentsUC", () => {
-  let repo: Pick<IDocumentRepository, "searchDocument">;
+  let repo: ISearchDocumentPort;
 
   beforeEach(() => {
     repo = { searchDocument: vi.fn() };
@@ -65,7 +69,7 @@ describe("SearchDocumentsUC", () => {
     ]);
     (repo.searchDocument as ReturnType<typeof vi.fn>).mockReturnValue([doc]);
 
-    const uc = new SearchDocumentsUC(repo as IDocumentRepository);
+    const uc = new SearchDocumentsUC(repo);
     const results = await uc.execute(emptyFilters);
 
     expect(results).toHaveLength(1);
@@ -88,7 +92,7 @@ describe("SearchDocumentsUC", () => {
   it("ritorna array vuoto se il repository non trova risultati", async () => {
     (repo.searchDocument as ReturnType<typeof vi.fn>).mockReturnValue([]);
 
-    const uc = new SearchDocumentsUC(repo as IDocumentRepository);
+    const uc = new SearchDocumentsUC(repo);
     const results = await uc.execute(emptyFilters);
 
     expect(results).toHaveLength(0);
@@ -99,7 +103,7 @@ describe("SearchDocumentsUC", () => {
     const doc = makeDocument(2, "uuid-2", []);
     (repo.searchDocument as ReturnType<typeof vi.fn>).mockReturnValue([doc]);
 
-    const uc = new SearchDocumentsUC(repo as IDocumentRepository);
+    const uc = new SearchDocumentsUC(repo);
     const results = await uc.execute(emptyFilters);
 
     expect(results[0].getMetadata().findNodeByName("nome")).toBeNull();
@@ -121,7 +125,7 @@ describe("SearchDocumentsUC", () => {
       ],
     });
 
-    const uc = new SearchDocumentsUC(repo as IDocumentRepository);
+    const uc = new SearchDocumentsUC(repo);
     await uc.execute(filters);
 
     expect(repo.searchDocument).toHaveBeenCalledWith(filters);
@@ -142,7 +146,7 @@ describe("SearchDocumentsUC", () => {
     ];
     (repo.searchDocument as ReturnType<typeof vi.fn>).mockReturnValue(docs);
 
-    const uc = new SearchDocumentsUC(repo as IDocumentRepository);
+    const uc = new SearchDocumentsUC(repo);
     const results = await uc.execute(emptyFilters);
 
     expect(results).toHaveLength(3);
@@ -163,7 +167,7 @@ describe("SearchDocumentsUC", () => {
     ]);
     (repo.searchDocument as ReturnType<typeof vi.fn>).mockReturnValue([doc]);
 
-    const uc = new SearchDocumentsUC(repo as IDocumentRepository);
+    const uc = new SearchDocumentsUC(repo);
     const results = await uc.execute(emptyFilters);
 
     expect(
@@ -189,7 +193,7 @@ describe("SearchDocumentsUC", () => {
     ]);
     (repo.searchDocument as ReturnType<typeof vi.fn>).mockReturnValue([doc]);
 
-    const uc = new SearchDocumentsUC(repo as IDocumentRepository);
+    const uc = new SearchDocumentsUC(repo);
     const results = await uc.execute(emptyFilters);
 
     expect(
@@ -211,7 +215,7 @@ describe("SearchDocumentsUC", () => {
       throw new Error("db unavailable");
     });
 
-    const uc = new SearchDocumentsUC(repo as IDocumentRepository);
+    const uc = new SearchDocumentsUC(repo);
 
     expect(() => uc.execute(emptyFilters)).toThrow("db unavailable");
   });
@@ -220,12 +224,14 @@ describe("SearchDocumentsUC", () => {
 // ─── SearchSemanticUC ────────────────────────────────────────────────────────
 
 describe("SearchSemanticUC", () => {
-  let repo: Pick<IDocumentRepository, "searchDocumentSemantic">;
+  let documentRepo: IGetDocumentByIdPort;
+  let vectorRepo: ISearchSimilarVectorsPort;
   let aiAdapter: IWordEmbedding;
   let embedding: Float32Array;
 
   beforeEach(() => {
-    repo = { searchDocumentSemantic: vi.fn() };
+    documentRepo = { getById: vi.fn() };
+    vectorRepo = { searchSimilarVectors: vi.fn() };
     embedding = new Float32Array([0.11, 0.22, 0.33]);
     aiAdapter = {
       generateEmbedding: vi.fn().mockResolvedValue(embedding),
@@ -233,17 +239,37 @@ describe("SearchSemanticUC", () => {
     };
   });
 
+  const mockSemanticMatches = (
+    matches: Array<{
+      document: ReturnType<typeof makeDocument>;
+      score: number;
+    }>,
+  ) => {
+    (
+      vectorRepo.searchSimilarVectors as ReturnType<typeof vi.fn>
+    ).mockResolvedValue(
+      matches.map(({ document, score }) => ({
+        documentId: document.getId() as number,
+        score,
+      })),
+    );
+
+    (documentRepo.getById as ReturnType<typeof vi.fn>).mockImplementation(
+      (documentId: number) =>
+        matches.find((entry) => entry.document.getId() === documentId)
+          ?.document ?? null,
+    );
+  };
+
   // Caso nominale: un documento con score alto
   it("ritorna coppie documento+score dal repository", async () => {
     const doc = makeDocument(21, "uuid-s1", [
       { name: "nome", value: "contratto.pdf" },
       { name: "tipoDocumento", value: "DOCUMENTO AMMINISTRATIVO INFORMATICO" },
     ]);
-    (repo.searchDocumentSemantic as ReturnType<typeof vi.fn>).mockResolvedValue(
-      [{ document: doc, score: 0.92 }],
-    );
+    mockSemanticMatches([{ document: doc, score: 0.92 }]);
 
-    const uc = new SearchSemanticUC(repo as IDocumentRepository, aiAdapter);
+    const uc = new SearchSemanticUC(documentRepo, vectorRepo, aiAdapter);
     const results = await uc.execute("contratto");
 
     expect(results).toHaveLength(1);
@@ -254,11 +280,9 @@ describe("SearchSemanticUC", () => {
   // Score deve essere un numero reale, mai null
   it("lo score semantico è sempre un numero, mai null", async () => {
     const doc = makeDocument(22, "uuid-s2", []);
-    (repo.searchDocumentSemantic as ReturnType<typeof vi.fn>).mockResolvedValue(
-      [{ document: doc, score: 0.75 }],
-    );
+    mockSemanticMatches([{ document: doc, score: 0.75 }]);
 
-    const uc = new SearchSemanticUC(repo as IDocumentRepository, aiAdapter);
+    const uc = new SearchSemanticUC(documentRepo, vectorRepo, aiAdapter);
     const results = await uc.execute("query");
 
     expect(typeof results[0].score).toBe("number");
@@ -267,11 +291,11 @@ describe("SearchSemanticUC", () => {
 
   // Nessun documento simile trovato
   it("ritorna array vuoto se nessun documento supera la soglia di similarità", async () => {
-    (repo.searchDocumentSemantic as ReturnType<typeof vi.fn>).mockResolvedValue(
-      [],
-    );
+    (
+      vectorRepo.searchSimilarVectors as ReturnType<typeof vi.fn>
+    ).mockResolvedValue([]);
 
-    const uc = new SearchSemanticUC(repo as IDocumentRepository, aiAdapter);
+    const uc = new SearchSemanticUC(documentRepo, vectorRepo, aiAdapter);
     const results = await uc.execute("query senza risultati");
 
     expect(results).toHaveLength(0);
@@ -279,17 +303,17 @@ describe("SearchSemanticUC", () => {
 
   // La query deve essere passata all'embedder e il vettore al repository
   it("genera embedding dalla query e passa il vettore al repository", async () => {
-    (repo.searchDocumentSemantic as ReturnType<typeof vi.fn>).mockResolvedValue(
-      [],
-    );
+    (
+      vectorRepo.searchSimilarVectors as ReturnType<typeof vi.fn>
+    ).mockResolvedValue([]);
 
-    const uc = new SearchSemanticUC(repo as IDocumentRepository, aiAdapter);
+    const uc = new SearchSemanticUC(documentRepo, vectorRepo, aiAdapter);
     await uc.execute("ricerca semantica avanzata");
 
     expect(aiAdapter.generateEmbedding).toHaveBeenCalledWith(
       "ricerca semantica avanzata",
     );
-    expect(repo.searchDocumentSemantic).toHaveBeenCalledWith(embedding);
+    expect(vectorRepo.searchSimilarVectors).toHaveBeenCalledWith(embedding, 10);
   });
 
   // Più risultati ordinati per score decrescente
@@ -314,11 +338,9 @@ describe("SearchSemanticUC", () => {
         score: 0.61,
       },
     ];
-    (repo.searchDocumentSemantic as ReturnType<typeof vi.fn>).mockResolvedValue(
-      docs,
-    );
+    mockSemanticMatches(docs);
 
-    const uc = new SearchSemanticUC(repo as IDocumentRepository, aiAdapter);
+    const uc = new SearchSemanticUC(documentRepo, vectorRepo, aiAdapter);
     const results = await uc.execute("test ordine");
 
     expect(results[0].score).toBe(0.95);
@@ -332,11 +354,9 @@ describe("SearchSemanticUC", () => {
       { document: makeDocument(41, "uuid-max", []), score: 1 },
       { document: makeDocument(42, "uuid-min", []), score: 0 },
     ];
-    (repo.searchDocumentSemantic as ReturnType<typeof vi.fn>).mockResolvedValue(
-      docs,
-    );
+    mockSemanticMatches(docs);
 
-    const uc = new SearchSemanticUC(repo as IDocumentRepository, aiAdapter);
+    const uc = new SearchSemanticUC(documentRepo, vectorRepo, aiAdapter);
     const results = await uc.execute("limiti");
 
     expect(results[0].score).toBe(1);
@@ -346,11 +366,9 @@ describe("SearchSemanticUC", () => {
   // Metadati assenti nella ricerca semantica
   it("ritorna comunque documento e score anche con metadati assenti", async () => {
     const doc = makeDocument(43, "uuid-empty", []);
-    (repo.searchDocumentSemantic as ReturnType<typeof vi.fn>).mockResolvedValue(
-      [{ document: doc, score: 0.88 }],
-    );
+    mockSemanticMatches([{ document: doc, score: 0.88 }]);
 
-    const uc = new SearchSemanticUC(repo as IDocumentRepository, aiAdapter);
+    const uc = new SearchSemanticUC(documentRepo, vectorRepo, aiAdapter);
     const results = await uc.execute("senza metadati");
 
     expect(results[0].document.getUuid()).toBe("uuid-empty");
@@ -364,11 +382,9 @@ describe("SearchSemanticUC", () => {
       { name: "tipoDocumento", value: "TIPO-1" },
       { name: "tipoDocumento", value: "TIPO-2" },
     ]);
-    (repo.searchDocumentSemantic as ReturnType<typeof vi.fn>).mockResolvedValue(
-      [{ document: doc, score: 0.5 }],
-    );
+    mockSemanticMatches([{ document: doc, score: 0.5 }]);
 
-    const uc = new SearchSemanticUC(repo as IDocumentRepository, aiAdapter);
+    const uc = new SearchSemanticUC(documentRepo, vectorRepo, aiAdapter);
     const results = await uc.execute("duplicati");
 
     expect(results[0].document.getUuid()).toBe("uuid-dup");
@@ -376,11 +392,11 @@ describe("SearchSemanticUC", () => {
   });
 
   it("propaga errori del repository durante la ricerca semantica", async () => {
-    (repo.searchDocumentSemantic as ReturnType<typeof vi.fn>).mockRejectedValue(
-      new Error("semantic fail"),
-    );
+    (
+      vectorRepo.searchSimilarVectors as ReturnType<typeof vi.fn>
+    ).mockRejectedValue(new Error("semantic fail"));
 
-    const uc = new SearchSemanticUC(repo as IDocumentRepository, aiAdapter);
+    const uc = new SearchSemanticUC(documentRepo, vectorRepo, aiAdapter);
 
     await expect(uc.execute("query")).rejects.toThrow("semantic fail");
   });

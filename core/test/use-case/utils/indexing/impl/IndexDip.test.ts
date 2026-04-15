@@ -3,11 +3,11 @@ import Database from "better-sqlite3";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 import { IndexDipUC } from "../../../../../src/use-case/utils/indexing/impl/IndexDip";
-import { DipRepository } from "../../../../../src/repo/impl/DipRepository";
-import { DocumentClassRepository } from "../../../../../src/repo/impl/DocumentClassRepository";
-import { ProcessRepository } from "../../../../../src/repo/impl/ProcessRepository";
-import { DocumentRepository } from "../../../../../src/repo/impl/DocumentRepository";
-import { FileRepository } from "../../../../../src/repo/impl/FileRepository";
+import { DipPersistenceAdapter } from "../../../../../src/repo/impl/DipPersistenceAdapter";
+import { DocumentClassPersistenceAdapter } from "../../../../../src/repo/impl/DocumentClassPersistenceAdapter";
+import { ProcessPersistenceAdapter } from "../../../../../src/repo/impl/ProcessPersistenceAdapter";
+import { DocumentPersistenceAdapter } from "../../../../../src/repo/impl/DocumentPersistenceAdapter";
+import { FilePersistenceAdapter } from "../../../../../src/repo/impl/FilePersistenceAdapter";
 import { PackageReaderService } from "../../../../../src/services/impl/PackageReaderService";
 import { XmlDipParser } from "../../../../../src/repo/impl/utils/XmlDipParser";
 import { IFileSystemPort } from "../../../../../src/repo/impl/utils/IFileSystemProvider";
@@ -18,7 +18,7 @@ import { DocumentDAO } from "../../../../../src/dao/DocumentDAO";
 import { FileDAO } from "../../../../../src/dao/FileDAO";
 import { readFileSync } from "node:fs";
 import { SqliteTransactionManager } from "../../../../../src/repo/impl/SqliteTransactionManager";
-import { IVectorRepository } from "../../../../../src/repo/IVectorRepository";
+import { ISaveVectorPort } from "../../../../../src/repo/IVectorRepository";
 import { IEmbeddingService } from "../../../../../src/services/IEmbeddingService";
 import { Vector } from "../../../../../src/entity/Vector";
 
@@ -26,7 +26,7 @@ describe("IndexDip", () => {
   let db: Database.Database;
   let fileSystemProvider: IFileSystemPort;
   let useCase: IndexDipUC;
-  let vectorRepository: IVectorRepository;
+  let vectorRepository: ISaveVectorPort;
   let embeddingService: IEmbeddingService;
 
   beforeEach(() => {
@@ -34,20 +34,21 @@ describe("IndexDip", () => {
     const schema = readFileSync("db/schema.sql", "utf-8");
     db.exec(schema);
 
-    const dipRepository = new DipRepository(new DipDAO(db));
-    const documentClassRepository = new DocumentClassRepository(
+    const dipRepository = new DipPersistenceAdapter(new DipDAO(db));
+    const documentClassRepository = new DocumentClassPersistenceAdapter(
       new DocumentClassDAO(db),
     );
-    const processRepository = new ProcessRepository(new ProcessDAO(db));
-    const documentRepository = new DocumentRepository(new DocumentDAO(db));
-    const fileRepository = new FileRepository(new FileDAO(db));
+    const processRepository = new ProcessPersistenceAdapter(new ProcessDAO(db));
+    const documentRepository = new DocumentPersistenceAdapter(
+      new DocumentDAO(db),
+    );
+    const fileRepository = new FilePersistenceAdapter(new FileDAO(db));
     vectorRepository = {
       saveVector: vi.fn().mockResolvedValue(undefined),
-      getVector: vi.fn().mockResolvedValue(null),
-      searchSimilarVectors: vi.fn().mockResolvedValue([]),
     };
     embeddingService = {
       generateDocumentEmbedding: vi.fn().mockResolvedValue(null),
+      setEmbeddingConfiguration: vi.fn(),
     };
 
     const parser = new XmlDipParser();
@@ -152,9 +153,9 @@ describe("IndexDip", () => {
     expect((files[0] as any).filename).toBe("./primary.pdf");
 
     expect(embeddingService.generateDocumentEmbedding).toHaveBeenCalledTimes(1);
-    expect(embeddingService.generateDocumentEmbedding).toHaveBeenCalledWith(
-      expect.stringContaining("primary.pdf"),
-    );
+    const [calledFile] = vi.mocked(embeddingService.generateDocumentEmbedding)
+      .mock.calls[0];
+    expect(calledFile.getPath()).toContain("primary.pdf");
     expect(vectorRepository.saveVector).toHaveBeenCalledTimes(1);
     expect(vectorRepository.saveVector).toHaveBeenCalledWith(
       expect.any(Vector),

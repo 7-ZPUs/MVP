@@ -83,6 +83,7 @@ export class ApplicationBootstrap {
       }
 
       await this.indexDipUC.execute(resolvedDipPath);
+      container.registerInstance("DIP_PATH_TOKEN", resolvedDipPath);
       this.markBootstrapCompleted({ state: "success" });
     // } catch (error) {
     //   const message =

@@ -1,25 +1,45 @@
 import { inject, injectable } from "tsyringe";
+import path from "node:path";
 import { IntegrityStatusEnum } from "../../value-objects/IntegrityStatusEnum";
+import { IIntegrityVerificationService } from "../IIntegrityVerificationService";
 import {
-  IIntegrityVerificationService,
-} from "../IIntegrityVerificationService";
-import {
-  FILE_REPOSITORY_TOKEN,
-  IFileRepository,
+  FILE_GET_BY_DOCUMENT_ID_PORT_TOKEN,
+  FILE_GET_BY_ID_PORT_TOKEN,
+  FILE_UPDATE_INTEGRITY_STATUS_PORT_TOKEN,
+  IGetFileByDocumentIdPort,
+  IGetFileByIdPort,
+  IUpdateFileIntegrityStatusPort,
 } from "../../repo/IFileRepository";
 import {
-  DOCUMENTO_REPOSITORY_TOKEN,
-  IDocumentRepository,
+  DOCUMENT_GET_BY_ID_PORT_TOKEN,
+  DOCUMENT_GET_BY_PROCESS_ID_PORT_TOKEN,
+  DOCUMENT_UPDATE_INTEGRITY_STATUS_PORT_TOKEN,
+  IGetDocumentByIdPort,
+  IGetDocumentByProcessIdPort,
+  IUpdateDocumentIntegrityStatusPort,
 } from "../../repo/IDocumentRepository";
 import {
-  PROCESS_REPOSITORY_TOKEN,
-  IProcessRepository,
+  PROCESS_GET_BY_DOCUMENT_CLASS_ID_PORT_TOKEN,
+  PROCESS_GET_BY_ID_PORT_TOKEN,
+  PROCESS_UPDATE_INTEGRITY_STATUS_PORT_TOKEN,
+  IGetProcessByDocumentClassIdPort,
+  IGetProcessByIdPort,
+  IUpdateProcessIntegrityStatusPort,
 } from "../../repo/IProcessRepository";
 import {
-  DOCUMENT_CLASS_REPOSITORY_TOKEN,
-  IDocumentClassRepository,
+  DOCUMENT_CLASS_GET_BY_DIP_ID_PORT_TOKEN,
+  DOCUMENT_CLASS_GET_BY_ID_PORT_TOKEN,
+  DOCUMENT_CLASS_UPDATE_INTEGRITY_STATUS_PORT_TOKEN,
+  IGetDocumentClassByDipIdPort,
+  IGetDocumentClassByIdPort,
+  IUpdateDocumentClassIntegrityStatusPort,
 } from "../../repo/IDocumentClassRepository";
-import { DIP_REPOSITORY_TOKEN, IDipRepository } from "../../repo/IDipRepository";
+import {
+  DIP_GET_BY_ID_PORT_TOKEN,
+  DIP_UPDATE_INTEGRITY_STATUS_PORT_TOKEN,
+  IGetDipByIdPort,
+  IUpdateDipIntegrityStatusPort,
+} from "../../repo/IDipRepository";
 import { HASHING_SERVICE_TOKEN, IHashingService } from "../IHashingService";
 import {
   ITransactionManager,
@@ -31,38 +51,63 @@ import { Process } from "../../entity/Process";
 import { DocumentClass } from "../../entity/DocumentClass";
 
 @injectable()
-export class IntegrityVerificationService
-  implements IIntegrityVerificationService
-{
+export class IntegrityVerificationService implements IIntegrityVerificationService {
   constructor(
-    @inject(FILE_REPOSITORY_TOKEN)
-    private readonly fileRepo: IFileRepository,
+    @inject(FILE_GET_BY_ID_PORT_TOKEN)
+    private readonly fileReadByIdPort: IGetFileByIdPort,
 
-    @inject(DOCUMENTO_REPOSITORY_TOKEN)
-    private readonly documentRepo: IDocumentRepository,
+    @inject(FILE_GET_BY_DOCUMENT_ID_PORT_TOKEN)
+    private readonly fileReadByDocumentIdPort: IGetFileByDocumentIdPort,
 
-    @inject(PROCESS_REPOSITORY_TOKEN)
-    private readonly processRepo: IProcessRepository,
+    @inject(FILE_UPDATE_INTEGRITY_STATUS_PORT_TOKEN)
+    private readonly fileUpdateIntegrityPort: IUpdateFileIntegrityStatusPort,
 
-    @inject(DOCUMENT_CLASS_REPOSITORY_TOKEN)
-    private readonly documentClassRepo: IDocumentClassRepository,
+    @inject(DOCUMENT_GET_BY_ID_PORT_TOKEN)
+    private readonly documentReadByIdPort: IGetDocumentByIdPort,
 
-    @inject(DIP_REPOSITORY_TOKEN)
-    private readonly dipRepo: IDipRepository,
+    @inject(DOCUMENT_GET_BY_PROCESS_ID_PORT_TOKEN)
+    private readonly documentReadByProcessIdPort: IGetDocumentByProcessIdPort,
+
+    @inject(DOCUMENT_UPDATE_INTEGRITY_STATUS_PORT_TOKEN)
+    private readonly documentUpdateIntegrityPort: IUpdateDocumentIntegrityStatusPort,
+
+    @inject(PROCESS_GET_BY_ID_PORT_TOKEN)
+    private readonly processReadByIdPort: IGetProcessByIdPort,
+
+    @inject(PROCESS_GET_BY_DOCUMENT_CLASS_ID_PORT_TOKEN)
+    private readonly processReadByDocumentClassIdPort: IGetProcessByDocumentClassIdPort,
+
+    @inject(PROCESS_UPDATE_INTEGRITY_STATUS_PORT_TOKEN)
+    private readonly processUpdateIntegrityPort: IUpdateProcessIntegrityStatusPort,
+
+    @inject(DOCUMENT_CLASS_GET_BY_ID_PORT_TOKEN)
+    private readonly documentClassReadByIdPort: IGetDocumentClassByIdPort,
+
+    @inject(DOCUMENT_CLASS_GET_BY_DIP_ID_PORT_TOKEN)
+    private readonly documentClassReadByDipIdPort: IGetDocumentClassByDipIdPort,
+
+    @inject(DOCUMENT_CLASS_UPDATE_INTEGRITY_STATUS_PORT_TOKEN)
+    private readonly documentClassUpdateIntegrityPort: IUpdateDocumentClassIntegrityStatusPort,
+
+    @inject(DIP_GET_BY_ID_PORT_TOKEN)
+    private readonly dipReadByIdPort: IGetDipByIdPort,
+
+    @inject(DIP_UPDATE_INTEGRITY_STATUS_PORT_TOKEN)
+    private readonly dipUpdateIntegrityPort: IUpdateDipIntegrityStatusPort,
 
     @inject(HASHING_SERVICE_TOKEN)
     private readonly hashingService: IHashingService,
-    
+
     @inject(TRANSACTION_MANAGER_TOKEN)
     private readonly transactionManager: ITransactionManager,
-    
+
     @inject("DIP_PATH_TOKEN")
     private readonly dipPath: string,
   ) {}
 
   checkFileIntegrityStatus(fileId: number): Promise<IntegrityStatusEnum> {
     return this.transactionManager.runInTransaction(async () => {
-      const file = this.fileRepo.getById(fileId);
+      const file = this.fileReadByIdPort.getById(fileId);
       if (!file) {
         throw new Error(`File with id ${fileId} not found`);
       }
@@ -70,9 +115,11 @@ export class IntegrityVerificationService
     });
   }
 
-  checkDocumentIntegrityStatus(documentId: number): Promise<IntegrityStatusEnum> {
+  checkDocumentIntegrityStatus(
+    documentId: number,
+  ): Promise<IntegrityStatusEnum> {
     return this.transactionManager.runInTransaction(async () => {
-      const document = this.documentRepo.getById(documentId);
+      const document = this.documentReadByIdPort.getById(documentId);
       if (!document) {
         throw new Error(`Document with id ${documentId} not found`);
       }
@@ -82,7 +129,7 @@ export class IntegrityVerificationService
 
   checkProcessIntegrityStatus(processId: number): Promise<IntegrityStatusEnum> {
     return this.transactionManager.runInTransaction(async () => {
-      const process = this.processRepo.getById(processId);
+      const process = this.processReadByIdPort.getById(processId);
       if (!process) {
         throw new Error(`Process with id ${processId} not found`);
       }
@@ -94,7 +141,8 @@ export class IntegrityVerificationService
     documentClassId: number,
   ): Promise<IntegrityStatusEnum> {
     return this.transactionManager.runInTransaction(async () => {
-      const documentClass = this.documentClassRepo.getById(documentClassId);
+      const documentClass =
+        this.documentClassReadByIdPort.getById(documentClassId);
       if (!documentClass) {
         throw new Error(`DocumentClass with id ${documentClassId} not found`);
       }
@@ -104,13 +152,14 @@ export class IntegrityVerificationService
 
   checkDipIntegrityStatus(dipId: number): Promise<IntegrityStatusEnum> {
     return this.transactionManager.runInTransaction(async () => {
-      const dip = this.dipRepo.getById(dipId);
+      const dip = this.dipReadByIdPort.getById(dipId);
       if (!dip) {
         throw new Error(`Dip with id ${dipId} not found`);
       }
 
       const rootDipId = this.requirePersistedId(dip.getId(), "Dip");
-      const documentClasses = this.documentClassRepo.getByDipId(rootDipId);
+      const documentClasses =
+        this.documentClassReadByDipIdPort.getByDipId(rootDipId);
       const childStatuses: IntegrityStatusEnum[] = [];
 
       for (const documentClass of documentClasses) {
@@ -119,7 +168,7 @@ export class IntegrityVerificationService
 
       const status = this.aggregateStatuses(childStatuses);
       dip.setIntegrityStatus(status);
-      this.dipRepo.updateIntegrityStatus(rootDipId, status);
+      this.dipUpdateIntegrityPort.updateIntegrityStatus(rootDipId, status);
 
       return status;
     });
@@ -132,7 +181,10 @@ export class IntegrityVerificationService
       documentClass.getId(),
       "DocumentClass",
     );
-    const processes = this.processRepo.getByDocumentClassId(documentClassId);
+    const processes =
+      this.processReadByDocumentClassIdPort.getByDocumentClassId(
+        documentClassId,
+      );
     const childStatuses: IntegrityStatusEnum[] = [];
 
     for (const process of processes) {
@@ -141,14 +193,20 @@ export class IntegrityVerificationService
 
     const status = this.aggregateStatuses(childStatuses);
     documentClass.setIntegrityStatus(status);
-    this.documentClassRepo.updateIntegrityStatus(documentClassId, status);
+    this.documentClassUpdateIntegrityPort.updateIntegrityStatus(
+      documentClassId,
+      status,
+    );
 
     return status;
   }
 
-  private async checkProcessEntity(process: Process): Promise<IntegrityStatusEnum> {
+  private async checkProcessEntity(
+    process: Process,
+  ): Promise<IntegrityStatusEnum> {
     const processId = this.requirePersistedId(process.getId(), "Process");
-    const documents = this.documentRepo.getByProcessId(processId);
+    const documents =
+      this.documentReadByProcessIdPort.getByProcessId(processId);
     const childStatuses: IntegrityStatusEnum[] = [];
 
     for (const document of documents) {
@@ -157,14 +215,16 @@ export class IntegrityVerificationService
 
     const status = this.aggregateStatuses(childStatuses);
     process.setIntegrityStatus(status);
-    this.processRepo.updateIntegrityStatus(processId, status);
+    this.processUpdateIntegrityPort.updateIntegrityStatus(processId, status);
 
     return status;
   }
 
-  private async checkDocumentEntity(document: Document): Promise<IntegrityStatusEnum> {
+  private async checkDocumentEntity(
+    document: Document,
+  ): Promise<IntegrityStatusEnum> {
     const documentId = this.requirePersistedId(document.getId(), "Document");
-    const files = this.fileRepo.getByDocumentId(documentId);
+    const files = this.fileReadByDocumentIdPort.getByDocumentId(documentId);
     const childStatuses: IntegrityStatusEnum[] = [];
 
     for (const file of files) {
@@ -173,14 +233,13 @@ export class IntegrityVerificationService
 
     const status = this.aggregateStatuses(childStatuses);
     document.setIntegrityStatus(status);
-    this.documentRepo.updateIntegrityStatus(documentId, status);
+    this.documentUpdateIntegrityPort.updateIntegrityStatus(documentId, status);
 
     return status;
   }
 
   private async checkFileEntity(file: File): Promise<IntegrityStatusEnum> {
     const fileId = this.requirePersistedId(file.getId(), "File");
-    const path = require("path");
     const absolutePath = path.resolve(this.dipPath, file.getPath());
     const status = await this.hashingService.checkFileIntegrity(
       absolutePath,
@@ -188,12 +247,14 @@ export class IntegrityVerificationService
     );
 
     file.setIntegrityStatus(status);
-    this.fileRepo.updateIntegrityStatus(fileId, status);
+    this.fileUpdateIntegrityPort.updateIntegrityStatus(fileId, status);
 
     return status;
   }
 
-  private aggregateStatuses(statuses: IntegrityStatusEnum[]): IntegrityStatusEnum {
+  private aggregateStatuses(
+    statuses: IntegrityStatusEnum[],
+  ): IntegrityStatusEnum {
     if (statuses.length === 0) {
       return IntegrityStatusEnum.VALID;
     }
@@ -206,10 +267,7 @@ export class IntegrityVerificationService
     return IntegrityStatusEnum.VALID;
   }
 
-  private requirePersistedId(
-    id: number | null,
-    entityName: string,
-  ): number {
+  private requirePersistedId(id: number | null, entityName: string): number {
     if (id === null) {
       throw new Error(
         `${entityName} has not been saved yet, cannot check integrity`,

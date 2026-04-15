@@ -219,10 +219,10 @@ describeIfLocal("Ricerca semantica reale — con DAO mockato", () => {
 
   beforeAll(async () => {
     if (isCI || !modelExists) return;
-    const repoMod = await import("../../../src/repo/impl/DocumentRepository");
+    const repoMod = await import("../../../src/repo/impl/DocumentPersistenceAdapter");
     const ucMod =
       await import("../../../src/use-case/document/impl/SearchSemanticUC");
-    DocumentRepositoryClass = repoMod.DocumentRepository;
+    DocumentRepositoryClass = repoMod.DocumentPersistenceAdapter;
     SearchSemanticUCClass = ucMod.SearchSemanticUC;
   }, 10_000);
 

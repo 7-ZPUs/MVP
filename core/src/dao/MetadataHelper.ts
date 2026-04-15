@@ -1,7 +1,7 @@
 /**
  * MetadataHelper — shared utilities for metadata persistence (SQLite)
  *
- * Usato da DocumentoRepository e ProcessRepository per evitare duplicazioni.
+ * Usato da DocumentoRepository e ProcessPersistenceAdapter per evitare duplicazioni.
  */
 import Database from "better-sqlite3";
 import { MetadataPersistenceRow } from "./mappers/MetadataMapper";

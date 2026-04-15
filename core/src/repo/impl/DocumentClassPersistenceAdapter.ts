@@ -1,13 +1,28 @@
 import { inject, injectable } from "tsyringe";
 
-import { IDocumentClassRepository } from "../IDocumentClassRepository";
+import type {
+  IGetDocumentClassByDipIdPort,
+  IGetDocumentClassByIdPort,
+  IGetDocumentClassByStatusPort,
+  ISaveDocumentClassPort,
+  ISearchDocumentClassPort,
+  IUpdateDocumentClassIntegrityStatusPort,
+} from "../IDocumentClassRepository";
 import { DocumentClass } from "../../entity/DocumentClass";
 import { IntegrityStatusEnum } from "../../value-objects/IntegrityStatusEnum";
 import { DocumentClassDAO } from "../../dao/DocumentClassDAO";
 import { DOCUMENT_CLASS_DAO_TOKEN } from "../../dao/IDocumentClassDAO";
 
 @injectable()
-export class DocumentClassRepository implements IDocumentClassRepository {
+export class DocumentClassPersistenceAdapter
+  implements
+    IGetDocumentClassByIdPort,
+    IGetDocumentClassByDipIdPort,
+    IGetDocumentClassByStatusPort,
+    ISaveDocumentClassPort,
+    IUpdateDocumentClassIntegrityStatusPort,
+    ISearchDocumentClassPort
+{
   constructor(
     @inject(DOCUMENT_CLASS_DAO_TOKEN)
     private readonly dao: DocumentClassDAO,

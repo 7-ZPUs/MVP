@@ -1,14 +1,18 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { GetFileByIdUC } from "../../../../src/use-case/file/impl/GetFileByIdUC";
 import { GetFileByDocumentUC } from "../../../../src/use-case/file/impl/GetFileByDocumentUC";
 import { GetFileByStatusUC } from "../../../../src/use-case/file/impl/GetFileByStatusUC";
 import { CheckFileIntegrityStatusUC } from "../../../../src/use-case/file/impl/CheckFileIntegrityStatusUC";
 import { File } from "../../../../src/entity/File";
-import { IFileRepository } from "../../../../src/repo/IFileRepository";
+import {
+  IGetFileByDocumentIdPort,
+  IGetFileByIdPort,
+  IGetFileByStatusPort,
+} from "../../../../src/repo/IFileRepository";
 import { IntegrityStatusEnum } from "../../../../src/value-objects/IntegrityStatusEnum";
 import { IIntegrityVerificationService } from "../../../../src/services/IIntegrityVerificationService";
 import { IExportPort } from "../../../../src/repo/IExportPort";
-import { IPackageReaderPort } from "../../../../src/repo/IPackageReaderPort";
+import { IFileSystemPort } from "../../../../src/repo/impl/utils/IFileSystemProvider";
 import { ExportFileUC } from "../../../../src/use-case/file/impl/ExportFileUC";
 import { Readable } from "node:stream";
 import { FileMapper } from "../../../../src/dao/mappers/FileMapper";
@@ -23,11 +27,11 @@ describe("File use-cases", () => {
   // expected_value: matches asserted behavior: GetFileByIdUC delega a repo.getById
   it("TU-S-browsing-96: execute() should GetFileByIdUC delega a repo.getById", () => {
     const entity = new File("f", "/f", "h", false, "2", "doc-uuid");
-    const repo: Pick<IFileRepository, "getById"> = {
+    const repo: IGetFileByIdPort = {
       getById: vi.fn().mockReturnValue(entity),
     };
 
-    const uc = new GetFileByIdUC(repo as IFileRepository);
+    const uc = new GetFileByIdUC(repo);
     const result = uc.execute(11);
 
     expect(repo.getById).toHaveBeenCalledWith(11);
@@ -40,11 +44,11 @@ describe("File use-cases", () => {
   // expected_value: matches asserted behavior: GetFileByDocumentUC delega a repo.getByDocumentId
   it("TU-S-browsing-97: execute() should GetFileByDocumentUC delega a repo.getByDocumentId", () => {
     const list = [new File("f", "/f", "h", false, "8", "doc-uuid")];
-    const repo: Pick<IFileRepository, "getByDocumentId"> = {
+    const repo: IGetFileByDocumentIdPort = {
       getByDocumentId: vi.fn().mockReturnValue(list),
     };
 
-    const uc = new GetFileByDocumentUC(repo as IFileRepository);
+    const uc = new GetFileByDocumentUC(repo);
     const result = uc.execute(8);
 
     expect(repo.getByDocumentId).toHaveBeenCalledWith(8);
@@ -57,11 +61,11 @@ describe("File use-cases", () => {
   // expected_value: matches asserted behavior: GetFileByStatusUC delega a repo.getByStatus
   it("TU-S-browsing-98: execute() should GetFileByStatusUC delega a repo.getByStatus", () => {
     const list = [new File("f", "/f", "h", false, "8", "doc-uuid")];
-    const repo: Pick<IFileRepository, "getByStatus"> = {
+    const repo: IGetFileByStatusPort = {
       getByStatus: vi.fn().mockReturnValue(list),
     };
 
-    const uc = new GetFileByStatusUC(repo as IFileRepository);
+    const uc = new GetFileByStatusUC(repo);
     const result = uc.execute(IntegrityStatusEnum.UNKNOWN);
 
     expect(repo.getByStatus).toHaveBeenCalledWith(IntegrityStatusEnum.UNKNOWN);
@@ -150,34 +154,43 @@ const makeFile = (id: number, filePath: string) =>
   });
 
 describe("ExportFileUC", () => {
-  let fileRepo: IFileRepository;
+  let fileRepo: IGetFileByIdPort;
   let exportPort: IExportPort;
-  let packageReader: IPackageReaderPort;
+  let fileSystemProvider: IFileSystemPort;
 
   beforeEach(() => {
     fileRepo = {
       getById: vi.fn(),
-    } as unknown as IFileRepository;
+    };
 
     exportPort = {
       exportFile: vi.fn(),
     };
 
-    packageReader = {
-      readFileBytes: vi.fn(),
-    } as unknown as IPackageReaderPort;
+    fileSystemProvider = {
+      readFile: vi.fn(),
+      openReadStream: vi.fn(),
+      readTextFile: vi.fn(),
+      fileExists: vi.fn(),
+      listFiles: vi.fn(),
+    };
   });
 
   it("returns NOT_FOUND when file does not exist", async () => {
     (fileRepo.getById as ReturnType<typeof vi.fn>).mockReturnValue(null);
 
-    const uc = new ExportFileUC(fileRepo, exportPort, packageReader);
+    const uc = new ExportFileUC(
+      fileRepo,
+      exportPort,
+      fileSystemProvider,
+      "/base/dip",
+    );
     const result = await uc.execute(99, "/dest/file.pdf");
 
     expect(result.success).toBe(false);
     expect(result.errorCode).toBe("NOT_FOUND");
     expect(
-      packageReader.readFileBytes as ReturnType<typeof vi.fn>,
+      fileSystemProvider.openReadStream as ReturnType<typeof vi.fn>,
     ).not.toHaveBeenCalled();
     expect(
       exportPort.exportFile as ReturnType<typeof vi.fn>,
@@ -189,19 +202,24 @@ describe("ExportFileUC", () => {
     (fileRepo.getById as ReturnType<typeof vi.fn>).mockReturnValue(
       makeFile(1, "/src/f1.pdf"),
     );
-    (packageReader.readFileBytes as ReturnType<typeof vi.fn>).mockResolvedValue(
-      stream,
-    );
+    (
+      fileSystemProvider.openReadStream as ReturnType<typeof vi.fn>
+    ).mockResolvedValue(stream);
     const exported = ExportResult.ok();
     (exportPort.exportFile as ReturnType<typeof vi.fn>).mockResolvedValue(
       exported,
     );
 
-    const uc = new ExportFileUC(fileRepo, exportPort, packageReader);
+    const uc = new ExportFileUC(
+      fileRepo,
+      exportPort,
+      fileSystemProvider,
+      "/base/dip",
+    );
     const result = await uc.execute(1, "/dest/f1.pdf");
 
     expect(
-      packageReader.readFileBytes as ReturnType<typeof vi.fn>,
+      fileSystemProvider.openReadStream as ReturnType<typeof vi.fn>,
     ).toHaveBeenCalledWith("/src/f1.pdf");
     expect(
       exportPort.exportFile as ReturnType<typeof vi.fn>,
@@ -210,15 +228,13 @@ describe("ExportFileUC", () => {
   });
 
   vi.mock("tsyringe", () => ({
-    injectable: () => () => { },
-    inject: () => () => { },
+    injectable: () => () => {},
+    inject: () => () => {},
   }));
 
   vi.mock("node:path", () => ({
     default: { resolve: vi.fn() },
   }));
-
-
 
   describe("PrintFileUC", () => {
     let fileRepo: { getById: ReturnType<typeof vi.fn> };
@@ -258,12 +274,16 @@ describe("ExportFileUC", () => {
     });
 
     describe("quando il file esiste", () => {
-      const mockFile = () => ({ getPath: vi.fn().mockReturnValue("docs/report.pdf") });
+      const mockFile = () => ({
+        getPath: vi.fn().mockReturnValue("docs/report.pdf"),
+      });
 
       it("chiama printSingle con il path assoluto e le opzioni corrette", async () => {
         const file = mockFile();
         fileRepo.getById.mockReturnValue(file);
-        (path.resolve as ReturnType<typeof vi.fn>).mockReturnValue("/base/dip/docs/report.pdf");
+        (path.resolve as ReturnType<typeof vi.fn>).mockReturnValue(
+          "/base/dip/docs/report.pdf",
+        );
         printPort.printSingle.mockResolvedValue({ success: true });
 
         await uc.execute(1);
@@ -276,7 +296,9 @@ describe("ExportFileUC", () => {
 
       it("ritorna { success: true } quando la stampa riesce", async () => {
         fileRepo.getById.mockReturnValue(mockFile());
-        (path.resolve as ReturnType<typeof vi.fn>).mockReturnValue("/abs/path.pdf");
+        (path.resolve as ReturnType<typeof vi.fn>).mockReturnValue(
+          "/abs/path.pdf",
+        );
         printPort.printSingle.mockResolvedValue({ success: true });
 
         const result = await uc.execute(1);
@@ -286,7 +308,9 @@ describe("ExportFileUC", () => {
 
       it("ritorna { success: false, error } quando la stampa fallisce", async () => {
         fileRepo.getById.mockReturnValue(mockFile());
-        (path.resolve as ReturnType<typeof vi.fn>).mockReturnValue("/abs/path.pdf");
+        (path.resolve as ReturnType<typeof vi.fn>).mockReturnValue(
+          "/abs/path.pdf",
+        );
         printPort.printSingle.mockResolvedValue({
           success: false,
           error: "printer offline",
@@ -299,7 +323,9 @@ describe("ExportFileUC", () => {
 
       it("propaga eccezioni di printSingle", async () => {
         fileRepo.getById.mockReturnValue(mockFile());
-        (path.resolve as ReturnType<typeof vi.fn>).mockReturnValue("/abs/path.pdf");
+        (path.resolve as ReturnType<typeof vi.fn>).mockReturnValue(
+          "/abs/path.pdf",
+        );
         printPort.printSingle.mockRejectedValue(new Error("unexpected crash"));
 
         await expect(uc.execute(1)).rejects.toThrow("unexpected crash");
@@ -307,7 +333,9 @@ describe("ExportFileUC", () => {
 
       it("chiama fileRepo.getById con il fileId corretto", async () => {
         fileRepo.getById.mockReturnValue(mockFile());
-        (path.resolve as ReturnType<typeof vi.fn>).mockReturnValue("/abs/path.pdf");
+        (path.resolve as ReturnType<typeof vi.fn>).mockReturnValue(
+          "/abs/path.pdf",
+        );
         printPort.printSingle.mockResolvedValue({ success: true });
 
         await uc.execute(42);

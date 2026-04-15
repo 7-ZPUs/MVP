@@ -7,6 +7,7 @@ const meta = new Metadata("root", [
   new Metadata("autore", "Mario Rossi"),
   new Metadata("anno", "2024", MetadataType.NUMBER),
 ]);
+const emptyMeta = new Metadata("root", [], MetadataType.COMPOSITE);
 
 describe("Document entity", () => {
   describe("constructor", () => {
@@ -26,7 +27,7 @@ describe("Document entity", () => {
     // description: should imposta integrityStatus a UNKNOWN di default
     // expected_value: matches asserted behavior: imposta integrityStatus a UNKNOWN di default
     it("TU-F-browsing-09: imposta() should imposta integrityStatus a UNKNOWN di default", () => {
-      const doc = new Document("doc-uuid", [], "process-uuid");
+      const doc = new Document("doc-uuid", emptyMeta, "process-uuid");
       expect(doc.getIntegrityStatus()).toBe(IntegrityStatusEnum.UNKNOWN);
     });
 
@@ -35,7 +36,7 @@ describe("Document entity", () => {
     // description: should id è null finché non viene persistito
     // expected_value: matches asserted behavior: id è null finché non viene persistito
     it("TU-F-browsing-10: id() should id è null finché non viene persistito", () => {
-      const doc = new Document("doc-uuid", [], "process-uuid");
+      const doc = new Document("doc-uuid", emptyMeta, "process-uuid");
       expect(doc.getId()).toBeNull();
     });
   });
@@ -46,7 +47,7 @@ describe("Document entity", () => {
     // description: should aggiorna lo stato di integrità
     // expected_value: matches asserted behavior: aggiorna lo stato di integrità
     it("TU-F-browsing-13: aggiorna() should aggiorna lo stato di integrità", () => {
-      const doc = new Document("uuid", [], "process-uuid");
+      const doc = new Document("uuid", emptyMeta, "process-uuid");
       doc.setIntegrityStatus(IntegrityStatusEnum.INVALID);
       expect(doc.getIntegrityStatus()).toBe(IntegrityStatusEnum.INVALID);
     });

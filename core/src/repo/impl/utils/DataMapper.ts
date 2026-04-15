@@ -6,6 +6,8 @@ import { Dip } from "../../../entity/Dip";
 import { Metadata, MetadataType } from "../../../value-objects/Metadata";
 import { DocumentMetadataHashMapper } from "./DocumentMetadataHashMapper";
 import { IDataMapper, MapperRequest } from "./IDataMapper";
+import path from "node:path";
+import { container } from "../../../container";
 
 export class DataMapper implements IDataMapper {
   private readonly hashMapper = new DocumentMetadataHashMapper();
@@ -110,7 +112,7 @@ export class DataMapper implements IDataMapper {
 
           return new File(
             text,
-            physicalPath,
+            path.join(container.resolve("DIP_PATH_TOKEN"), physicalPath),
             hash ?? "",
             isMain,
             uuid,

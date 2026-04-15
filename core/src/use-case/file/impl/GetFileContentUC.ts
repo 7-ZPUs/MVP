@@ -4,24 +4,28 @@ import {
   PACKAGE_READER_PORT_TOKEN,
 } from "../../../services/IPackageReaderService";
 import {
-  FILE_REPOSITORY_TOKEN,
-  IFileRepository,
+  FILE_GET_BY_ID_PORT_TOKEN,
+  IGetFileByIdPort,
 } from "../../../repo/IFileRepository";
 import { IGetFileContentUC } from "../IGetFileContentUC";
-import { FILE_SYSTEM_PROVIDER_TOKEN, IFileSystemPort } from "../../../repo/impl/utils/IFileSystemProvider";
+import {
+  FILE_SYSTEM_PROVIDER_TOKEN,
+  IFileSystemPort,
+} from "../../../repo/impl/utils/IFileSystemProvider";
 
 @injectable()
 export class GetFileContentUC implements IGetFileContentUC {
   constructor(
     @inject(FILE_SYSTEM_PROVIDER_TOKEN)
     private readonly fileSystemProvider: IFileSystemPort,
-    @inject(FILE_REPOSITORY_TOKEN)
-    private readonly fileRepo: IFileRepository,
+    @inject(FILE_GET_BY_ID_PORT_TOKEN)
+    private readonly fileRepo: IGetFileByIdPort,
   ) {}
 
   async execute(fileId: number): Promise<Buffer> {
     console.log("GetFileContentUC: executing with fileId =", fileId);
-    let filePath = this.fileRepo.getById(fileId)?.getPath();
+    let file = this.fileRepo.getById(fileId);
+    let filePath = file?.getPath();
     if (!filePath) {
       throw new Error(`File with id ${fileId} not found`);
     }

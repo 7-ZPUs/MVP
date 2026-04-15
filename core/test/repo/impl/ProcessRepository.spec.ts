@@ -1,12 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { ProcessRepository } from "../../../src/repo/impl/ProcessRepository";
+import { ProcessPersistenceAdapter } from "../../../src/repo/impl/ProcessPersistenceAdapter";
 import { ProcessDAO } from "../../../src/dao/ProcessDAO";
 import { Process } from "../../../src/entity/Process";
 import { IntegrityStatusEnum } from "../../../src/value-objects/IntegrityStatusEnum";
 import { Metadata, MetadataType } from "../../../src/value-objects/Metadata";
 
-describe("ProcessRepository", () => {
+describe("ProcessPersistenceAdapter", () => {
   let dao: {
     getById: ReturnType<typeof vi.fn>;
     getByDocumentClassId: ReturnType<typeof vi.fn>;
@@ -15,7 +15,7 @@ describe("ProcessRepository", () => {
     updateIntegrityStatus: ReturnType<typeof vi.fn>;
     getAggregatedIntegrityStatusByDocumentClassId: ReturnType<typeof vi.fn>;
   };
-  let repo: ProcessRepository;
+  let repo: ProcessPersistenceAdapter;
 
   beforeEach(() => {
     dao = {
@@ -26,7 +26,7 @@ describe("ProcessRepository", () => {
       updateIntegrityStatus: vi.fn(),
       getAggregatedIntegrityStatusByDocumentClassId: vi.fn(),
     };
-    repo = new ProcessRepository(dao as unknown as ProcessDAO);
+    repo = new ProcessPersistenceAdapter(dao as unknown as ProcessDAO);
   });
 
   const metadata = new Metadata(

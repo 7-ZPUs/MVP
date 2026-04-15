@@ -3,9 +3,9 @@ import * as os from "node:os";
 import * as path from "node:path";
 import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import { LocalPackageReaderAdapter } from "../../../src/repo/impl/LocalPackageReaderAdapter";
+import { PackageReaderService } from "../../../src/services/impl/PackageReaderService";
 import { XmlDipParser } from "../../../src/repo/impl/utils/XmlDipParser";
-import { FileSystemProvider } from "../../../src/repo/impl/utils/FileSystemProvider";
+import { FileSystemPort } from "../../../src/repo/impl/utils/FileSystemProvider";
 import { IntegrityStatusEnum } from "../../../src/value-objects/IntegrityStatusEnum";
 import { Metadata, MetadataType } from "../../../src/value-objects/Metadata";
 
@@ -67,15 +67,16 @@ async function createSampleDipPackageFromResources(): Promise<string> {
 
 describe("LocalPackageReaderAdapter integration tests", () => {
   let dipPackagePath: string;
-  let adapter: LocalPackageReaderAdapter;
+  let adapter: PackageReaderService;
 
   beforeAll(async () => {
     dipPackagePath = await createSampleDipPackageFromResources();
-    adapter = new LocalPackageReaderAdapter(
+    adapter = new PackageReaderService(
       new XmlDipParser(),
-      new FileSystemProvider(),
+      new FileSystemPort(),
       new DataMapper(),
     );
+    await adapter.setDipPath(dipPackagePath);
   });
 
   afterAll(async () => {
@@ -89,7 +90,7 @@ describe("LocalPackageReaderAdapter integration tests", () => {
   // description: should read and parse a DiP package correctly
   // expected_value: dip with Uuid "test-dip-uuid-1234" and UNKNOWN integrity status is returned when reading the package
   it("TU-F-Indexing-01: readDip() should read and parse a DiP package correctly", async () => {
-    const dip = await adapter.readDip(dipPackagePath);
+    const dip = await adapter.readDip();
 
     expect(dip).toBeDefined();
     expect(dip.getId()).toBeNull();
@@ -103,7 +104,7 @@ describe("LocalPackageReaderAdapter integration tests", () => {
   // expected_value: DocumentClass with Id: null, DipId: null, DipUuid: "test-dip-uuid-1234", Uuid: "class-1", Name: "Class1", Timestamp: undefined and UNKNOWN integrity status is returned when reading the package
   it("TU-F-Indexing-02: readDocumentClasses() should read and parse document classes from a DiP package", async () => {
     const documentClasses = [];
-    for await (const dc of adapter.readDocumentClasses(dipPackagePath)) {
+    for await (const dc of adapter.readDocumentClasses()) {
       documentClasses.push(dc);
     }
 
@@ -136,7 +137,7 @@ describe("LocalPackageReaderAdapter integration tests", () => {
   // expected_value: 3 Process entities with Id: null, DocumentClassId: null, DocumentClassUuid: "class-1" or "class-2", Uuid: "aip-1", "aip-2" or "aip-3", empty Metadata array and UNKNOWN integrity status are returned when reading the package
   it("TU-F-Indexing-03: readProcesses() should read and parse processes from a DiP package", async () => {
     const processes = [];
-    for await (const process of adapter.readProcesses(dipPackagePath)) {
+    for await (const process of adapter.readProcesses()) {
       processes.push(process);
     }
 
@@ -161,7 +162,7 @@ describe("LocalPackageReaderAdapter integration tests", () => {
   // expected_value: Document entities with Id: null, Uuid: "doc-1", "doc-2" or "doc-3", ProcessId: null, ProcessUuid: "aip-1", "aip-2" or "aip-3", empty Metadata array and UNKNOWN integrity status are returned when reading the package
   it("TU-F-Indexing-04: readDocuments() should read and parse documents from a DiP package", async () => {
     const documents = [];
-    for await (const document of adapter.readDocuments(dipPackagePath)) {
+    for await (const document of adapter.readDocuments()) {
       documents.push(document);
     }
 
@@ -205,7 +206,7 @@ describe("LocalPackageReaderAdapter integration tests", () => {
   // expected_value: File entities with Id: null, Filename: as in the package, Path: as in the package, Hash: empty string, IsMain: true for primary files and false for attachments, DocumentId: null, DocumentUuid: as in the package, and UNKNOWN integrity status are returned when reading the package
   it("TU-F-Indexing-05: readFiles() should read and parse files from a DiP package", async () => {
     const files = [];
-    for await (const file of adapter.readFiles(dipPackagePath)) {
+    for await (const file of adapter.readFiles()) {
       files.push(file);
     }
 
@@ -282,7 +283,8 @@ describe("LocalPackageReaderAdapter integration tests", () => {
       "./class-1/aip-1/documents/doc-1/primary.pdf",
     );
 
-    const stream = await adapter.readFileBytes(filePath);
+    const fileSystemPort = new FileSystemPort();
+    const stream = await fileSystemPort.openReadStream(filePath);
 
     let data = "";
     for await (const chunk of stream) {

@@ -1,15 +1,15 @@
 import { inject, injectable } from "tsyringe";
 import {
-  DOCUMENTO_REPOSITORY_TOKEN,
-  IDocumentRepository,
+  DOCUMENT_GET_DISTINCT_CUSTOM_METADATA_KEYS_PORT_TOKEN,
+  IGetDistinctDocumentCustomMetadataKeysPort,
 } from "../../../repo/IDocumentRepository";
 import { IGetCustomMetadataKeysUC } from "../IGetCustomMetadataKeysUC";
 
 @injectable()
 export class GetCustomMetadataKeysUC implements IGetCustomMetadataKeysUC {
   constructor(
-    @inject(DOCUMENTO_REPOSITORY_TOKEN)
-    private readonly documentRepo: IDocumentRepository,
+    @inject(DOCUMENT_GET_DISTINCT_CUSTOM_METADATA_KEYS_PORT_TOKEN)
+    private readonly documentRepo: IGetDistinctDocumentCustomMetadataKeysPort,
   ) {}
 
   execute(dipId: number | null): string[] {

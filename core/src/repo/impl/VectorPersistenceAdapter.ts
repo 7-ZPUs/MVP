@@ -1,18 +1,27 @@
 import { inject, injectable } from "tsyringe";
 
-import { IVectorRepository } from "../IVectorRepository";
+import type {
+  IGetVectorByDocumentIdPort,
+  ISaveVectorPort,
+  ISearchSimilarVectorsPort,
+} from "../IVectorRepository";
 import { IVectorDAO, VECTOR_DAO_TOKEN } from "../../dao/IVectorDAO";
 import { Vector } from "../../entity/Vector";
 
 @injectable()
-export class VectorRepository implements IVectorRepository {
+export class VectorPersistenceAdapter
+  implements
+    ISaveVectorPort,
+    IGetVectorByDocumentIdPort,
+    ISearchSimilarVectorsPort
+{
   constructor(
     @inject(VECTOR_DAO_TOKEN)
     private readonly dao: IVectorDAO,
   ) {}
 
   async saveVector(vector: Vector): Promise<void> {
-    if(!vector) throw new Error("Vector cannot be null or undefined");
+    if (!vector) throw new Error("Vector cannot be null or undefined");
     this.dao.save(vector);
   }
 

@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { FileRepository } from "../../../src/repo/impl/FileRepository";
+import { FilePersistenceAdapter } from "../../../src/repo/impl/FilePersistenceAdapter";
 import { FileDAO } from "../../../src/dao/FileDAO";
 import { IntegrityStatusEnum } from "../../../src/value-objects/IntegrityStatusEnum";
 import { File } from "../../../src/entity/File";
 
-describe("FileRepository", () => {
+describe("FilePersistenceAdapter", () => {
   let dao: {
     getById: ReturnType<typeof vi.fn>;
     getByDocumentId: ReturnType<typeof vi.fn>;
@@ -13,7 +13,7 @@ describe("FileRepository", () => {
     save: ReturnType<typeof vi.fn>;
     updateIntegrityStatus: ReturnType<typeof vi.fn>;
   };
-  let repo: FileRepository;
+  let repo: FilePersistenceAdapter;
 
   beforeEach(() => {
     dao = {
@@ -23,7 +23,7 @@ describe("FileRepository", () => {
       save: vi.fn(),
       updateIntegrityStatus: vi.fn(),
     };
-    repo = new FileRepository(dao as unknown as FileDAO);
+    repo = new FilePersistenceAdapter(dao as unknown as FileDAO);
   });
 
   it("TU-F-browsing-64: save() should save e getById funzionano", () => {

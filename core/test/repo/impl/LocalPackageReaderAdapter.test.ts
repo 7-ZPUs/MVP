@@ -39,6 +39,7 @@ describe("LocalPackageReaderAdapter", () => {
       getProcessMappers: vi.fn(),
       getDocumentMappers: vi.fn(),
       getFileMappers: vi.fn(),
+      setRawDipIndex: vi.fn(),
     } as unknown as Mocked<IDataMapper>;
 
     adapter = new PackageReaderService(parserMock, fsProviderMock, mapperMock);
@@ -53,8 +54,7 @@ describe("LocalPackageReaderAdapter", () => {
       "other-file.txt",
       "DiPIndex.old.txt",
     ]);
-    adapter.setDipPath(dipPath);
-    await expect(adapter.readDip()).rejects.toThrow(
+    await expect(adapter.setDipPath(dipPath)).rejects.toThrow(
       "DiP index file not found in '/mock/dip/path'. Expected format: DiPIndex.<uuid>.xml",
     );
   });
@@ -79,7 +79,7 @@ describe("LocalPackageReaderAdapter", () => {
       return new Dip("dip-from-a");
     });
 
-    adapter.setDipPath(dipPath);
+    await adapter.setDipPath(dipPath);
     const result = await adapter.readDip();
 
     expect(result).toBeInstanceOf(Dip);
@@ -102,7 +102,8 @@ describe("LocalPackageReaderAdapter", () => {
     mapperMock.mapDocumentClasses.mockReturnValue(mockClasses);
 
     const results: DocumentClass[] = [];
-    for await (const dc of adapter.readDocumentClasses(dipPath)) {
+    await adapter.setDipPath(dipPath);
+    for await (const dc of adapter.readDocumentClasses()) {
       results.push(dc);
     }
 
@@ -148,7 +149,7 @@ describe("LocalPackageReaderAdapter", () => {
       .mockReturnValueOnce({ meta: "parsed" });
 
     const results: Process[] = [];
-    adapter.setDipPath(dipPath);
+    await adapter.setDipPath(dipPath);
     for await (const proc of adapter.readProcesses()) {
       results.push(proc);
     }
@@ -157,7 +158,7 @@ describe("LocalPackageReaderAdapter", () => {
     expect(results[0]).toBeInstanceOf(Process);
     expect(results[0].getDocumentClassUuid()).toBe("dc-uuid");
     expect(results[0].getUuid()).toBe("proc-meta");
-    expect(results[0].getMetadata()).toEqual([]);
+    expect(results[0].getMetadata()).toEqual(new Metadata("meta", "value"));
   });
 
   // identifier: TU-F-Indexing-11
@@ -187,7 +188,7 @@ describe("LocalPackageReaderAdapter", () => {
     parserMock.parse.mockReturnValue({ index: true });
 
     const results: Process[] = [];
-    adapter.setDipPath(dipPath);
+    await adapter.setDipPath(dipPath);
     for await (const proc of adapter.readProcesses()) {
       results.push(proc);
     }
@@ -196,7 +197,7 @@ describe("LocalPackageReaderAdapter", () => {
     expect(results[0]).toBeInstanceOf(Process);
     expect(results[0].getDocumentClassUuid()).toBe("dc-uuid");
     expect(results[0].getUuid()).toBe("proc-null-metadata");
-    expect(results[0].getMetadata()).toEqual([]);
+    expect(results[0].getMetadata()).toEqual(new Metadata("meta", "value"));
   });
 
   // identifier: TU-F-Indexing-12
@@ -220,7 +221,7 @@ describe("LocalPackageReaderAdapter", () => {
     mapperMock.getDocumentMappers.mockReturnValue([docMapperMock]);
 
     const results: Document[] = [];
-    adapter.setDipPath(dipPath);
+    await adapter.setDipPath(dipPath);
     for await (const doc of adapter.readDocuments()) {
       results.push(doc);
     }
@@ -229,7 +230,7 @@ describe("LocalPackageReaderAdapter", () => {
     expect(results[0]).toBeInstanceOf(Document);
     expect(results[0].getUuid()).toBe("doc-without-metadata");
     expect(results[0].getProcessUuid()).toBe("proc-uuid");
-    expect(results[0].getMetadata()).toEqual([]);
+    expect(results[0].getMetadata()).toEqual(new Metadata("meta", "value"));
   });
 
   // identifier: TU-F-Indexing-14
@@ -251,7 +252,7 @@ describe("LocalPackageReaderAdapter", () => {
     mapperMock.getFileMappers.mockReturnValue([fileMapperMock]);
 
     const results: File[] = [];
-    adapter.setDipPath(dipPath);
+    await adapter.setDipPath(dipPath);
     for await (const f of adapter.readFiles()) {
       results.push(f);
     }

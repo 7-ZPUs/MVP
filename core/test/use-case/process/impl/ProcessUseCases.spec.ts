@@ -5,9 +5,18 @@ import { GetProcessByDocumentClassUC } from "../../../../src/use-case/process/im
 import { GetProcessByStatusUC } from "../../../../src/use-case/process/impl/GetProcessByStatus";
 import { CheckProcessIntegrityStatusUC } from "../../../../src/use-case/process/impl/CheckProcessIntegrityStatusUC";
 import { Process } from "../../../../src/entity/Process";
-import { IProcessRepository } from "../../../../src/repo/IProcessRepository";
+import {
+  IGetProcessByDocumentClassIdPort,
+  IGetProcessByIdPort,
+  IGetProcessByStatusPort,
+} from "../../../../src/repo/IProcessRepository";
 import { IntegrityStatusEnum } from "../../../../src/value-objects/IntegrityStatusEnum";
 import { IIntegrityVerificationService } from "../../../../src/services/IIntegrityVerificationService";
+import { Metadata, MetadataType } from "../../../../src/value-objects/Metadata";
+
+function buildProcessMetadata(): Metadata {
+  return new Metadata("root", [], MetadataType.COMPOSITE);
+}
 
 describe("Process use-cases", () => {
   // identifier: TU-S-browsing-102
@@ -15,12 +24,12 @@ describe("Process use-cases", () => {
   // description: should return the correct process
   // expected_value: returns the correct process
   it("TU-S-browsing-102: execute() should return the correct process", () => {
-    const entity = new Process("dc-uuid", "proc-2", []);
-    const repo: Pick<IProcessRepository, "getById"> = {
+    const entity = new Process("dc-uuid", "proc-2", buildProcessMetadata());
+    const repo: IGetProcessByIdPort = {
       getById: vi.fn().mockReturnValue(entity),
     };
 
-    const uc = new GetProcessByIdUC(repo as IProcessRepository);
+    const uc = new GetProcessByIdUC(repo);
     const result = uc.execute(12);
 
     expect(repo.getById).toHaveBeenCalledWith(12);
@@ -32,12 +41,12 @@ describe("Process use-cases", () => {
   // description: should return list of processes
   // expected_value: returns list of processes
   it("TU-S-browsing-103: execute() should return list of processes", () => {
-    const list = [new Process("dc-uuid", "proc-3", [])];
-    const repo: Pick<IProcessRepository, "getByDocumentClassId"> = {
+    const list = [new Process("dc-uuid", "proc-3", buildProcessMetadata())];
+    const repo: IGetProcessByDocumentClassIdPort = {
       getByDocumentClassId: vi.fn().mockReturnValue(list),
     };
 
-    const uc = new GetProcessByDocumentClassUC(repo as IProcessRepository);
+    const uc = new GetProcessByDocumentClassUC(repo);
     const result = uc.execute(3);
 
     expect(repo.getByDocumentClassId).toHaveBeenCalledWith(3);
@@ -49,12 +58,12 @@ describe("Process use-cases", () => {
   // description: should return list of processes
   // expected_value: returns list of processes
   it("TU-S-browsing-104: execute() should return list of processes", () => {
-    const list = [new Process("dc-uuid", "proc-4", [])];
-    const repo: Pick<IProcessRepository, "getByStatus"> = {
+    const list = [new Process("dc-uuid", "proc-4", buildProcessMetadata())];
+    const repo: IGetProcessByStatusPort = {
       getByStatus: vi.fn().mockReturnValue(list),
     };
 
-    const uc = new GetProcessByStatusUC(repo as IProcessRepository);
+    const uc = new GetProcessByStatusUC(repo);
     const result = uc.execute(IntegrityStatusEnum.VALID);
 
     expect(repo.getByStatus).toHaveBeenCalledWith(IntegrityStatusEnum.VALID);
@@ -80,7 +89,9 @@ describe("Process use-cases", () => {
     );
     const result = await uc.execute(1);
 
-    expect(integrityService.checkProcessIntegrityStatus).toHaveBeenCalledWith(1);
+    expect(integrityService.checkProcessIntegrityStatus).toHaveBeenCalledWith(
+      1,
+    );
     expect(result).toBe(IntegrityStatusEnum.VALID);
   });
 
@@ -102,6 +113,8 @@ describe("Process use-cases", () => {
       integrityService as IIntegrityVerificationService,
     );
 
-    await expect(uc.execute(55)).rejects.toThrow("Process with id 55 not found");
+    await expect(uc.execute(55)).rejects.toThrow(
+      "Process with id 55 not found",
+    );
   });
 });

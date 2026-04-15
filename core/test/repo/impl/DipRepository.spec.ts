@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { DipRepository } from "../../../src/repo/impl/DipRepository";
+import { DipPersistenceAdapter } from "../../../src/repo/impl/DipPersistenceAdapter";
 import { DipDAO } from "../../../src/dao/DipDAO";
 import { Dip } from "../../../src/entity/Dip";
 import { IntegrityStatusEnum } from "../../../src/value-objects/IntegrityStatusEnum";
 
-describe("DipRepository", () => {
+describe("DipPersistenceAdapter", () => {
   let dao: {
     getById: ReturnType<typeof vi.fn>;
     getByUuid: ReturnType<typeof vi.fn>;
@@ -13,7 +13,7 @@ describe("DipRepository", () => {
     getByStatus: ReturnType<typeof vi.fn>;
     updateIntegrityStatus: ReturnType<typeof vi.fn>;
   };
-  let repo: DipRepository;
+  let repo: DipPersistenceAdapter;
 
   beforeEach(() => {
     dao = {
@@ -23,7 +23,7 @@ describe("DipRepository", () => {
       getByStatus: vi.fn(),
       updateIntegrityStatus: vi.fn(),
     };
-    repo = new DipRepository(dao as unknown as DipDAO);
+    repo = new DipPersistenceAdapter(dao as unknown as DipDAO);
   });
 
   it("TU-F-browsing-44: save() should save crea un dip con status UNKNOWN", () => {

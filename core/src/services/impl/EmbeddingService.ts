@@ -29,13 +29,12 @@ export class EmbeddingService implements IEmbeddingService {
   ) {}
 
   async generateDocumentEmbedding(
-    dipPath: string | null,
     file: File,
   ): Promise<Float32Array | null> {
-    if(!dipPath || !file.getPath()) {
-      throw new Error("DiP path not set in EmbeddingService");
+    if(!file.getPath()) {
+      throw new Error("File path not set in EmbeddingService");
     }
-    const text = await this.readTextFromStream(path.join(dipPath,  file.getPath()));
+    const text = await this.readTextFromStream(file.getPath());
     if (!text) {
       return null;
     }

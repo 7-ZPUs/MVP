@@ -12,11 +12,11 @@ import { Document } from "../../../src/entity/Document";
 import { DocumentClass } from "../../../src/entity/DocumentClass";
 import { File } from "../../../src/entity/File";
 import { Process } from "../../../src/entity/Process";
-import { DipRepository } from "../../../src/repo/impl/DipRepository";
-import { DocumentClassRepository } from "../../../src/repo/impl/DocumentClassRepository";
-import { DocumentRepository } from "../../../src/repo/impl/DocumentRepository";
-import { FileRepository } from "../../../src/repo/impl/FileRepository";
-import { ProcessRepository } from "../../../src/repo/impl/ProcessRepository";
+import { DipPersistenceAdapter } from "../../../src/repo/impl/DipPersistenceAdapter";
+import { DocumentClassPersistenceAdapter } from "../../../src/repo/impl/DocumentClassPersistenceAdapter";
+import { DocumentPersistenceAdapter } from "../../../src/repo/impl/DocumentPersistenceAdapter";
+import { FilePersistenceAdapter } from "../../../src/repo/impl/FilePersistenceAdapter";
+import { ProcessPersistenceAdapter } from "../../../src/repo/impl/ProcessPersistenceAdapter";
 import { SqliteTransactionManager } from "../../../src/repo/impl/SqliteTransactionManager";
 import { IntegrityVerificationService } from "../../../src/services/impl/IntegrityVerificationService";
 import type { IHashingService } from "../../../src/services/IHashingService";
@@ -33,32 +33,44 @@ function buildMetadata(label: string): Metadata {
 }
 
 type Repositories = {
-  dipRepo: DipRepository;
-  documentClassRepo: DocumentClassRepository;
-  processRepo: ProcessRepository;
-  documentRepo: DocumentRepository;
-  fileRepo: FileRepository;
+  dipRepo: DipPersistenceAdapter;
+  documentClassRepo: DocumentClassPersistenceAdapter;
+  processRepo: ProcessPersistenceAdapter;
+  documentRepo: DocumentPersistenceAdapter;
+  fileRepo: FilePersistenceAdapter;
 };
 
 function buildSystem(db: Database.Database, hashingService: IHashingService) {
   const repos: Repositories = {
-    dipRepo: new DipRepository(new DipDAO(db)),
-    documentClassRepo: new DocumentClassRepository(new DocumentClassDAO(db)),
-    processRepo: new ProcessRepository(new ProcessDAO(db)),
-    documentRepo: new DocumentRepository(new DocumentDAO(db)),
-    fileRepo: new FileRepository(new FileDAO(db)),
+    dipRepo: new DipPersistenceAdapter(new DipDAO(db)),
+    documentClassRepo: new DocumentClassPersistenceAdapter(
+      new DocumentClassDAO(db),
+    ),
+    processRepo: new ProcessPersistenceAdapter(new ProcessDAO(db)),
+    documentRepo: new DocumentPersistenceAdapter(new DocumentDAO(db)),
+    fileRepo: new FilePersistenceAdapter(new FileDAO(db)),
   };
 
   const transactionManager = new SqliteTransactionManager(db);
 
   const service = new IntegrityVerificationService(
     repos.fileRepo,
+    repos.fileRepo,
+    repos.fileRepo,
+    repos.documentRepo,
+    repos.documentRepo,
     repos.documentRepo,
     repos.processRepo,
+    repos.processRepo,
+    repos.processRepo,
     repos.documentClassRepo,
+    repos.documentClassRepo,
+    repos.documentClassRepo,
+    repos.dipRepo,
     repos.dipRepo,
     hashingService,
     transactionManager,
+    "/",
   );
 
   return { repos, service };

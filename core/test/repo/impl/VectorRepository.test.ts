@@ -1,9 +1,8 @@
 import { IVectorDAO } from "../../../src/dao/IVectorDAO";
 import { Vector } from "../../../src/entity/Vector";
-import { VectorRepository } from "../../../src/repo/impl/VectorRepository";
-import { IVectorRepository } from "../../../src/repo/IVectorRepository";
+import { VectorPersistenceAdapter } from "../../../src/repo/impl/VectorPersistenceAdapter";
 
-describe("VectorRepository", () => {
+describe("VectorPersistenceAdapter", () => {
   it("should call DAO save() method without altering the Vector object", async () => {
     const mockDAO = {
       save: vi.fn(),
@@ -11,7 +10,7 @@ describe("VectorRepository", () => {
       searchSimilar: vi.fn(),
     };
 
-    const repository = new VectorRepository(mockDAO);
+    const repository = new VectorPersistenceAdapter(mockDAO);
     const vector = new Vector(1, new Float32Array([0.1, 0.2, 0.3]));
 
     await repository.saveVector(vector);
@@ -26,7 +25,7 @@ describe("VectorRepository", () => {
       searchSimilar: vi.fn(),
     };
 
-    const repository = new VectorRepository(mockDAO);
+    const repository = new VectorPersistenceAdapter(mockDAO);
 
     // @ts-expect-error - intentionally passing null to test error handling
     await expect(repository.saveVector(null)).rejects.toThrow();
@@ -41,7 +40,7 @@ describe("VectorRepository", () => {
       searchSimilar: vi.fn(),
     };
 
-    const repository = new VectorRepository(mockDAO);
+    const repository = new VectorPersistenceAdapter(mockDAO);
     const result = await repository.getVector(1);
 
     expect(mockDAO.getByDocumentId).toHaveBeenCalledWith(1);
@@ -55,7 +54,7 @@ describe("VectorRepository", () => {
       searchSimilar: vi.fn(),
     };
 
-    const repository = new VectorRepository(mockDAO);
+    const repository = new VectorPersistenceAdapter(mockDAO);
     const result = await repository.getVector(1);
 
     expect(mockDAO.getByDocumentId).toHaveBeenCalledWith(1);
@@ -70,7 +69,7 @@ describe("VectorRepository", () => {
       searchSimilar: vi.fn(),
     };
 
-    const repository = new VectorRepository(mockDAO);
+    const repository = new VectorPersistenceAdapter(mockDAO);
     const documentId = 1;
     const result = await repository.getVector(documentId);
 
@@ -88,7 +87,7 @@ describe("VectorRepository", () => {
       ]),
     };
 
-    const repository = new VectorRepository(mockDAO);
+    const repository = new VectorPersistenceAdapter(mockDAO);
     const queryVector = new Float32Array([0.1, 0.2, 0.3]);
     const topK = 2;
     const result = await repository.searchSimilarVectors(queryVector, topK);

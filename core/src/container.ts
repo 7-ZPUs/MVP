@@ -9,18 +9,58 @@ import { WORD_EMBEDDING_PORT_TOKEN } from "./repo/IWordEmbedding";
 import { WordEmbedding } from "./repo/impl/WordEmbedding";
 
 // ---- Repositories ----
-import { DOCUMENTO_REPOSITORY_TOKEN } from "./repo/IDocumentRepository";
-import { DocumentRepository } from "./repo/impl/DocumentRepository";
-import { FILE_REPOSITORY_TOKEN } from "./repo/IFileRepository";
-import { FileRepository } from "./repo/impl/FileRepository";
-import { PROCESS_REPOSITORY_TOKEN } from "./repo/IProcessRepository";
-import { ProcessRepository } from "./repo/impl/ProcessRepository";
-import { DOCUMENT_CLASS_REPOSITORY_TOKEN } from "./repo/IDocumentClassRepository";
-import { DocumentClassRepository } from "./repo/impl/DocumentClassRepository";
-import { DIP_REPOSITORY_TOKEN } from "./repo/IDipRepository";
-import { DipRepository } from "./repo/impl/DipRepository";
-import { VECTOR_REPOSITORY_TOKEN } from "./repo/VectorRepositoryToken";
-import { VectorRepository } from "./repo/impl/VectorRepository";
+import {
+  DOCUMENT_GET_BY_ID_PORT_TOKEN,
+  DOCUMENT_GET_BY_PROCESS_ID_PORT_TOKEN,
+  DOCUMENT_GET_BY_STATUS_PORT_TOKEN,
+  DOCUMENT_GET_DISTINCT_CUSTOM_METADATA_KEYS_PORT_TOKEN,
+  DOCUMENT_GET_INDEXED_COUNT_PORT_TOKEN,
+  DOCUMENT_SAVE_PORT_TOKEN,
+  DOCUMENT_SEARCH_PORT_TOKEN,
+  DOCUMENT_SEARCH_SEMANTIC_PORT_TOKEN,
+  DOCUMENT_UPDATE_INTEGRITY_STATUS_PORT_TOKEN,
+} from "./repo/IDocumentRepository";
+import { DocumentPersistenceAdapter } from "./repo/impl/DocumentPersistenceAdapter";
+import {
+  FILE_GET_BY_DOCUMENT_ID_PORT_TOKEN,
+  FILE_GET_BY_ID_PORT_TOKEN,
+  FILE_GET_BY_STATUS_PORT_TOKEN,
+  FILE_SAVE_PORT_TOKEN,
+  FILE_UPDATE_INTEGRITY_STATUS_PORT_TOKEN,
+} from "./repo/IFileRepository";
+import { FilePersistenceAdapter } from "./repo/impl/FilePersistenceAdapter";
+import {
+  PROCESS_GET_BY_DOCUMENT_CLASS_ID_PORT_TOKEN,
+  PROCESS_GET_BY_ID_PORT_TOKEN,
+  PROCESS_GET_BY_STATUS_PORT_TOKEN,
+  PROCESS_SAVE_PORT_TOKEN,
+  PROCESS_SEARCH_PORT_TOKEN,
+  PROCESS_UPDATE_INTEGRITY_STATUS_PORT_TOKEN,
+} from "./repo/IProcessRepository";
+import { ProcessPersistenceAdapter } from "./repo/impl/ProcessPersistenceAdapter";
+import {
+  DOCUMENT_CLASS_GET_BY_DIP_ID_PORT_TOKEN,
+  DOCUMENT_CLASS_GET_BY_ID_PORT_TOKEN,
+  DOCUMENT_CLASS_GET_BY_STATUS_PORT_TOKEN,
+  DOCUMENT_CLASS_SAVE_PORT_TOKEN,
+  DOCUMENT_CLASS_SEARCH_PORT_TOKEN,
+  DOCUMENT_CLASS_UPDATE_INTEGRITY_STATUS_PORT_TOKEN,
+} from "./repo/IDocumentClassRepository";
+import { DocumentClassPersistenceAdapter } from "./repo/impl/DocumentClassPersistenceAdapter";
+import {
+  DIP_GET_BY_ID_PORT_TOKEN,
+  DIP_GET_BY_STATUS_PORT_TOKEN,
+  DIP_GET_BY_UUID_PORT_TOKEN,
+  DIP_SAVE_PORT_TOKEN,
+  DIP_UPDATE_INTEGRITY_STATUS_PORT_TOKEN,
+} from "./repo/IDipRepository";
+import { DipPersistenceAdapter } from "./repo/impl/DipPersistenceAdapter";
+import {
+  VECTOR_GET_BY_DOCUMENT_ID_PORT_TOKEN,
+  VECTOR_SAVE_PORT_TOKEN,
+  VECTOR_SEARCH_SIMILAR_PORT_TOKEN,
+} from "./repo/IVectorRepository";
+import { VectorPersistenceAdapter } from "./repo/impl/VectorPersistenceAdapter";
 import { DIP_DAO_TOKEN } from "./dao/IDipDAO";
 import { DOCUMENT_CLASS_DAO_TOKEN } from "./dao/IDocumentClassDAO";
 import { DOCUMENT_DAO_TOKEN } from "./dao/IDocumentDAO";
@@ -136,23 +176,108 @@ container.registerSingleton(WORD_EMBEDDING_PORT_TOKEN, WordEmbedding);
 container.register(HASHING_SERVICE_TOKEN, { useClass: HashingService });
 
 // Repositories
-container.register(DOCUMENTO_REPOSITORY_TOKEN, {
-  useClass: DocumentRepository,
+container.register(DOCUMENT_GET_BY_ID_PORT_TOKEN, {
+  useClass: DocumentPersistenceAdapter,
 });
-container.register(DOCUMENTO_REPOSITORY_TOKEN, {
-  useClass: DocumentRepository,
+container.register(DOCUMENT_GET_BY_PROCESS_ID_PORT_TOKEN, {
+  useClass: DocumentPersistenceAdapter,
 });
-container.register(FILE_REPOSITORY_TOKEN, { useClass: FileRepository });
-container.register(PROCESS_REPOSITORY_TOKEN, { useClass: ProcessRepository });
-container.register(DOCUMENT_CLASS_REPOSITORY_TOKEN, {
-  useClass: DocumentClassRepository,
+container.register(DOCUMENT_GET_BY_STATUS_PORT_TOKEN, {
+  useClass: DocumentPersistenceAdapter,
 });
-container.register(DOCUMENT_CLASS_REPOSITORY_TOKEN, {
-  useClass: DocumentClassRepository,
+container.register(DOCUMENT_SAVE_PORT_TOKEN, {
+  useClass: DocumentPersistenceAdapter,
 });
-container.register(DIP_REPOSITORY_TOKEN, { useClass: DipRepository });
-container.register(VECTOR_REPOSITORY_TOKEN, {
-  useClass: VectorRepository,
+container.register(DOCUMENT_UPDATE_INTEGRITY_STATUS_PORT_TOKEN, {
+  useClass: DocumentPersistenceAdapter,
+});
+container.register(DOCUMENT_SEARCH_PORT_TOKEN, {
+  useClass: DocumentPersistenceAdapter,
+});
+container.register(DOCUMENT_SEARCH_SEMANTIC_PORT_TOKEN, {
+  useClass: DocumentPersistenceAdapter,
+});
+container.register(DOCUMENT_GET_DISTINCT_CUSTOM_METADATA_KEYS_PORT_TOKEN, {
+  useClass: DocumentPersistenceAdapter,
+});
+container.register(DOCUMENT_GET_INDEXED_COUNT_PORT_TOKEN, {
+  useClass: DocumentPersistenceAdapter,
+});
+
+container.register(FILE_GET_BY_ID_PORT_TOKEN, {
+  useClass: FilePersistenceAdapter,
+});
+container.register(FILE_GET_BY_DOCUMENT_ID_PORT_TOKEN, {
+  useClass: FilePersistenceAdapter,
+});
+container.register(FILE_GET_BY_STATUS_PORT_TOKEN, {
+  useClass: FilePersistenceAdapter,
+});
+container.register(FILE_SAVE_PORT_TOKEN, { useClass: FilePersistenceAdapter });
+container.register(FILE_UPDATE_INTEGRITY_STATUS_PORT_TOKEN, {
+  useClass: FilePersistenceAdapter,
+});
+
+container.register(PROCESS_GET_BY_ID_PORT_TOKEN, {
+  useClass: ProcessPersistenceAdapter,
+});
+container.register(PROCESS_GET_BY_DOCUMENT_CLASS_ID_PORT_TOKEN, {
+  useClass: ProcessPersistenceAdapter,
+});
+container.register(PROCESS_GET_BY_STATUS_PORT_TOKEN, {
+  useClass: ProcessPersistenceAdapter,
+});
+container.register(PROCESS_SAVE_PORT_TOKEN, {
+  useClass: ProcessPersistenceAdapter,
+});
+container.register(PROCESS_UPDATE_INTEGRITY_STATUS_PORT_TOKEN, {
+  useClass: ProcessPersistenceAdapter,
+});
+container.register(PROCESS_SEARCH_PORT_TOKEN, {
+  useClass: ProcessPersistenceAdapter,
+});
+
+container.register(DOCUMENT_CLASS_GET_BY_ID_PORT_TOKEN, {
+  useClass: DocumentClassPersistenceAdapter,
+});
+container.register(DOCUMENT_CLASS_GET_BY_DIP_ID_PORT_TOKEN, {
+  useClass: DocumentClassPersistenceAdapter,
+});
+container.register(DOCUMENT_CLASS_GET_BY_STATUS_PORT_TOKEN, {
+  useClass: DocumentClassPersistenceAdapter,
+});
+container.register(DOCUMENT_CLASS_SAVE_PORT_TOKEN, {
+  useClass: DocumentClassPersistenceAdapter,
+});
+container.register(DOCUMENT_CLASS_UPDATE_INTEGRITY_STATUS_PORT_TOKEN, {
+  useClass: DocumentClassPersistenceAdapter,
+});
+container.register(DOCUMENT_CLASS_SEARCH_PORT_TOKEN, {
+  useClass: DocumentClassPersistenceAdapter,
+});
+
+container.register(DIP_GET_BY_ID_PORT_TOKEN, {
+  useClass: DipPersistenceAdapter,
+});
+container.register(DIP_GET_BY_UUID_PORT_TOKEN, {
+  useClass: DipPersistenceAdapter,
+});
+container.register(DIP_SAVE_PORT_TOKEN, { useClass: DipPersistenceAdapter });
+container.register(DIP_GET_BY_STATUS_PORT_TOKEN, {
+  useClass: DipPersistenceAdapter,
+});
+container.register(DIP_UPDATE_INTEGRITY_STATUS_PORT_TOKEN, {
+  useClass: DipPersistenceAdapter,
+});
+
+container.register(VECTOR_SAVE_PORT_TOKEN, {
+  useClass: VectorPersistenceAdapter,
+});
+container.register(VECTOR_GET_BY_DOCUMENT_ID_PORT_TOKEN, {
+  useClass: VectorPersistenceAdapter,
+});
+container.register(VECTOR_SEARCH_SIMILAR_PORT_TOKEN, {
+  useClass: VectorPersistenceAdapter,
 });
 
 // DAOs

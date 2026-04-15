@@ -1,8 +1,8 @@
 import { inject, injectable } from "tsyringe";
 import { ISearchDocumentsUC } from "../ISearchDocumentsUC";
 import {
-  IDocumentRepository,
-  DOCUMENTO_REPOSITORY_TOKEN,
+  DOCUMENT_SEARCH_PORT_TOKEN,
+  ISearchDocumentPort,
 } from "../../../repo/IDocumentRepository";
 import { SearchDocumentsQuery } from "../../../entity/search/SearchQuery.model";
 import { Document } from "../../../entity/Document";
@@ -19,10 +19,10 @@ export interface MetadataGroupCondition {
 
 @injectable()
 export class SearchDocumentsUC implements ISearchDocumentsUC {
-    constructor(
-        @inject(DOCUMENTO_REPOSITORY_TOKEN)
-        private readonly documentRepo: IDocumentRepository
-    ) {}
+  constructor(
+    @inject(DOCUMENT_SEARCH_PORT_TOKEN)
+    private readonly documentRepo: ISearchDocumentPort,
+  ) {}
 
   execute(filters: SearchDocumentsQuery): Document[] {
     const results = this.documentRepo.searchDocument(filters);
