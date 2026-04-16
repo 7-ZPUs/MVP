@@ -13,7 +13,7 @@ import {
 } from '../../../domain/node-fallback.models';
 
 // Importiamo la UI
-import { MetadataPanelComponent } from '../../dumb/metadata-panel/metadata-panel.component';
+import { MetadataPanelComponent } from '../metadata-panel/metadata-panel.component';
 import { ErrorDialogComponent } from '../../../../../shared/components/error-dialog/error-dialog.component'; // Dal C4
 // Importa i componenti di destra (la Toolbar, il Viewer, l'Index)
 import { DocumentToolbarComponent } from '../../dumb/document-toolbar/document-toolbar.component';
@@ -26,7 +26,7 @@ import {
   isRichDetailRouteItemType,
   RichDetailRouteItemType,
 } from '../../../../navigation/domain/navigation-routing';
-import { NodeFallbackPanelComponent } from '../../dumb/node-fallback-panel/node-fallback-panel.component';
+import { NodeFallbackPanelComponent } from '../node-fallback-panel/node-fallback-panel.component';
 
 @Component({
   selector: 'app-item-detail-page',
