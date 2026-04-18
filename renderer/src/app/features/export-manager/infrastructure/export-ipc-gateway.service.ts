@@ -3,6 +3,7 @@ import { IExportChannel } from '../contracts/i-export-channel';
 import { ExportResult } from '../../../../../../shared/domain/ExportResult';
 import { FileDTO } from '../domain/dtos';
 import { IpcChannels } from '@shared/ipc-channels';
+import { ExportFileResults } from '@shared/domain/ExportFileResults';
 
 @Injectable({ providedIn: 'root' })
 export class ExportIpcGateway implements IExportChannel {
@@ -17,9 +18,7 @@ export class ExportIpcGateway implements IExportChannel {
   }
 
   // --- Export multiplo: niente dialog qui, solo i fileIds ---
-  async exportFiles(
-    fileIds: number[],
-  ): Promise<{ canceled: boolean; results: { fileId: number; success: boolean; error?: string }[] }> {
+  async exportFiles( fileIds: number[], ): Promise<ExportFileResults> {
     if (!this.ipc) return { canceled: false, results: [] };
     return this.ipc.invoke(IpcChannels.FILE_DOWNLOAD_MANY, fileIds);
   }
@@ -34,14 +33,12 @@ export class ExportIpcGateway implements IExportChannel {
     return this.ipc.invoke('browse:get-file-by-document', documentId);
   }
 
-  async printFile(fileId: number): Promise<{ success: boolean; error?: string }> {
-    if (!this.ipc) return { success: false, error: 'Bridge non disponibile' };
+  async printFile(fileId: number): Promise<ExportResult> {
+    if (!this.ipc) return ExportResult.fail('BRIDGE_UNAVAILABLE', 'Bridge non disponibile');
     return this.ipc.invoke(IpcChannels.FILE_PRINT, fileId);
   }
 
-  async printFiles(
-    fileIds: number[],
-  ): Promise<{ canceled: boolean; results: { fileId: number; success: boolean; error?: string }[] }> {
+  async printFiles( fileIds: number[] ): Promise<ExportFileResults> {
     if (!this.ipc) return { canceled: false, results: [] };
     return this.ipc.invoke(IpcChannels.FILE_PRINT_MANY, fileIds);
   }

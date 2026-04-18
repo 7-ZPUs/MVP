@@ -4,6 +4,7 @@ import { ExportIpcGateway } from '../infrastructure/export-ipc-gateway.service';
 import { ExportState } from '../domain/export.state';
 import { DownloadQueueItem, ExportError, ExportResult } from '../domain/models';
 import { ExportErrorCode, ExportPhase, OutputContext } from '../domain/enums';
+import { ExportFileResults } from '../../../../../../shared/domain/ExportFileResults';
 
 const PRINTABLE_FORMATS = ['pdf', 'png', 'jpg', 'jpeg', 'tiff'];
 
@@ -80,18 +81,18 @@ export class ExportFacade implements IExportFacade {
       // Aggiorna lo stato visuale della coda in base ai risultati
       for (const r of results) {
         this.exportState.updateQueueItem(r.fileId, {
-          status: r.success ? 'done' : 'error',
-          error: r.error,
+          status: r.exportResult.success ? 'done' : 'error',
+          error: r.exportResult.errorMessage
         });
       }
 
-      const successCount = results.filter(r => r.success).length;
+      const successCount = results.filter(r => r.exportResult.success).length;
       const errors = results
-        .filter(r => !r.success)
+        .filter(r => !r.exportResult.success)
         .map(r => ({
           nodeId: String(r.fileId),
           nodeName: queue.find(q => q.fileId === r.fileId)?.filename ?? String(r.fileId),
-          reason: r.error ?? 'Errore sconosciuto',
+          reason: r.exportResult.errorMessage ?? 'Errore sconosciuto',
         }));
 
       this.exportState.setSuccess(
@@ -119,7 +120,7 @@ export class ExportFacade implements IExportFacade {
       }
       console.log(`Iniziando stampa SINGOLA file ${dto.filename} (id: ${fileId})`);
       const result = await this.ipcGateway.printFile(fileId);
-      if (!result.success) throw new Error(result.error ?? 'Stampa fallita');
+      if (!result.success) throw new Error(result.errorMessage ?? 'Stampa fallita');
 
       this.exportState.setSuccess(
         new ExportResult(OutputContext.SINGLE_PRINT, 1, 1, 0, '')
@@ -161,16 +162,16 @@ export class ExportFacade implements IExportFacade {
       }
 
       const errors = results
-        .filter(r => !r.success)
+        .filter(r => !r.exportResult.success)
         .map(r => ({
           nodeId: String(r.fileId),
           nodeName: String(r.fileId),
-          reason: r.error ?? 'Errore sconosciuto',
+          reason: r.exportResult.errorMessage ?? 'Errore sconosciuto',
         }));
 
       this.exportState.setSuccess(new ExportResult(
         OutputContext.MULTI_PRINT, printableIds.length,
-        results.filter(r => r.success).length, errors.length, '', errors,
+        results.filter(r => r.exportResult.success).length, errors.length, '', errors,
       ));
     } catch (err) {
       this.handleError(ExportErrorCode.PRINT_FAILED, err, 'printDocuments');

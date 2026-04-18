@@ -158,8 +158,8 @@ describe('ExportIpcGateway', () => {
       const ipcResult = {
         canceled: false,
         results: [
-          { fileId: 1, success: true },
-          { fileId: 2, success: false, error: 'IO fail' },
+          { fileId: 1, exportResult: { success: true } },
+          { fileId: 2, exportResult: { success: false, errorMessage: 'IO fail' } },
         ],
       };
       const ipc = makeIpcMock();
@@ -274,14 +274,14 @@ describe('ExportIpcGateway', () => {
       expect(result).toEqual({ success: true });
     });
 
-    it('ritorna success=false con error in caso di fallimento IPC', async () => {
+    it('ritorna success=false con errorMessage in caso di fallimento IPC', async () => {
       const ipc = makeIpcMock();
-      ipc.invoke.mockResolvedValue({ success: false, error: 'Stampante non trovata' });
+      ipc.invoke.mockResolvedValue({ success: false, errorMessage: 'Stampante non trovata' });
       const { gateway } = setup(ipc);
 
       const result = await gateway.printFile(5);
       expect(result.success).toBe(false);
-      expect(result.error).toBe('Stampante non trovata');
+      expect(result.errorMessage).toBe('Stampante non trovata');
     });
 
     it("propaga l'eccezione se ipc.invoke rigetta", async () => {
@@ -309,8 +309,8 @@ describe('ExportIpcGateway', () => {
       const ipcResult = {
         canceled: false,
         results: [
-          { fileId: 10, success: true },
-          { fileId: 11, success: false, error: 'Offline' },
+          { fileId: 10, exportResult: { success: true } },
+          { fileId: 11, exportResult: { success: false, errorMessage: 'Offline' } },
         ],
       };
       const ipc = makeIpcMock();
