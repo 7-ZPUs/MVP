@@ -11,7 +11,10 @@ import type {
 import { DocumentClass } from "../../entity/DocumentClass";
 import { IntegrityStatusEnum } from "../../value-objects/IntegrityStatusEnum";
 import { DocumentClassDAO } from "../../dao/DocumentClassDAO";
-import { DOCUMENT_CLASS_DAO_TOKEN } from "../../dao/IDocumentClassDAO";
+import {
+  DocumentClassMapper,
+  DocumentClassPersistenceRow,
+} from "../../dao/mappers/DocumentClassMapper";
 
 @injectable()
 export class DocumentClassPersistenceAdapter
@@ -24,24 +27,29 @@ export class DocumentClassPersistenceAdapter
     ISearchDocumentClassPort
 {
   constructor(
-    @inject(DOCUMENT_CLASS_DAO_TOKEN)
+    @inject(DocumentClassDAO)
     private readonly dao: DocumentClassDAO,
   ) {}
 
+  private toEntity(row: DocumentClassPersistenceRow): DocumentClass {
+    return DocumentClassMapper.fromPersistence(row);
+  }
+
   getById(id: number): DocumentClass | null {
-    return this.dao.getById(id);
+    const row = this.dao.getById(id);
+    return row ? this.toEntity(row) : null;
   }
 
   getByDipId(dipId: number): DocumentClass[] {
-    return this.dao.getByDipId(dipId);
+    return this.dao.getByDipId(dipId).map((row) => this.toEntity(row));
   }
 
   getByStatus(status: IntegrityStatusEnum): DocumentClass[] {
-    return this.dao.getByStatus(status);
+    return this.dao.getByStatus(status).map((row) => this.toEntity(row));
   }
 
   save(documentClass: DocumentClass): DocumentClass {
-    return this.dao.save(documentClass);
+    return this.toEntity(this.dao.save(documentClass));
   }
 
   updateIntegrityStatus(id: number, status: IntegrityStatusEnum): void {
@@ -49,6 +57,6 @@ export class DocumentClassPersistenceAdapter
   }
 
   searchDocumentalClasses(name: string): DocumentClass[] {
-    return this.dao.search(name);
+    return this.dao.search(name).map((row) => this.toEntity(row));
   }
 }

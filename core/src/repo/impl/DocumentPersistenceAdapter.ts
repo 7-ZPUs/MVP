@@ -14,12 +14,12 @@ import type {
   IUpdateDocumentIntegrityStatusPort,
 } from "../IDocumentRepository";
 
-import { DOCUMENT_DAO_TOKEN } from "../../dao/IDocumentDAO";
 import { DocumentDAO } from "../../dao/DocumentDAO";
+import {
+  DocumentJsonPersistenceRow,
+  DocumentMapper,
+} from "../../dao/mappers/DocumentMapper";
 import { SearchDocumentsQuery } from "../../entity/search/SearchQuery.model";
-
-const METADATA_TABLE = "document_metadata";
-const METADATA_FK = "document_id";
 
 @injectable()
 export class DocumentPersistenceAdapter
@@ -35,24 +35,29 @@ export class DocumentPersistenceAdapter
     IGetIndexedDocumentsCountPort
 {
   constructor(
-    @inject(DOCUMENT_DAO_TOKEN)
+    @inject(DocumentDAO)
     private readonly dao: DocumentDAO,
   ) {}
 
+  private toEntity(row: DocumentJsonPersistenceRow): Document {
+    return DocumentMapper.fromJsonPersistence(row);
+  }
+
   getById(id: number): Document | null {
-    return this.dao.getById(id);
+    const row = this.dao.getById(id);
+    return row ? this.toEntity(row) : null;
   }
 
   getByProcessId(processId: number): Document[] {
-    return this.dao.getByProcessId(processId);
+    return this.dao.getByProcessId(processId).map((row) => this.toEntity(row));
   }
 
   getByStatus(status: IntegrityStatusEnum): Document[] {
-    return this.dao.getByStatus(status);
+    return this.dao.getByStatus(status).map((row) => this.toEntity(row));
   }
 
   save(document: Document): Document {
-    return this.dao.save(document);
+    return this.toEntity(this.dao.save(document));
   }
 
   updateIntegrityStatus(id: number, status: IntegrityStatusEnum): void {
@@ -60,13 +65,17 @@ export class DocumentPersistenceAdapter
   }
 
   searchDocument(filters: SearchDocumentsQuery): Document[] {
-    return this.dao.searchDocument(filters);
+    return this.dao.searchDocument(filters).map((row) => this.toEntity(row));
   }
 
   async searchDocumentSemantic(
     queryVector: Float32Array,
   ): Promise<Array<{ document: Document; score: number }>> {
-    return this.dao.searchDocumentSemantic(queryVector);
+    const results = await this.dao.searchDocumentSemantic(queryVector);
+    return results.map((result) => ({
+      document: this.toEntity(result.row),
+      score: result.score,
+    }));
   }
 
   getDistinctCustomMetadataKeys(dipId: number | null): string[] {

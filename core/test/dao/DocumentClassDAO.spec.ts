@@ -39,11 +39,11 @@ describe("DocumentClassDAO", () => {
     );
 
     const saved = dao.save(entity);
-    const found = dao.getById(saved.getId() as number);
+    const found = dao.getById(saved.id);
 
-    expect(saved.getId()).not.toBeNull();
-    expect(found?.getUuid()).toBe("dc-uuid");
-    expect(found?.getDipUuid()).toBe("dip-uuid");
+    expect(saved.id).not.toBeNull();
+    expect(found?.uuid).toBe("dc-uuid");
+    expect(found?.dipUuid).toBe("dip-uuid");
   });
 
   it("updates by uuid conflict without duplicating rows", () => {
@@ -74,10 +74,10 @@ describe("DocumentClassDAO", () => {
       new DocumentClass("dip-uuid", "dc-2", "Fatture", "2026-01-01"),
     );
 
-    dao.updateIntegrityStatus(a.getId() as number, IntegrityStatusEnum.VALID);
-    dao.updateIntegrityStatus(b.getId() as number, IntegrityStatusEnum.INVALID);
+    dao.updateIntegrityStatus(a.id, IntegrityStatusEnum.VALID);
+    dao.updateIntegrityStatus(b.id, IntegrityStatusEnum.INVALID);
 
-    const dipId = a.getDipId() as number;
+    const dipId = a.dipId;
 
     expect(dao.getByDipId(dipId)).toHaveLength(2);
     expect(dao.getByStatus(IntegrityStatusEnum.VALID)).toHaveLength(1);
@@ -95,19 +95,17 @@ describe("DocumentClassDAO", () => {
       new DocumentClass("dip-uuid", "dc-agg-2", "B", "2026-01-01"),
     );
 
-    const dipId = a.getDipId() as number;
-
-    dao.updateIntegrityStatus(a.getId() as number, IntegrityStatusEnum.VALID);
-    dao.updateIntegrityStatus(b.getId() as number, IntegrityStatusEnum.VALID);
-    const integritya = dao.getById(a.getId() as number)?.getIntegrityStatus();
-    const integrityb = dao.getById(b.getId() as number)?.getIntegrityStatus();
+    dao.updateIntegrityStatus(a.id, IntegrityStatusEnum.VALID);
+    dao.updateIntegrityStatus(b.id, IntegrityStatusEnum.VALID);
+    const integritya = dao.getById(a.id)?.integrityStatus;
+    const integrityb = dao.getById(b.id)?.integrityStatus;
     expect(integritya).toBe(IntegrityStatusEnum.VALID);
     expect(integrityb).toBe(IntegrityStatusEnum.VALID);
 
-    dao.updateIntegrityStatus(a.getId() as number, IntegrityStatusEnum.INVALID);
-    dao.updateIntegrityStatus(b.getId() as number, IntegrityStatusEnum.INVALID);
-    const integritya2 = dao.getById(a.getId() as number)?.getIntegrityStatus();
-    const integrityb2 = dao.getById(b.getId() as number)?.getIntegrityStatus();
+    dao.updateIntegrityStatus(a.id, IntegrityStatusEnum.INVALID);
+    dao.updateIntegrityStatus(b.id, IntegrityStatusEnum.INVALID);
+    const integritya2 = dao.getById(a.id)?.integrityStatus;
+    const integrityb2 = dao.getById(b.id)?.integrityStatus;
     expect(integritya2).toBe(IntegrityStatusEnum.INVALID);
     expect(integrityb2).toBe(IntegrityStatusEnum.INVALID);
   });

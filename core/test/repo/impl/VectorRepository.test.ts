@@ -1,4 +1,3 @@
-import { IVectorDAO } from "../../../src/dao/IVectorDAO";
 import { Vector } from "../../../src/entity/Vector";
 import { VectorPersistenceAdapter } from "../../../src/repo/impl/VectorPersistenceAdapter";
 
@@ -63,7 +62,7 @@ describe("VectorPersistenceAdapter", () => {
 
   it("should call dao.getVector with correct documentId and return results", async () => {
     const expectedVector = new Float32Array([0.1, 0.2, 0.3]);
-    const mockDAO: IVectorDAO = {
+    const mockDAO = {
       save: vi.fn(),
       getByDocumentId: vi.fn().mockReturnValue(new Vector(1, expectedVector)),
       searchSimilar: vi.fn(),
@@ -78,7 +77,7 @@ describe("VectorPersistenceAdapter", () => {
   });
 
   it("should call dao.searchSimilar with correct parameters and return results", async () => {
-    const mockDAO: IVectorDAO = {
+    const mockDAO = {
       save: vi.fn(),
       getByDocumentId: vi.fn(),
       searchSimilar: vi.fn().mockReturnValue([

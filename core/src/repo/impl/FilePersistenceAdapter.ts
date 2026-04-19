@@ -9,7 +9,7 @@ import type {
   IUpdateFileIntegrityStatusPort,
 } from "../IFileRepository";
 import { FileDAO } from "../../dao/FileDAO";
-import { FILE_DAO_TOKEN } from "../../dao/IFileDAO";
+import { FileMapper, FilePersistenceRow } from "../../dao/mappers/FileMapper";
 
 @injectable()
 export class FilePersistenceAdapter
@@ -21,24 +21,31 @@ export class FilePersistenceAdapter
     IUpdateFileIntegrityStatusPort
 {
   constructor(
-    @inject(FILE_DAO_TOKEN)
+    @inject(FileDAO)
     private readonly dao: FileDAO,
   ) {}
 
+  private toEntity(row: FilePersistenceRow): File {
+    return FileMapper.fromPersistence(row);
+  }
+
   getById(id: number): File | null {
-    return this.dao.getById(id);
+    const row = this.dao.getById(id);
+    return row ? this.toEntity(row) : null;
   }
 
   getByDocumentId(documentId: number): File[] {
-    return this.dao.getByDocumentId(documentId);
+    return this.dao
+      .getByDocumentId(documentId)
+      .map((row) => this.toEntity(row));
   }
 
   getByStatus(status: IntegrityStatusEnum): File[] {
-    return this.dao.getByStatus(status);
+    return this.dao.getByStatus(status).map((row) => this.toEntity(row));
   }
 
   save(file: File): File {
-    return this.dao.save(file);
+    return this.toEntity(this.dao.save(file));
   }
 
   updateIntegrityStatus(id: number, status: IntegrityStatusEnum): void {

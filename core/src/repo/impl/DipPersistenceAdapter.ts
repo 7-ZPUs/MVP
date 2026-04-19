@@ -9,7 +9,8 @@ import type {
   ISaveDipPort,
   IUpdateDipIntegrityStatusPort,
 } from "../IDipRepository";
-import { DIP_DAO_TOKEN, IDipDAO } from "../../dao/IDipDAO";
+import { DipDAO } from "../../dao/DipDAO";
+import { DipMapper, DipPersistenceRow } from "../../dao/mappers/DipMapper";
 
 @injectable()
 export class DipPersistenceAdapter
@@ -21,24 +22,30 @@ export class DipPersistenceAdapter
     IUpdateDipIntegrityStatusPort
 {
   constructor(
-    @inject(DIP_DAO_TOKEN)
-    private readonly dao: IDipDAO,
+    @inject(DipDAO)
+    private readonly dao: DipDAO,
   ) {}
 
+  private toEntity(row: DipPersistenceRow): Dip {
+    return DipMapper.fromPersistence(row);
+  }
+
   getById(id: number): Dip | null {
-    return this.dao.getById(id);
+    const row = this.dao.getById(id);
+    return row ? this.toEntity(row) : null;
   }
 
   getByUuid(uuid: string): Dip | null {
-    return this.dao.getByUuid(uuid);
+    const row = this.dao.getByUuid(uuid);
+    return row ? this.toEntity(row) : null;
   }
 
   save(dip: Dip): Dip {
-    return this.dao.save(dip);
+    return this.toEntity(this.dao.save(dip));
   }
 
   getByStatus(status: IntegrityStatusEnum): Dip[] {
-    return this.dao.getByStatus(status);
+    return this.dao.getByStatus(status).map((row) => this.toEntity(row));
   }
 
   updateIntegrityStatus(id: number, status: IntegrityStatusEnum): void {

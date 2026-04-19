@@ -2,11 +2,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { DocumentPersistenceAdapter } from "../../../src/repo/impl/DocumentPersistenceAdapter";
 import { DocumentDAO } from "../../../src/dao/DocumentDAO";
-import { Document } from "../../../src/entity/Document";
+import { DocumentJsonPersistenceRow } from "../../../src/dao/mappers/DocumentMapper";
 import { IntegrityStatusEnum } from "../../../src/value-objects/IntegrityStatusEnum";
-import { Metadata, MetadataType } from "../../../src/value-objects/Metadata";
-
-const metadata = new Metadata("root", [], MetadataType.COMPOSITE);
 
 describe("searchDocumentSemantic — delega al DAO", () => {
   let dao: {
@@ -22,6 +19,15 @@ describe("searchDocumentSemantic — delega al DAO", () => {
     repo = new DocumentPersistenceAdapter(dao as unknown as DocumentDAO);
   });
 
+  const createRow = (id: number, uuid: string): DocumentJsonPersistenceRow => ({
+    id,
+    uuid,
+    integrityStatus: IntegrityStatusEnum.UNKNOWN,
+    processId: 1,
+    processUuid: "proc-1",
+    metadataJson: '{"root":{"nome":"Documento"}}',
+  });
+
   it("propaga la query invariata al DAO", async () => {
     dao.searchDocumentSemantic.mockResolvedValue([]);
     const queryVector = new Float32Array([0.1, 0.2, 0.3]);
@@ -35,25 +41,11 @@ describe("searchDocumentSemantic — delega al DAO", () => {
   it("ritorna i risultati semantici senza alterazioni", async () => {
     const semanticResults = [
       {
-        document: new Document(
-          "doc-1",
-          metadata,
-          "proc-1",
-          IntegrityStatusEnum.UNKNOWN,
-          1,
-          1,
-        ),
+        row: createRow(1, "doc-1"),
         score: 0.91,
       },
       {
-        document: new Document(
-          "doc-2",
-          metadata,
-          "proc-1",
-          IntegrityStatusEnum.UNKNOWN,
-          2,
-          1,
-        ),
+        row: createRow(2, "doc-2"),
         score: 0.77,
       },
     ];
@@ -64,7 +56,6 @@ describe("searchDocumentSemantic — delega al DAO", () => {
       new Float32Array([0.4, 0.5, 0.6]),
     );
 
-    expect(result).toBe(semanticResults);
     expect(result).toHaveLength(2);
     expect(result[0].score).toBe(0.91);
     expect(result[1].document.getUuid()).toBe("doc-2");
@@ -82,7 +73,7 @@ describe("searchDocumentSemantic — delega al DAO", () => {
     dao.searchDocumentSemantic
       .mockResolvedValueOnce([
         {
-          document: new Document("doc-a", metadata, "proc-a"),
+          row: createRow(10, "doc-a"),
           score: 0.5,
         },
       ])

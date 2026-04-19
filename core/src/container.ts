@@ -61,12 +61,6 @@ import {
   VECTOR_SEARCH_SIMILAR_PORT_TOKEN,
 } from "./repo/IVectorRepository";
 import { VectorPersistenceAdapter } from "./repo/impl/VectorPersistenceAdapter";
-import { DIP_DAO_TOKEN } from "./dao/IDipDAO";
-import { DOCUMENT_CLASS_DAO_TOKEN } from "./dao/IDocumentClassDAO";
-import { DOCUMENT_DAO_TOKEN } from "./dao/IDocumentDAO";
-import { FILE_DAO_TOKEN } from "./dao/IFileDAO";
-import { PROCESS_DAO_TOKEN } from "./dao/IProcessDAO";
-import { VECTOR_DAO_TOKEN } from "./dao/IVectorDAO";
 import { DipDAO } from "./dao/DipDAO";
 import { DocumentClassDAO } from "./dao/DocumentClassDAO";
 import { DocumentDAO } from "./dao/DocumentDAO";
@@ -121,7 +115,6 @@ import { EXPORT_TOKEN } from "./repo/IExportPort";
 import { LocalExportPort } from "./repo/impl/LocalExportPort";
 import { PRINT_PORT_TOKEN } from "./repo/IPrintPort";
 import { PrintPort } from "./repo/impl/PrintPort";
-import { IDialogPort } from "./repo/IDialogPort";
 import { DATA_MAPPER_TOKEN } from "./repo/impl/utils/IDataMapper";
 import { DataMapper } from "./repo/impl/utils/DataMapper";
 import { FILE_SYSTEM_PROVIDER_TOKEN } from "./repo/impl/utils/IFileSystemProvider";
@@ -137,7 +130,6 @@ import { DOCUMENT_CHUNKER_TOKEN } from "./services/IEmbeddingService";
 import { EmbeddingService } from "./services/impl/EmbeddingService";
 import { INDEX_DIP_TOKEN } from "./use-case/utils/indexing/IIndexDip";
 import { IndexDipUC } from "./use-case/utils/indexing/impl/IndexDip";
-import { SQLITE_DB_TOKEN } from "../../db/DatabaseBootstrap";
 
 container.register(PACKAGE_READER_PORT_TOKEN, {
   useClass: PackageReaderService,
@@ -283,12 +275,12 @@ container.register(VECTOR_SEARCH_SIMILAR_PORT_TOKEN, {
 });
 
 // DAOs
-container.register(DIP_DAO_TOKEN, { useClass: DipDAO });
-container.register(DOCUMENT_CLASS_DAO_TOKEN, { useClass: DocumentClassDAO });
-container.register(DOCUMENT_DAO_TOKEN, { useClass: DocumentDAO });
-container.register(FILE_DAO_TOKEN, { useClass: FileDAO });
-container.register(PROCESS_DAO_TOKEN, { useClass: ProcessDAO });
-container.register(VECTOR_DAO_TOKEN, { useClass: VectorDAO });
+container.register(DipDAO, { useClass: DipDAO });
+container.register(DocumentClassDAO, { useClass: DocumentClassDAO });
+container.register(DocumentDAO, { useClass: DocumentDAO });
+container.register(FileDAO, { useClass: FileDAO });
+container.register(ProcessDAO, { useClass: ProcessDAO });
+container.register(VectorDAO, { useClass: VectorDAO });
 
 // Documento use cases
 container.register(DocumentoUC.GET_BY_ID, { useClass: GetDocumentByIdUC });
@@ -313,12 +305,14 @@ container.register(DocumentoUC.GET_CUSTOM_METADATA_KEYS, {
 container.register(FileUC.GET_BY_ID, { useClass: GetFileByIdUC });
 container.register(FileUC.GET_BY_DOCUMENT, { useClass: GetFileByDocumentUC });
 container.register(FileUC.GET_BY_STATUS, { useClass: GetFileByStatusUC });
-container.register(FileUC.CHECK_INTEGRITY_STATUS, { useClass: CheckFileIntegrityStatusUC });
+container.register(FileUC.CHECK_INTEGRITY_STATUS, {
+  useClass: CheckFileIntegrityStatusUC,
+});
 container.register(FileUC.EXPORT_FILE, { useClass: ExportFileUC });
 container.register(FileUC.GET_CONTENT, { useClass: GetFileContentUC });
 container.register(FileUC.PRINT_FILE, { useClass: PrintFileUC });
 container.register(FileUC.EXPORT_FILES, { useClass: ExportFilesUC });
-container.register(FileUC.PRINT_FILES,  { useClass: PrintFilesUC });
+container.register(FileUC.PRINT_FILES, { useClass: PrintFilesUC });
 
 // Process use cases
 container.register(ProcessUC.GET_BY_STATUS, { useClass: GetProcessByStatusUC });

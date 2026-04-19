@@ -8,6 +8,21 @@ import { IntegrityStatusEnum } from "../../src/value-objects/IntegrityStatusEnum
 import { Metadata, MetadataType } from "../../src/value-objects/Metadata";
 import { createTestDb } from "./helpers/testDb";
 
+function buildMetadata(version: string): Metadata {
+  return new Metadata(
+    "Process",
+    [
+      new Metadata("Versione", version, MetadataType.STRING),
+      new Metadata(
+        "Dettagli",
+        [new Metadata("Step", "1", MetadataType.STRING)],
+        MetadataType.COMPOSITE,
+      ),
+    ],
+    MetadataType.COMPOSITE,
+  );
+}
+
 describe("ProcessDAO", () => {
   let db: Database.Database;
   let dao: ProcessDAO;
@@ -44,21 +59,6 @@ describe("ProcessDAO", () => {
     db.close();
   });
 
-  function buildMetadata(version: string): Metadata {
-    return new Metadata(
-      "Process",
-      [
-        new Metadata("Versione", version, MetadataType.STRING),
-        new Metadata(
-          "Dettagli",
-          [new Metadata("Step", "1", MetadataType.STRING)],
-          MetadataType.COMPOSITE,
-        ),
-      ],
-      MetadataType.COMPOSITE,
-    );
-  }
-
   it("saves and retrieves process with metadata tree", () => {
     const entity = new Process(
       documentClassUuid,
@@ -67,15 +67,15 @@ describe("ProcessDAO", () => {
     );
 
     const saved = dao.save(entity);
-    const found = dao.getById(saved.getId() as number);
+    const found = dao.getById(saved.row.id);
 
     expect(found).not.toBeNull();
-    expect(found?.getUuid()).toBe("proc-a");
-    expect(found?.getDocumentClassId()).toBe(documentClassId);
-    expect(found?.getMetadata().getName()).toBe("Process");
-    expect(
-      found?.getMetadata().findNodeByName("Versione")?.getStringValue(),
-    ).toBe("v1");
+    expect(found?.row.uuid).toBe("proc-a");
+    expect(found?.row.documentClassId).toBe(documentClassId);
+    expect(found?.metadata.some((row) => row.name === "Versione")).toBe(true);
+    expect(found?.metadata.find((row) => row.name === "Versione")?.value).toBe(
+      "v1",
+    );
   });
 
   it("gets by documentClassId and status and updates integrity", () => {
@@ -86,8 +86,8 @@ describe("ProcessDAO", () => {
       new Process(documentClassUuid, "proc-d", buildMetadata("v1")),
     );
 
-    dao.updateIntegrityStatus(a.getId() as number, IntegrityStatusEnum.VALID);
-    dao.updateIntegrityStatus(b.getId() as number, IntegrityStatusEnum.INVALID);
+    dao.updateIntegrityStatus(a.row.id, IntegrityStatusEnum.VALID);
+    dao.updateIntegrityStatus(b.row.id, IntegrityStatusEnum.INVALID);
 
     expect(dao.getByDocumentClassId(documentClassId)).toHaveLength(2);
     expect(dao.getByStatus(IntegrityStatusEnum.VALID)).toHaveLength(1);

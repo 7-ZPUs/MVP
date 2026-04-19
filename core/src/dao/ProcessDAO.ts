@@ -3,66 +3,75 @@ import { injectable, inject } from "tsyringe";
 import { SQLITE_DB_TOKEN } from "../../../db/DatabaseBootstrap";
 import { Process } from "../entity/Process";
 import { IntegrityStatusEnum } from "../value-objects/IntegrityStatusEnum";
-import { ProcessMapper, ProcessPersistenceRow } from "./mappers/ProcessMapper";
+import { ProcessPersistenceRow } from "./mappers/ProcessMapper";
+import { MetadataPersistenceRow } from "./mappers/MetadataMapper";
 import { loadMetadata, saveMetadata } from "./MetadataHelper";
-import { IProcessDAO } from "./IProcessDAO";
 
 const METADATA_TABLE = "process_metadata";
 const METADATA_FK = "process_id";
 
+export interface ProcessPersistenceAggregate {
+  row: ProcessPersistenceRow;
+  metadata: MetadataPersistenceRow[];
+}
+
 @injectable()
-export class ProcessDAO implements IProcessDAO {
+export class ProcessDAO {
   constructor(
     @inject(SQLITE_DB_TOKEN)
     private readonly db: Database.Database,
   ) {}
 
-  private rowToEntity(row: ProcessPersistenceRow): Process {
-    const metadata = loadMetadata(this.db, METADATA_TABLE, METADATA_FK, row.id);
-    return ProcessMapper.fromPersistence(row, metadata);
+  private withMetadata(
+    row: ProcessPersistenceRow,
+  ): ProcessPersistenceAggregate {
+    return {
+      row,
+      metadata: loadMetadata(this.db, METADATA_TABLE, METADATA_FK, row.id),
+    };
   }
 
-  getById(id: number): Process | null {
+  getById(id: number): ProcessPersistenceAggregate | null {
     const row = this.db
       .prepare<
         [number],
         ProcessPersistenceRow
       >("SELECT id, document_class_id as documentClassId, uuid, integrity_status as integrityStatus FROM process WHERE id = ?")
       .get(id);
-    return row ? this.rowToEntity(row) : null;
+    return row ? this.withMetadata(row) : null;
   }
 
-  getByDocumentClassId(documentClassId: number): Process[] {
+  getByDocumentClassId(documentClassId: number): ProcessPersistenceAggregate[] {
     const rows = this.db
       .prepare<
         [number],
         ProcessPersistenceRow
       >("SELECT id, document_class_id as documentClassId, uuid, integrity_status as integrityStatus FROM process WHERE document_class_id = ? ORDER BY id")
       .all(documentClassId);
-    return rows.map((r) => this.rowToEntity(r));
+    return rows.map((r) => this.withMetadata(r));
   }
 
-  getByStatus(status: IntegrityStatusEnum): Process[] {
+  getByStatus(status: IntegrityStatusEnum): ProcessPersistenceAggregate[] {
     const rows = this.db
       .prepare<
         [string],
         ProcessPersistenceRow
       >("SELECT id, document_class_id as documentClassId, uuid, integrity_status as integrityStatus FROM process WHERE integrity_status = ? ORDER BY id")
       .all(status);
-    return rows.map((r) => this.rowToEntity(r));
+    return rows.map((r) => this.withMetadata(r));
   }
 
-  searchProcesses(uuid: string): Process[] {
+  searchProcesses(uuid: string): ProcessPersistenceAggregate[] {
     const rows = this.db
       .prepare<
         [string],
         ProcessPersistenceRow
       >("SELECT id, document_class_id as documentClassId, uuid, integrity_status as integrityStatus FROM process WHERE uuid LIKE ? ORDER BY id")
       .all(`%${uuid}%`);
-    return rows.map((r) => this.rowToEntity(r));
+    return rows.map((r) => this.withMetadata(r));
   }
 
-  save(process: Process): Process {
+  save(process: Process): ProcessPersistenceAggregate {
     const metadata = process.getMetadata();
 
     const result = this.db

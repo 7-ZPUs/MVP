@@ -5,7 +5,7 @@ import type {
   ISaveVectorPort,
   ISearchSimilarVectorsPort,
 } from "../IVectorRepository";
-import { IVectorDAO, VECTOR_DAO_TOKEN } from "../../dao/IVectorDAO";
+import { VectorDAO } from "../../dao/VectorDAO";
 import { Vector } from "../../entity/Vector";
 
 @injectable()
@@ -16,8 +16,8 @@ export class VectorPersistenceAdapter
     ISearchSimilarVectorsPort
 {
   constructor(
-    @inject(VECTOR_DAO_TOKEN)
-    private readonly dao: IVectorDAO,
+    @inject(VectorDAO)
+    private readonly dao: VectorDAO,
   ) {}
 
   async saveVector(vector: Vector): Promise<void> {

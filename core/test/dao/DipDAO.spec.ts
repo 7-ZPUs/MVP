@@ -24,9 +24,9 @@ describe("DipDAO", () => {
     const dip = new Dip("dip-1", IntegrityStatusEnum.VALID);
     const saved = dao.save(dip);
 
-    expect(saved.getId()).not.toBeNull();
-    expect(saved.getUuid()).toBe("dip-1");
-    expect(saved.getIntegrityStatus()).toBe(IntegrityStatusEnum.UNKNOWN);
+    expect(saved.id).not.toBeNull();
+    expect(saved.uuid).toBe("dip-1");
+    expect(saved.integrityStatus).toBe(IntegrityStatusEnum.UNKNOWN);
   });
 
   it("updates existing dip on uuid conflict", () => {
@@ -42,31 +42,31 @@ describe("DipDAO", () => {
     );
 
     expect(count).toBe(1);
-    expect(second.getId()).toBe(first.getId());
-    expect(second.getIntegrityStatus()).toBe(IntegrityStatusEnum.UNKNOWN);
+    expect(second.id).toBe(first.id);
+    expect(second.integrityStatus).toBe(IntegrityStatusEnum.UNKNOWN);
   });
 
   it("gets by id and uuid", () => {
     const saved = dao.save(new Dip("dip-3"));
 
-    const byId = dao.getById(saved.getId() as number);
+    const byId = dao.getById(saved.id);
     const byUuid = dao.getByUuid("dip-3");
 
-    expect(byId?.getUuid()).toBe("dip-3");
-    expect(byUuid?.getId()).toBe(saved.getId());
+    expect(byId?.uuid).toBe("dip-3");
+    expect(byUuid?.id).toBe(saved.id);
   });
 
   it("filters by status and updates integrity", () => {
     const a = dao.save(new Dip("dip-a"));
     const b = dao.save(new Dip("dip-b"));
 
-    dao.updateIntegrityStatus(a.getId() as number, IntegrityStatusEnum.VALID);
-    dao.updateIntegrityStatus(b.getId() as number, IntegrityStatusEnum.INVALID);
+    dao.updateIntegrityStatus(a.id, IntegrityStatusEnum.VALID);
+    dao.updateIntegrityStatus(b.id, IntegrityStatusEnum.INVALID);
 
     const valid = dao.getByStatus(IntegrityStatusEnum.VALID);
     const invalid = dao.getByStatus(IntegrityStatusEnum.INVALID);
 
-    expect(valid.map((d) => d.getUuid())).toEqual(["dip-a"]);
-    expect(invalid.map((d) => d.getUuid())).toEqual(["dip-b"]);
+    expect(valid.map((d) => d.uuid)).toEqual(["dip-a"]);
+    expect(invalid.map((d) => d.uuid)).toEqual(["dip-b"]);
   });
 });

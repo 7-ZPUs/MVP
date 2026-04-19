@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { DocumentPersistenceAdapter } from "../../../src/repo/impl/DocumentPersistenceAdapter";
 import { DocumentDAO } from "../../../src/dao/DocumentDAO";
 import { Document } from "../../../src/entity/Document";
+import { DocumentJsonPersistenceRow } from "../../../src/dao/mappers/DocumentMapper";
 import { IntegrityStatusEnum } from "../../../src/value-objects/IntegrityStatusEnum";
 import { Metadata, MetadataType } from "../../../src/value-objects/Metadata";
 
@@ -39,34 +40,32 @@ describe("DocumentPersistenceAdapter", () => {
     MetadataType.COMPOSITE,
   );
 
+  const createRow = (
+    id: number,
+    uuid: string,
+    metadataJson = '{"root":{"titolo":"Documento A"}}',
+  ): DocumentJsonPersistenceRow => ({
+    id,
+    uuid,
+    integrityStatus: IntegrityStatusEnum.UNKNOWN,
+    processId: 10,
+    processUuid: "process-uuid",
+    metadataJson,
+  });
+
   it("TU-F-browsing-55: save() should successfully persist a document with complex metadata", () => {
     const input = new Document("doc-1", metadata, "process-uuid");
-    const saved = new Document(
-      "doc-1",
-      metadata,
-      "process-uuid",
-      IntegrityStatusEnum.UNKNOWN,
-      1,
-      10,
-    );
-    dao.save.mockReturnValue(saved);
+    dao.save.mockReturnValue(createRow(1, "doc-1"));
 
     const result = repo.save(input);
 
     expect(dao.save).toHaveBeenCalledWith(input);
-    expect(result).toBe(saved);
+    expect(result.getId()).toBe(1);
+    expect(result.getUuid()).toBe("doc-1");
   });
 
   it("TU-S-browsing-56: save() should handle updating an existing document", () => {
-    const updated = new Document(
-      "doc-unique",
-      metadata,
-      "process-uuid",
-      IntegrityStatusEnum.UNKNOWN,
-      2,
-      10,
-    );
-    dao.save.mockReturnValue(updated);
+    dao.save.mockReturnValue(createRow(2, "doc-unique"));
 
     const result = repo.save(
       new Document("doc-unique", metadata, "process-uuid"),
@@ -77,7 +76,7 @@ describe("DocumentPersistenceAdapter", () => {
   });
 
   it("TU-F-browsing-57: getByProcessId() should return a list of documents", () => {
-    const rows = [new Document("doc-p1", metadata, "process-uuid")];
+    const rows = [createRow(11, "doc-p1")];
     dao.getByProcessId.mockReturnValue(rows);
 
     const results = repo.getByProcessId(1);
@@ -96,7 +95,7 @@ describe("DocumentPersistenceAdapter", () => {
   });
 
   it("TU-F-browsing-59: getByStatus() should return documents", () => {
-    const rows = [new Document("doc-s1", metadata, "process-uuid")];
+    const rows = [createRow(12, "doc-s1")];
     dao.getByStatus.mockReturnValue(rows);
 
     const results = repo.getByStatus(IntegrityStatusEnum.VALID);
@@ -121,15 +120,7 @@ describe("DocumentPersistenceAdapter", () => {
   });
 
   it("TU-S-browsing-62: save() should fallback to select", () => {
-    const saved = new Document(
-      "doc-fallback",
-      metadata,
-      "process-uuid",
-      IntegrityStatusEnum.UNKNOWN,
-      33,
-      10,
-    );
-    dao.save.mockReturnValue(saved);
+    dao.save.mockReturnValue(createRow(33, "doc-fallback"));
 
     const result = repo.save(
       new Document("doc-fallback", metadata, "process-uuid"),
@@ -172,7 +163,11 @@ describe("DocumentPersistenceAdapter", () => {
   it("searchDocumentSemantic delega al DAO", async () => {
     const semantic = [
       {
-        document: new Document("doc-uuid", metadata, "proc-uuid"),
+        row: createRow(
+          99,
+          "doc-uuid",
+          '{"root":{"titolo":"Documento semantico"}}',
+        ),
         score: 0.8,
       },
     ];
@@ -182,7 +177,9 @@ describe("DocumentPersistenceAdapter", () => {
     const result = await repo.searchDocumentSemantic(queryVector);
 
     expect(dao.searchDocumentSemantic).toHaveBeenCalledWith(queryVector);
-    expect(result).toEqual(semantic);
+    expect(result).toHaveLength(1);
+    expect(result[0].document.getUuid()).toBe("doc-uuid");
+    expect(result[0].score).toBe(0.8);
   });
 
   it("getIndexedDocumentsCount delega al DAO", () => {

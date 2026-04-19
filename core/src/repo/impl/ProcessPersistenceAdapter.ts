@@ -10,8 +10,8 @@ import type {
 } from "../IProcessRepository";
 import { Process } from "../../entity/Process";
 import { IntegrityStatusEnum } from "../../value-objects/IntegrityStatusEnum";
-import { ProcessDAO } from "../../dao/ProcessDAO";
-import { PROCESS_DAO_TOKEN } from "../../dao/IProcessDAO";
+import { ProcessDAO, ProcessPersistenceAggregate } from "../../dao/ProcessDAO";
+import { ProcessMapper } from "../../dao/mappers/ProcessMapper";
 
 @injectable()
 export class ProcessPersistenceAdapter
@@ -24,24 +24,33 @@ export class ProcessPersistenceAdapter
     ISearchProcessesPort
 {
   constructor(
-    @inject(PROCESS_DAO_TOKEN)
+    @inject(ProcessDAO)
     private readonly dao: ProcessDAO,
   ) {}
 
+  private toEntity(aggregate: ProcessPersistenceAggregate): Process {
+    return ProcessMapper.fromPersistence(aggregate.row, aggregate.metadata);
+  }
+
   getById(id: number): Process | null {
-    return this.dao.getById(id);
+    const aggregate = this.dao.getById(id);
+    return aggregate ? this.toEntity(aggregate) : null;
   }
 
   getByDocumentClassId(documentClassId: number): Process[] {
-    return this.dao.getByDocumentClassId(documentClassId);
+    return this.dao
+      .getByDocumentClassId(documentClassId)
+      .map((aggregate) => this.toEntity(aggregate));
   }
 
   getByStatus(status: IntegrityStatusEnum): Process[] {
-    return this.dao.getByStatus(status);
+    return this.dao
+      .getByStatus(status)
+      .map((aggregate) => this.toEntity(aggregate));
   }
 
   save(process: Process): Process {
-    return this.dao.save(process);
+    return this.toEntity(this.dao.save(process));
   }
 
   updateIntegrityStatus(id: number, status: IntegrityStatusEnum): void {
@@ -49,6 +58,8 @@ export class ProcessPersistenceAdapter
   }
 
   searchProcesses(uuid: string): Process[] {
-    return this.dao.searchProcesses(uuid);
+    return this.dao
+      .searchProcesses(uuid)
+      .map((aggregate) => this.toEntity(aggregate));
   }
 }

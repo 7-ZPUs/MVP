@@ -1,23 +1,18 @@
 import Database from "better-sqlite3";
 import { injectable, inject } from "tsyringe";
 import { SQLITE_DB_TOKEN } from "../../../db/DatabaseBootstrap";
-import { FilePersistenceRow, FileMapper } from "./mappers/FileMapper";
+import { FilePersistenceRow } from "./mappers/FileMapper";
 import { File } from "../entity/File";
 import { IntegrityStatusEnum } from "../value-objects/IntegrityStatusEnum";
-import { IFileDAO } from "./IFileDAO";
 
 @injectable()
-export class FileDAO implements IFileDAO {
+export class FileDAO {
   constructor(
     @inject(SQLITE_DB_TOKEN)
     private readonly db: Database.Database,
   ) {}
 
-  private rowEntity(row: FilePersistenceRow): File {
-    return FileMapper.fromPersistence(row);
-  }
-
-  getById(id: number): File | null {
+  getById(id: number): FilePersistenceRow | null {
     const row = this.db
       .prepare<[number], FilePersistenceRow>(
         `SELECT id, filename, path, hash, integrity_status as integrityStatus,
@@ -25,10 +20,10 @@ export class FileDAO implements IFileDAO {
                  FROM file WHERE id = ?`,
       )
       .get(id);
-    return row ? this.rowEntity(row) : null;
+    return row ?? null;
   }
 
-  getByDocumentId(documentId: number): File[] {
+  getByDocumentId(documentId: number): FilePersistenceRow[] {
     const rows = this.db
       .prepare<[number], FilePersistenceRow>(
         `SELECT id, filename, path, hash, integrity_status as integrityStatus,
@@ -36,10 +31,10 @@ export class FileDAO implements IFileDAO {
                  FROM file WHERE document_id = ? ORDER BY is_main DESC, id`,
       )
       .all(documentId);
-    return rows.map((r) => this.rowEntity(r));
+    return rows;
   }
 
-  getByStatus(status: IntegrityStatusEnum): File[] {
+  getByStatus(status: IntegrityStatusEnum): FilePersistenceRow[] {
     const rows = this.db
       .prepare<[string], FilePersistenceRow>(
         `SELECT id, filename, path, hash, integrity_status as integrityStatus,
@@ -47,10 +42,10 @@ export class FileDAO implements IFileDAO {
                  FROM file WHERE integrity_status = ? ORDER BY id`,
       )
       .all(status);
-    return rows.map((r) => this.rowEntity(r));
+    return rows;
   }
 
-  save(file: File): File {
+  save(file: File): FilePersistenceRow {
     const result = this.db
       .prepare(
         `INSERT INTO file (filename, path, hash, integrity_status, is_main, document_id)

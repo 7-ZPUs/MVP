@@ -3,38 +3,37 @@ import Database from "better-sqlite3";
 
 import { Dip } from "../entity/Dip";
 import { IntegrityStatusEnum } from "../value-objects/IntegrityStatusEnum";
-import { DipMapper, DipPersistenceRow } from "./mappers/DipMapper";
-import { IDipDAO } from "./IDipDAO";
+import { DipPersistenceRow } from "./mappers/DipMapper";
 import { SQLITE_DB_TOKEN } from "../../../db/DatabaseBootstrap";
 
 @injectable()
-export class DipDAO implements IDipDAO {
+export class DipDAO {
   constructor(
     @inject(SQLITE_DB_TOKEN)
     private readonly db: Database.Database,
   ) {}
 
-  getById(id: number): Dip | null {
+  getById(id: number): DipPersistenceRow | null {
     const row = this.db
       .prepare<
         [number],
         DipPersistenceRow
       >(`SELECT id, uuid, integrity_status as integrityStatus FROM dip WHERE id = ?`)
       .get(id);
-    return row ? DipMapper.fromPersistence(row) : null;
+    return row ?? null;
   }
 
-  getByUuid(uuid: string): Dip | null {
+  getByUuid(uuid: string): DipPersistenceRow | null {
     const row = this.db
       .prepare<
         [string],
         DipPersistenceRow
       >(`SELECT id, uuid, integrity_status as integrityStatus FROM dip WHERE uuid = ?`)
       .get(uuid);
-    return row ? DipMapper.fromPersistence(row) : null;
+    return row ?? null;
   }
 
-  save(dip: Dip): Dip {
+  save(dip: Dip): DipPersistenceRow {
     const result = this.db
       .prepare(
         `
@@ -45,39 +44,29 @@ export class DipDAO implements IDipDAO {
       )
       .run(dip.getUuid(), IntegrityStatusEnum.UNKNOWN);
 
-    if (result.changes === 0) {
-      // Se non ha inserito o aggiornato nulla (improbabile con ON CONFLICT), rileggiamo
-      const existing = this.getByUuid(dip.getUuid());
-      if (existing) return existing;
-    }
-
-    // Se è un update, lastInsertRowid non cambia necessariamente al valore della riga aggiornata in versioni vecchie di sqlite,
-    // ma better-sqlite3 e sqlite recenti di solito gestiscono bene.
-    // Per sicurezza, se lastInsertRowid è 0 o non valido, facciamo una get.
-
-    let id = result.lastInsertRowid as number;
+    let id = Number(result.lastInsertRowid);
     if (!id) {
       const existing = this.getByUuid(dip.getUuid());
-      if (existing?.getId()) {
-        id = existing.getId()!;
+      if (existing) {
+        return existing;
       }
     }
 
-    return DipMapper.fromPersistence({
+    return {
       id: id,
       uuid: dip.getUuid(),
       integrityStatus: IntegrityStatusEnum.UNKNOWN,
-    });
+    };
   }
 
-  getByStatus(status: IntegrityStatusEnum): Dip[] {
+  getByStatus(status: IntegrityStatusEnum): DipPersistenceRow[] {
     const rows = this.db
       .prepare<
         [string],
         DipPersistenceRow
       >(`SELECT id, uuid, integrity_status as integrityStatus FROM dip WHERE integrity_status = ?`)
       .all(status);
-    return rows.map(DipMapper.fromPersistence);
+    return rows;
   }
 
   updateIntegrityStatus(id: number, status: IntegrityStatusEnum): void {

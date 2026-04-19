@@ -37,12 +37,12 @@ describe("FileDAO", () => {
     );
 
     const saved = dao.save(file);
-    const found = dao.getById(saved.getId() as number);
+    const found = dao.getById(saved.id);
 
     expect(found).not.toBeNull();
-    expect(found?.getFilename()).toBe("main.xml");
-    expect(found?.getDocumentId()).toBe(documentId);
-    expect(found?.getIsMain()).toBe(true);
+    expect(found?.filename).toBe("main.xml");
+    expect(found?.documentId).toBe(documentId);
+    expect(found?.isMain).toBe(1);
   });
 
   it("updates on (document_id, path) conflict without duplicating rows", () => {
@@ -79,7 +79,7 @@ describe("FileDAO", () => {
     }>;
 
     expect(rows).toHaveLength(1);
-    expect(rows[0].id).toBe(updated.getId());
+    expect(rows[0].id).toBe(updated.id);
     expect(rows[0].filename).toBe("main-v2.xml");
     expect(rows[0].hash).toBe("hash-new");
   });
@@ -92,8 +92,8 @@ describe("FileDAO", () => {
       new File("b.xml", "/pkg/b.xml", "hb", false, "file-b", documentUuid),
     );
 
-    dao.updateIntegrityStatus(a.getId() as number, IntegrityStatusEnum.VALID);
-    dao.updateIntegrityStatus(b.getId() as number, IntegrityStatusEnum.INVALID);
+    dao.updateIntegrityStatus(a.id, IntegrityStatusEnum.VALID);
+    dao.updateIntegrityStatus(b.id, IntegrityStatusEnum.INVALID);
 
     expect(dao.getByDocumentId(documentId)).toHaveLength(2);
     expect(dao.getByStatus(IntegrityStatusEnum.VALID)).toHaveLength(1);

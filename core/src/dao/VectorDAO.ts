@@ -3,12 +3,11 @@ import { inject, injectable } from "tsyringe";
 
 import { SQLITE_DB_TOKEN } from "../../../db/DatabaseBootstrap";
 import { Vector } from "../entity/Vector";
-import { IVectorDAO } from "./IVectorDAO";
 
 const VSS_TABLE = "document_vector_vss";
 
 @injectable()
-export class VectorDAO implements IVectorDAO {
+export class VectorDAO {
   constructor(
     @inject(SQLITE_DB_TOKEN)
     private readonly db: Database.Database,

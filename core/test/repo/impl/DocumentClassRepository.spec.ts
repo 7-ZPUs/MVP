@@ -4,6 +4,7 @@ import { DocumentClassPersistenceAdapter } from "../../../src/repo/impl/Document
 import { DocumentClassDAO } from "../../../src/dao/DocumentClassDAO";
 import { IntegrityStatusEnum } from "../../../src/value-objects/IntegrityStatusEnum";
 import { DocumentClass } from "../../../src/entity/DocumentClass";
+import { DocumentClassPersistenceRow } from "../../../src/dao/mappers/DocumentClassMapper";
 
 describe("DocumentClassPersistenceAdapter", () => {
   let dao: {
@@ -25,19 +26,28 @@ describe("DocumentClassPersistenceAdapter", () => {
       search: vi.fn(),
       updateIntegrityStatus: vi.fn(),
     };
-    repo = new DocumentClassPersistenceAdapter(dao as unknown as DocumentClassDAO);
+    repo = new DocumentClassPersistenceAdapter(
+      dao as unknown as DocumentClassDAO,
+    );
+  });
+
+  const createRow = (
+    id: number,
+    uuid: string,
+    name: string,
+    status: IntegrityStatusEnum = IntegrityStatusEnum.UNKNOWN,
+  ): DocumentClassPersistenceRow => ({
+    id,
+    dipId: 10,
+    dipUuid: "dip-uuid",
+    uuid,
+    integrityStatus: status,
+    name,
+    timestamp: "2024-01-01T00:00:00Z",
   });
 
   it("TU-F-browsing-50: save() should save e getById funzionano", () => {
-    const saved = new DocumentClass(
-      "dip-uuid",
-      "dc-1",
-      "Contratti",
-      "2024-01-01T00:00:00Z",
-      IntegrityStatusEnum.UNKNOWN,
-      21,
-      10,
-    );
+    const saved = createRow(21, "dc-1", "Contratti");
     dao.save.mockReturnValue(saved);
     dao.getById.mockReturnValue(saved);
 
@@ -58,17 +68,8 @@ describe("DocumentClassPersistenceAdapter", () => {
   });
 
   it("TU-F-browsing-51: getByDipId() should getByDipId, getByStatus e updateIntegrityStatus funzionano", () => {
-    const rows = [
-      new DocumentClass(
-        "dip-uuid",
-        "dc-2",
-        "Fatture",
-        "2024-02-02T00:00:00Z",
-        IntegrityStatusEnum.VALID,
-        31,
-        20,
-      ),
-    ];
+    const rows = [createRow(31, "dc-2", "Fatture", IntegrityStatusEnum.VALID)];
+    rows[0].dipId = 20;
     dao.getByDipId.mockReturnValue(rows);
     dao.getByStatus.mockReturnValue(rows);
 
@@ -86,24 +87,17 @@ describe("DocumentClassPersistenceAdapter", () => {
 
   it("TU-F-browsing-52: search() should search restituisce risultati o null", () => {
     dao.search
-      .mockReturnValueOnce([
-        new DocumentClass(
-          "dip-uuid",
-          "dc-3",
-          "Verbali CdA",
-          "2024-03-03T00:00:00Z",
-        ),
-      ])
-      .mockReturnValueOnce(null);
+      .mockReturnValueOnce([createRow(32, "dc-3", "Verbali CdA")])
+      .mockReturnValueOnce([]);
 
     const found = repo.searchDocumentalClasses("Verbali");
     const notFound = repo.searchDocumentalClasses("inesistente");
 
     expect(dao.search).toHaveBeenCalledWith("Verbali");
     expect(dao.search).toHaveBeenCalledWith("inesistente");
-    expect(found).not.toBeNull();
-    expect(found?.[0].getName()).toContain("Verbali");
-    expect(notFound).toBeNull();
+    expect(found).toHaveLength(1);
+    expect(found[0].getName()).toContain("Verbali");
+    expect(notFound).toEqual([]);
   });
 
   it("TU-F-browsing-53: save() should save fallback per lastInsertRowid falsy e exception per fallimento", () => {

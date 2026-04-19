@@ -2,55 +2,47 @@ import { inject, injectable } from "tsyringe";
 import Database from "better-sqlite3";
 import { SQLITE_DB_TOKEN } from "../../../db/DatabaseBootstrap";
 import { DocumentClass } from "../entity/DocumentClass";
-import {
-  DocumentClassMapper,
-  DocumentClassPersistenceRow,
-} from "./mappers/DocumentClassMapper";
+import { DocumentClassPersistenceRow } from "./mappers/DocumentClassMapper";
 import { IntegrityStatusEnum } from "../value-objects/IntegrityStatusEnum";
-import { IDocumentClassDAO } from "./IDocumentClassDAO";
 
 @injectable()
-export class DocumentClassDAO implements IDocumentClassDAO {
+export class DocumentClassDAO {
   constructor(
     @inject(SQLITE_DB_TOKEN)
     private readonly db: Database.Database,
   ) {}
 
-  private rowToEntity(row: DocumentClassPersistenceRow): DocumentClass {
-    return DocumentClassMapper.fromPersistence(row);
-  }
-
-  getById(id: number): DocumentClass | null {
+  getById(id: number): DocumentClassPersistenceRow | null {
     const row = this.db
       .prepare<
         [number],
         DocumentClassPersistenceRow
       >("SELECT id, dip_id as dipId, dipUuid, uuid, integrity_status as integrityStatus, name, timestamp FROM document_class WHERE id = ?")
       .get(id);
-    return row ? this.rowToEntity(row) : null;
+    return row ?? null;
   }
 
-  getByDipId(dipId: number): DocumentClass[] {
+  getByDipId(dipId: number): DocumentClassPersistenceRow[] {
     const rows = this.db
       .prepare<
         [number],
         DocumentClassPersistenceRow
       >("SELECT id, dip_id as dipId, uuid, integrity_status as integrityStatus, name, timestamp FROM document_class WHERE dip_id = ?")
       .all(dipId);
-    return rows.map((row) => this.rowToEntity(row));
+    return rows;
   }
 
-  getByStatus(status: IntegrityStatusEnum): DocumentClass[] {
+  getByStatus(status: IntegrityStatusEnum): DocumentClassPersistenceRow[] {
     const rows = this.db
       .prepare<
         [string],
         DocumentClassPersistenceRow
       >("SELECT id, dip_id as dipId, uuid, integrity_status as integrityStatus, name, timestamp FROM document_class WHERE integrity_status = ?")
       .all(status);
-    return rows.map((row) => this.rowToEntity(row));
+    return rows;
   }
 
-  save(documentClass: DocumentClass): DocumentClass {
+  save(documentClass: DocumentClass): DocumentClassPersistenceRow {
     const result = this.db
       .prepare(
         `
@@ -91,7 +83,7 @@ export class DocumentClassDAO implements IDocumentClassDAO {
     return saved;
   }
 
-  search(name: string): DocumentClass[] {
+  search(name: string): DocumentClassPersistenceRow[] {
     const result = this.db
       .prepare<[string], DocumentClassPersistenceRow>(
         `SELECT id, dip_id as dipId, uuid, integrity_status as integrityStatus, name, timestamp 
@@ -100,7 +92,7 @@ export class DocumentClassDAO implements IDocumentClassDAO {
       )
       .all(`%${name}%`);
 
-    return result.map((row) => this.rowToEntity(row));
+    return result;
   }
 
   updateIntegrityStatus(id: number, status: IntegrityStatusEnum): void {

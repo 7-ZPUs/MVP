@@ -70,22 +70,21 @@ describe("DocumentDAO", () => {
     const entity = new Document("doc-a", buildMetadata("A"), processUuid);
 
     const saved = dao.save(entity);
-    const found = dao.getById(saved.getId() as number);
+    const found = dao.getById(saved.id);
 
     expect(found).not.toBeNull();
-    expect(found?.getUuid()).toBe("doc-a");
-    expect(found?.getProcessId()).toBe(processId);
-    expect(
-      found?.getMetadata().findNodeByName("Titolo")?.getStringValue(),
-    ).toBe("A");
+    expect(found?.uuid).toBe("doc-a");
+    expect(found?.processId).toBe(processId);
+    const parsed = JSON.parse(found?.metadataJson ?? "{}");
+    expect(parsed.Documento?.Titolo).toBe("A");
   });
 
   it("gets by process and status and updates integrity", () => {
     const a = dao.save(new Document("doc-c", buildMetadata("C"), processUuid));
     const b = dao.save(new Document("doc-d", buildMetadata("D"), processUuid));
 
-    dao.updateIntegrityStatus(a.getId() as number, IntegrityStatusEnum.VALID);
-    dao.updateIntegrityStatus(b.getId() as number, IntegrityStatusEnum.INVALID);
+    dao.updateIntegrityStatus(a.id, IntegrityStatusEnum.VALID);
+    dao.updateIntegrityStatus(b.id, IntegrityStatusEnum.INVALID);
 
     expect(dao.getByProcessId(processId)).toHaveLength(2);
     expect(dao.getByStatus(IntegrityStatusEnum.VALID)).toHaveLength(1);
@@ -105,17 +104,17 @@ describe("DocumentDAO", () => {
 
     db.prepare(
       "INSERT INTO document_vector (document_id, embedding) VALUES (?, ?)",
-    ).run(docA.getId(), vecA);
+    ).run(docA.id, vecA);
     db.prepare(
       "INSERT INTO document_vector (document_id, embedding) VALUES (?, ?)",
-    ).run(docB.getId(), vecB);
+    ).run(docB.id, vecB);
 
     const results = await dao.searchDocumentSemantic(
       new Float32Array([1, 0, 0]),
     );
 
     expect(results).toHaveLength(2);
-    expect(results[0].document.getUuid()).toBe("doc-sem-a");
+    expect(results[0].row.uuid).toBe("doc-sem-a");
     expect(results[0].score).toBeGreaterThan(results[1].score);
   });
 
@@ -127,7 +126,7 @@ describe("DocumentDAO", () => {
 
     db.prepare(
       "INSERT INTO document_vector (document_id, embedding) VALUES (?, ?)",
-    ).run(doc.getId(), vector);
+    ).run(doc.id, vector);
 
     expect(dao.getIndexedDocumentsCount()).toBe(1);
   });

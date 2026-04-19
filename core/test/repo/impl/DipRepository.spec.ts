@@ -4,6 +4,7 @@ import { DipPersistenceAdapter } from "../../../src/repo/impl/DipPersistenceAdap
 import { DipDAO } from "../../../src/dao/DipDAO";
 import { Dip } from "../../../src/entity/Dip";
 import { IntegrityStatusEnum } from "../../../src/value-objects/IntegrityStatusEnum";
+import { DipPersistenceRow } from "../../../src/dao/mappers/DipMapper";
 
 describe("DipPersistenceAdapter", () => {
   let dao: {
@@ -26,19 +27,31 @@ describe("DipPersistenceAdapter", () => {
     repo = new DipPersistenceAdapter(dao as unknown as DipDAO);
   });
 
+  const createRow = (
+    id: number,
+    uuid: string,
+    integrityStatus: IntegrityStatusEnum = IntegrityStatusEnum.UNKNOWN,
+  ): DipPersistenceRow => ({
+    id,
+    uuid,
+    integrityStatus,
+  });
+
   it("TU-F-browsing-44: save() should save crea un dip con status UNKNOWN", () => {
-    const savedDip = new Dip("dip-1", IntegrityStatusEnum.UNKNOWN, 11);
+    const savedDip = createRow(11, "dip-1", IntegrityStatusEnum.UNKNOWN);
     dao.save.mockReturnValue(savedDip);
 
     const input = new Dip("dip-1");
     const result = repo.save(input);
 
     expect(dao.save).toHaveBeenCalledWith(input);
-    expect(result).toBe(savedDip);
+    expect(result.getId()).toBe(11);
+    expect(result.getUuid()).toBe("dip-1");
+    expect(result.getIntegrityStatus()).toBe(IntegrityStatusEnum.UNKNOWN);
   });
 
   it("TU-F-browsing-45: getById() should getById e getByUuid restituiscono l'entita", () => {
-    const byIdDip = new Dip("dip-2", IntegrityStatusEnum.UNKNOWN, 12);
+    const byIdDip = createRow(12, "dip-2", IntegrityStatusEnum.UNKNOWN);
     dao.getById.mockReturnValue(byIdDip);
     dao.getByUuid.mockReturnValue(byIdDip);
 
@@ -52,7 +65,7 @@ describe("DipPersistenceAdapter", () => {
   });
 
   it("TU-F-browsing-46: updateIntegrityStatus() should updateIntegrityStatus e getByStatus funzionano", () => {
-    const rows = [new Dip("dip-3", IntegrityStatusEnum.VALID, 13)];
+    const rows = [createRow(13, "dip-3", IntegrityStatusEnum.VALID)];
     dao.getByStatus.mockReturnValue(rows);
 
     repo.updateIntegrityStatus(13, IntegrityStatusEnum.VALID);
@@ -77,7 +90,7 @@ describe("DipPersistenceAdapter", () => {
   });
 
   it("TU-F-browsing-48: save() should save fallback if changes is 0", () => {
-    const savedDip = new Dip("dip-conflict", IntegrityStatusEnum.UNKNOWN, 99);
+    const savedDip = createRow(99, "dip-conflict", IntegrityStatusEnum.UNKNOWN);
     dao.save.mockReturnValue(savedDip);
 
     const dip = new Dip("dip-conflict");
@@ -88,7 +101,7 @@ describe("DipPersistenceAdapter", () => {
   });
 
   it("TU-F-browsing-49: save() should save fallback if lastInsertRowid is 0 but changes > 0", () => {
-    const savedDip = new Dip("dip-update", IntegrityStatusEnum.VALID, 88);
+    const savedDip = createRow(88, "dip-update", IntegrityStatusEnum.VALID);
     dao.save.mockReturnValue(savedDip);
 
     const dip = new Dip("dip-update");
