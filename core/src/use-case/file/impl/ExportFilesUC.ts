@@ -10,7 +10,8 @@ import {
   IFileSystemPort,
 } from "../../../repo/impl/utils/IFileSystemProvider";
 import { IDialogPort, DIALOG_PORT_TOKEN } from "../../../repo/IDialogPort";
-import { ExportFileResults } from "../../../value-objects/ExportFileResults";
+import { ExportFileResults } from "../../../../../shared/domain/ExportFileResults";
+import { ExportResult } from "../../../../../shared/domain/ExportResult";
 import * as path from "node:path";
 
 @injectable()
@@ -26,29 +27,22 @@ export class ExportFilesUC implements IExportFilesUC {
     private readonly dialogPort: IDialogPort,
     @inject("DIP_PATH_TOKEN")
     private readonly dipPath: string,
-  ) {}
+  ) { }
 
-  async execute(
-    fileIds: number[],
-    onProgress: (current: number, total: number) => void,
-  ): Promise<ExportFileResults> {
+  async execute( fileIds: number[], onProgress: (current: number, total: number) => void, ): Promise<ExportFileResults> {
     const dialog = await this.dialogPort.showFolderDialog();
     if (dialog.canceled || !dialog.folderPath) {
       return { canceled: true, results: [] };
     }
 
-    const results: { fileId: number; success: boolean; error?: string }[] = [];
+    const results: { fileId: number; exportResult: ExportResult }[] = [];
 
     for (let i = 0; i < fileIds.length; i++) {
       const fileId = fileIds[i];
       const file = this.fileRepo.getById(fileId);
 
       if (!file) {
-        results.push({
-          fileId,
-          success: false,
-          error: `File ${fileId} non trovato`,
-        });
+        results.push({ fileId, exportResult : ExportResult.fail("NOT_FOUND",`File ${fileId} non trovato`)});
         onProgress(i + 1, fileIds.length);
         continue;
       }
@@ -57,17 +51,9 @@ export class ExportFilesUC implements IExportFilesUC {
       const destPath = path.join(dialog.folderPath, filename);
       const absolutePath = path.resolve(this.dipPath, file.getPath());
 
-      const outcome = await this.exportPort.exportFile(
-        await this.fileSystemProvider.openReadStream(absolutePath),
-        destPath,
-      );
+      const outcome = await this.exportPort.exportFile( await this.fileSystemProvider.openReadStream(absolutePath), destPath, );
 
-      results.push({
-        fileId,
-        success: outcome.success,
-        error: outcome.errorMessage,
-      });
-
+      results.push({ fileId, exportResult : outcome});
       onProgress(i + 1, fileIds.length);
     }
 

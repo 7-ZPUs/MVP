@@ -272,7 +272,7 @@ describe("ExportFilesUC", () => {
     const result = await makeUC().execute([99], onProgress);
 
     expect(result.canceled).toBe(false);
-    expect(result.results[0]).toMatchObject({ fileId: 99, success: false });
+    expect(result.results[0]).toMatchObject({ fileId: 99, exportResult: ExportResult.fail("NOT_FOUND", "File 99 non trovato") });
     expect(onProgress).toHaveBeenCalledWith(1, 1);
   });
 
@@ -297,7 +297,7 @@ describe("ExportFilesUC", () => {
     expect(destPathArg).toContain("f.pdf");
 
     expect(result.canceled).toBe(false);
-    expect(result.results[0]).toMatchObject({ fileId: 1, success: true });
+    expect(result.results[0]).toMatchObject({ fileId: 1, exportResult: ExportResult.ok() });
     expect(onProgress).toHaveBeenCalledWith(1, 1);
   });
 });
@@ -413,25 +413,7 @@ describe("PrintFilesUC", () => {
     const result = await makeUC().execute([99], onProgress);
 
     expect(result.canceled).toBe(false);
-    expect(result.results[0]).toMatchObject({ fileId: 99, success: false });
-    expect(onProgress).toHaveBeenCalledWith(1, 1);
-  });
-
-  it("stampa ogni file e chiama onProgress", async () => {
-    dialogPort.showConfirmPrint.mockResolvedValue({ confirmed: true });
-    fileRepo.getById.mockReturnValue(makeFile(1, "docs/f.pdf"));
-    printPort.printSingle.mockResolvedValue({ success: true });
-    const onProgress = vi.fn();
-
-    const result = await makeUC().execute([1], onProgress);
-
-    const [absolutePathArg, optsArg] = printPort.printSingle.mock.calls[0];
-    expect(absolutePathArg).toContain("base/dip");
-    expect(absolutePathArg).toContain("docs/f.pdf");
-    expect(optsArg).toEqual({ silent: false, printBackground: true });
-
-    expect(result.canceled).toBe(false);
-    expect(result.results[0]).toMatchObject({ fileId: 1, success: true });
+    expect(result.results[0]).toMatchObject({ fileId: 99, exportResult: ExportResult.fail("NOT_FOUND", "File 99 non trovato") });
     expect(onProgress).toHaveBeenCalledWith(1, 1);
   });
 

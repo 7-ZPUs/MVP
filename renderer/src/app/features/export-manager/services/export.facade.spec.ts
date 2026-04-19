@@ -30,8 +30,12 @@ function makeIpcResult(
   return { success: true, canceled: false, ...overrides };
 }
 
+function makeSharedExportResult(success: boolean, errorMessage?: string) {
+  return { success, canceled: false, errorCode: undefined, errorMessage };
+}
+
 function makeExportFilesResult(
-  results: Array<{ fileId: number; success: boolean; error?: string }>,
+  results: Array<{ fileId: number; exportResult: ReturnType<typeof makeSharedExportResult> }>,
   canceled = false,
 ) {
   return { canceled, results };
@@ -219,7 +223,10 @@ describe('ExportFacade', () => {
       const { facade, state, gateway } = setup();
       gateway.getFileDto.mockResolvedValue(makeDto());
       gateway.exportFiles.mockResolvedValue(
-        makeExportFilesResult([{ fileId: 1, success: true }, { fileId: 2, success: true }]),
+        makeExportFilesResult([
+          { fileId: 1, exportResult: makeSharedExportResult(false, 'File 1 non trovato') },
+          { fileId: 2, exportResult: makeSharedExportResult(true) },
+        ]),
       );
 
       await facade.exportFiles([1, 2]);
@@ -241,7 +248,10 @@ describe('ExportFacade', () => {
         .mockResolvedValueOnce(null)
         .mockResolvedValueOnce(makeDto({ filename: 'c.pdf' }));
       gateway.exportFiles.mockResolvedValue(
-        makeExportFilesResult([{ fileId: 1, success: true }, { fileId: 3, success: true }]),
+        makeExportFilesResult([
+          { fileId: 1, exportResult: makeSharedExportResult(true) },
+          { fileId: 3, exportResult: makeSharedExportResult(true) },
+        ]),
       );
 
       await facade.exportFiles([1, 2, 3]);
@@ -276,9 +286,9 @@ describe('ExportFacade', () => {
         progressCallback?.({ current: 2, total: 3 });
         progressCallback?.({ current: 3, total: 3 });
         return makeExportFilesResult([
-          { fileId: 1, success: true },
-          { fileId: 2, success: true },
-          { fileId: 3, success: true },
+          { fileId: 1, exportResult: makeSharedExportResult(true) },
+          { fileId: 2, exportResult: makeSharedExportResult(true) },
+          { fileId: 3, exportResult: makeSharedExportResult(true) },
         ]);
       });
 
@@ -297,9 +307,9 @@ describe('ExportFacade', () => {
       gateway.getFileDto.mockResolvedValue(makeDto());
       gateway.exportFiles.mockResolvedValue(
         makeExportFilesResult([
-          { fileId: 1, success: true },
-          { fileId: 2, success: false, error: 'err' },
-          { fileId: 3, success: true },
+          { fileId: 1, exportResult: makeSharedExportResult(true) },
+          { fileId: 2, exportResult: makeSharedExportResult(false, 'err') },
+          { fileId: 3, exportResult: makeSharedExportResult(true) },
         ]),
       );
 
@@ -314,7 +324,9 @@ describe('ExportFacade', () => {
       const { facade, state, gateway } = setup();
       gateway.getFileDto.mockResolvedValue(makeDto({ filename: 'x.pdf' }));
       gateway.exportFiles.mockResolvedValue(
-        makeExportFilesResult([{ fileId: 7, success: true }]),
+        makeExportFilesResult([
+          { fileId: 7, exportResult: makeSharedExportResult(true) },
+        ]),
       );
 
       await facade.exportFiles([7]);
@@ -326,7 +338,9 @@ describe('ExportFacade', () => {
       const { facade, state, gateway } = setup();
       gateway.getFileDto.mockResolvedValue(makeDto());
       gateway.exportFiles.mockResolvedValue(
-        makeExportFilesResult([{ fileId: 5, success: false, error: 'IO fail' }]),
+        makeExportFilesResult([
+          { fileId: 5, exportResult: makeSharedExportResult(false, 'IO fail') },
+        ]),
       );
 
       await facade.exportFiles([5]);
@@ -341,7 +355,9 @@ describe('ExportFacade', () => {
       const { facade, state, gateway } = setup();
       gateway.getFileDto.mockResolvedValue(makeDto());
       gateway.exportFiles.mockResolvedValue(
-        makeExportFilesResult([{ fileId: 1, success: true }]),
+        makeExportFilesResult([
+          { fileId: 1, exportResult: makeSharedExportResult(true) },
+        ]),
       );
 
       await facade.exportFiles([1]);
@@ -366,7 +382,7 @@ describe('ExportFacade', () => {
     it('chiama setProcessing con SINGLE_PRINT', async () => {
       const { facade, state, gateway } = setup();
       gateway.getFileDto.mockResolvedValue(makeDto({ filename: 'doc.pdf' }));
-      gateway.printFile.mockResolvedValue({ success: true });
+      gateway.printFile.mockResolvedValue(makeIpcResult());
 
       await facade.printDocument(1);
       expect(state.setProcessing).toHaveBeenCalledWith(OutputContext.SINGLE_PRINT);
@@ -375,7 +391,7 @@ describe('ExportFacade', () => {
     it('chiama printFile per i formati stampabili', async () => {
       const { facade, gateway } = setup();
       gateway.getFileDto.mockResolvedValue(makeDto({ filename: 'doc.pdf' }));
-      gateway.printFile.mockResolvedValue({ success: true });
+      gateway.printFile.mockResolvedValue(makeIpcResult());
 
       await facade.printDocument(1);
       expect(gateway.printFile).toHaveBeenCalledWith(1);
@@ -384,7 +400,7 @@ describe('ExportFacade', () => {
     it('chiama setSuccess con SINGLE_PRINT dopo la stampa', async () => {
       const { facade, state, gateway } = setup();
       gateway.getFileDto.mockResolvedValue(makeDto({ filename: 'doc.png' }));
-      gateway.printFile.mockResolvedValue({ success: true });
+      gateway.printFile.mockResolvedValue(makeIpcResult());
 
       await facade.printDocument(1);
 
@@ -445,7 +461,7 @@ describe('ExportFacade', () => {
       it(`accetta il formato .${ext}`, async () => {
         const { facade, state, gateway } = setup();
         gateway.getFileDto.mockResolvedValue(makeDto({ filename: `file.${ext}` }));
-        gateway.printFile.mockResolvedValue({ success: true });
+        gateway.printFile.mockResolvedValue(makeIpcResult());
 
         await facade.printDocument(1);
         expect(state.setSuccess).toHaveBeenCalled();
@@ -456,7 +472,7 @@ describe('ExportFacade', () => {
     it("è case-insensitive per l'estensione", async () => {
       const { facade, state, gateway } = setup();
       gateway.getFileDto.mockResolvedValue(makeDto({ filename: 'IMAGE.PDF' }));
-      gateway.printFile.mockResolvedValue({ success: true });
+      gateway.printFile.mockResolvedValue(makeIpcResult());
 
       await facade.printDocument(1);
       expect(state.setSuccess).toHaveBeenCalled();
@@ -471,10 +487,12 @@ describe('ExportFacade', () => {
       gateway.getFileDto
         .mockResolvedValueOnce(makeDto({ filename: 'a.pdf' }))
         .mockResolvedValueOnce(makeDto({ filename: 'b.png' }));
-      gateway.printFiles.mockResolvedValue({
-        canceled: false,
-        results: [{ success: true, fileId: 1 }, { success: true, fileId: 2 }],
-      });
+      gateway.printFiles.mockResolvedValue(
+        makeExportFilesResult([
+          { fileId: 1, exportResult: makeSharedExportResult(true) },
+          { fileId: 2, exportResult: makeSharedExportResult(true) },
+        ]),
+      );
 
       await facade.printDocuments([1, 2]);
       expect(gateway.printFiles).toHaveBeenCalledTimes(1);
@@ -487,10 +505,11 @@ describe('ExportFacade', () => {
         .mockResolvedValueOnce(null)
         .mockResolvedValueOnce(makeDto({ filename: 'doc.docx' }))
         .mockResolvedValueOnce(makeDto({ filename: 'b.pdf' }));
-      gateway.printFiles.mockResolvedValue({
-        canceled: false,
-        results: [{ success: true, fileId: 3 }],
-      });
+      gateway.printFiles.mockResolvedValue(
+        makeExportFilesResult([
+          { fileId: 3, exportResult: makeSharedExportResult(true) },
+        ]),
+      );
 
       await facade.printDocuments([1, 2, 3]);
       expect(gateway.printFiles).toHaveBeenCalledWith([3]);
@@ -510,10 +529,11 @@ describe('ExportFacade', () => {
     it('chiama setSuccess al termine', async () => {
       const { facade, state, gateway } = setup();
       gateway.getFileDto.mockResolvedValue(makeDto({ filename: 'doc.pdf' }));
-      gateway.printFiles.mockResolvedValue({
-        canceled: false,
-        results: [{ success: true, fileId: 1 }],
-      });
+      gateway.printFiles.mockResolvedValue(
+        makeExportFilesResult([
+          { fileId: 1, exportResult: makeSharedExportResult(true) },
+        ]),
+      );
 
       await facade.printDocuments([1]);
       expect(state.setSuccess).toHaveBeenCalledTimes(1);
@@ -522,7 +542,7 @@ describe('ExportFacade', () => {
     it('chiama reset e ritorna se printFiles è canceled', async () => {
       const { facade, state, gateway } = setup();
       gateway.getFileDto.mockResolvedValue(makeDto({ filename: 'doc.pdf' }));
-      gateway.printFiles.mockResolvedValue({ canceled: true, results: [] });
+      gateway.printFiles.mockResolvedValue(makeExportFilesResult([], true));
 
       await facade.printDocuments([1]);
       expect(state.reset).toHaveBeenCalledTimes(1);
